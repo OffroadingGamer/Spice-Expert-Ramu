@@ -8,7 +8,7 @@
 > plan item slips or is cut, do not silently delete it — strike it, move it, and
 > log the reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 16:19 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 16:50 IST (read from the system clock)
 **Status:** ▶ **LIVE — v1.1.0** at https://w.run/puneetmakes/spice-expert-ramu since ~15:05 PT Sep 3. Scoring clock running.
 **Scope:** cuisine level run (GDD §10.10) · SFX at P1 (§12) · 3D→sprite art pipeline (§11a).
 
@@ -729,6 +729,7 @@ and at most one follow-up if something genuinely notable ships.
 | 42 | **BGM has nowhere to live — the CDN path does not exist** | Implementation agent | Before any BGM ships | 🟠 A 30 s stereo loop is ~360 KB against a 667 KB game, so music cannot go in the bundle. Specs §8a and the `audio.ts` ADAPT comment both route it through `public/cdn-assets/` + `RundotGameAPI.cdn.fetchAsset()` — **that plumbing has never been written.** Generating tracks before it exists produces files with no home. Small task; must precede the music pass |
 | 43 | Audition the three sample gains against a real playthrough | User | With the next play | 🟢 `lose` 0.5 · `upgrade` 0.45 · `wave-clear` 0.5, set by peak-matching the synth they replaced (−3 dBFS samples vs 0.35/0.30/0.35 synth peaks). Arithmetic got them close; the last few dB are an ear. One-line constants at `src/audio/audio.ts` — the SAMPLES table |
 | 44 | MusicGen local pipeline for BGM | User + prompt agent | Sep 5–6 | 🟢 Setup issued Sep 4, 16:19 IST: HF `transformers` (not audiocraft — avoids the xformers/Python 3.11 fight on Windows), `musicgen-stereo-large` on the 4090's 24 GB, venv **outside** the repo at `D:\AudioGen`. A separate prompt agent writes prompts and logs to `docs/AudioGenPrompts.md` only. Fixed constants so stages crossfade: **112 BPM, A minor, 4/4, instrumental**. Note MusicGen is music-only — the 5 unpicked SFX cues need AudioGen or CC0 packs, not this |
+| 45 | 🔒 **Every handover names its recipient** | Planning agent | Standing, from Sep 4 16:50 IST | ✅ Two agents now take instructions from one chat — the implementation agent (codebase, builds, deploys, git) and the MusicGen Prompt Agent (one file, append-only, no source, no git). Phase 4 reached the wrong one; it refused correctly. **Rule: the handover heading names the agent, and a one-line scope stamp sits under it.** Same family as lesson 18 — what matters must be inside the block that travels |
 | 16 | Re-cost the level run (Phase 4) | Planning agent | Before Sep 8 | ⬜ ~9 h is stale; the kit ships authored waves, deterministic endless, and a balance sim |
 | 17 | Close the auto-enabled `textGen` credit cap | Implementation agent | Phase 2 | ⬜ 500k/day ceiling on an unused surface; see [Specs.md](Specs.md) §10 |
 | 18 | Verify NCS + KayKit licences before either ships | User | Before Phase 2 art | ✅ **Closed Sep 4** — see items 10 and 11 |

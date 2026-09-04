@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 4 2026, 16:19 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 16:50 IST (read from the system clock)
 
 ---
 
@@ -1230,6 +1230,49 @@ music pass.
 
 ---
 
+### Sep 4, 16:50 IST · A handover sent to the wrong agent — and the agent caught it
+
+The Phase 4 handover (CDN music streaming) was written for the **implementation agent** and
+reached the **MusicGen Prompt Agent** instead. That agent refused, correctly, and said why:
+its scope is append-only writes to `docs/AudioGenPrompts.md`, never source, never git —
+and Phase 4 asked it to edit `audio.ts`, run `npm run balance`, generate and delete test
+audio, and commit. It offered the two possible explanations, asked which, and **declined to
+guess.** That is exactly the behaviour a scoped agent should have, and it is worth logging
+as a success rather than only as an incident.
+
+**The routing error is structural, and it is mine.** This project now has *two* agents
+taking instructions out of this one chat:
+
+| Agent | Scope |
+|---|---|
+| Implementation agent | The `jam-entry/` codebase, builds, deploys, git |
+| MusicGen Prompt Agent | One file, append-only. No source, no git, no follow-up questions |
+
+Every handover I have written since Phase 1.5 opens `# HANDOVER — PHASE N · <topic>` and
+**names no recipient.** That was unambiguous while exactly one agent existed. The moment a
+second one appeared it became ambiguous by construction — and I proved it myself in the
+same session: the MusicGen brief was addressed (*"BRIEF 1 — for the MusicGen Prompt
+Agent"*) and Phase 4 was not. I addressed one and not the other, then relied on the user to
+route correctly by inference.
+
+**Fix, effective immediately:** every handover heading names its recipient, and carries a
+one-line scope stamp under it saying what that agent may touch. A handover with no
+addressee is not a handover, it is a note.
+
+This is the same failure family as lesson 18 — Phase 3's mapping lived above the handover
+heading instead of inside it. Both are cases of relying on context that surrounds a
+handover rather than putting what matters inside the block that gets handed over. **The
+block travels; the conversation around it does not.**
+
+Also worth naming: the prompt agent was given the constraint *"you cannot ask follow-up
+questions"* and still asked one. It was right to. That constraint exists so it resolves
+*ambiguities of musical taste* with a stated default rather than stalling — it was never
+meant to make it execute work outside its scope silently. A rule written for one axis
+should not bind on a different one, and an agent that recognises the difference is more
+useful than one that obeys literally.
+
+---
+
 ## 2. Checkpoint ledger
 
 Runbook checkpoints. Update as each passes, with the actual time.
@@ -1343,6 +1386,12 @@ uniques are the score; the trend matters more than any single day.
    first zero-deviation report in the project was the one that listed exact edits and
    exact values. Every drift so far has come from a handover that named a goal and left
    the mechanism implicit. Where the outcome matters, write the line, not the intent.
-20. **Record what to ignore, not just what to do.** Two unlisted games on the account
+20. **Name the recipient in the handover heading.** Once more than one agent takes
+   instructions from the same chat, an unaddressed handover is ambiguous by construction.
+   Phase 4 was written for the implementation agent and reached the prompt agent, which
+   refused correctly. In the very same session I *had* addressed the MusicGen brief and
+   not the handover — the inconsistency was mine, not the router's. Heading names the
+   agent; a one-line scope stamp sits under it.
+21. **Record what to ignore, not just what to do.** Two unlisted games on the account
    look exactly like entry candidates in `list-games`. §0 exists so a tired future
    session cannot deploy to the wrong game ID.
