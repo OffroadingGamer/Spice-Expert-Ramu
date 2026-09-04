@@ -1,6 +1,6 @@
 # PropList — stations that sit in the prop slots
 
-**Last updated:** Sep 4 2026, 19:20 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 19:49 IST (read from the system clock)
 **Status:** 🟡 Inventory done, picks pending — **user input required** (marked ⬜ below)
 
 Companion to [RecipeList.md](RecipeList.md). Props are what the old build called

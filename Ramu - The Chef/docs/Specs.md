@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 18:31 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 19:49 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -625,6 +625,50 @@ Re-encode through `npm run audio:convert` before it reaches `public/cdn-assets/`
 which is what makes `loopStart`/`loopEndTrim` (§8a.4) able to close the seam. Prompting
 for *"no build, no drop, no fade in or out"* is what produced that; keep it in every BGM
 prompt.
+
+
+## 8b. 🔒 Billboard ingredient row — the overflow rule and its ceiling
+
+Added Sep 4 2026, 19:49 IST, from the new game-view proposal (Plan item 48). The lower
+billboard panel renders a recipe as `[img 01] + [img 02] + …`, **images only, no dish
+name**, centred, and it **must never overflow** — it shrinks image scale to fit instead.
+
+```
+slot  = (innerWidth - (n - 1) * plusWidth - 2 * pad) / n
+scale = min(1, slot / nativeIngredientWidth)
+```
+
+Scale changes **tween** on recipe change so the row settles rather than snapping.
+
+### The ceiling: 5 comfortable, 6 hard maximum
+
+Worked in design units against a billboard that spans most of the 720-unit width
+(`innerWidth ≈ 520`, `plusWidth ≈ 28`, native ingredient ≈ 128 — the packs draw items at
+roughly 100–150 px, not 16):
+
+| Ingredients | Slot | Scale | Verdict |
+|---|---|---|---|
+| 3 | 155 | 1.00 | full size, room to spare |
+| 4 | 109 | 0.85 | comfortable |
+| **5** | **82** | **0.64** | **the working target** |
+| **6** | **63** | **0.49** | **at the floor — last usable** |
+| 7 | 50 | 0.39 | below floor, reject |
+
+**Floor is `MIN_INGREDIENT_SCALE = 0.45`.** A recipe that would render below it is
+**rejected at authoring time**, not squeezed — an illegible row is worse than a
+rejected level.
+
+**Why the floor is that high.** These are detailed cartoon sprites with dark outlines and
+interior shading, not flat icons. At 0.45 a 128-unit item lands near 58 units on screen
+and the shading collapses into mud well before a flat icon would. The number is a
+property of *this* art, and moves if the art style does.
+
+> **Recipes are written against this ceiling, not discovered to violate it.**
+> Five ingredients is the design target. Six is the wall. See [RecipeList.md](RecipeList.md).
+
+The exact numbers move with the final billboard width — re-derive from the formula once
+`Art/Billboard.png` is styled and its inner panel measured. The **shape** of the result
+(a hard cap in the 5–6 range) does not move.
 
 
 ## 9. Deploy pipeline

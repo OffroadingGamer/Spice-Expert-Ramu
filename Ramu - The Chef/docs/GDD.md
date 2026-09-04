@@ -550,6 +550,7 @@ audio — that is an accessibility floor, not a ranking of importance.
 |---|---|
 | What will the UI look like? | Diegetic-leaning: the HUD is kitchen furniture. Walkouts are dockets on a spike, cash is the register readout, the rush meter is the pass light heating up. |
 | Required elements | Walkout counter (5) · cash · rush progress · station slots · HANDS! charges · shift number |
+| 🔒 **Recipe row ceiling** | The billboard ingredient row caps at **5 ingredients comfortably, 6 absolutely** — below 0.45 scale these sprites stop reading. **Recipes are authored against this cap, not squeezed into it.** Full derivation in Specs §8b; picks in [RecipeList.md](RecipeList.md) |
 | Available at all times? | Yes — a 90-second shift never hides state. No pause-to-read, no submenus during play. |
 | Placement — avoiding overload | Status pinned **top** (out of the thumb arc), action pinned **bottom** (inside it). The middle third is pure rail and stays clean. |
 | Diegetic or overlay? | Diegetic where free, overlay where clarity wins. **Clarity always wins a tie.** |
