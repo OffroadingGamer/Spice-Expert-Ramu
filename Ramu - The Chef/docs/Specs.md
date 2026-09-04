@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 22:35 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 23:10 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -704,6 +704,15 @@ property of *this* art, and moves if the art style does.
 The exact numbers move with the final billboard width — re-derive from the formula once
 `Art/Billboard.png` is styled and its inner panel measured. The **shape** of the result
 (a hard cap in the 5–6 range) does not move.
+
+---
+
+## 8b′. Kitchen mode — second-mode architecture
+
+Settled Sep 4 2026, 23:10 IST in **[KitchenMode.md](KitchenMode.md)**, which is the source of truth for the belt game view's architecture. The two things a reader of this file needs to know:
+
+- **The leaderboard gains two board modes**, `orders` and `shifts`, rather than reusing `waves`. Config resolves from the published `public` tag, so **deploy the config before any belt run can submit**, or those submissions fail silently.
+- **The save gains a `kitchen` branch additively and `SAVE_KEY` does not change.** `save.ts` `parse()` defaults every missing field, so re-nesting the existing `bestWave` / `meta` under a `td:` branch — or bumping the key to `:v2` — would silently wipe live players' gems and best wave. The resulting flat-TD / nested-kitchen asymmetry is deliberate and is not to be tidied during the jam.
 
 ---
 
