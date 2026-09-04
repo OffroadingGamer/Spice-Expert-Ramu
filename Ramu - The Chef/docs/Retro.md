@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 4 2026, 17:17 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 18:02 IST (read from the system clock)
 
 ---
 
@@ -1273,6 +1273,40 @@ useful than one that obeys literally.
 
 ---
 
+### Sep 4, 18:02 IST · I declared a capability missing without checking the platform we ship on
+
+Phase 4.1 closed cleanly — the implementation agent applied both replacements verbatim,
+every gate re-verified, second zero-deviation report running. The interesting failure that
+session was mine, and I found it by accident.
+
+I opened the SDK typings to confirm `fetchAsset`'s options before writing a handover that
+depended on them. Two interfaces away sat **`RundotGameAPI.audioGen`** — first-party
+generation for `sfx`, `music` and `tts`, backed by ElevenLabs, Lyria 3 and MiniMax.
+
+I had already told the user, in writing and twice, that the five thematic SFX cues
+(item 13) could not be generated because *"AudioGen is audiocraft-only."* That statement
+is true about **Meta's** AudioGen and completely irrelevant, because the question was never
+"can Meta's tool do this" — it was "can we get these sounds." I answered a narrower
+question than the one asked and reported the answer as if it settled the broader one. The
+same reasoning also sent the user into a 22 GB local MusicGen install for BGM that the
+platform may well do better and with no install at all.
+
+What makes it a real lesson rather than bad luck: **I had read this SDK's typings four
+times this project** — for `fetchAsset`, for the analytics surface, for the CDN options,
+for the credits API. Each time I grepped for exactly the symbol I wanted and stopped. A
+capability I never thought to name was therefore invisible no matter how often I looked at
+the file containing it.
+
+**Rule:** before recording *"X is not possible"*, enumerate the platform's own surface for
+X. Grep the whole API for the domain — `audio`, `gen` — not the one symbol already in mind.
+A negative claim needs a wider search than a positive one, because a positive claim fails
+loudly when wrong and a negative one just quietly costs you the feature.
+
+The cost here was small and recoverable: an install that still works and a parked task that
+turns out not to be blocked. It would not have been if the jam had ended first.
+
+---
+
 ## 2. Checkpoint ledger
 
 Runbook checkpoints. Update as each passes, with the actual time.
@@ -1395,3 +1429,9 @@ uniques are the score; the trend matters more than any single day.
 21. **Record what to ignore, not just what to do.** Two unlisted games on the account
    look exactly like entry candidates in `list-games`. §0 exists so a tired future
    session cannot deploy to the wrong game ID.
+22. **Before recording that something is impossible, search the platform's whole surface
+   for it.** I parked the five thematic SFX cues as ungeneratable because Meta's AudioGen
+   is audiocraft-only — true, and irrelevant: the RUN SDK ships `audioGen.generate()` for
+   `sfx`, `music` and `tts`. I had read those typings four times, each time grepping only
+   the symbol I already had in mind. A negative claim needs a wider search than a positive
+   one: a wrong positive fails loudly, a wrong negative silently costs you the feature.

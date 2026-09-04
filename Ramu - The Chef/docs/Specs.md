@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 17:17 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 18:02 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -564,12 +564,14 @@ writing** — the implementation agent holds it; not yet built, not yet deployed
 
 | Decision | Why |
 |---|---|
-| **CDN call lives in `src/sdk/cdn.ts`**, not in `audio.ts` | `audio.ts` has zero SDK imports today and keeps it that way. Mirrors the `analytics.ts` precedent: `src/sdk/` wraps the SDK, consumers call the wrapper. Signature `fetchCdnAsset(path, timeoutMs) → Promise<ArrayBuffer \| null>`, guarded by `sdkReady()`, returns `null` rather than throwing |
+| **CDN call lives in `src/sdk/cdn.ts`**, not in `audio.ts` | `audio.ts` has zero SDK imports today and keeps it that way. Mirrors the `analytics.ts` precedent: `src/sdk/` wraps the SDK, consumers call the wrapper. Signature `fetchCdnAsset(path, timeoutMs) → Promise<CdnResult>` where `CdnResult = {ok:true, data:ArrayBuffer} \| {ok:false, reason:CdnFailure}`, guarded by `sdkReady()`, never throws. **Revised in Phase 4.1** — the original `ArrayBuffer \| null` collapsed every failure into one value, which made the `timeout` telemetry reason unreachable |
 | **`musicBus` splits into `seqGain` + `trackGain`** | The master bus keeps carrying the Settings volume slider untouched; the two children make a crossfade possible. Only two lines move — `env.connect(musicBus)` at `audio.ts:309` and `:331` |
 | **Sequencer starts first, track crossfades in over 1.2 s** | The fetch is async and may take seconds. Starting the procedural loop immediately and fading to the real track means music is never absent, and a slow network degrades to "the synth played longer" rather than to silence |
 | **`clearInterval(musicTimer)` only *after* the fade** | Otherwise a slow ramp leaves a gap, and `startMusic()` could double-start later |
 | **`loopStart` / `loopEndTrim` constants** | MP3 carries encoder padding at both ends, so `loop = true` clicks audibly. Default ±0.026 s (~1152 samples @ 44.1 k). These are the lever for tuning the seam by ear once a real track exists — a known limitation of the format choice in §8a, not a defect |
-| **`music_track_loaded` / `music_track_failed` telemetry** | The App Check wall means **neither agent can verify the production CDN path by playing it.** Telemetry is the only route to ever knowing it works. `reason` is one of `fetch` / `decode` / `timeout` |
+| **`music_track_loaded` / `music_track_failed` telemetry** | The App Check wall means **neither agent can verify the production CDN path by playing it.** Telemetry is the only route to ever knowing it works. `reason` is one of `unavailable` / `timeout` / `fetch` (from `cdn.ts`) or `decode` (thrown by `decodeAudioData`). **`unavailable` is deliberately unreportable** — it means the SDK never came up, and `track()` is itself `sdkReady()`-guarded, so the event is dropped rather than logged as a misleading `fetch`. That asymmetry is intended, not the unreachable-enum bug it superficially resembles |
+| **Timeout is classified by our own timer, not the SDK's** | `cdn.ts` races a local `setTimeout` against the SDK call and hands the SDK a deadline `SDK_TIMEOUT_SLACK_MS` (5 s) *longer* than its own, so our timer reliably wins a hang and any earlier SDK rejection is a genuine fetch failure. The slack does not extend the caller's effective deadline. The `.catch()` is attached at the promise's definition site, not after the `await` — otherwise a rejection arriving after the timer won would be an unhandled rejection, which per `runSdk.ts` crashes the game |
+| **⚠️ `vite dev` misreports a missing track** | Vite's SPA history fallback answers an unknown `/cdn-assets/*` with **200 `text/html`** (index.html), which then fails to decode. So locally a missing file reports `decode`; in production it reports `fetch` — **inverted.** Found during Phase 4 verification. Never read local telemetry as if it matched production |
 | **Phase 4 does not deploy** | The track it carries does not exist yet, so deploying would burn a review cycle to test nothing. The committed state points at a missing file; the loader catches the 404 and the sequencer plays — which *is* the fallback path. Production never sees it because the next phase, which adds the real MP3, is what deploys |
 
 **Verified before the handover was written, not assumed:** `fetchAsset(assetPath, { timeout? })

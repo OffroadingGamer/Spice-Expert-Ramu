@@ -5,7 +5,7 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 17:17 IST
+**Last updated:** Sep 4 2026, 18:02 IST
 **Live:** v1.2.3 public · <https://w.run/puneetmakes/spice-expert-ramu>
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST**
 
@@ -124,7 +124,7 @@
 - [x] Wire cues — `lose` / `upgrade` / `waveClear`, **corrected in v1.2.3**
 - [ ] Audition the three gains against a real playthrough
 - [!] Remaining 5 cue picks — sizzle, plate-up bell, ticket-print, place, thud
-- [~] **CDN plumbing for music** — **Phase 4 in flight**, Specs §8a.4
+- [x] **CDN plumbing for music** — Phases 4 + 4.1 landed, Specs §8a.4
 - [x] MusicGen local pipeline — **installed + smoke-tested**, Specs §8a.3
 - [ ] BGM tracks — menu / service-low / mid / high, all 112 BPM A minor
 
