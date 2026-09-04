@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 5 2026, 00:10 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 00:35 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -835,6 +835,58 @@ is scheduled against a deadline.
 > **sibling** of it under the git root, not a child. Pass `PpB5gECS0AMU49mGYAKM`
 > explicitly. Same directory-shape trap that cost the planning agent time on Sep 4.
 
+
+### 8a.9 SFX mix against the music bed — measured Sep 5 2026, 00:35 IST
+
+Item 43 asks for the three sample gains to be auditioned *against a real playthrough*.
+That was impossible until v1.3.0, because there was no music bed to audition against —
+the gains were set by **peak-matching the synth they replaced**, which is the wrong
+yardstick for a short cue. Reproduce all of this with `tools/qa_sfx.py`.
+
+**The real chain, at shipped defaults:** SFX = `sample.gain × 0.8 × 0.6`;
+music = `cue.gain × 0.6 × 0.5`. Every music cue lands at **−26.0 dB out-rms** — the
+per-cue trims in §8a.7b are doing their job exactly.
+
+**Headroom is fine.** All three cues sit **+11.3 to +13.0 dB** over every bed, inside the
++6 to +12 band where a sound reads as an event rather than as part of the music. Nothing
+is buried. That is the good news, and it narrows the listening pass to two questions.
+
+**🔒 Finding 1 — peak-matching hid a 5.3 dB spread.**
+
+| Sound | gain | peak | **loudest 300 ms** | matched gain |
+|---|---|---|---|---|
+| `lose` | 0.50 | −0.6 | **−10.1** | 0.50 — reference |
+| `upgrade` | 0.45 | −1.3 | **−7.9** | **0.35** — 2.2 dB too loud |
+| `wave-clear` | 0.50 | −0.6 | **−13.2** | **0.72** — 3.2 dB too quiet |
+
+**Peak says all three are within 0.7 dB of each other. Loudest-300ms says they span
+5.3 dB**, and that is the number an ear hears. `upgrade` is the quietest by gain and the
+loudest by perception, which is exactly the inversion peak-matching produces.
+
+**🔒 Finding 2 — two of the three collide with the bed they play over.**
+
+Share of energy per band:
+
+| | sub | low-mid | mid | presence | air |
+|---|---|---|---|---|---|
+| SFX `lose` | 1% | 6% | **58%** | 28% | 8% |
+| SFX `upgrade` | 1% | 9% | 43% | 22% | 24% |
+| SFX `wave-clear` | 7% | **28%** | 24% | 16% | 24% |
+| BED `menu` | 0% | 38% | 5% | 8% | **48%** |
+| BED `service_low` | 4% | **60%** | 11% | 12% | 14% |
+| BED `service_high` | 16% | 19% | **30%** | 22% | 13% |
+
+- **`wave-clear` is the worst case, twice over.** It is the quietest of the three by
+  3.2 dB *and* its 28% low-mid sits under `service_low`'s dominant **60%** low-mid — and
+  `service_low` is exactly the bed it plays over. Quietest sound, most crowded band.
+- **`lose` is the second suspect.** 58% mid against `service_high`'s 30% mid, and the
+  `lives < 3` latch means death usually happens while `service_high` is playing. The one
+  cue that most needs to land is the one competing hardest with its bed.
+- **`upgrade` is clear** — 43% mid against `service_low`'s 11% — *and* too loud. It should
+  come down, which is the one unambiguous move in the table.
+
+**⚠️ `wave-clear` has an unusually high crest factor**, so peak-based intuition misleads
+on it in both directions. Judge it by ear against the bed, not by its waveform.
 
 ## 9. Deploy pipeline
 
