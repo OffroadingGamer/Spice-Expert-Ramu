@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 18:02 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 18:31 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -497,7 +497,12 @@ can crossfade — §8a's "reports pressure rather than decorating it" only works
 and key are shared. **MusicGen is music-only:** the five unpicked SFX cues need AudioGen
 or CC0 packs.
 
-### 8a.3 🔒 MusicGen toolchain — installed and verified Sep 4 2026, 16:56 IST
+### 8a.3 MusicGen toolchain — installed and verified Sep 4 2026, 16:56 IST · **SUPERSEDED by §8a.5**
+
+> **Kept as a working fallback, no longer the primary route.** RUN's own `audioGen`
+> reached parity on cost and beats it on quality — see §8a.5. Nothing below is wrong;
+> it is simply not what BGM ships from. Do not uninstall: it is the only route that
+> works with no credits and no network.
 
 Local BGM generation. **The environment lives entirely outside the repo** at
 `D:\AudioGen` — a venv and ~15 GB of model weights must never land near a public
@@ -581,6 +586,46 @@ localhost; and `rundot deploy` uploads and versions `public/cdn-assets/` automat
 
 
 ---
+
+### 8a.5 🔒 Audio generation — RUN `audioGen` via the CLI, verified Sep 4 2026, 18:25 IST
+
+**This is how audio is made.** Discovered Sep 4 while verifying `fetchAsset` typings
+(Retro lesson 22). No in-game SDK call and no local model is needed — the CLI generates
+to a file directly.
+
+```
+rundot generate music --prompt "..." --duration 30 --out bgm-service-low.mp3
+rundot generate sfx   --description "..." --duration 2 --out sizzle.mp3
+rundot generate estimate music --duration 30      # costs nothing, run it first
+```
+
+`--duration` is **3–300 s** for music, **0.5–30 s** for sfx. `--provider` defaults to
+`elevenlabs`. `--client-ref` tags the job so takes stay traceable to a brief.
+
+| Generation | Credits | Notes |
+|---|---|---|
+| music, 30 s | **113** | ~3.8 credits/s, linear — 60 s costs 225 |
+| sfx, 2 s | **6** | ~3 credits/s. All five thematic cues ≈ 30 credits total |
+
+Against a **132,561** balance this is effectively free: ten 30 s takes is 0.85% of it.
+That is what settled MusicGen vs `audioGen` — MusicGen's only advantage was cost.
+
+**Output, measured not assumed.** `--out x.mp3` writes **44.1 kHz stereo MP3 at 128 kbps**;
+a 30 s track is ~480 KB. It also writes a sidecar **`x.mp3.json`** containing
+`generationId`, `prompt`, `type`, `durationSec`. Unlike the image sidecars (§ the
+`*.png.json` rule) **it carries no account id**, so it is safe to keep — it is the cheapest
+provenance record we have of what prompt made a track.
+
+**480 KB is too heavy to stream as-is** on a build where 26 of 35 plays are mobile-web.
+Re-encode through `npm run audio:convert` before it reaches `public/cdn-assets/`; §8a.2's
+~360 KB budget assumed ~96 kbps stereo.
+
+**Take 1 of `bgm-service-low` verified as real audio:** 30.04 s, mean −15.1 dB, peak
+−0.5 dB, and head/tail means within 0.3 dB of each other — i.e. **no fade at either end**,
+which is what makes `loopStart`/`loopEndTrim` (§8a.4) able to close the seam. Prompting
+for *"no build, no drop, no fade in or out"* is what produced that; keep it in every BGM
+prompt.
+
 
 ## 9. Deploy pipeline
 
