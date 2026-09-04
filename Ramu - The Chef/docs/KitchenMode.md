@@ -1,6 +1,6 @@
 # KitchenMode — the belt game view as a second mode
 
-**Last updated:** Sep 4 2026, 23:10 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 23:45 IST (read from the system clock)
 **Status:** 🟢 **Architecture settled.** Eight decisions taken Sep 4, 23:10 IST — all
 eight went to the recommended option. ⬜ Nothing built yet.
 **🛑 Hard gate: playable end to end by Sep 10, or it is cut.** §5.
@@ -181,6 +181,8 @@ immediately and mean nothing. **Amendment to relay:**
 > dramatic position in both.
 
 Everything else in that handover is mode-agnostic.
+
+🚩 **And carry item 54's warning into the belt's own tension trigger.** In the tower defence a Full Thali costs 3 walkouts in one leak, so a player at exactly 3 crosses the threshold and dies in the same step — the danger cue starts *on the game-over screen*. The belt has the same shape of hazard wherever one mistake can cost more than one walkout. Guard the trigger with `lives > 0` from the start rather than rediscovering it by ear.
 
 ---
 

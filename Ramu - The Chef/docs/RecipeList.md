@@ -1,6 +1,6 @@
 # RecipeList — dishes, and the ingredients they call for
 
-**Last updated:** Sep 4 2026, 23:10 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 23:45 IST (read from the system clock)
 **Status:** 🟡 Inventory done, **recipes proposed Sep 4, 20:24 IST** — awaiting sign-off (⬜ §3)
 
 Companion to [PropList.md](PropList.md). A recipe drives two things on screen at once:
