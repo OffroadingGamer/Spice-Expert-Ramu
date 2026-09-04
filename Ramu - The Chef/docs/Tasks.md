@@ -5,7 +5,7 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 5 2026, 00:35 IST
+**Last updated:** Sep 5 2026, 00:50 IST
 **Live:** v1.2.3 public · <https://w.run/puneetmakes/spice-expert-ramu>
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST**
 
@@ -58,7 +58,7 @@
 
 | | |
 |---|---|
-| **Now** | S1 · **P5 Phase 5 — three-cue music (all takes chosen)** · P6 LinkedIn + daily reciprocity · P2 core-loop read |
+| **Now** | S1 · **✅ Audio complete** · next: Kitchen mode build order, Sep 10 gate · P6 LinkedIn + daily reciprocity · P2 core-loop read |
 | **Next** | S1 · CP4 items · P2 core-loop read |
 | **Later** | S2 return loop **(re-ranked up — two-surface audience)** · S3 board layout + levels |
 | **Decided** | Art direction — **Props for the room, Essentials for the line** (Sep 4, 22:05 IST). KayKit Phase 2a cut · **Kitchen mode ships as a second menu entry, 8 architecture calls settled** (Sep 4, 23:10 IST) |
@@ -125,7 +125,7 @@
 - [x] First cue picks — 3 of 8 named by user
 - [x] Convert to a web-shippable format — **42,793 B, v1.2.2**
 - [x] Wire cues — `lose` / `upgrade` / `waveClear`, **corrected in v1.2.3**
-- [ ] Audition the three gains against a real playthrough
+- [x] **Gains auditioned against a real playthrough** — confirmed by ear on v1.5.0 Sep 5, 00:50 IST; the measured values held with no correction. Specs §8a.9
 - [!] Remaining 5 cue picks — sizzle, plate-up bell, ticket-print, place, thud
 - [x] **CDN plumbing for music** — Phases 4 + 4.1 landed, Specs §8a.4
 - [x] MusicGen local pipeline — **installed + smoke-tested**, Specs §8a.3

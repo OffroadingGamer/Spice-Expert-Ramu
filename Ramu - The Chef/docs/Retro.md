@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 5 2026, 00:35 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 00:50 IST (read from the system clock)
 
 ---
 
@@ -1505,3 +1505,15 @@ uniques are the score; the trend matters more than any single day.
    measure. **Check the difference you cannot fix before spending effort on the one you
    can.** The finding is still worth having — it turns "make them match" into a real
    choice between three options — but it should have been the first hour, not the third.
+
+28. **Peak level is the wrong yardstick for a short sound, and the right one is cheap.**
+   The three SFX gains were set by peak-matching the synth blips they replaced — the only
+   option at the time, since no music existed to check against. Peak said the three sounds
+   were within **0.7 dB** of each other. The **loudest 300 ms** said they spanned **5.3 dB**,
+   which is what an ear hears: the cue with the *lowest* gain was the loudest thing in the
+   game. Matching on that window instead, and shipping the numbers it produced, survived the
+   listening pass **with no correction at all**. One confirmation is not proof of a method,
+   but it is enough to make loudest-300ms the default for the belt mode's own SFX rather
+   than starting from peak again. The wider lesson: when a measurement is cheap and the
+   thing it predicts is expensive to test, take the measurement first and let the ear
+   confirm rather than search.
