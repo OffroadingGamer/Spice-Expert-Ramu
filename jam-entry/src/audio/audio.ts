@@ -102,8 +102,8 @@ type SampleId = 'lose' | 'upgrade' | 'wave-clear';
  * few dB are a human call — retune here, one line each. */
 const SAMPLES: Record<SampleId, { url: string; gain: number }> = {
     lose: { url: 'audio/ah.mp3', gain: 0.5 },
-    upgrade: { url: 'audio/level-up.mp3', gain: 0.45 },
-    'wave-clear': { url: 'audio/level-complete.mp3', gain: 0.5 },
+    upgrade: { url: 'audio/level-up.mp3', gain: 0.35 },
+    'wave-clear': { url: 'audio/level-complete.mp3', gain: 0.72 },
 };
 
 /** The CDN-streamed music cues (see switchCue near the sequencer, below).
