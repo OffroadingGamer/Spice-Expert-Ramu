@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 21:35 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 22:05 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -145,10 +145,12 @@ token to a CSS/vector shape or to a texture happens at exactly one point in the 
 | Phase | Dates | Source | Credit cost |
 |---|---|---|---|
 | 1 | Tonight → Sep 9 | CSS/vector + web type, zero image assets | 0 |
-| **2a** | Sep 10–12 | **Pre-rendered sprites from user-owned KayKit 3D props** — Blender, fixed angle + light rig, transparent PNG, one atlas | **0** |
+| ~~**2a**~~ | ➖ **cut Sep 4** | ~~Pre-rendered sprites from user-owned KayKit 3D props~~ — superseded by the art direction in [PropSpriteIndex.md](PropSpriteIndex.md) §5: **Props for the room, Essentials for the line.** A third source rendered from 3D would be a fourth resolution and technique in one frame. Original row: **Pre-rendered sprites from user-owned KayKit 3D props** — Blender, fixed angle + light rig, transparent PNG, one atlas | **0** |
 | 2b | Sep 10–12 | `rundot generate image --prompt "…" --reference-image <user art> --remove-background --out <file>.png` — backgrounds, Ramu, marketing | From the 126,100 balance |
 
-### Phase 2a — 3D → sprite pipeline (decided Sep 3, 14:45 PT)
+### Phase 2a — 3D → sprite pipeline (decided Sep 3, 14:45 PT) — ➖ **CUT Sep 4, 22:05 IST**
+
+> ➖ **This whole subsection is retired.** The art direction settled on **two 2D packs at two scales** — Kitchen Props as isometric background set-dressing behind the belt, Kitchen Essentials on the line — with depth doing the separating ([PropSpriteIndex.md](PropSpriteIndex.md) §5). Adding KayKit renders would put a **third** art source at a fourth resolution and a fourth drawing technique into the same frame, which is the exact incoherence the decision was made to avoid. The licence gate below stays cleared and simply no longer matters. Kept for the reasoning, which still applies to any future pre-render.
 
 **Runtime 3D is rejected.** No three.js, no glTF loading, no runtime meshes. Rationale
 in [GDD.md](GDD.md) §11a: a ~600 KB renderer on a phone, model loading before first
@@ -832,5 +834,5 @@ means a new entry and a reset scoring clock.
 | Sprite atlas exceeds mobile texture budget | Low | One atlas, 2× anchor-box size, validated at intake. Split by cuisine if it grows |
 | Audio decode delays the cold-open | Low | Decode after first paint; no cue blocks level 1 (§8a) |
 | Placeholder levels mistaken for final design | Low | Flagged in §6a; replacing them requires no code change, which is itself the test |
-| **`textGen` auto-enabled with a 500k credit/day cap** | **Med** | `rundot/textGen.config.json` was **created automatically by the first deploy** with `dailyCreditCap: 500000`, `perUserDailyCreditCap: 10000`. The game does not use textGen. A ceiling, not a spend, so nothing is charged, but it is an open AI surface on a public game. **Tighten to 0 or delete the file, and re-check after each deploy** since it self-created once |
+| **`textGen` auto-enabled with a 500k credit/day cap** | **Med** → remedy corrected Sep 4, 22:05 IST | `rundot/textGen.config.json` was **created automatically by the first deploy** with `dailyCreditCap: 500000`, `perUserDailyCreditCap: 10000`. The game does not use textGen. A ceiling, not a spend, so nothing is charged, but it is an open AI surface on a public game. ~~Tighten to 0 or delete the file~~ — **both wrong.** RUN's bundled `rundot/docs/…/api/AI.md` §Configuration: the service is *default-bounded*, so with **no** config file it runs under platform defaults of ~\$500/game/day and ~\$10/user/day — **deleting the file opens the surface wider than the 500k cap it replaces**, and `rundot deploy` recreates it regardless. **Correct fix: `{"disabled": true}`**, which fails every call with `AI_POLICY_DENIED`. Policy resolves from the published `public` tag, so it takes effect only on the next deploy that publishes. Re-check after each deploy since it self-created once. Plan item 17 |
 | Reskin reads as off-theme to judges | **High** | The kit's own guide lists example towers, enemies, waves, board layout, palette and names as content to replace. Only names and palette are done. **Phases 1 and 2 exist to close this**, and it is currently the largest threat to both prize tracks |

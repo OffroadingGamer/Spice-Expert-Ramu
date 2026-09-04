@@ -1,7 +1,8 @@
 # PropSpriteIndex — the Kitchen Props pack, recoloured and numbered
 
-**Last updated:** Sep 4 2026, 21:35 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 22:05 IST (read from the system clock)
 **Status:** 🟢 Complete — **284 items sliced, recoloured and named** across four sheets. ⬜ Names are my read of the art; correct any that are wrong before they become ids.
+**✅ Art direction settled Sep 4, 22:05 IST — §5.** Props for the room, Essentials for the line.
 **⚠️ Read §5 before planning any art around this.** The recolour worked; the two packs still do not belong in the same frame, and the reason is resolution, not colour.
 
 Companion to [SpriteIndex.md](SpriteIndex.md), which does the same for the
@@ -454,9 +455,28 @@ options:
 3. **Essentials only.** Props stays unused. Nothing is lost that the game
    currently needs — which is the uncomfortable part worth saying plainly.
 
-**My read: option 1.** It is the only one that spends the \$4 without spending
-the fortnight, and the depth separation makes the scale difference read as
-intentional rather than as a mistake.
+**✅ DECIDED by the user, Sep 4 2026, 22:05 IST — option 1.**
+
+> *"Props are for the room and Essentials are for the line. Isometric furniture as
+> background set-dressing behind the belt, at its own scale, with depth doing the
+> separating."*
+
+It is the only option that spends the \$4 without spending the fortnight, and the
+depth separation makes the scale difference read as intentional rather than as a
+mistake. **What follows from it:**
+
+- The belt, the ingredients and the four stations stay **Essentials**, so the
+  eleven-transform graph in [PropList.md](PropList.md) §4 is untouched.
+- **Props never sits beside a line sprite**, which is what makes the 4× scale gap
+  a depth cue instead of an error. Keep them in separate render layers and never
+  scale a Props tile up to match — upscaled 32px pixel art next to painterly art
+  reads worse than the honest size difference.
+- **KayKit Phase 2a is cut** (Plan items 12 and 51). A third art source, rendered
+  from 3D at a fourth resolution and a fourth technique, is exactly what this
+  section argues against.
+- The most useful items for a background are the counter runs (**KP1-78 … KP1-83**),
+  the cabinets and fridges (**KP1-84 … KP1-91**), the chairs and tables
+  (**KP1-96 … KP1-114**), and the KP3 corner pieces for turning a counter run.
 
 ---
 

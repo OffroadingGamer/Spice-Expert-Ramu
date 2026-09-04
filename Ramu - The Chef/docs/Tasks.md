@@ -5,7 +5,7 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 21:35 IST
+**Last updated:** Sep 4 2026, 22:05 IST
 **Live:** v1.2.3 public · <https://w.run/puneetmakes/spice-expert-ramu>
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST**
 
@@ -61,6 +61,7 @@
 | **Now** | S1 · **P5 BGM (CDN plumbing + MusicGen)** · P6 LinkedIn + daily reciprocity · P2 core-loop read |
 | **Next** | S1 · CP4 items · P2 core-loop read |
 | **Later** | S2 return loop **(re-ranked up — two-surface audience)** · S3 board layout + levels |
+| **Decided** | Art direction — **Props for the room, Essentials for the line** (Sep 4, 22:05 IST). KayKit Phase 2a cut |
 | **Blocked on user** | Daily Discord reciprocity · the remaining 5 SFX cue picks · gain audition |
 
 ---
@@ -95,17 +96,18 @@
 ### P1 · Art & Identity
 - [x] Title overflow fix — SVG `textLength` (v1.1.0)
 - [x] 15 generated assets shipped + wired (v1.1.0)
-- [ ] KayKit 3D → sprite render pass
+- [x] **Art direction settled Sep 4, 22:05 IST — Props for the room, Essentials for the line.** Isometric furniture as background set-dressing behind the belt, at its own scale, with depth doing the separating. [PropSpriteIndex.md](PropSpriteIndex.md) §5
+- [-] ~~KayKit 3D → sprite render pass~~ — **cut**, see Deferred
 
 ### P0 · Stability
-- [ ] Characterise the App Check integrity wall — can it hit real players?
+- [~] App Check integrity wall — **no build action exists; it is a question, not a task.** The wall is Firebase-level on RUN's own hosting, served *before* our bundle loads, and the RUN platform docs never mention it — we cannot configure it, and probing it is disqualifying. Two legitimate moves: **(a)** fold it into the one Operators message that already carries items 33/34; **(b)** measure by subtraction — platform play count minus our `game_loaded` — which is **blocked until item 32 resolves**, because the platform's own two counters currently disagree 35 vs 47. Plan item 35
 
 ### P1.5 · Performance & Hygiene
 - [x] Downscale 15 assets — 16.30 MB → 0.64 MB (v1.2.0)
 - [x] Exclude `*.png.json` sidecars from `dist/` (v1.2.0)
 - [x] Visual regression check after downscale
 - [x] Repeatable `npm run art:resize` + masters kept in `art-source/`
-- [ ] Close `textGen` 500k/day credit cap
+- [ ] Close the `textGen` surface — **`jam-entry/rundot/textGen.config.json` → `{"disabled": true}`, then deploy.** One line. ⚠️ **Not** "cap to 0" and **not** "delete the file": RUN's own AI.md says deleting it falls back to *platform defaults* (~\$500/game/day), and `rundot deploy` recreates it anyway. `disabled` makes every call fail `AI_POLICY_DENIED`. Policy resolves from the **published `public` tag**, so it is inert until a deploy publishes. Plan item 17
 
 ### P7 · Telemetry
 - [x] Diagnose — pipe works, only `game_loaded` is emitted
@@ -240,3 +242,4 @@
 
 - [-] Cuisine 4+ beyond counter / tandoor / wok — level count is a treadmill
 - [-] Runtime 3D rendering — pre-rendered sprites instead
+- [-] **KayKit 3D → sprite render pass (Phase 2a)** — **cut Sep 4, 22:05 IST.** The art direction is now two 2D packs at two scales (Props behind the belt, Essentials on it). A third source, rendered from 3D at a fourth resolution and a fourth technique, is exactly the incoherence [PropSpriteIndex.md](PropSpriteIndex.md) §5 was written about. Also frees the Sep 10–12 craft pass: Phase 2a was a user-owned Blender render job that no longer has to happen
