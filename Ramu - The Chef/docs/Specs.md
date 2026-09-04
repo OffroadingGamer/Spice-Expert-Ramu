@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 16:56 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 17:17 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -555,6 +555,27 @@ iterating on prompts is cheap. `facebook/musicgen-stereo-large` is the working m
 **Output contract.** MusicGen writes **32 kHz WAV**. That is a master, not a shippable
 asset: it must be compressed and then streamed from `public/cdn-assets/` per §8a.2. A
 30 s stereo loop is ~360 KB against a 667 KB game — music never enters the bundle.
+
+
+### 8a.4 Music streaming architecture — Phase 4, handed over Sep 4 2026, 17:10 IST
+
+Design decisions, recorded because they are the reusable part. **In flight at time of
+writing** — the implementation agent holds it; not yet built, not yet deployed.
+
+| Decision | Why |
+|---|---|
+| **CDN call lives in `src/sdk/cdn.ts`**, not in `audio.ts` | `audio.ts` has zero SDK imports today and keeps it that way. Mirrors the `analytics.ts` precedent: `src/sdk/` wraps the SDK, consumers call the wrapper. Signature `fetchCdnAsset(path, timeoutMs) → Promise<ArrayBuffer \| null>`, guarded by `sdkReady()`, returns `null` rather than throwing |
+| **`musicBus` splits into `seqGain` + `trackGain`** | The master bus keeps carrying the Settings volume slider untouched; the two children make a crossfade possible. Only two lines move — `env.connect(musicBus)` at `audio.ts:309` and `:331` |
+| **Sequencer starts first, track crossfades in over 1.2 s** | The fetch is async and may take seconds. Starting the procedural loop immediately and fading to the real track means music is never absent, and a slow network degrades to "the synth played longer" rather than to silence |
+| **`clearInterval(musicTimer)` only *after* the fade** | Otherwise a slow ramp leaves a gap, and `startMusic()` could double-start later |
+| **`loopStart` / `loopEndTrim` constants** | MP3 carries encoder padding at both ends, so `loop = true` clicks audibly. Default ±0.026 s (~1152 samples @ 44.1 k). These are the lever for tuning the seam by ear once a real track exists — a known limitation of the format choice in §8a, not a defect |
+| **`music_track_loaded` / `music_track_failed` telemetry** | The App Check wall means **neither agent can verify the production CDN path by playing it.** Telemetry is the only route to ever knowing it works. `reason` is one of `fetch` / `decode` / `timeout` |
+| **Phase 4 does not deploy** | The track it carries does not exist yet, so deploying would burn a review cycle to test nothing. The committed state points at a missing file; the loader catches the 404 and the sequencer plays — which *is* the fallback path. Production never sees it because the next phase, which adds the real MP3, is what deploys |
+
+**Verified before the handover was written, not assumed:** `fetchAsset(assetPath, { timeout? })
+→ Promise<Blob>` from the SDK typings; the dev-mode `MockCdnApi` serves the same call from
+`public/cdn-assets/` through the Vite dev server, so the whole path is testable on
+localhost; and `rundot deploy` uploads and versions `public/cdn-assets/` automatically.
 
 
 ---
