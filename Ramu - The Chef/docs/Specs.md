@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 23:45 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 00:10 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -837,6 +837,25 @@ is scheduled against a deadline.
 
 
 ## 9. Deploy pipeline
+
+### 9.0 ⚠️ `rundot deploy` bumps the MINOR version, every time
+
+Observed twice on Sep 4: **1.2.3 → 1.3.0 → 1.4.0**. Two consecutive deploys, the second
+a three-line UI fix, and both took a whole minor version. There is no patch-level bump
+and **no way to influence the number** — it is rundot's own counter, entirely separate
+from `package.json`, which stays untouched.
+
+Consequences worth holding:
+
+- **Never write an expected version into a handover.** A Phase 5.1 handover asked for
+  "v1.3.1" and got v1.4.0; the agent was right to flag the mismatch rather than assume
+  it had done something wrong.
+- **The number carries no meaning about the size of a change.** A typo fix and a
+  subsystem rewrite look identical in the version history, so the *tag* (private /
+  review / public) and the commit are the only real record of what shipped.
+- Deploying to the private tag does **not** disturb `public` or `review`. Verified: with
+  private on 1.4.0, both stayed on 1.2.3 across two deploys.
+
 
 ```powershell
 # First publish (tonight)
