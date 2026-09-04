@@ -19,10 +19,17 @@
  *     MELODY note arrays) and each sfx.* is a couple of tone()/noise()
  *     calls.
  */
+import { fetchCdnAsset } from '../sdk/cdn.ts';
+import { track } from '../sdk/analytics.ts';
 
 let ctx: AudioContext | null = null;
 let musicBus: GainNode | null = null;
 let sfxBus: GainNode | null = null;
+/** Children of musicBus: seqGain carries the procedural sequencer, trackGain
+ * carries the CDN track. crossfadeToTrack() ramps one down as the other
+ * ramps up; musicBus itself stays the volume-slider master throughout. */
+let seqGain: GainNode | null = null;
+let trackGain: GainNode | null = null;
 
 let musicVolume = 0.6;
 let sfxVolume = 0.8;
@@ -38,6 +45,12 @@ function ensureCtx(): AudioContext | null {
         musicBus = ctx.createGain();
         musicBus.gain.value = musicVolume * MUSIC_BASE;
         musicBus.connect(ctx.destination);
+        seqGain = ctx.createGain();
+        seqGain.gain.value = 1.0;
+        seqGain.connect(musicBus);
+        trackGain = ctx.createGain();
+        trackGain.gain.value = 0.0;
+        trackGain.connect(musicBus);
         sfxBus = ctx.createGain();
         sfxBus.gain.value = sfxVolume * SFX_BASE;
         sfxBus.connect(ctx.destination);
@@ -62,6 +75,7 @@ export function initAudio(volumes: { music: number; sfx: number }): void {
         if (c.state === 'suspended') c.resume().catch(() => {});
         startMusic();
         loadSamples();
+        loadMusicTrack();
     };
     window.addEventListener('pointerdown', unlock);
     window.addEventListener('keydown', unlock);
@@ -86,6 +100,19 @@ const SAMPLES: Record<SampleId, { url: string; gain: number }> = {
     upgrade: { url: 'audio/level-up.mp3', gain: 0.45 },
     'wave-clear': { url: 'audio/level-complete.mp3', gain: 0.5 },
 };
+
+/** The CDN-streamed music track (see loadMusicTrack/crossfadeToTrack near
+ * the sequencer, below). loopStart/loopEndTrim exist because MP3 carries
+ * encoder padding at both ends (~1152 samples @ 44.1k), which makes
+ * loop = true click audibly — they're the lever for tuning the seam by ear
+ * once a real track exists. gain and fadeSeconds are one-line retunes too. */
+const MUSIC = {
+    path: 'bgm-service-low.mp3',   // relative to public/cdn-assets/
+    gain: 1.0,
+    loopStart: 0.026,
+    loopEndTrim: 0.026,
+    fadeSeconds: 1.2,
+} as const;
 
 const sampleBuffers = new Map<SampleId, AudioBuffer>();
 const sampleVoices = new Map<SampleId, AudioBufferSourceNode>();
@@ -298,7 +325,7 @@ let stepIndex = 0;
 
 function scheduleMusicNote(type: OscillatorType, midi: number, t: number, dur: number, vol: number): void {
     const c = ctx;
-    if (!c || !musicBus) return;
+    if (!c || !seqGain) return;
     const osc = c.createOscillator();
     const env = c.createGain();
     osc.type = type;
@@ -306,14 +333,14 @@ function scheduleMusicNote(type: OscillatorType, midi: number, t: number, dur: n
     env.gain.setValueAtTime(vol, t);
     env.gain.exponentialRampToValueAtTime(0.001, t + dur);
     osc.connect(env);
-    env.connect(musicBus);
+    env.connect(seqGain);
     osc.start(t);
     osc.stop(t + dur + 0.02);
 }
 
 function scheduleHat(t: number): void {
     const c = ctx;
-    if (!c || !musicBus) return;
+    if (!c || !seqGain) return;
     const length = Math.floor(c.sampleRate * 0.03);
     const buffer = c.createBuffer(1, length, c.sampleRate);
     const data = buffer.getChannelData(0);
@@ -328,7 +355,7 @@ function scheduleHat(t: number): void {
     env.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
     src.connect(filter);
     filter.connect(env);
-    env.connect(musicBus);
+    env.connect(seqGain);
     src.start(t);
 }
 
@@ -359,4 +386,78 @@ function startMusic(): void {
             nextStepTime += STEP;
         }
     }, 100);
+}
+
+// ---------------------------------------------------------------------------
+// CDN music track — crossfades in over the sequencer once it loads. The
+// sequencer is the permanent fallback: a 404, timeout, or decode failure
+// just means it keeps playing, exactly what v1.2.3 already sounds like.
+// Same posture as the sampled-SFX layer above.
+// ---------------------------------------------------------------------------
+
+let musicSource: AudioBufferSourceNode | null = null;
+
+/**
+ * Fire-and-forget: fetch the CDN track, decode it, crossfade it in over the
+ * sequencer. Called once, right after loadSamples(). Never awaited by boot —
+ * any failure along the chain just leaves the sequencer playing.
+ */
+function loadMusicTrack(): void {
+    const c = ctx;
+    if (!c) return;
+    const t0 = performance.now();
+    (async () => {
+        const data = await fetchCdnAsset(MUSIC.path);
+        if (!data) {
+            // fetchCdnAsset collapses every fetch-side failure (missing SDK,
+            // 404, network error, and its own internal timeout) into null —
+            // there's no signal left here to separate a real timeout from
+            // any other fetch failure, so both report as 'fetch'.
+            track('music_track_failed', { path: MUSIC.path, reason: 'fetch' });
+            return;
+        }
+        let buffer: AudioBuffer;
+        try {
+            buffer = await c.decodeAudioData(data);
+        } catch {
+            track('music_track_failed', { path: MUSIC.path, reason: 'decode' });
+            return;
+        }
+        track('music_track_loaded', {
+            path: MUSIC.path,
+            fetch_ms: Math.round(performance.now() - t0),
+            duration_s: Number(buffer.duration.toFixed(2)),
+        });
+        crossfadeToTrack(buffer);
+    })().catch(() => { /* last-resort net — the steps above already handle their own failures */ });
+}
+
+/** Starts the decoded track looping into trackGain and crossfades it in
+ * over MUSIC.fadeSeconds while the sequencer fades out, then stops the
+ * sequencer's timer for good. No-ops if a track is already playing. */
+function crossfadeToTrack(buffer: AudioBuffer): void {
+    const c = ctx;
+    if (!c || !seqGain || !trackGain || musicSource) return;
+
+    const src = c.createBufferSource();
+    src.buffer = buffer;
+    src.loop = true;
+    src.loopStart = MUSIC.loopStart;
+    src.loopEnd = Math.max(MUSIC.loopStart, buffer.duration - MUSIC.loopEndTrim);
+    src.connect(trackGain);
+    src.start();
+    musicSource = src;
+
+    const t0 = c.currentTime;
+    trackGain.gain.setValueAtTime(0, t0);
+    trackGain.gain.linearRampToValueAtTime(MUSIC.gain, t0 + MUSIC.fadeSeconds);
+    seqGain.gain.setValueAtTime(1, t0);
+    seqGain.gain.linearRampToValueAtTime(0, t0 + MUSIC.fadeSeconds);
+
+    setTimeout(() => {
+        if (musicTimer) {
+            clearInterval(musicTimer);
+            musicTimer = null;
+        }
+    }, MUSIC.fadeSeconds * 1000);
 }
