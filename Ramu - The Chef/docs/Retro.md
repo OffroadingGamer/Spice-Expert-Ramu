@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 4 2026, 13:24 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 13:36 IST (read from the system clock)
 
 ---
 
@@ -881,6 +881,55 @@ argument for item 20 stated as a measurement rather than an opinion.
 
 ---
 
+### Sep 4, 13:36 IST · Distribution opened · the surface list shrank the strategy
+
+User chose distribution over telemetry as the next move, then answered the surface
+question: **LinkedIn and Discord. Nothing else.**
+
+**The packet.** `rundot socials prepare --platforms x,reddit` ran clean. The Discord
+auto-post I had warned about in §5.3 could not have fired — it requires a webhook on the
+creator profile and `socials profile show` still returns none — but the platform list was
+restricted anyway on the principle that a guard costs nothing. Packet
+`cabeeb7e-ad5c-4b69-bfc1-0458e145b0a3`, two tracked links minted.
+
+**The generated copy was unusable, and the way it failed is worth recording.** The CLI
+produced three caption variants per platform, all of them *patch notes about load times*,
+written in corporate first-person plural, for a game that has never been announced. One
+opened "We just dropped an update for Spice Expert: Ramu that you NEED to know about" and
+went on to explain asset downscaling to strangers. It had faithfully summarised the most
+recent commit and mistaken that for a reason to click. Generated marketing copy takes its
+subject from the changelog; a launch post's subject is the game. Rewrote both by hand.
+
+**The surface answer mattered more than the copy.** Two consequences I did not have to
+reason about while the funnel was hypothetical:
+
+*Discord reciprocity is now the whole engine.* LinkedIn is one spike that decays inside
+48 hours — a professional network does not return to a game daily. Playing and commenting
+on other jam entries is the only repeatable source of new players in the project. §5.5 had
+it as one line in a table of six surfaces; it is now the plan.
+
+*The return loop moves up the ranking.* An audience reachable in the low hundreds cannot
+win a summed-daily-uniques score on arrivals. It has to win on the same people coming back
+across many days. That was always true and always second-order; with two surfaces it is
+first-order, and it outranks the craft pass and further art work. Logged as item 31, to be
+settled alongside the D1 retention re-check tomorrow.
+
+*And r/KitchenConfidential is gone.* It was the highest-upside single post available to
+this concept — real cooks, and "this game knows what the job is actually like" is a post
+that travels on its own. There is no substitute for it on the remaining surfaces. Recording
+it as a loss rather than quietly re-planning around it, because the reason the concept was
+chosen was partly that audience.
+
+**Link policy set:** vote page on the RUN Discord, where the audience votes as well as
+plays; plain play link on LinkedIn, where a tracking shortlink reads as spam. `prepare`
+has no `linkedin` platform, so per-platform attribution is lost there — acceptable, since
+with two surfaces the split is readable from post timing alone.
+
+**Still zero shared.** 35 cumulative players, all organic, as of this entry. Rank #3 on
+15 plays. The drafts are written; the posting is the user's.
+
+---
+
 ## 2. Checkpoint ledger
 
 Runbook checkpoints. Update as each passes, with the actual time.
@@ -948,10 +997,17 @@ uniques are the score; the trend matters more than any single day.
 8. **A handover that names an outcome must name the flag that produces it.** Phase 1.5
    asked for v1.1.1 and got v1.2.0, because `rundot deploy` bumps minor by default and
    the handover never said `--bump patch`. Specify the mechanism, not just the target.
-9. **Verify the report against the artefact, not against itself.** Phase 1.5's numbers
+9. **Generated marketing copy summarises the changelog and calls it a reason to click.**
+   `socials prepare` wrote launch posts about asset downscaling for a game that had never
+   been announced. The tool's tracked links are the valuable output; treat its captions as
+   a first draft of the wrong document.
+10. **Ask what surfaces exist before planning the distribution.** §5 was written across six
+   channels; two of them were real. The plan was not wrong so much as unasked — and the
+   answer changed which *build* work ranks highest, not just which posts get written.
+11. **Verify the report against the artefact, not against itself.** Phase 1.5's numbers
    were all correct — but they were only *known* to be correct after reading IHDR bytes,
    `du`, `git ls-files` and `rundot game info`. The gate is worth nothing if the briefing
    is a paraphrase of the report.
-10. **Record what to ignore, not just what to do.** Two unlisted games on the account
+12. **Record what to ignore, not just what to do.** Two unlisted games on the account
    look exactly like entry candidates in `list-games`. §0 exists so a tired future
    session cannot deploy to the wrong game ID.

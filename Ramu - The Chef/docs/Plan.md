@@ -8,7 +8,7 @@
 > plan item slips or is cut, do not silently delete it — strike it, move it, and
 > log the reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 13:24 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 13:36 IST (read from the system clock)
 **Status:** ▶ **LIVE — v1.1.0** at https://w.run/puneetmakes/spice-expert-ramu since ~15:05 PT Sep 3. Scoring clock running.
 **Scope:** cuisine level run (GDD §10.10) · SFX at P1 (§12) · 3D→sprite art pipeline (§11a).
 
@@ -488,9 +488,11 @@ expect rough builds. Reciprocity is the largest early traffic source — play an
 comment on other entries and they play yours. This is the one surface where the
 current build is not a liability.
 
-> ⚠️ **`rundot socials prepare` may auto-post to Discord.** Its own `--force` flag
-> reads *"re-post to Discord even if already auto-posted for this version."* It has
-> **not** been run. It is a publishing action, so it waits on an explicit go-ahead.
+> ✅ **Run Sep 4, 13:40 IST.** No auto-post occurred and none was possible — the
+> Discord auto-post fires only against a webhook on the creator profile, and
+> `socials profile show` returns *"No social profile configured yet."* The platform
+> list was restricted to `x,reddit` as a second guard. Packet
+> `cabeeb7e-ad5c-4b69-bfc1-0458e145b0a3`.
 
 **3 · The user's own social reach** — X, Reddit, WhatsApp, Telegram, LinkedIn.
 The CLI hands over pre-filled composer URLs; posts go out under the user's own name,
@@ -525,6 +527,57 @@ Track with `rundot analytics export`, `rundot leaderboard`, `rundot socials stat
 
 > ⚠️ Never bots, click-farms, incentivized clicking, proxies, or self-play farming.
 > RUN audits play counts and it voids **all** entries.
+
+---
+
+
+### 5.6 🔒 The surface list, decided — Sep 4, 13:36 IST
+
+**User has LinkedIn and Discord. Nothing else.** No X, no Reddit. This is a decision,
+not a gap to be worked around, and it changes the shape of the whole plan.
+
+| Surface | What it is | Traffic shape |
+|---|---|---|
+| **RUN Discord `#back-to-work`** | Jam-native, highest-intent, reciprocal | **Daily, compounding** |
+| **LinkedIn** | Professional network, portfolio artefact | **One spike, then decay** |
+
+Three consequences, all of which outrank the copywriting:
+
+**1 · Discord reciprocity is now the entire sustained-traffic engine.** LinkedIn produces
+one spike and decays inside 48 hours; a professional network does not return to a game
+daily. Every other surface in §5.5 assumed a broad public funnel that does not exist here.
+Playing and commenting on other entries is therefore not a nice-to-have — it is the only
+repeatable source of new players in the project, and it costs 20 minutes a day.
+
+**2 · The return loop's value goes up sharply.** With a reachable audience in the low
+hundreds rather than the thousands, the score cannot be won on new arrivals. It has to be
+won on the same people returning across many days — one person on eight days scores what
+eight people on one day do. **This escalates GDD §10.9 (return loop) above the craft pass
+and above further art work.** If item 26 confirms D1 retention is genuinely near zero, the
+return loop becomes the single highest-value work remaining, and the Sep 9 trigger rule in
+§6 should be treated as already active.
+
+**3 · r/KitchenConfidential is off the table**, and it was the highest-upside single post
+available to this concept. Nothing replaces it. Noted as a real loss rather than
+re-planned around.
+
+**Link policy.** The score is plays, not votes, so the play link wins everywhere except
+the RUN Discord, where the audience votes as well as plays and the extra click is free:
+
+| Surface | Link | Why |
+|---|---|---|
+| RUN Discord | Vote page `run.world/jams/september-2026-jam?game=…` | Votes feed rank; rank feeds board discovery |
+| LinkedIn | Plain play link `w.run/puneetmakes/spice-expert-ramu` | A raw tracking shortlink reads as spam on LinkedIn and depresses clicks |
+
+`socials prepare` has no `linkedin` platform (`x,reddit,tiktok,instagram,discord` only),
+so the two minted tracked links stay unused. They cost nothing and the packet is already
+there if an account ever opens. Per-platform attribution is lost on LinkedIn, but with
+only two surfaces it is trivially inferable from post timing against
+`daily_activity_30d`.
+
+**Cadence, revised.** §5.4's "post every day or two" holds, but the daily action is
+Discord presence and reciprocity — not broadcast. LinkedIn gets the launch post once,
+and at most one follow-up if something genuinely notable ships.
 
 ---
 
@@ -573,4 +626,7 @@ Track with `rundot analytics export`, `rundot leaderboard`, `rundot socials stat
 | 19 | Credits/attribution screen — NCS track titles + KayKit credit | Implementation agent | Before any audio ships | ⬜ Cheap safeguard even where the licence permits use; NCS attribution is a standing condition. **Now gated by item 27** |
 | 27 | **Provenance and licence for the 5 user-supplied SFX** | User | Before audio ships | 🔴 Five WAVs appeared in `Ramu - The Chef/Audio/SFX/` at 13:10 IST (`Ah`, `Level Complete`, `Level Up`, `Pouring Water`, `Power Up`). Nothing can ship until we know where they came from — RUN's originality rules and the attribution screen both depend on it |
 | 28 | Convert supplied audio to a web-shippable format | Implementation agent | With P5 | 🟠 3.0 MB of uncompressed WAV for 5 cues. We just cut 16 MB out of the payload; re-adding 3 MB of WAV would undo a third of it |
-| 20 | Answer the §5 distribution questions (channels + Discord go/no-go) | User | **Today** | 🔴 The only thing standing between the entry and its first real players |
+| 20 | Answer the §5 distribution questions (channels + Discord go/no-go) | User | — | ✅ **Answered Sep 4, 13:36 IST — LinkedIn and Discord only.** Packet minted, copy drafted. See §5.6 |
+| 29 | **Post the LinkedIn launch + first `#back-to-work` post** | User | **Today** | 🔴 Drafts written and waiting. Nothing has been shared anywhere yet; 35 players to date are all organic |
+| 30 | **Daily Discord reciprocity — play and comment on 5 entries** | User | Daily from today | 🔴 With only two surfaces this is the *only* repeatable source of new players. 20 min/day. §5.6 |
+| 31 | Re-rank the return loop against the craft pass | Planning agent | With item 26, Sep 5 | 🟠 A two-surface audience means the score must come from returns, not arrivals. §5.6 consequence 2 |
