@@ -8,7 +8,7 @@
 > plan item slips or is cut, do not silently delete it — strike it, move it, and
 > log the reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 5 2026, 00:50 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 01:15 IST (read from the system clock)
 **Status:** ▶ **LIVE — v1.1.0** at https://w.run/puneetmakes/spice-expert-ramu since ~15:05 PT Sep 3. Scoring clock running.
 **Scope:** cuisine level run (GDD §10.10) · SFX at P1 (§12) · 3D→sprite art pipeline (§11a).
 
@@ -404,6 +404,99 @@ time in the code, never `Date.now()`.
 **Hours budget:** 40–60 h total · **< 1 h tonight** (pipeline-only).
 
 ---
+
+---
+
+## 2.2 🔒 Metrics read — Sep 5 2026, 01:15 IST
+
+First full read since Sep 4 morning. **Plays are up sharply and the funnel has a hole in
+it that outranks everything else in this document.**
+
+### The numbers
+
+| | Sep 3 | Sep 4 |
+|---|---|---|
+| sessions | 17 | **96** |
+| unique players | 9 | **79** |
+| median duration | 301 s | **51 s** |
+
+`daily_activity_30d`. Sep 4 is a **9× jump in unique players** on a day with no launch post
+— items 29 and 30 are still undone, so this is organic plus whatever Discord reciprocity
+has been happening.
+
+⚠️ **Median duration collapsed 301 s → 51 s.** With 9 players a median is noise; with 79
+it is a real signal, and 51 s is barely past the loading screen. Read it with the funnel
+below, not on its own.
+
+### 🚨 The finding that outranks the rest: 44% of arrivals never reach the menu
+
+`funnel_steps_30d`, by unique session:
+
+| Step | sessions | step conversion |
+|---|---|---|
+| `game_loaded` | **150** | — |
+| `menu_shown` | **84** | **56%** ← **the hole** |
+| `run_start` | 73 | 86.9% |
+| `first_tower_placed` | 71 | 97.3% |
+| `first_wave_started` | 71 | 100% |
+| `wave_1_cleared` | 58 | 81.7% |
+| `run_end` | 25 | 43.1% |
+
+**Everything after the menu is healthy.** 87% of people who see the menu start a run, 97%
+of those place a tower, 100% of those start a wave. The game converts well once it is
+*seen*. **The loss is entirely upstream of the menu** — 66 sessions loaded the bundle and
+never got to a menu.
+
+That is worth more than any content work: the fix is a loading-screen problem, and the
+players are already arriving.
+
+> ⚠️ **Verify the instrumentation before acting.** This reads as a real bounce only if
+> `menu_shown` fires on the *first* menu display and not just on returns. If it is wired
+> to a menu *re-entry*, the 56% is an artifact and there is no hole. **Check that first —
+> it is a five-minute code read and it decides whether this is the top priority or
+> nothing at all.**
+
+### ✅ Item 32 resolved — `daily_activity_30d` definitively undercounts
+
+The discrepancy is no longer a suspicion; it is arithmetic.
+
+| Measure | Value |
+|---|---|
+| Sum of daily unique players (Sep 3 + Sep 4) | **88** |
+| `game_loaded` unique players over the window | **114** |
+| `game_heartbeat` unique players | 104 |
+| Sum of daily sessions | 113 |
+| `game_loaded` unique sessions | 150 |
+
+**A sum of daily uniques can never be smaller than the distinct count over the same
+window** — a player active on two days counts twice in the sum and once in the distinct.
+88 < 114 is impossible if both measure the same population, so they do not.
+
+The coherent explanation ties this to the funnel hole: **the ~26 players and ~37 sessions
+that RUN does not count are the same ones that never reached the menu.** They load, bounce
+during the load, and never register as a session. One cause, two symptoms.
+
+**Consequence, and it matters:** if the jam's *Total Unique Daily Plays* is computed from
+RUN's daily activity, **we are scored on the undercount** and the real arrival count is
+about 30% higher. Nothing to do about it except know it — and ask Operators, which is now
+the fourth question for that one message (items 33, 34, App Check, this).
+
+### Item 26 — D1 retention still cannot be computed
+
+There is **no retention query** in the CLI's pre-approved set (`retention_d1_30d` and
+`retention_30d` both return *Unknown analytics query*), and the daily table is proven
+unreliable, so a hand-computed D1 would inherit the undercount. **Item 26 stays open and
+now depends on the Operators answer**, not on waiting another day.
+
+### Still true, unchanged
+
+- **Item 34:** `session_end_summary_30d.avg_duration_s` reads **0.0** on every row.
+- **Item 33:** `core_loop_events_30d` is **empty** despite `level_start` (568) and
+  `level_complete` (507) landing in `top_custom_events_30d`.
+- Top exits are `playing` / `pause` (34) and `playing` / `visibilitychange` (31) — people
+  background the tab mid-run more than they finish.
+- `music_track_loaded` shows **9 events from 1 player**: the private-tag testing. Public
+  is 1.2.3 and has no music, so no real player has heard any of this weekend's audio.
 
 ## 3. Tonight — the only phase that is time-critical
 
