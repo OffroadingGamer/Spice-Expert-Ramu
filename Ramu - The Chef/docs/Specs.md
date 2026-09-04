@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 22:05 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 22:35 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -738,14 +738,78 @@ a click or a lurch each time the loop wraps.
 | ✅ **All 7 takes are genuinely distinct** | 7 distinct sha256 and 7 distinct `generationId`. Six files share a byte size to the byte, which looks alarming and is not — constant 128 kbps × an identical 30.04 s duration gives an identical size |
 | ✅ **Spend verified independently** | `rundot credits` reports **131,770** and audiogen at **8 calls / 791 credits**. Before the batch it was 2 calls / 113. Delta is exactly **6 calls / 678 credits** — so the four rate-limited attempts really were never charged |
 
-**What ships, on the measurements alone:**
+**What ships — all three cues, decided Sep 4 2026, 22:35 IST. No re-roll, no credits.**
 
-- **menu** → `bgm-menu-take1`. Clean on every measure, and a 0.6 dB seam is the best
-  number in the table by a wide margin.
-- **service-low** → `bgm-service-low-take1`, the take from the earlier session. Correct
-  tempo, no fade, and the 4.5 dB seam is workable with `loopEndTrim`.
-- **service-high** → **nothing yet.** Take 1 fades out; take 2 is technically clean but
-  measures slower than the low-intensity cue. **This is the one cue still open.**
+| Cue | File | Plays | Why this take |
+|---|---|---|---|
+| **menu** | `bgm-menu-take1` | Menu and between runs | **0.6 dB seam**, seven times tighter than anything else in the set — and a menu is exactly where the loop wraps with no SFX to mask it. **Zero energy below 200 Hz** and a 5493 Hz centroid: light and airy |
+| **service_low** | `bgm-service-low-take1` | From run start | **The sparsest track in the set, 154 onsets/min**, with hard attacks (crest 44.4). It leaves room for the sizzle / bubble / grind SFX that carry this game's feedback |
+| **service_high** | `bgm-service-high-take2` | **When walkouts remaining < 3** | No fade (+1.3 / −2.8), so it loops — which take 1 could not. **432 onsets/min**, the second-busiest take, which is what a tension cue should be |
+
+> 🔒 **How the "wrong tempo" objection was resolved without a re-roll.** Take 2 measured
+> ~75 BPM against a prompt specifying 112 nine times, and that killed it as a *service-high*
+> cue by the reasoning of the day. The user proposed re-purposing it as the **menu** track,
+> since 75 BPM is not wrong for a menu. The reasoning was right and the direction was
+> backwards: **onset density says take 2 is the second-busiest file we have at 432
+> onsets/min**, so it is not a slow track at all — the 75 BPM figure is the triplet artifact
+> the original note warned about. Once density replaces tempo as the measure, take 2 is
+> obviously the *high-intensity* cue it was generated to be. **The defect was in the
+> estimator, not the audio.** Item 50 closed at zero cost.
+
+### 8a.7a Cue fit — measuring "menu or gameplay" without listening
+
+Tempo cannot answer it. These can, and they are what settled the assignment above:
+
+| Take | onsets/min | attack crest | loudness range | centroid | bass <200 Hz |
+|---|---|---|---|---|---|
+| `menu-take1` | 210 | 17.5 | 11.9 dB | **5493 Hz** | **0%** |
+| `menu-take2` | 463 | 13.1 | 13.9 dB | 3119 Hz | 1% |
+| `service-high-take1` | 336 | 20.2 | 18.7 dB | 3091 Hz | 22% |
+| **`service-high-take2`** | **432** | 16.6 | 12.4 dB | 2539 Hz | 16% |
+| **`service-low-take1`** | **154** | **44.4** | 16.5 dB | 2274 Hz | 4% |
+| `service-low-take2` | 200 | 20.5 | 16.3 dB | 3540 Hz | 22% |
+| `service-low-take3` | 248 | 28.0 | 14.8 dB | 2924 Hz | 23% |
+
+Reproduce with `tools/cue_fit.py`. **onsets/min** counts rising edges in the frame-energy
+envelope above a noise floor — how busy the track is, and the one number that separates a
+menu bed from a gameplay bed. **attack crest** is the peak-to-mean of that onset envelope:
+high means sparse hard hits, low means a continuous wash.
+
+### 8a.7b Per-cue gain trim — so switching does not step in volume
+
+The three cues span **2.3 dB of RMS**, which is an audible jump across a crossfade.
+Reference is `service_low`, because it is what ships today at `gain: 1.0` and it is the cue
+the player hears longest — so the by-ear tune in Plan item 43 stays valid against it.
+
+| Cue | rms | peak | trim | **`gain`** | peak after trim |
+|---|---|---|---|---|---|
+| `menu` | −17.8 | −4.3 | +2.33 dB | **1.308** | −2.0 dBFS |
+| `service_low` | −15.5 | −2.0 | 0 | **1.000** | −2.0 dBFS |
+| `service_high` | −16.3 | −1.9 | +0.84 dB | **1.101** | −1.1 dBFS |
+
+Every peak stays under −1 dBFS after the trim, so nothing clips. Reproduce with
+`tools/cue_gains.py`.
+
+### 8a.7c The intensity trigger — `lives < 3`
+
+**Walkouts are `state.lives`**, `CONFIG.economy.startLives = 10`
+(`src/game/config.ts:133`). The switch to `service_high` fires when **fewer than 3 remain**,
+i.e. the last 20% of the budget.
+
+Three properties of the counter make this cheap to implement correctly:
+
+1. **Lives only ever fall.** `state.lives` is assigned once at run start and thereafter only
+   `state.lives -= e.def.livesCost` (`sim/engine.ts:430`), clamped to 0 on loss. **Nothing
+   restores a life anywhere in the codebase.** So the switch is one-way inside a run —
+   **no hysteresis, no debounce, no flapping possible.** Latch it and never look back.
+2. **It must reset on run start**, since a new run restores lives to 10. Tie the latch to
+   the same place `registerEngine` resets the run.
+3. ⚠️ **The Full Thali costs 3 lives in one leak** (`data/enemies.ts:27`, `livesCost: 3`).
+   Two consequences: the cue can arrive in the same instant as a big loss, which is good
+   drama; but **from exactly 3 lives a Thali leak ends the run at 0 without the cue ever
+   playing.** That is acceptable — a run that ends instantly does not need a build-up — but
+   it is why the trigger is `< 3` and not `<= 3`, which would fire on a state the player
+   can sit in comfortably.
 
 ### 8a.8 The API rate limit — discovered Sep 4 2026, during the batch
 

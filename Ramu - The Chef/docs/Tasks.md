@@ -5,7 +5,7 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 22:05 IST
+**Last updated:** Sep 4 2026, 22:35 IST
 **Live:** v1.2.3 public · <https://w.run/puneetmakes/spice-expert-ramu>
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST**
 
@@ -58,7 +58,7 @@
 
 | | |
 |---|---|
-| **Now** | S1 · **P5 BGM (CDN plumbing + MusicGen)** · P6 LinkedIn + daily reciprocity · P2 core-loop read |
+| **Now** | S1 · **P5 Phase 5 — three-cue music (all takes chosen)** · P6 LinkedIn + daily reciprocity · P2 core-loop read |
 | **Next** | S1 · CP4 items · P2 core-loop read |
 | **Later** | S2 return loop **(re-ranked up — two-surface audience)** · S3 board layout + levels |
 | **Decided** | Art direction — **Props for the room, Essentials for the line** (Sep 4, 22:05 IST). KayKit Phase 2a cut |
@@ -128,7 +128,9 @@
 - [!] Remaining 5 cue picks — sizzle, plate-up bell, ticket-print, place, thud
 - [x] **CDN plumbing for music** — Phases 4 + 4.1 landed, Specs §8a.4
 - [x] MusicGen local pipeline — **installed + smoke-tested**, Specs §8a.3
-- [ ] BGM tracks — menu / service-low / mid / high, all 112 BPM A minor
+- [x] **BGM tracks chosen Sep 4, 22:35 IST — all three, zero credits.** menu `bgm-menu-take1` · service_low `bgm-service-low-take1` · service_high `bgm-service-high-take2`. Specs §8a.7
+- [ ] **Phase 5 — three-cue music: convert, trim gains, wire the switch.** `MUSIC` is one `as const` with one `path` today ([audio.ts:109]) and `crossfadeToTrack` no-ops when a source exists, so this is a small feature, not a config edit. Gains **1.308 / 1.000 / 1.101** (Specs §8a.7b). Trigger: walkouts remaining **< 3**, one-way, reset on run start (Specs §8a.7c)
+- [-] ~~mid-intensity cue~~ — dropped; three cues is the design, not four
 
 ### P6 · Distribution
 - [x] Choose posting channels — **LinkedIn + Discord only**
@@ -165,8 +167,8 @@
 ### P5 · Audio
 - [!] Pick 8 SFX cues
 - [ ] SFX implementation — per-station sounds
-- [ ] BGM track selection
-- [ ] Credits/attribution screen
+- [x] BGM track selection — **all three cues chosen Sep 4, 22:35 IST**, Specs §8a.7
+- [ ] Credits/attribution screen — NCS + the two itch.io creators (KayKit dropped)
 
 ---
 
