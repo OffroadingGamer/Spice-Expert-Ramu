@@ -407,19 +407,23 @@ function loadMusicTrack(): void {
     if (!c) return;
     const t0 = performance.now();
     (async () => {
-        const data = await fetchCdnAsset(MUSIC.path);
-        if (!data) {
-            // fetchCdnAsset collapses every fetch-side failure (missing SDK,
-            // 404, network error, and its own internal timeout) into null —
-            // there's no signal left here to separate a real timeout from
-            // any other fetch failure, so both report as 'fetch'.
-            track('music_track_failed', { path: MUSIC.path, reason: 'fetch' });
+        const res = await fetchCdnAsset(MUSIC.path);
+        if (!res.ok) {
+            // 'unavailable' is deliberately unreportable: track() is itself
+            // sdkReady()-guarded, so off-host it drops this event rather than
+            // logging a misleading 'fetch'. That asymmetry is intended.
+            track('music_track_failed', { path: MUSIC.path, reason: res.reason });
             return;
         }
         let buffer: AudioBuffer;
         try {
-            buffer = await c.decodeAudioData(data);
+            buffer = await c.decodeAudioData(res.data);
         } catch {
+            // NOTE: in `vite dev` a MISSING file does not reach here as a
+            // fetch failure — Vite's SPA history fallback answers 200 with
+            // index.html, which then fails to decode. Locally a missing track
+            // reports 'decode'; in production it reports 'fetch'. Do not read
+            // local telemetry as if it matched production.
             track('music_track_failed', { path: MUSIC.path, reason: 'decode' });
             return;
         }
