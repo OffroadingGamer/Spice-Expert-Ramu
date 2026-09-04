@@ -1518,18 +1518,31 @@ uniques are the score; the trend matters more than any single day.
    thing it predicts is expensive to test, take the measurement first and let the ear
    confirm rather than search.
 
-29. **A memory that says "this thread" is a bug, because memory is scoped to a directory,
-   not to a conversation.** The audio agent recorded its own boundaries as *"This
-   conversation thread is a scoped audio-generation agent … never runs git."* That file
-   lives in the memory directory for the git root, so **every** session under it loads it —
-   including the implementation agent, which works in `jam-entry/` beneath that root. It
-   had been quietly contradicting the memory for four deploys; the first handover explicit
-   enough about git tripped its scope guard and halted it mid-task with a conflict prompt.
-   The instinct that produced the memory was right — two agents really do have different
-   boundaries, and one had already been handed the other's brief. The error was writing an
-   identity claim ("this thread is X") into a file that cannot know which thread is
-   reading it. **Scoped state must describe the conditions under which it applies, not
-   assert who the reader is** — rewritten as a table keyed on what the session is doing,
-   so a `jam-entry/` deploy reads as the implementation agent's job rather than as a
-   violation. Same family as lesson 25: the artifact on disk was not what the log claimed,
-   and here the file's audience was not what its author assumed.
+29. **I diagnosed a memory bug that did not exist, and edited the memory on the strength of
+   it.** The implementation agent's Phase 6 handover was answered by a thread that halted
+   with a scope-conflict prompt saying it was the audio-only agent. The user said they had
+   pasted it into the implementation chat, so I concluded the audio agent's role memory —
+   which opens *"This conversation thread is a scoped audio-generation agent … never runs
+   git"* — was leaking into the implementation session, because memory is scoped to a
+   directory rather than a conversation. I rewrote it into a table keyed on what a session
+   is doing, and wrote this lesson claiming the implementation agent had been "quietly
+   contradicting the memory for four deploys."
+
+   **All of that was wrong.** The evidence was one file away: `handover-scope-conflicts`
+   records three confirmed cases, all with the same `originSessionId`, all naming the
+   MusicGen thread — and **case 1 is that same thread correctly *refusing* a Phase 4
+   engineering handover**. It is the audio agent. Phase 6 had genuinely been pasted into
+   the wrong window, exactly as the guard was built to catch. My edit did not fix a
+   contamination; it **weakened the guard that had worked three times out of three**, by
+   telling a deliberately narrow agent it could reclassify itself as the implementation
+   agent whenever a handover mentioned `jam-entry/`.
+
+   Two things went wrong and only one is about memory. I took the user's *"I got it in
+   implementation chat"* as ground truth about which session was speaking, when a person
+   with several windows open is exactly who mis-pastes — the report of where something was
+   pasted is the least reliable part of a mis-paste report. And I edited durable state that
+   governs another agent's boundaries on a single-source inference, without opening the one
+   adjacent file that recorded the history. **Before editing state that constrains someone
+   else, read what that state already knows.** Reverted; the general point that a
+   directory-scoped file should not assert "this thread" survives, but it was not what was
+   happening here.
