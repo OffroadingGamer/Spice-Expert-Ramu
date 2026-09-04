@@ -1,7 +1,7 @@
 # RecipeList — dishes, and the ingredients they call for
 
-**Last updated:** Sep 4 2026, 20:14 IST (read from the system clock)
-**Status:** 🟡 Ingredient inventory done, recipes pending — **user input required** (⬜ below)
+**Last updated:** Sep 4 2026, 20:24 IST (read from the system clock)
+**Status:** 🟡 Inventory done, **recipes proposed Sep 4, 20:24 IST** — awaiting sign-off (⬜ §3)
 
 Companion to [PropList.md](PropList.md). A recipe drives two things on screen at once:
 
@@ -116,16 +116,53 @@ before the recipes are written.
 
 ---
 
-## 3. ⬜ Awaiting your input
+## 3. Proposed recipes — Sep 4 2026, 20:24 IST · ⬜ awaiting your sign-off
 
-1. **Confirm or correct the identifications in §1** — my names come from looking at
-   cartoon art, and an id is forever once level data references it.
-2. **The recipe list itself** — dish name, ingredient sequence, finished-dish sprite.
-3. **How many ingredients per recipe**, and whether that grows with difficulty.
-4. ~~Does ingredient order matter?~~ ✅ **Answered Sep 4, 20:05 IST: gated order**
-   (GDD §10.3a). Author levels 1–2 with no gates; introduce them from level 3. What is
-   still needed from you is **which chains are gated** — e.g. knead → bake, marinate →
-   grill.
+Five levels, built from the interaction graph in [PropList.md](PropList.md) §4. **Every
+ingredient and every finished state is a sprite we already own** — this progression is
+buildable without one generation job.
+
+| # | The scroll reads | Row | Raws that spawn on the belt | Props needed | Gate |
+|---|---|---|---|---|---|
+| **1** | *"One dal chawal, jaldi"* | 3 | `dal-raw`, `rice-raw`, `coriander` | **Handi** | — |
+| **2** | *"Naan and bhindi, table four"* | 3 | `dough`, `okra`, `coriander` | Tandoor, Kadhai, Grinder | — |
+| **3** | *"Naan and dal, from scratch"* | 3 | `flour`, `dal-raw`, `coriander` | Prep, Tandoor, Handi | 🔒 `kneaded` |
+| **4** | *"Dal tadka, extra masala"* | 4 | `dal-raw`, `rice-raw`, `dough`, `coriander` | Handi, Dabba, Tandoor, Grinder | 🔒 `simmered` |
+| **5** | *"Thali, full"* | 5 | `dough`, `dal-raw`, `rice-raw`, `okra`, `coriander` | Tandoor, Handi, Kadhai, Grinder | — |
+
+The billboard rows in full — *italic* means the item is wanted **raw**:
+
+1. `dal-cooked` + `rice-cooked` + *`coriander`*
+2. `naan` + `bhindi-fry` + `green-chutney`
+3. `naan` + `dal-cooked` + *`coriander`*
+4. `dal-tadka` + `rice-cooked` + `naan` + `green-chutney`
+5. `naan` + `dal-cooked` + `rice-cooked` + `bhindi-fry` + `green-chutney`
+
+### What each level teaches
+
+- **L1 — one prop, two jobs.** The Handi cooks both the dal and the rice, so the first
+  thing learned is that a prop is worth more than one ingredient. The coriander is wanted
+  **raw**: buy the Grinder anyway and it turns to chutney and the dish fails. That is the
+  over-processing lesson (PropList §5.2), delivered in level 1, for free.
+- **L2 — three props, three chains, no gate.** A pure checklist, which is exactly what
+  GDD §10.3a promised an ungated level would feel like.
+- **L3 — the gate arrives.** Flour spawns instead of dough. Put the Tandoor *before* the
+  prep counter on the belt and the flour sails past it untouched, gets kneaded too late,
+  and arrives as dough. **Nothing explains this; the belt does.**
+- **L4 — the second gate, and a subtle one.** `dal-cooked → dal-tadka` is a small sprite
+  change, so the player has to read the row rather than the belt.
+- **L5 — the capstone.** Five ingredients, four props, every slot full and no room for a
+  mistaken purchase. The row renders at **scale 0.64** (Specs §8b) — the working target,
+  now verified against a real recipe rather than assumed.
+
+### ⬜ Still yours to decide
+
+1. **Confirm or correct the §1 identifications.** Still the real blocker — an id is
+   forever once level data references it.
+2. **The names.** *"One dal chawal, jaldi"* is my ear, not yours, and the scroll is where
+   the game's voice lives. These five lines carry more character than anything else in
+   the build.
+3. **Whether five levels is the jam scope**, or the first act of something longer.
 
 ---
 
@@ -142,3 +179,19 @@ struts, two hanging rods. Currently line art only — no fill, no styling.
 > The upper panel is a **button in one state and a readout in three others.** Worth
 > making the READY? state visually unmistakable — a player who does not notice it is a
 > player who thinks the game has stalled.
+
+---
+
+## 5. 🔒 Authoring validation — three checks before a level ships
+
+Derived in PropList §5. All three are cheap static checks over the recipe JSON, and all
+three are expensive to discover in playtest.
+
+1. **Distinct props required ≤ slots available.** Not ingredient count — *distinct
+   props*. All five recipes above pass at 4 slots.
+2. **No ingredient appears both raw and processed in one recipe.** The Λ-belt cannot
+   route around a prop, so such a level is unsolvable by construction.
+3. **Row length ≤ 5** (Specs §8b). Six renders at scale 0.49, on the legibility floor.
+
+Worth writing as a script the day the recipe data exists, not the day a level feels
+wrong.

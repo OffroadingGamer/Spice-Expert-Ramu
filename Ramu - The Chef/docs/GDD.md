@@ -351,6 +351,23 @@ a real decision if the player can see the dish is already doomed. **This is not 
 polish; it is what makes the mechanic legible**, and it carries whichever gating depth a
 level uses. Row ceiling and scale floor: Specs §8b.
 
+**🔒 Two invariants every level must satisfy** — derived Sep 4 2026, 20:24 IST from
+the Λ-belt itself, and both cheap to check before a level ships:
+
+1. **Distinct props required ≤ slots available.** Every item passes every slot exactly
+   once, so solvability turns on the number of *distinct* props a recipe's chains need —
+   not on its ingredient count. Props that carry several interactions are what make four
+   slots enough; the proposed five-ingredient thali fits because the handi cooks both the
+   dal and the rice.
+2. **A recipe may never want one ingredient both raw and processed.** The belt cannot
+   route around a prop, so placing the grinder turns *every* coriander into chutney.
+
+The second one's flip side is the mechanic that justifies the pivot: **some ingredients
+are correct raw**, so the wrong prop *ruins* them. A prop stops being a strictly good
+purchase, and the player's question moves from "can I afford it" to "do I want it on this
+belt at all." It costs no art and level 1 teaches it for free. Full graph and the five
+proposed recipes: [PropList.md](PropList.md) §4–§5, [RecipeList.md](RecipeList.md) §3.
+
 ### 10.4 Secondary mechanics — **all cuttable on day 8**
 
 | # | Mechanic | Cut if behind? |

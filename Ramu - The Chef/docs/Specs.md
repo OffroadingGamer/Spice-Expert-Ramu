@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 20:14 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 20:24 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -683,7 +683,7 @@ roughly 100–150 px, not 16):
 |---|---|---|---|
 | 3 | 155 | 1.00 | full size, room to spare |
 | 4 | 109 | 0.85 | comfortable |
-| **5** | **82** | **0.64** | **the working target** |
+| **5** | **82** | **0.64** | **working target** — confirmed 20:24 IST against the L5 thali, RecipeList §3 |
 | **6** | **63** | **0.49** | **at the floor — last usable** |
 | 7 | 50 | 0.39 | below floor, reject |
 

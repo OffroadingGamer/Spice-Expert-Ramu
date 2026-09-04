@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 4 2026, 20:14 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 20:24 IST (read from the system clock)
 
 ---
 
@@ -1471,3 +1471,10 @@ uniques are the score; the trend matters more than any single day.
    `sfx`, `music` and `tts`. I had read those typings four times, each time grepping only
    the symbol I already had in mind. A negative claim needs a wider search than a positive
    one: a wrong positive fails loudly, a wrong negative silently costs you the feature.
+24. **Let the inventory choose the verbs.** Designing the prop set, the obvious first
+   verb was *chop* — and a chopped onion has no sprite in either pack, so it could never
+   be a visible state. Checking which `out` states already had art *before* choosing the
+   verbs turned a wish-list into an eleven-transform graph that is buildable today, with
+   the one genuinely missing sprite (`chai`) named as the single generation job rather
+   than discovered mid-build. On a 14-day clock the asset inventory is a design input,
+   not a procurement step that happens afterwards.

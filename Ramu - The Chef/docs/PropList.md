@@ -1,7 +1,7 @@
 # PropList — stations that sit in the prop slots
 
-**Last updated:** Sep 4 2026, 20:14 IST (read from the system clock)
-**Status:** 🟡 Inventory done, picks pending — **user input required** (marked ⬜ below)
+**Last updated:** Sep 4 2026, 20:24 IST (read from the system clock)
+**Status:** 🟡 Inventory done, **picks proposed Sep 4, 20:24 IST** — awaiting sign-off (⬜ §3)
 
 Companion to [RecipeList.md](RecipeList.md). Props are what the old build called
 towers. They do **not** shoot. A prop reacts to an ingredient passing it on the belt:
@@ -84,8 +84,7 @@ Proposed JSON, one entry per prop. Lives beside the level data, not in `sim/`.
   "slot": "any",
   "feedback": { "sfx": "sizzle", "vfx": "ember-puff", "shake": 3, "tweenMs": 220 },
   "interactions": [
-    { "in": "dough",  "out": "naan",         "after": "kneaded" },
-    { "in": "paneer", "out": "paneer-tikka" }
+    { "in": "dough", "out": "naan", "after": "kneaded", "tags": ["baked"] }
   ]
 }
 ```
@@ -105,22 +104,116 @@ Proposed JSON, one entry per prop. Lives beside the level data, not in `sim/`.
 
 ---
 
-## 3. ⬜ Awaiting your picks
+## 3. Proposed picks — Sep 4 2026, 20:24 IST · ⬜ awaiting your sign-off
 
-1. **Which props ship?** The sketch has 4 slots. Name 4–8 from §1a so there is a
-   choice to make when building.
-2. **Each prop's interactions** — the `in → out` pairs. This is the design work; it
-   defines what the game actually is.
-3. **Whether props are bought with coins** as towers were, or are fixed per level.
-4. **Whether a prop can be upgraded**, or replaced only.
+You asked to work these out rather than hand back a questionnaire, so this is a
+**complete proposal, not a menu.** One constraint shaped all of it:
+
+> 🔒 **Every `out` state below has a sprite we already own.** Not one transform in
+> this proposal is a generation job. That is why the verbs are *knead, grind, fry,
+> simmer, bake, season* and not *chop* — a chopped onion has no sprite in either pack,
+> so chopping cannot be a visible state in v1.
+
+### 3a. The first four — enough for levels 1–5
+
+| Prop | Art | Verb | Feedback |
+|---|---|---|---|
+| **Kadhai** | P-16, sheet 1 | fry | `sizzle` · oil-splatter · shake 4 · 200 ms |
+| **Handi** | P-10, sheet 1 | simmer / boil | `bubble` · steam-plume · shake 2 · 320 ms |
+| **Masala grinder** | P-17, sheet 1 | grind | `grind` · dust-puff · shake 5 · 260 ms |
+| **Tandoor** | P-19, sheet 2 | bake / char | `roar` · ember-puff · shake 3 · 220 ms |
+
+**Why these four:** between them they carry nine interactions and cover every chain in
+the level 1–5 recipes. The Tandoor is the signature — it is the only prop in either
+pack that already reads Indian without a repaint.
+
+### 3b. Two more, from level 3
+
+| Prop | Art | Verb | Why it arrives late |
+|---|---|---|---|
+| **Prep counter** | P-08, sheet 1 | knead | It is the **gate producer** — the only prop that tags an ingredient `kneaded`. Introducing it *is* the gate tutorial |
+| **Masala dabba** | P-18, sheet 1 | season | Second gate. Tiny sprite change, so it teaches that a gate can be subtle |
+
+> ⚠️ **P-08 is the identification I am least sure of.** I read it as a wooden counter
+> with a built-in oven; I want it as a plain prep counter. If the oven detail is
+> unmistakable this becomes a crop job, or we borrow a counter module from the isometric
+> pack and repaint it. Worth your eye before it becomes an id.
+
+### 3c. Stretch — only if time allows
+
+| Prop | Art | Verb | Note |
+|---|---|---|---|
+| **Rice cooker** | P-09, sheet 1 | boil rice | Deliberately *worse* than the Handi: one job instead of two, so it should cost far less. That is the whole economy lesson in one pair of props |
+| **Chai urn** | P-04, sheet 1 | brew | `milk → chai`. The strongest thematic beat we are not using — but **`chai` has no sprite**, so it is the first generation job, not a pack item |
 
 ---
 
-## 4. Open questions I'd want answered before this is built
+## 4. The interaction graph — every transform, all sprite-backed
 
-- ~~Does an ingredient need props in order?~~ ✅ **Answered Sep 4, 20:05 IST: gated
-  order.** Optional `after` prerequisites, most interactions order-free. GDD §10.3a.
-- **What happens at the tray if the recipe isn't complete?** Presumably a walkout —
-  worth stating.
-- **Can two props act on one ingredient in one pass?** The belt is Λ-shaped, so an
-  ingredient passes the upper slots once each.
+`after` is what the ingredient must already carry; `tags` is what it carries onward.
+
+| Prop | `in` | `out` | `after` | Sprite for `out` |
+|---|---|---|---|---|
+| Prep counter | `flour` | `dough` | — | dough in a tin, sheet 3 |
+| Prep counter | `mango` | `mango-pickle` | — | green pickle jar, sheet 3 |
+| Tandoor | `dough` | `naan` | `kneaded` | naan slabs in tins, sheet 3 |
+| Handi | `dal-raw` | `dal-cooked` | — | dal in a pan #1, sheet 2 |
+| Handi | `rice-raw` | `rice-cooked` | — | bowl of rice, sheet 1 |
+| Masala dabba | `dal-cooked` | `dal-tadka` | `simmered` | dal in a pan #2, sheet 2 |
+| Kadhai | `okra` | `bhindi-fry` | — | chillies/carrots in a pan, sheet 1 |
+| Kadhai | `tomato` | `tomato-gravy` | — | tomato curry in a pan, sheet 3 |
+| Kadhai | `cabbage` | `pakora` | — | fried pieces, sheet 3 |
+| Grinder | `whole-spices` | `garam-masala` | — | spice bowl, sheet 1/2 |
+| Grinder | `coriander` | `green-chutney` | — | sauce bowl, sheet 2 |
+
+Tags produced: Prep counter → `kneaded`; Handi → `simmered`; Grinder → `ground`;
+Kadhai → `fried`; Tandoor → `baked`.
+
+Note how much the props double up. The **Handi covers dal and rice**, the **Kadhai
+covers three ingredients**, the **Grinder covers two**. That is not tidiness — it is
+the reason four slots are enough, which §5 makes precise.
+
+---
+
+## 5. 🔒 Two authoring invariants that fall out of the Λ-belt
+
+These are the load-bearing findings from this pass. Both are cheap to check at authoring
+time and expensive to discover in playtest.
+
+### 5.1 Solvability — distinct props ≤ slot count
+
+Every item passes **every** slot exactly once, so a recipe is solvable only if the set of
+*distinct* props its chains require fits the level's slot count. **Ingredients per recipe
+is the wrong number to watch; distinct props is the right one.**
+
+All five proposed recipes land inside **4 slots**, including the five-ingredient thali,
+precisely because props double up. A sixth distinct prop would need a fifth slot.
+
+> This meets Specs §8b from the other side. That ceiling is about *legibility* and says
+> **5 ingredients comfortable, 6 at the floor**. This one is about *solvability* and says
+> **5 ingredients fit 4 slots, 6 usually will not.** Two unrelated derivations landing on
+> the same number is a good sign the layout is honest. **Design the row for 5.**
+
+### 5.2 A level may never want one ingredient both raw and processed
+
+The belt cannot route around a prop, so placing the Grinder turns **every** coriander
+into chutney. A recipe asking for both fresh coriander *and* green chutney is unsolvable,
+and the validator should reject it.
+
+The flip side is the best mechanic to come out of this pass, and it costs zero art:
+
+> 🔒 **The over-processing fail.** Some ingredients are *correct raw* — fresh
+> coriander, a green chilli garnish. Placing the wrong prop ruins them. So a prop is not
+> a strictly good purchase, and the player's question stops being *"can I afford it"* and
+> becomes *"do I want it on this belt at all."* Level 1 teaches it for free.
+
+---
+
+## 6. Answers to the open questions
+
+| Question | Proposed answer | Why |
+|---|---|---|
+| Bought with coins, or fixed per level? | **Bought with coins**, as towers were | Keeps the shipped economy, the tap-to-place UX and the sell refund. §5.2 gives a purchase a real downside, which a fixed loadout would throw away |
+| Can a prop be upgraded? | **No — sell and replace only, in v1** | Upgrade tiers cost art we do not have, and the tension already lives in slot scarcity. Revisit after the jam |
+| What happens at the tray if the dish is incomplete? | **Wrong state → walkout −1, and the billboard row does not tick** | Wrong *is* the fail. It also makes the row a live readout: you can see a dish is doomed while it is still on the belt, which is what turns the dustbin skip into a decision rather than a panic button |
+| Can two props act on one ingredient in one pass? | **Yes — that is the point** | The Λ passes all slots. `flour → dough → naan` is two props in one pass, and it is the level-3 lesson |
