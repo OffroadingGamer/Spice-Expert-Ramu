@@ -5,7 +5,7 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 13:00 IST
+**Last updated:** Sep 4 2026, 12:57 IST
 **Live:** v1.1.0 public · <https://w.run/puneetmakes/spice-expert-ramu>
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST**
 
@@ -61,7 +61,7 @@
 | **Now** | S1 · P1.5 payload · P7 telemetry · P6 first post |
 | **Next** | S1 · CP4 items · P2 core-loop read |
 | **Later** | S2 return loop · S3 board layout + levels |
-| **Blocked on user** | Phase 1.5 go-ahead · distribution channels · SFX cues · git remote |
+| **Blocked on user** | Phase 1.5 go-ahead · distribution channels · SFX cues |
 
 ---
 
@@ -128,7 +128,8 @@
 
 ### P0 · Pipeline
 - [x] Git repository initialised — `main`, baseline commit
-- [!] Remote hosting decision — GitHub private/public, or local only
+- [x] Public GitHub remote — `OffroadingGamer/Spice-Expert-Ramu`
+- [ ] Add repo topics + website field
 
 ### P5 · Audio
 - [!] Pick 8 SFX cues

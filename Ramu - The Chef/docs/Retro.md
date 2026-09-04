@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 4 2026, **12:20 IST** (= Sep 3, 23:50 PT) — *verified against the system clock, not estimated*
+**Last updated:** Sep 4 2026, 12:57 IST (read from the system clock)
 
 ---
 
@@ -793,9 +793,31 @@ introducing for a 15-day project.
 tolerable in a local or private repository and not in a public one. The choice of host
 and visibility is the user's.
 
-> **Lesson.** `git init` is reversible; `git push` is not. Set up the repository, verify
-> what is staged, and stop at the point where the next action would make it visible to
-> someone else.
+**Published Sep 4, ~12:50 IST** — user chose a public repository:
+<https://github.com/OffroadingGamer/Spice-Expert-Ramu>
+
+**Scrubbed before the first push, not after.** A public repo publishes history as well as
+files, so three redactions and one history rewrite happened while nothing was pushed yet:
+
+| Action | Reason |
+|---|---|
+| Untracked 16 `*.png.json` sidecars | Carry art prompts and a storage URL embedding the creator account id. Kept on disk as provenance |
+| Redacted the RUN UserId from Specs §1 | Internal account identifier |
+| Redacted both unlisted game ids from §0 above | Both games stay unlisted; publishing the ids would make them findable |
+| Rewrote to a single root commit | Redacting in a *second* commit leaves the values readable in `git log -p`. Verified the tree hash was byte-identical before and after |
+
+Root README added. 106 files published; final scan of `origin/main` for identifiers and
+private share keys came back clean.
+
+The user reviewed and accepted the two remaining disclosures knowingly: the RUN email
+appears throughout the documents, and the documents publish credit balance, daily play
+counts and full strategy.
+
+> **Lessons.**
+> 1. `git init` is reversible; `git push` is not. Set up, verify what is staged, and stop
+>    at the point where the next action makes it visible to someone else.
+> 2. **Redaction in a later commit is not redaction.** A public repo publishes every
+>    commit. The only cheap moment to rewrite history is before the first push.
 
 ---
 

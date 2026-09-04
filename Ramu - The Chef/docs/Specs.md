@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, **12:20 IST** (= Sep 3, 23:50 PT) — *verified against the system clock, not estimated*
+**Last updated:** Sep 4 2026, 12:57 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.1.0 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 

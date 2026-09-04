@@ -8,7 +8,7 @@
 > plan item slips or is cut, do not silently delete it — strike it, move it, and
 > log the reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, **12:20 IST** (= Sep 3, 23:50 PT) — *verified against the system clock, not estimated*
+**Last updated:** Sep 4 2026, 12:57 IST (read from the system clock)
 **Status:** ▶ **LIVE — v1.1.0** at https://w.run/puneetmakes/spice-expert-ramu since ~15:05 PT Sep 3. Scoring clock running.
 **Scope:** cuisine level run (GDD §10.10) · SFX at P1 (§12) · 3D→sprite art pipeline (§11a).
 
@@ -152,6 +152,47 @@ grant. Recorded as unexplained rather than as income until confirmed.
 | Screenshots delivered | ✅ all six — in `jam-entry/references/`, not the docs-side `references/` |
 
 ---
+
+## 1d. Theme conversion — making the loop read as a kitchen
+
+*Analysis Sep 4, in answer to "is this going to end up looking like the current version
+of tower defence, and what can we do to exhibit the core loop properly?"*
+
+**Answer: yes, if we stop at v1.1.0.** Phase 1 changed the art; it did not change the
+grammar. Three structural facts say "tower defence" louder than any texture, and each is
+the opposite of how a kitchen works:
+
+| The build says | A kitchen says |
+|---|---|
+| The path is a **maze** | A pass is a **line** |
+| Stations sit **beside** the path and shoot at things going past | A dish passes **through** a station and comes out changed |
+| Enemies have **health that drains** until they die | A dish has **doneness that fills** until it is ready |
+
+The root of it is a verb mismatch: **shooting is not cooking.**
+
+### Ranked by read-per-hour
+
+| # | Change | Why it works | Cost |
+|---|---|---|---|
+| **1** | **Damage → doneness.** Flip the bar to *fill*. "Killed" becomes "plated" | Same numbers, opposite meaning. The single biggest reframe available, and it is pure presentation — no sim change, no balance re-run | **~1 h** |
+| **2** | **Maze → lanes.** Straight vertical rail; tickets enter top, the pass is the bottom edge | A maze is a puzzle about routing; a line is a kitchen. PvZ is the reference, not Bloons | ~3 h · `CONFIG.path` · **needs `npm run balance` after** |
+| **3** | **Stations straddle the lane** rather than sitting beside it | Even with the shooting sim untouched underneath, the read becomes preparation | folded into 2 · `CONFIG.pads` |
+| **4** | **Walkout feedback** — a customer leaving and a slip spiked, not a life counter ticking down | The failure state is where theme lands hardest | ~1 h |
+| **5** | **SFX** — sizzle on entering a grill's range, bell on plate-up, ticket-printer chatter on rush start | Sound does more thematic work per hour than art | ~2 h · blocked on cue picks |
+| 6 | Projectiles → heat bursts and steam, or none for the tandoor | Lowest leverage; the sim expects projectiles | later |
+
+### The shape that matters for sequencing
+
+**Items 1, 4 and 5 are presentation, not structure.** They do not touch the sim, need no
+balance re-run, and together cost roughly half a day — the "cheap reframe bundle". Item 2
+is the structural change and is the real Phase 2.
+
+**Standing tension, unresolved and the user's to call:** this competes for Sep 6–8 with the
+return loop (CP5, 25 % of effort). **Theme conversion wins Editor's Pick; the return loop
+wins Total Unique Daily Plays**, which is the prize actually being scored. Planning
+recommendation on record: **Phase 1.5 → cheap reframe bundle (1, 4, 5) → return loop →
+lane rail.**
+
 
 ## 2. Timeline
 
