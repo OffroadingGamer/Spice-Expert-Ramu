@@ -22,6 +22,7 @@ SHEETS = [
 MIN_PART_AREA = 60      # drop specks before merging
 MIN_ITEM_AREA = 200     # drop merged boxes that are still tiny
 MERGE_MARGIN = 10       # boxes within this many px of each other are one item
+MERGE_OVERLAP = 0.15    # boxes overlapping this much of the smaller one are one item
 MAX_GAP_INK = 12        # a cut column with more ink than this is not a gap
 PAD = 4                 # transparent padding kept around each crop
 
@@ -46,6 +47,40 @@ def boxes_from_mask(mask, dilate=3):
             continue
         ys, xs = sl
         boxes.append([xs.start, ys.start, xs.stop, ys.stop, float(areas[i])])
+    return boxes
+
+
+def merge_overlapping(boxes):
+    """Fragments of one composition (a pan, with a knife lying in front of it)
+    land as separate components whose boxes overlap heavily. Grid neighbours
+    only ever clip each other by thin slivers, so the overlap ratio separates
+    them cleanly -- measured at 0.177 for the real case against 0.121 for the
+    closest false positive. Runs BEFORE split_wide so a deliberate split is
+    never undone."""
+    boxes = [list(b) for b in boxes]
+    changed = True
+    while changed:
+        changed = False
+        for i in range(len(boxes)):
+            for j in range(i + 1, len(boxes)):
+                a, b = boxes[i], boxes[j]
+                ox = min(a[2], b[2]) - max(a[0], b[0])
+                oy = min(a[3], b[3]) - max(a[1], b[1])
+                if ox <= 0 or oy <= 0:
+                    continue
+                mn = min((a[2] - a[0]) * (a[3] - a[1]),
+                         (b[2] - b[0]) * (b[3] - b[1]))
+                if float(ox * oy) / mn < MERGE_OVERLAP:
+                    continue
+                print("    merged two fragments (overlap %.2f of the smaller)"
+                      % (float(ox * oy) / mn))
+                a[0] = min(a[0], b[0]); a[1] = min(a[1], b[1])
+                a[2] = max(a[2], b[2]); a[3] = max(a[3], b[3]); a[4] += b[4]
+                boxes.pop(j)
+                changed = True
+                break
+            if changed:
+                break
     return boxes
 
 
@@ -156,12 +191,23 @@ def main():
 
     if not os.path.isdir(OUT):
         os.makedirs(OUT)
+    # Purge previous output. Without this a run that produces FEWER items than
+    # the last one leaves the extras on disk, and they look like real results.
+    import glob
+    stale = glob.glob(os.path.join(OUT, "CONTACT_*.png"))
+    for tag, _ in SHEETS:
+        stale += glob.glob(os.path.join(OUT, tag, "*.png"))
+    for f in stale:
+        os.remove(f)
+    if stale:
+        print("purged %d file(s) from the previous run" % len(stale))
     manifest = {}
     for tag, fn in SHEETS:
         im = Image.open(os.path.join(SRC, fn)).convert("RGBA")
         arr = np.array(im)
         mask = arr[..., 3] > 8
-        boxes = reading_order(split_wide(boxes_from_mask(mask), mask))
+        boxes = reading_order(split_wide(
+            merge_overlapping(boxes_from_mask(mask)), mask))
 
         d = os.path.join(OUT, tag)
         if not os.path.isdir(d):

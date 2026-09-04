@@ -1478,3 +1478,10 @@ uniques are the score; the trend matters more than any single day.
    the one genuinely missing sprite (`chai`) named as the single generation job rather
    than discovered mid-build. On a 14-day clock the asset inventory is a design input,
    not a procurement step that happens afterwards.
+25. **A tool that writes into a directory it did not clear reports a mix of every run
+   it has ever done.** The sprite slicer wrote `01.png … 66.png` on a bad pass, then
+   `01.png … 52.png` on the corrected one — and left 53–66 sitting there, visually
+   indistinguishable from real results. The user found them before I did, because I
+   checked the *count the script printed* rather than the *files on disk*. **Verify the
+   artifact, not the log line**; the log describes what the code believed it did, and
+   those are different claims. Fix is one line: purge the output directory first.
