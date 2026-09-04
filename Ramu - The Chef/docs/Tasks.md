@@ -5,8 +5,8 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 5 2026, 01:15 IST
-**Live:** v1.2.3 public · <https://w.run/puneetmakes/spice-expert-ramu>
+**Last updated:** Sep 5 2026, 02:00 IST
+**Live:** **v1.6.0 public** · <https://w.run/puneetmakes/spice-expert-ramu> — went public Sep 5 2026 with the full audio layer; was v1.2.3 from Sep 4
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST**
 
 ---
@@ -120,7 +120,7 @@
 - [ ] Ask RUN Operators the `core_loop_events_30d` name shape
 - [ ] Join `game_loaded` → `menu_shown` for load-to-menu conversion
 
-### P5 · Audio
+### P5 · Audio — ✅ **COMPLETE, live in v1.6.0**
 - [x] 5 SFX WAVs supplied by user — **licence confirmed CC0, Sep 4**
 - [x] First cue picks — 3 of 8 named by user
 - [x] Convert to a web-shippable format — **42,793 B, v1.2.2**
@@ -132,6 +132,9 @@
 - [x] **BGM tracks chosen Sep 4, 22:35 IST — all three, zero credits.** menu `bgm-menu-take1` · service_low `bgm-service-low-take1` · service_high `bgm-service-high-take2`. Specs §8a.7
 - [ ] **Phase 5 — three-cue music: convert, trim gains, wire the switch.** `MUSIC` is one `as const` with one `path` today ([audio.ts:109]) and `crossfadeToTrack` no-ops when a source exists, so this is a small feature, not a config edit. Gains **1.308 / 1.000 / 1.101** (Specs §8a.7b). Trigger: walkouts remaining **< 3**, one-way, reset on run start (Specs §8a.7c)
 - [-] ~~mid-intensity cue~~ — dropped; three cues is the design, not four
+- [x] **Phase 5.1 — cue exits.** `switchCue` on the three menu-return routes. Caught by ear, not by measurement: the danger cue carried into the main menu, and the pause-menu route had the same bug mid-run. Specs §8a.10
+- [x] **Phase 5.3 — click feedback on 13 silent buttons.** Verified statically: 33 sounding handlers, exactly one with two `sfx` calls, and that one is correct. Specs §8a.10
+- [x] **Phase 6 — `rundot game set-public`.** v1.6.0 on all three tags; review auto-approved. Tested live, no errors
 
 ### P2 · Kitchen mode — build order ([KitchenMode.md](KitchenMode.md) §3)
 - [ ] **Leaderboard config + deploy** — `orders` / `shifts` board modes. 🔒 Irreversible; the boards must exist before anything submits

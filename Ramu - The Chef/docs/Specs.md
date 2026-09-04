@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 5 2026, 01:15 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 02:00 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -887,6 +887,47 @@ Share of energy per band:
 
 **⚠️ `wave-clear` has an unusually high crest factor**, so peak-based intuition misleads
 on it in both directions. Judge it by ear against the bed, not by its waveform.
+
+### 8a.10 ✅ What actually shipped — v1.6.0 public, Sep 5 2026
+
+**The audio layer is complete and live.** Public moved off v1.2.3 for the first time since
+Sep 4, after four private deploys and a listen at each one.
+
+| Version | Tag | What it added |
+|---|---|---|
+| 1.3.0 | private | Three CDN cues + `switchCue` crossfade between two gain slots; `lives < 3` one-way latch |
+| 1.4.0 | private | **Phase 5.1** — cue exits. `switchCue` wired into the three menu-return routes |
+| 1.5.0 | private | **Phase 5.2** — SFX gains rebalanced: `upgrade` 0.45→0.35, `wave-clear` 0.5→0.72 |
+| **1.6.0** | **private + review + public** | **Phase 5.3** — click feedback on 13 silent buttons, then `rundot game set-public` |
+
+**Phase 5.1 — the bug a listen caught and no measurement could.** `switchCue('menu')` existed
+in exactly one place, the audio-unlock handler, which runs once ever. **Nothing ever
+returned to the menu cue**, so the danger track carried into the main menu after a loss.
+Three routes back to the menu, two of them broken:
+
+- `EndScreen.tsx` **Menu** button — user-reported
+- `Hud.tsx` pause-menu **Main Menu** — **the same bug mid-run, found only by tracing**
+- Retry was not broken but *late*: it recovered via `registerEngine` after an
+  `await createPixiApp()`, so the fade began behind a canvas rebuild
+
+Fixed by calling `switchCue` on the **button press** rather than on a state transition.
+The crossfade already existed; it was simply never invoked on those paths.
+
+**Phase 5.3 — click feedback.** 13 buttons made no sound: 5 in `BuildSheet`, 3 in
+`EndScreen`, 1 in `Hud` (`toggleMusic`), 2 in `Leaderboard`, 2 in `MainMenu`. Rule applied:
+**every button that changes what is on screen makes exactly one sound**; buttons already
+playing a semantic sound (`place` / `sell` / `upgrade` / `startWave`) were left alone.
+
+Verified statically afterwards: of **33 handlers that make a sound, exactly one contains
+two `sfx` calls** — `claimBonus`, where `sfx.click()` fires on press and `sfx.upgrade()`
+fires in the ad's `onReward` callback. Separated by the whole ad. Correct, not a defect.
+
+> ⚠️ **A grep of `onClick=` attributes undercounts.** `Hud`'s `openMenu`, `closeMenu` and
+> `toggleSfx` looked silent that way and are not — they click inside their named handler
+> definitions. `toggleSfx` is subtler still and was deliberately left alone: it clicks only
+> when *un*-muting, and *after* applying volumes, so switching SFX on confirms itself
+> audibly and switching off is properly silent.
+
 
 ## 9. Deploy pipeline
 
