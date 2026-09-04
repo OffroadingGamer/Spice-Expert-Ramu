@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 4 2026, 14:41 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 14:55 IST (read from the system clock)
 
 ---
 
@@ -1057,6 +1057,53 @@ the score. Item 35, one hour, tomorrow.
 
 ---
 
+### Sep 4, 14:55 IST · Design conformance audit — the build fails its own anti-reskin test
+
+User asked how close the build is to the proposed gameplay. Audited GDD §10 against source
+rather than against memory, and the answer is less comfortable than the last two days of
+green checkmarks suggested.
+
+**The GDD wrote its own pass/fail and the build scores 2 of 4.** §10.2's anti-reskin test:
+a timed queue ✅, a hard boundary ✅, **parallel stations specialised by dish type** ❌, **a
+manual expedite** ❌. Strip the kitchen art off today and what remains describes a tower
+defence. That is the exact failure the concept was frozen to avoid.
+
+**Core loop: two of five steps shipped.** Missing are step 1 (tickets showing the components
+they need — `EnemyDef` has one `hp` field) and step 3 ("Hands!"). Step 4 is partial and has
+drifted: the GDD freezes **five** walkouts, the build ships **ten**.
+
+**One of two primary mechanics exists.** §10.3 caps primary mechanics at two and freezes
+both. Station placement shipped on day one; "Hands!" was budgeted at *one evening, Day 2*
+and has not been started. The GDD's own line about it: *"converts watching into playing; it
+is the skill ceiling."* Right now a player sets a line and watches it work.
+
+**The shift is 5–10× too long.** §10.1 specifies a 90-second shift; a measured `run_end`
+shows 102 seconds for *two* waves out of thirteen plus endless. A 90-second shift and a
+ten-minute run are different games, and the daily-rotation return loop in §10.9 assumes the
+former — something you finish on a break.
+
+**The correction that matters most is to my own §1d.** I ranked *"damage → doneness (~1 h,
+pure presentation)"* as the top theme-conversion item yesterday. That is the cosmetic
+version of §10.1 step 1, which actually asks for **component pips** — a ticket made of parts,
+each serviced by a station *type*. Mechanical, not presentational, and it is the thing that
+satisfies anti-reskin criterion 2. **I had ranked the cheap imitation of the frozen
+requirement above the requirement.** §1e revises it: "Hands!" and component pips first, lane
+rail last — the lane rail is the most visible change and the least load-bearing.
+
+**What is genuinely close.** Naming and theming are coherent throughout (Heat, Fast Hands,
+Reach; Dal Tadka through Full Thali). Art shipped. Economy, build phase and persisted meta
+progression mean §10.1 step 5 is real. And today's funnel says everyone who started a run
+placed a station and cleared wave 1 — the thing works, it just is not yet the thing that was
+designed.
+
+**Method note worth keeping:** this audit only exists because someone asked a question the
+status board could not answer. Tasks.md tracks *what we said we would do*; nothing was
+tracking *whether what we built matches what we froze*. Green checkmarks against a task list
+are not conformance to a design. That is a gap in the process, not in anyone's diligence,
+and §1e now closes it.
+
+---
+
 ## 2. Checkpoint ledger
 
 Runbook checkpoints. Update as each passes, with the actual time.
@@ -1146,6 +1193,14 @@ uniques are the score; the trend matters more than any single day.
 14. **Don't stop at the first thing the query explains.** `avg_duration_s` read 0.0. The
    value sent was 505.45. Reading the reserved query alone would have sent someone to fix
    correct code.
-15. **Record what to ignore, not just what to do.** Two unlisted games on the account
+15. **A task list cannot tell you whether you built the right thing.** Fifteen green
+   checkmarks and a frozen GDD coexisted with a build that fails the GDD's own
+   anti-reskin test 2–4. Audit the artefact against the design, on a schedule, not only
+   when someone asks.
+16. **Beware ranking the cheap imitation of a requirement above the requirement.** §1d put
+   "damage → doneness, pure presentation, ~1 h" first. The frozen design asked for
+   component pips — mechanical, structural, and the actual point. Cheap and adjacent is
+   not the same as cheap and sufficient.
+17. **Record what to ignore, not just what to do.** Two unlisted games on the account
    look exactly like entry candidates in `list-games`. §0 exists so a tired future
    session cannot deploy to the wrong game ID.

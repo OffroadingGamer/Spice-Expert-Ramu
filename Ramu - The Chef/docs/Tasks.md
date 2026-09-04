@@ -5,7 +5,7 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 14:41 IST
+**Last updated:** Sep 4 2026, 14:55 IST
 **Live:** v1.2.1 public · <https://w.run/puneetmakes/spice-expert-ramu>
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST**
 
@@ -134,8 +134,14 @@
 - [-] r/KitchenConfidential recognition post — no Reddit account
 
 ### P2 · Board & Core Loop
+> Anti-reskin test (GDD §10.2) currently scores **2 of 4** — see Plan §1e.
+- [ ] **"Hands!" expedite — primary mechanic 2 of 2, unstarted**
+- [ ] **Component pips + station typing** — makes stations specialised
 - [ ] Damage → doneness meter
 - [ ] Walkout feedback — customer leaves, slip spiked
+- [ ] Shift-end line in Ramu's voice
+- [ ] Reconcile walkouts (10 vs frozen 5) and shift length
+- [ ] Lane rail — deferred below the two above
 
 ### P0 · CP4 · Survive First Contact
 - [~] Mobile pass — `rundot-mobile-ux`

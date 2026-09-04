@@ -8,7 +8,7 @@
 > plan item slips or is cut, do not silently delete it — strike it, move it, and
 > log the reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 14:41 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 14:55 IST (read from the system clock)
 **Status:** ▶ **LIVE — v1.1.0** at https://w.run/puneetmakes/spice-expert-ramu since ~15:05 PT Sep 3. Scoring clock running.
 **Scope:** cuisine level run (GDD §10.10) · SFX at P1 (§12) · 3D→sprite art pipeline (§11a).
 
@@ -193,6 +193,101 @@ wins Total Unique Daily Plays**, which is the prize actually being scored. Plann
 recommendation on record: **Phase 1.5 → cheap reframe bundle (1, 4, 5) → return loop →
 lane rail.**
 
+
+### 1e. 🔒 Design conformance audit — how close is the build to the frozen GDD? (Sep 4, 14:55 IST)
+
+*Written in answer to "how close are we getting towards the actual proposed gameplay?"
+Every row was checked against source, not against memory.*
+
+**Headline: the shell is nearly finished and the kitchen is barely started.** What is live
+is a competent, well-themed tower defence. It is not yet the game GDD §10 describes, and
+the gap is not art — it is two mechanics.
+
+#### The anti-reskin test (GDD §10.2), scored
+
+The GDD sets its own pass/fail: *"strip the kitchen art off and the mechanics still
+describe a kitchen — a timed queue, parallel stations specialised by dish type, a hard
+boundary, a manual expedite."*
+
+| Criterion | Status | Evidence |
+|---|---|---|
+| A timed queue | ✅ | waves down a path, `data/waves.ts` |
+| **Parallel stations specialised by dish type** | ❌ | `data/towers.ts` stats are damage / speed / range. Every station works every ticket |
+| A hard boundary | ✅ | the pass, `livesCost` on leak |
+| **A manual expedite** | ❌ | "Hands!" does not exist in any form |
+
+**2 of 4. The build currently fails the test the GDD wrote for it.** Strip the art off
+today and what remains describes a tower defence.
+
+#### Core loop (GDD §10.1), step by step
+
+| # | Step | Status | Where it stands |
+|---|---|---|---|
+| 1 | READ THE RAIL — tickets show the components they need | ❌ | `EnemyDef` has a single `hp`. A ticket is a health bar; you cannot read what it needs |
+| 2 | SET THE LINE — tap a slot beside the rail | ✅ | kit-native placement, `actions.placeTower`. But pads sit around a serpentine path, not *beside a rail* |
+| 3 | WORK THE PASS — tap a ticket to call "hands" | ❌ | not started |
+| 4 | SERVE OR LOSE | ⚠️ | bounty-on-kill ✅, walkout-on-leak ✅ — but `startLives: 10`, and the GDD freezes **five** walkouts. "Served" is a kill, not a completion |
+| 5 | BETWEEN RUSHES — spend the shift's pay | ✅ | build phase, `waveBonus`, meta upgrades, all persisted |
+
+**Two of five shipped, one partial, two missing — and the two missing ones are the two that
+make it a kitchen rather than a battlefield.**
+
+#### Primary mechanics (GDD §10.3 — capped at 2, both frozen)
+
+| # | Mechanic | Status |
+|---|---|---|
+| 1 | Station placement & upgrade | ✅ **shipped** |
+| 2 | **"Hands!" expedite** | ❌ **not started** — GDD budget was *~1 evening, Day 2* |
+
+**One of two.** The GDD's own note on the missing one: *"Converts watching into playing; it
+is the skill ceiling."* Right now the player sets a line and then watches it work. That is
+the single largest experiential gap in the project.
+
+#### Secondary mechanics (§10.4) and return loop (§10.9)
+
+Both §10.4 items marked *do not cut* — the **daily modifier** and the **shift-end line in
+Ramu's voice** — are unbuilt. The second is near-zero cost and the GDD says it *"carries the
+entire 'real story' for editors."*
+
+Return loop, 1 of 5 installed: `save` ✅ (versioned, `state/save.ts`); `stats` ⚠️ (gems and
+meta levels persist, but there is no lifetime **tickets-served ledger**, which is the
+emotional spine of §10.8); `daily-rewards`, `daily-quests`, `notifications` all ❌.
+
+#### Numbers that drifted from the frozen spec
+
+| Spec | GDD | Build |
+|---|---|---|
+| Walkouts to end a shift | **5** | 10 (`economy.startLives`) |
+| Shift length | **90 seconds** | ~8–10 min for a full run; one measured `run_end` was 102 s for *two* waves of 13 + endless |
+| Station specialisation | one component type each | universal |
+
+A 90-second shift and a 10-minute run are different games. The GDD's daily-rotation return
+loop assumes a session you can finish on a break; the build assumes a sitting.
+
+#### What this changes about §1d
+
+§1d ranked **"damage → doneness (~1 h, pure presentation)"** first. That was the cheap
+cosmetic version of GDD §10.1 step 1, which actually asks for **component pips** — a ticket
+made of parts, each serviced by a station type. That is mechanical, not presentational, and
+it is what makes stations specialised (anti-reskin criterion 2). §1d undersold its own top
+item.
+
+**Revised recommendation.** Two changes take the anti-reskin score from 2/4 to 4/4:
+
+1. **"Hands!" expedite** — §10.3 mechanic 2. ~1 evening, no sim risk if it is an event on
+   the consumer side. Converts watching into playing.
+2. **Component pips + station typing** — §10.1 step 1 and §10.2 criterion 2. Touches
+   `EnemyDef`, `towers.ts` and the engine's damage application, so it **needs
+   `npm run balance`** and is the genuinely structural change.
+
+Both are cheaper than the level run and worth more than any further art. **The lane rail
+(§1d item 2) can wait — it is the most visible change and the least load-bearing one.**
+
+> **Still open and still the user's call:** this competes with the return loop for Sep 6–8.
+> Nothing in this audit resolves that tension; it only says that *if* theme work is chosen,
+> "Hands!" and component pips outrank the board geometry that §1d put first.
+
+---
 
 ## 2. Timeline
 
@@ -626,6 +721,10 @@ and at most one follow-up if something genuinely notable ships.
 | 35 | **Firebase App Check wall on the live host page** | Planning agent | Investigate Sep 5 | 🟠 Every automated browser hitting the public URL is stopped by an *"App Integrity check failed"* screen (reCAPTCHA Enterprise / Play Integrity), throttled ~24 h after a failure. Expected against headless Chromium. **Unknown whether it ever catches real players** — privacy browsers, corporate proxies, or blockers that break reCAPTCHA would lose the play entirely and silently. Predates all our work; worth one hour to characterise, since the cost is a lost player |
 | 36 | Wire the missing `menu_shown` → `game_loaded` join | Implementation agent | Low | ⬜ `boot` and `run` are separate funnels, so `funnel_steps_30d` cannot show load→menu conversion — the single most important drop-off we have. Either fold `game_loaded` in as `run` step 0 or read it manually across the two tables |
 | 26 | D1 retention reads 0.0% across all platforms | Planning agent | Re-check Sep 5 | 🟡 Cohort is too young to call (26 of 35 players are from today). **If it holds, CP5 return loop becomes the single highest-value work in the project** |
+| 37 | **Build “Hands!” expedite — primary mechanic 2 of 2** | Implementation agent | Sep 5–6 | 🔴 GDD §10.3, frozen, unstarted. *“Converts watching into playing; it is the skill ceiling.”* ~1 evening. §1e |
+| 38 | **Component pips + station typing** | Implementation agent | Sep 6–7 | 🔴 GDD §10.1 step 1 + §10.2 criterion 2. The change that makes stations specialised. Structural — needs `npm run balance`. §1e |
+| 39 | Reconcile walkouts (10 vs frozen 5) and shift length (~9 min vs frozen 90 s) | Planning agent | Before Sep 8 | 🟠 Both are frozen numbers in GDD §10.1. Either the build changes or the GDD takes a documented frozen-item break. §1e |
+| 40 | Shift-end line in Ramu's voice | Implementation agent | Sep 7 | 🟠 GDD §10.4 marks it *do not cut*: near-zero cost, and it *“carries the entire ‘real story’ for editors.”* §1e |
 | 16 | Re-cost the level run (Phase 4) | Planning agent | Before Sep 8 | ⬜ ~9 h is stale; the kit ships authored waves, deterministic endless, and a balance sim |
 | 17 | Close the auto-enabled `textGen` credit cap | Implementation agent | Phase 2 | ⬜ 500k/day ceiling on an unused surface; see [Specs.md](Specs.md) §10 |
 | 18 | Verify NCS + KayKit licences before either ships | User | Before Phase 2 art | ✅ **Closed Sep 4** — see items 10 and 11 |
