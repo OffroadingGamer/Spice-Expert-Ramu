@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 4 2026, 21:08 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 21:35 IST (read from the system clock)
 
 ---
 
@@ -1485,3 +1485,23 @@ uniques are the score; the trend matters more than any single day.
    checked the *count the script printed* rather than the *files on disk*. **Verify the
    artifact, not the log line**; the log describes what the code believed it did, and
    those are different claims. Fix is one line: purge the output directory first.
+
+26. **When one cut rule has to serve two different kinds of object, ask what actually
+   distinguishes them — not what is easiest to measure.** Slicing the isometric props
+   sheet, sixteen cabinets shared their edges as one 512px blob and the obvious fix was
+   to cut at the column with the least ink. It worked on the cabinets and it also cut
+   **every chair in half at the waist** and separated **every plant from its pot**,
+   because a chair has a narrow middle too. Depth of valley does not distinguish them.
+   *Periodicity* does: the cabinet run autocorrelates at 0.84, a chair at 0.19, and
+   nothing sits in between. The rule that fires only on genuine repetition needs no
+   exceptions list, and every split it made across four sheets landed on the same 32px
+   pitch — which is an external check the earlier rule could never have offered.
+27. **A palette can be transferred; a resolution cannot.** The recolour of the props
+   pack worked exactly as measured — b\* +2.3 → +12.3 against the target's +17.4, chroma
+   12.1 → 21.3 against 22.1, 57 colours in and 57 distinct out. And it does not make the
+   two packs usable together, because Essentials items are a median **94×124 px** of
+   painterly art and Props items are **32×32 px** of flat isometric pixels. I spent the
+   colour work before checking the scale, and the colour work was the part I could
+   measure. **Check the difference you cannot fix before spending effort on the one you
+   can.** The finding is still worth having — it turns "make them match" into a real
+   choice between three options — but it should have been the first hour, not the third.
