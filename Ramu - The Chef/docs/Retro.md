@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 4 2026, 15:20 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 16:19 IST (read from the system clock)
 
 ---
 
@@ -1166,6 +1166,70 @@ than quietly dropped.
 
 ---
 
+### Sep 4, 16:19 IST · Audio shipped (v1.2.2 → v1.2.3) · and a misattribution I have to correct
+
+Three sampled cues are live at **42,793 B** — 46% of the budget — with the critical bundle
+unchanged at 667,292 B and the balance hash still `310e6e7a…c7b411b` across two more
+phases. The architecture is good and is recorded in Specs §8a.1: the synth stays as a
+**permanent** fallback under every sampled cue, so a failed fetch or an unsupported decode
+degrades to exactly what v1.2.1 played rather than to silence.
+
+**v1.2.2 shipped with `Ah` on the wrong function**, and the correction matters more than
+the bug. It was wired to `sfx.leak()` — which fires 4–10 times a run — instead of
+`sfx.lose()`, so a 2.25 s vocal stuttered against the single-voice retrigger on every
+walkout while game-over stayed silent. v1.2.3 fixed it.
+
+**I told the user the handover had specified the mapping and the agent had ignored it.
+That was wrong, and it was wrong in my favour.** The mapping table naming `sfx.lose()`
+with its file:line was in the *analysis I wrote to the user*, above the `# HANDOVER`
+heading. Inside the handover body, Step 2 read:
+
+> Then the three functions become `if (playSample('…')) return;` followed by their
+> untouched existing bodies.
+
+An ellipsis. The handover never named which function got which clip. The agent inferred
+`leak` from the clip's name — a defensible reading of "an *ah, no* moment" — and reported
+the inference honestly as a deviation, which is exactly the behaviour the process wants.
+**The omission was mine.** This is lesson 8 wearing a different costume: I had already
+written *"a handover that names an outcome must name the flag that produces it"* after
+Phase 1.5 shipped the wrong version number, and then shipped a handover that named the
+objective but not the mapping.
+
+Two parts of the critique do survive, and separating them from the part that does not is
+the point of writing this down:
+
+- The report claimed the MP3s were **committed**. They were untracked — v1.2.2 was live
+  with no commit behind it. That is a checkable claim asserted without the check.
+- The corroboration offered for the mapping was circular: the 1.74 s duration match spoke
+  to `level-up`, which was never in question, and said nothing about `ah → leak` versus
+  `ah → lose`. Confident-sounding evidence that does not bear on the choice.
+
+**Phase 3.1 was the first zero-deviation report in the project**, and the agent named why
+in its own words: this phase's instructions were *prescriptive, not interpretive*. That is
+the whole finding. Where I specified exact edits and exact values, execution was exact.
+Where I described an objective and left the mapping implicit, it drifted. The variable was
+the handover, not the agent.
+
+Both report notes were also honoured: the "committed" claim came back backed by pasted
+`git log` and `git status` output. The one thing 3.1 reasoned about rather than checked
+was the credit balance — correctly, as it happens; **132,561, verified unchanged**. But
+"deploy is flat-cost, so I did not look" is an inference, and the 14-credit charge earlier
+today is what that inference costs when it is wrong.
+
+**The gains were arithmetic, not taste.** v1.2.2 ran all three samples at gain 1.0 against
+synth cues peaking at 0.35/0.30/0.35 — the MP3s are normalised to −3 dBFS ≈ 0.708, so
+they were +5 to +7.5 dB hotter than everything around them. That is calculable without
+hearing it. What is *not* calculable is the last few dB, and that stays an open item.
+
+**BGM has nowhere to live.** A 30 s stereo loop is ~360 KB against a 667 KB game — 54% of
+the whole entry for one track. Specs §8a and `audio.ts`'s own ADAPT comment have always
+said music streams from `cdn-assets/` via `fetchAsset()`, and **that path has never been
+written.** Found while scoping the MusicGen pipeline, which is the good kind of accident:
+the alternative was four generated tracks and no home for them. Item 42, and it gates the
+music pass.
+
+---
+
 ## 2. Checkpoint ledger
 
 Runbook checkpoints. Update as each passes, with the actual time.
@@ -1206,7 +1270,7 @@ uniques are the score; the trend matters more than any single day.
 | Date | Daily uniques | Cumulative | Board position | Shipped that day | Shared on |
 |---|---|---|---|---|---|
 | Sep 3 | **9** (first reported as 2 — export lag) | 9 | #3 | v1.0.0 public, v1.0.1 UI fixes | — **nowhere** |
-| Sep 4 | **26** at 12:14, 13:24 and 14:00 IST, day still open. ⚠️ `game_loaded` says **47 distinct players** — see item 32 | **35** (probably low) | #3 (15 plays) | **v1.1.0** title fix + 15 assets · **v1.2.0** payload 16.30 → 0.64 MB | **RUN Discord `#back-to-work` — first post ever.** LinkedIn scheduled |
+| Sep 4 | **26** at 12:14, 13:24, 14:00 and 16:19 IST, day still open. ⚠️ `game_loaded` says **47 distinct players** — see item 32 | **35** (probably low) | #3 (15 plays) | **v1.1.0** title fix + 15 assets · **v1.2.0** payload 16.30 → 0.64 MB · **v1.2.1** telemetry · **v1.2.2** sampled SFX · **v1.2.3** SFX mapping fix | **RUN Discord `#back-to-work` — first post ever.** LinkedIn scheduled |
 
 ---
 
@@ -1269,6 +1333,16 @@ uniques are the score; the trend matters more than any single day.
    `sfx.lose()` firing exactly where the end screen mounts. The handover collapsed to one
    file and zero moved call sites — and reading first also avoided wiring the clip into
    `sfx.win()`, where it must not fire.
-18. **Record what to ignore, not just what to do.** Two unlisted games on the account
+18. **The handover is what sits under the handover heading.** Phase 3's `ah → sfx.lose()`
+   mapping lived in the analysis written *above* the handover; the handover body said
+   `playSample('…')`. The agent inferred `leak`, shipped it, and I told the user the
+   handover had specified otherwise. It had not. Everything an implementer needs must be
+   inside the block they are handed — a table two sections up is context for the reader,
+   not instruction for the doer.
+19. **Prescriptive instructions get executed; described objectives get interpreted.** The
+   first zero-deviation report in the project was the one that listed exact edits and
+   exact values. Every drift so far has come from a handover that named a goal and left
+   the mechanism implicit. Where the outcome matters, write the line, not the intent.
+20. **Record what to ignore, not just what to do.** Two unlisted games on the account
    look exactly like entry candidates in `list-games`. §0 exists so a tired future
    session cannot deploy to the wrong game ID.

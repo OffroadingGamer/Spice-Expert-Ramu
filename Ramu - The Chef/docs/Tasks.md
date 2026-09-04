@@ -5,8 +5,8 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 15:20 IST
-**Live:** v1.2.1 public · <https://w.run/puneetmakes/spice-expert-ramu>
+**Last updated:** Sep 4 2026, 16:19 IST
+**Live:** v1.2.3 public · <https://w.run/puneetmakes/spice-expert-ramu>
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST**
 
 ---
@@ -58,10 +58,10 @@
 
 | | |
 |---|---|
-| **Now** | S1 · **P5 audio (Phase 3 in flight)** · P6 LinkedIn + daily reciprocity · P2 core-loop read |
+| **Now** | S1 · **P5 BGM (CDN plumbing + MusicGen)** · P6 LinkedIn + daily reciprocity · P2 core-loop read |
 | **Next** | S1 · CP4 items · P2 core-loop read |
 | **Later** | S2 return loop **(re-ranked up — two-surface audience)** · S3 board layout + levels |
-| **Blocked on user** | Daily Discord reciprocity · the remaining 5 SFX cue picks |
+| **Blocked on user** | Daily Discord reciprocity · the remaining 5 SFX cue picks · gain audition |
 
 ---
 
@@ -120,10 +120,13 @@
 ### P5 · Audio
 - [x] 5 SFX WAVs supplied by user — **licence confirmed CC0, Sep 4**
 - [x] First cue picks — 3 of 8 named by user
-- [~] Convert to a web-shippable format — **Phase 3 in flight** (MP3, ≤ 90 KB total)
-- [~] Wire cues — `lose` / `upgrade` / `waveClear`, **Phase 3 in flight**
+- [x] Convert to a web-shippable format — **42,793 B, v1.2.2**
+- [x] Wire cues — `lose` / `upgrade` / `waveClear`, **corrected in v1.2.3**
+- [ ] Audition the three gains against a real playthrough
 - [!] Remaining 5 cue picks — sizzle, plate-up bell, ticket-print, place, thud
-- [ ] BGM track — folder created, empty
+- [ ] **CDN plumbing for music** — `cdn-assets/` + `fetchAsset()`, gates all BGM
+- [~] MusicGen local pipeline — setup issued, prompt agent scoped
+- [ ] BGM tracks — menu / service-low / mid / high, all 112 BPM A minor
 
 ### P6 · Distribution
 - [x] Choose posting channels — **LinkedIn + Discord only**

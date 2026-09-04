@@ -9,15 +9,15 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 15:20 IST (read from the system clock)
-**Implementation status:** ▶ **LIVE — v1.2.1 public + approved.**
+**Last updated:** Sep 4 2026, 16:19 IST (read from the system clock)
+**Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
 ### Live state snapshot
 
 | | |
 |---|---|
-| Public version | **v1.2.1** (verified on Private/Review/Public via `rundot game info`) |
+| Public version | **v1.2.3** (verified on Private/Review/Public via `rundot game info`) |
 | Live audience | **35 summed daily uniques** (Sep 3: 9 · Sep 4: 26). **26 of 35 on mobile-web.** ⚠️ `game_loaded` reports **47 distinct players** over the same window — the two disagree and the daily figure is probably low; Plan §7 item 32 |
 | Repo | `September GameJam/jam-entry` (sibling of the docs folder) |
 | Stack | Vite + Pixi.js v8 + React 19 + Tailwind v4, from `september-jam-tower-defense` |
@@ -460,6 +460,42 @@ feedback, and the original defer was wrong for the genre.
 > RUN's originality requirement is satisfied with no residual obligation. The source is
 > still unnamed, so `Ramu - The Chef/Audio/` stays gitignored: the repo should not carry
 > masters whose licence it cannot cite in a file beside them. Plan §7 item 27.
+
+### 8a.1 Sampled SFX — shipped v1.2.2, corrected v1.2.3
+
+Three of the eight cues are live. The architecture is the one the kit's own `audio.ts`
+header comment proposed, and it is the part worth keeping:
+
+| Element | Detail |
+|---|---|
+| Files | `public/audio/{ah,level-up,level-complete}.mp3` — mono, 44.1 kHz, 64 kbps, peak-normalised −3 dBFS |
+| Payload | **42,793 B total.** Critical bundle unchanged at 667,292 B — audio is deliberately **not** in `manifest.ts` |
+| Load | Fetched + decoded on the first-gesture unlock, fire-and-forget. Never awaited by boot, so no cue can delay first paint (§8a's Loading rule holds) |
+| **Fallback** | **The synth stays, permanently.** Fetch failure, decode failure, or a buffer not yet ready → `playSample()` returns false and the original `tone()`/`noise()` body runs. A player on a flaky connection hears exactly what v1.2.1 played |
+| Voices | One per sample; a retrigger stops the previous voice. Prevents overlap mush on repeated cues |
+| Bus | Routed through `sfxBus`, so the Settings volume slider keeps working unchanged |
+| Gains | `lose` 0.5 · `upgrade` 0.45 · `wave-clear` 0.5 — peak-matched to the synth cues they replace. Un-auditioned; Plan §7 item 43 |
+
+**Mapping:** `Ah` → `sfx.lose()` (game over, as the try-again overlay appears) · `Level Up`
+→ `sfx.upgrade()` · `Level Complete` → `sfx.waveClear()`. `sfx.leak()` and `sfx.win()`
+stay pure synth — `leak` fires 4–10 times a run and needs a short cue, which a 2.25 s
+vocal is not.
+
+### 8a.2 🔒 BGM must be CDN-served — this is arithmetic, not preference
+
+A 30 s stereo loop at a usable bitrate is **~360 KB against a 667 KB game**: one track
+would be 54% of everything we ship. Music therefore goes to `public/cdn-assets/` and is
+fetched at runtime via `RundotGameAPI.cdn.fetchAsset()`, per the `audio.ts` ADAPT note.
+**That path has never been implemented** — Plan §7 item 42, and it gates the music pass.
+
+**Generation toolchain (decided Sep 4, 16:19 IST):** Meta **MusicGen** via Hugging Face
+`transformers` — not `audiocraft`, whose torch 2.1.0 + xformers pins fight Python 3.11 on
+Windows. `musicgen-stereo-large` fits the 4090's 24 GB. Env lives **outside the repo**.
+Prompts are written by a scoped agent that may touch only `docs/AudioGenPrompts.md`.
+Every track is generated at **112 BPM, A minor, 4/4, instrumental** so rush-stage layers
+can crossfade — §8a's "reports pressure rather than decorating it" only works if tempo
+and key are shared. **MusicGen is music-only:** the five unpicked SFX cues need AudioGen
+or CC0 packs.
 
 ---
 
