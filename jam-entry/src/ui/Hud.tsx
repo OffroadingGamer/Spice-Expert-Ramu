@@ -20,7 +20,7 @@
  * overlays never stack.
  */
 import { useState } from 'react';
-import { setMusicVolume, setSfxVolume, sfx } from '../audio/audio.ts';
+import { setMusicVolume, setSfxVolume, sfx, switchCue } from '../audio/audio.ts';
 import { startWave } from '../game/actions.ts';
 import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
@@ -202,6 +202,7 @@ export default function Hud() {
                             onClick={(e) => {
                                 e.stopPropagation();
                                 sfx.click();
+                                switchCue('menu');
                                 setMenuOpen(false);
                                 store.patch({ paused: false, phase: 'menu', selectedPad: null });
                             }}

@@ -12,7 +12,7 @@
  * They currently live on the main menu only.
  */
 import { useEffect, useState } from 'react';
-import { sfx } from '../audio/audio.ts';
+import { sfx, switchCue } from '../audio/audio.ts';
 import { CONFIG } from '../game/config.ts';
 import { adsSystem } from '../sdk/ads.ts';
 import { addGems } from '../state/save.ts';
@@ -105,16 +105,20 @@ export default function EndScreen() {
             <button
                 type="button"
                 className="w-64 rounded-2xl bg-primary px-12 py-4 text-xl font-bold text-black shadow-lg transition-transform active:scale-95"
-                onClick={() =>
-                    store.patch({ tdPhase: 'build', selectedPad: null, runId: store.get().runId + 1 })
-                }
+                onClick={() => {
+                    switchCue('service_low');
+                    store.patch({ tdPhase: 'build', selectedPad: null, runId: store.get().runId + 1 });
+                }}
             >
                 Retry
             </button>
             <button
                 type="button"
                 className="w-64 rounded-2xl bg-sky-600 px-12 py-4 text-xl font-bold text-white shadow-lg transition-transform active:scale-95"
-                onClick={() => store.patch({ phase: 'menu', selectedPad: null })}
+                onClick={() => {
+                    switchCue('menu');
+                    store.patch({ phase: 'menu', selectedPad: null });
+                }}
             >
                 Menu
             </button>
