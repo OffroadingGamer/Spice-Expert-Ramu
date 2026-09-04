@@ -8,7 +8,7 @@
 > plan item slips or is cut, do not silently delete it — strike it, move it, and
 > log the reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 12:57 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 13:24 IST (read from the system clock)
 **Status:** ▶ **LIVE — v1.1.0** at https://w.run/puneetmakes/spice-expert-ramu since ~15:05 PT Sep 3. Scoring clock running.
 **Scope:** cuisine level run (GDD §10.10) · SFX at P1 (§12) · 3D→sprite art pipeline (§11a).
 
@@ -561,14 +561,16 @@ Track with `rundot analytics export`, `rundot leaderboard`, `rundot socials stat
 | 9 | Cuisine 4+ beyond `counter` / `tandoor` / `wok` | User | — | ⏭ Deferred. Cut-list item 11 — level count is a treadmill |
 | 14 | **Distribution: `rundot jam promo` + `#back-to-work` post** | User decision | **Today** | 🟡 **Elaborated Sep 4 — §5 rewritten in full.** Two answers still needed: (a) which channels the user posts on personally, (b) go/no-go on `rundot socials prepare`, which may auto-post to Discord. Day-1 reality: **2 unique players, both of them us** |
 | 15 | Art source: generate now vs wait for KayKit renders | User decision | Phase 1 | ✅ **Decided Sep 4, 06:00 PT — generate now, swap KayKit in later.** Phase 1 handover is with the implementation agent; awaiting the return handover |
-| 21 | **Downscale the 15 assets — 16.30 MB → target <1 MB** | Implementation agent | **NOW** | 🔴 Phase 1.5. **26 of 35 real players are mobile-web** and meet a 27 s preload. No longer hypothetical. §1c, §2.1 |
-| 22 | **Exclude `*.png.json` generation sidecars from `dist/`** | Implementation agent | Phase 1.5 | 🟠 15 files publishing prompts, seeds, and a creator account id on a public build. §1c |
-| 23 | Explain the +8,620 credit rise (125,980 → 132,275) | Planning agent | Low priority | 🟡 Likely a jam grant; logged as unexplained, not counted on |
+| 21 | Downscale the 15 assets | Implementation agent | — | ✅ **Closed Sep 4, 13:24 IST in v1.2.0 — 16.30 MB → 0.64 MB, ~60 MB → ~3.9 MB decoded. Verified independently.** Specs §5a |
+| 22 | Exclude `*.png.json` generation sidecars from `dist/` | Implementation agent | — | ✅ **Closed Sep 4 in v1.2.0** — moved to `art-source/`, outside `public/` and gitignored. `dist/` verified clean |
+| 23 | Explain the credit rises — **now two** | Planning agent | Low priority | 🟡 +8,620 (125,980 → 132,275), then **+300 (132,275 → 132,575) on Sep 4 with zero spend**. Spend column unchanged at 2,325/17 calls both times. Reads like periodic top-up; still unexplained, still not counted on |
 | 24 | Determine RUN's scoring-day boundary | Planning agent | — | ✅ **Resolved Sep 4, 12:14 IST — PT ruled out by measurement; UTC is the working assumption. Rollover = 05:30 IST.** §2.0 |
 | 25 | **The game emits ZERO gameplay telemetry** | Implementation agent | **Today** | 🔴 `core_loop_events_30d` and `session_end_summary_30d` both export **empty**. We can see arrivals but nothing about what players do — every fix is a guess. Skill: `rundot-feature-analytics`. Cheap; fold into Phase 1.5 |
 | 26 | D1 retention reads 0.0% across all platforms | Planning agent | Re-check Sep 5 | 🟡 Cohort is too young to call (26 of 35 players are from today). **If it holds, CP5 return loop becomes the single highest-value work in the project** |
 | 16 | Re-cost the level run (Phase 4) | Planning agent | Before Sep 8 | ⬜ ~9 h is stale; the kit ships authored waves, deterministic endless, and a balance sim |
 | 17 | Close the auto-enabled `textGen` credit cap | Implementation agent | Phase 2 | ⬜ 500k/day ceiling on an unused surface; see [Specs.md](Specs.md) §10 |
 | 18 | Verify NCS + KayKit licences before either ships | User | Before Phase 2 art | ✅ **Closed Sep 4** — see items 10 and 11 |
-| 19 | Credits/attribution screen — NCS track titles + KayKit credit | Implementation agent | Before any audio ships | ⬜ Cheap safeguard even where the licence permits use; NCS attribution is a standing condition |
+| 19 | Credits/attribution screen — NCS track titles + KayKit credit | Implementation agent | Before any audio ships | ⬜ Cheap safeguard even where the licence permits use; NCS attribution is a standing condition. **Now gated by item 27** |
+| 27 | **Provenance and licence for the 5 user-supplied SFX** | User | Before audio ships | 🔴 Five WAVs appeared in `Ramu - The Chef/Audio/SFX/` at 13:10 IST (`Ah`, `Level Complete`, `Level Up`, `Pouring Water`, `Power Up`). Nothing can ship until we know where they came from — RUN's originality rules and the attribution screen both depend on it |
+| 28 | Convert supplied audio to a web-shippable format | Implementation agent | With P5 | 🟠 3.0 MB of uncompressed WAV for 5 cues. We just cut 16 MB out of the payload; re-adding 3 MB of WAV would undo a third of it |
 | 20 | Answer the §5 distribution questions (channels + Discord go/no-go) | User | **Today** | 🔴 The only thing standing between the entry and its first real players |

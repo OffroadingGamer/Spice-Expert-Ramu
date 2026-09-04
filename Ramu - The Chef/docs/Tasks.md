@@ -5,8 +5,8 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 12:57 IST
-**Live:** v1.1.0 public · <https://w.run/puneetmakes/spice-expert-ramu>
+**Last updated:** Sep 4 2026, 13:24 IST
+**Live:** v1.2.0 public · <https://w.run/puneetmakes/spice-expert-ramu>
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST**
 
 ---
@@ -58,10 +58,10 @@
 
 | | |
 |---|---|
-| **Now** | S1 · P1.5 payload · P7 telemetry · P6 first post |
+| **Now** | S1 · P7 telemetry · P6 first post · P5 audio (files arrived) |
 | **Next** | S1 · CP4 items · P2 core-loop read |
 | **Later** | S2 return loop · S3 board layout + levels |
-| **Blocked on user** | Phase 1.5 go-ahead · distribution channels · SFX cues |
+| **Blocked on user** | Distribution channels · audio provenance/licence |
 
 ---
 
@@ -98,15 +98,22 @@
 - [ ] KayKit 3D → sprite render pass
 
 ### P1.5 · Performance & Hygiene
-- [!] Downscale 15 assets — 16.30 MB → under 1 MB
-- [!] Exclude `*.png.json` sidecars from `dist/`
-- [!] Visual regression check after downscale
+- [x] Downscale 15 assets — 16.30 MB → 0.64 MB (v1.2.0)
+- [x] Exclude `*.png.json` sidecars from `dist/` (v1.2.0)
+- [x] Visual regression check after downscale
+- [x] Repeatable `npm run art:resize` + masters kept in `art-source/`
 - [ ] Close `textGen` 500k/day credit cap
 
 ### P7 · Telemetry
 - [ ] Wire core-loop events
 - [ ] Wire session-end events
 - [ ] Verify events land in `analytics export`
+
+### P5 · Audio
+- [~] 5 SFX WAVs supplied by user — provenance + licence unconfirmed
+- [ ] Convert to compressed web formats before shipping
+- [ ] Wire cues to game events
+- [ ] BGM track — folder created, empty
 
 ### P6 · Distribution
 - [!] Choose posting channels

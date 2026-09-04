@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 4 2026, 12:57 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 13:24 IST (read from the system clock)
 
 ---
 
@@ -821,6 +821,66 @@ counts and full strategy.
 
 ---
 
+### Sep 4, 13:24 IST · Phase 1.5 shipped — v1.2.0 · the payload defect closed
+
+The first return handover written *after* the human gate was installed, and the first one
+where the report survived independent verification without a correction.
+
+**What shipped.** Every generated asset downscaled from its 1024×1024 generation size to
+the ship size in Specs §5a. The `critical` bundle went from **16.30 MB to 0.64 MB** — a
+96% cut — and decoded texture memory from ~60 MB to ~3.9 MB. On the 5 Mbps connection the
+budget was written against, that is roughly 27 seconds of blocking preload reduced to
+about one. Given that 26 of our 35 players to date arrived on mobile-web, this was the
+difference between a link that opens and a link that gets closed.
+
+**What I verified rather than accepted**, and how:
+
+| Claim | Check | Result |
+|---|---|---|
+| 0.64 MB bundle | `du -sb public/images` | 667,292 bytes — exact |
+| Ship sizes correct | IHDR bytes of all 16 PNGs | every one matches §5a |
+| Alpha preserved | IHDR colour type / bit depth | 6 / 8 — RGBA, no flatten |
+| Masters preserved | IHDR of `art-source/` files | still 1024², 17 MB, gitignored |
+| Zero sidecars in build | `ls public/images/*.png.json` | 0 |
+| Nothing sensitive tracked | `git ls-files \| grep png.json` | 0 |
+| v1.2.0 on all three channels | `rundot game info` | Private / Review / Public all 1.2.0 |
+| Correct account | `rundot whoami` | offroadinggamedev@gmail.com |
+| Zero credits spent | `rundot credits` | still 2,325 / 17 calls |
+
+The one thing worth naming as good practice: the agent did not write a throwaway resize
+command. It installed `sharp` as a devDependency and committed `scripts/resize-art.mjs`
+with the size table as data and a guard that throws if a master is missing. When Phase 2b
+regenerates the art, the downscale runs by name. That is the difference between fixing a
+defect and closing it.
+
+**The deviation, and why it stands.** The build shipped as **v1.2.0**, not the v1.1.1 the
+handover specified — `rundot deploy` defaults to a minor bump and no `--bump patch` was
+passed. The agent chose not to re-deploy for a cosmetic version number, which was the
+right call: a second upload of identical content would leave a dangling version for no
+gain. Accepted. The lesson is mine, not the agent's — **the handover specified a target
+version without specifying the flag that produces it.** A handover that names an outcome
+the tool does not produce by default has to name the flag too.
+
+**A number that moved on its own again.** Credit balance went 132,275 → **132,575** with a
+spend column unchanged at 2,325 across 17 calls. That is the second unexplained rise; the
+first was +8,620. Two data points make it a pattern rather than an anomaly, so item 23 is
+rewritten to say so. Still not counted on in any budget.
+
+**Found while verifying, not reported by the agent** (it was outside their scope, and
+correctly so): five SFX `.wav` files appeared in `Ramu - The Chef/Audio/SFX/` at 13:10
+IST, with an empty `BGM/` folder beside them — the user's own contribution. Three
+observations, all now open items. They are uncompressed WAV totalling 3.0 MB, which would
+give back a third of the payload we just won. Their provenance is unknown, and nothing
+with unknown provenance can ship into a jam that audits originality. And the folder is
+untracked but not ignored, so it would land in the next commit as-is.
+
+**Traffic, read at 13:24 IST:** unchanged from the 12:14 pull — Sep 4 still 26 uniques
+across 31 sessions, 35 cumulative. Seventy minutes, no new arrivals. Nothing has been
+shared yet, so this is the natural ceiling of discovery-only traffic, and it is the
+argument for item 20 stated as a measurement rather than an opinion.
+
+---
+
 ## 2. Checkpoint ledger
 
 Runbook checkpoints. Update as each passes, with the actual time.
@@ -861,7 +921,7 @@ uniques are the score; the trend matters more than any single day.
 | Date | Daily uniques | Cumulative | Board position | Shipped that day | Shared on |
 |---|---|---|---|---|---|
 | Sep 3 | **9** (first reported as 2 — export lag) | 9 | #3 | v1.0.0 public, v1.0.1 UI fixes | — **nowhere** |
-| Sep 4 | **26** by 12:14 IST, day still open | **35** | #3 (13 plays) | **v1.1.0 — title fix + 15 assets** | — **still nowhere.** All organic |
+| Sep 4 | **26** at both 12:14 and 13:24 IST, day still open | **35** | #3 (13 plays) | **v1.1.0** title fix + 15 assets · **v1.2.0** payload 16.30 → 0.64 MB | — **still nowhere.** All organic |
 
 ---
 
@@ -885,6 +945,13 @@ uniques are the score; the trend matters more than any single day.
 7. **Pull the numbers before arguing about the work.** One `analytics export` turned
    "we should probably share it" into "2 players, both of them us" — which is an
    argument nobody has to have twice.
-8. **Record what to ignore, not just what to do.** Two unlisted games on the account
+8. **A handover that names an outcome must name the flag that produces it.** Phase 1.5
+   asked for v1.1.1 and got v1.2.0, because `rundot deploy` bumps minor by default and
+   the handover never said `--bump patch`. Specify the mechanism, not just the target.
+9. **Verify the report against the artefact, not against itself.** Phase 1.5's numbers
+   were all correct — but they were only *known* to be correct after reading IHDR bytes,
+   `du`, `git ls-files` and `rundot game info`. The gate is worth nothing if the briefing
+   is a paraphrase of the report.
+10. **Record what to ignore, not just what to do.** Two unlisted games on the account
    look exactly like entry candidates in `list-games`. §0 exists so a tired future
    session cannot deploy to the wrong game ID.

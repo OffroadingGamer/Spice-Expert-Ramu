@@ -53,6 +53,7 @@ npm install
 npm run dev        # Vite dev server; RUN SDK calls are mocked
 npm run build      # production build into dist/
 npm run balance    # headless balance simulation over the wave data
+npm run art:resize # re-derive public/images from the 1024px masters in art-source/
 ```
 
 Deploying requires the `rundot` CLI and an authenticated RUN creator account.

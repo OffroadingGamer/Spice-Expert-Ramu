@@ -9,21 +9,21 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 12:57 IST (read from the system clock)
-**Implementation status:** ▶ **LIVE — v1.1.0 public + approved.**
+**Last updated:** Sep 4 2026, 13:24 IST (read from the system clock)
+**Implementation status:** ▶ **LIVE — v1.2.0 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
 ### Live state snapshot
 
 | | |
 |---|---|
-| Public version | **v1.1.0** (verified on Private/Review/Public via `rundot game info`) |
+| Public version | **v1.2.0** (verified on Private/Review/Public via `rundot game info`) |
 | Live audience | **35 unique players** (Sep 3: 9 · Sep 4: 26 by 12:14 IST). **26 of 35 on mobile-web** |
 | Repo | `September GameJam/jam-entry` (sibling of the docs folder) |
 | Stack | Vite + Pixi.js v8 + React 19 + Tailwind v4, from `september-jam-tower-defense` |
-| Art | **15 generated assets live** (Phase 1, v1.1.0), all wired into the `critical` bundle. ⚠️ **All 1024×1024 — 16.30 MB of blocking preload. Phase 1.5 downscales.** See §5a |
+| Art | **15 generated assets live**, all in the `critical` bundle. ✅ **Downscaled in v1.2.0: 16.30 MB → 0.64 MB, ~60 MB → ~3.9 MB decoded.** 1024px masters kept out of `public/` in `art-source/`; `npm run art:resize` reproduces the ship sizes. See §5a |
 | Board | Still the kit's example serpentine path and pad layout. **Phase 2 replaces this** |
-| Credits | **132,275** (2,325 spent on 17 `imagegen` calls in Phase 1; the balance *rose* — unexplained, Plan §7 item 23) |
+| Credits | **132,575** (2,325 spent on 17 `imagegen` calls in Phase 1; Phase 1.5 spent **0**). The balance has now risen **twice** with no spend — unexplained, Plan §7 item 23 |
 | Thumbnail | Real, generated, exactly 512×512 JPG |
 | Title | ✅ Fixed — SVG `textLength` + `lengthAdjust`, verified 320/390/430 |
 
@@ -209,6 +209,23 @@ needs regeneration and never costs credits.
 > storage URL that embeds the game id and a creator account identifier. Fifteen of them
 > shipped in v1.1.0. They are not credentials, but they publish the art prompts and an
 > account id for no benefit. Keep them locally as provenance; keep them out of the build.
+>
+> ✅ **Closed in v1.2.0.** Masters and sidecars moved to `jam-entry/art-source/` — outside
+> `public/`, so Vite cannot copy them, and gitignored, so they cannot be pushed. `dist/`
+> verified to contain zero `*.png.json`.
+
+**Measured result of the v1.2.0 downscale** — every file verified against its IHDR, not
+its reported size:
+
+| | Before (v1.1.0) | After (v1.2.0) |
+|---|---|---|
+| `critical` bundle | 16.30 MB | **0.64 MB** (667,292 bytes) |
+| Largest asset | ~1.53 MB | **95.6 KB** (`enemy-stag`, 256²) |
+| Decoded texture memory | ~60 MB | **~3.9 MB** |
+| Preload @ 5 Mbps | ~27 s | **~1 s** |
+
+All 15 stayed in `critical`; nothing needed deferring. Colour type 6 / 8-bit — alpha
+intact, no background flatten.
 
 ---
 

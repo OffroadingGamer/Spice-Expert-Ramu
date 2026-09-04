@@ -42,3 +42,9 @@ coverage/
 # rundot generate image writes these beside each PNG. They carry the
 # prompt, seed, and a storage URL embedding the creator account id.
 *.png.json
+
+# ── Supplied audio: held back until provenance/licence is confirmed ────
+# 5 SFX WAVs + an empty BGM folder arrived Sep 4. Uncompressed and of
+# unknown origin — they must not be published to a public repo until we
+# know where they came from. Plan §7 items 27, 28.
+Ramu - The Chef/Audio/
