@@ -12,7 +12,7 @@
 game `PpB5gECS0AMU49mGYAKM` · <https://w.run/puneetmakes/spice-expert-ramu>
 Current build state and open debt: [Specs.md](Specs.md) · phase queue: [Plan.md](Plan.md) §1b
 
-> ⚠️ **Design/build gap, narrowing.** The frozen design below describes a vertical
+> ⚠️ **Design/build gap, MEASURED — anti-reskin test 2 of 4, Plan §1e.** The frozen design below describes a vertical
 > ticket rail with dish tickets and station art.
 > **Closed in v1.1.0 (Phase 1):** dish and station art — 15 generated assets replaced the
 > kit's procedural bugs and animals, and the title renders correctly at every phone width.
