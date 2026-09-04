@@ -29,8 +29,9 @@ the layout proposal asks for.
 | `No-2-40.png` | 40 | Cookware, pots, a few raw ingredients |
 | `No-3-51.png` | 51 | Mostly ingredients and jars — see RecipeList |
 
-**Prop candidates read off sheet 1** (my identification from the art — correct me where
-I've misread):
+> 🛑 **The `P-xx` table below is SUPERSEDED by [SpriteIndex.md](SpriteIndex.md), Sep 4 20:24 IST.** Those labels were eyeballed off the whole sheet at once. Every sheet has since been sliced on its alpha channel into individually numbered, named items — use `S1-12` style ids. Three of the old picks turned out to be **dishes, not stations**, so §3 was re-pinned. Kept here only to explain the older references.
+
+**Prop candidates read off sheet 1** (superseded — see above):
 
 | # | Reads as | Natural interaction |
 |---|---|---|
@@ -116,68 +117,79 @@ You asked to work these out rather than hand back a questionnaire, so this is a
 
 ### 3a. The first four — enough for levels 1–5
 
-| Prop | Art | Verb | Feedback |
-|---|---|---|---|
-| **Kadhai** | P-16, sheet 1 | fry | `sizzle` · oil-splatter · shake 4 · 200 ms |
-| **Handi** | P-10, sheet 1 | simmer / boil | `bubble` · steam-plume · shake 2 · 320 ms |
-| **Masala grinder** | P-17, sheet 1 | grind | `grind` · dust-puff · shake 5 · 260 ms |
-| **Tandoor** | P-19, sheet 2 | bake / char | `roar` · ember-puff · shake 3 · 220 ms |
+**Re-pinned Sep 4, 20:24 IST** against [SpriteIndex.md](SpriteIndex.md). Three of my
+earlier picks were **dishes, not stations** — the old "P-16, pan of chillies" I wanted as
+the fry station is S1-31, a *bowl of cooked chillies*. Slicing the sheets caught that.
 
-**Why these four:** between them they carry nine interactions and cover every chain in
-the level 1–5 recipes. The Tandoor is the signature — it is the only prop in either
-pack that already reads Indian without a repaint.
+| Prop | Sprite | Verb | Feedback |
+|---|---|---|---|
+| **Kadhai** | **S1-14** gas range with oven | fry | `sizzle` · oil-splatter · shake 4 · 200 ms |
+| **Handi** | **S1-12** footed cauldron | simmer / boil | `bubble` · steam-plume · shake 2 · 320 ms |
+| **Masala grinder** | **S1-36** dark urn on a pedestal | grind | `grind` · dust-puff · shake 5 · 260 ms |
+| **Tandoor** | 🔥 **S2-05** wood-fired range, lit | bake / char | `roar` · ember-puff · shake 3 · 220 ms |
+
+**Why these four:** they carry every chain in the level 1–5 recipes between them. S2-05 is
+the signature — **the only lit, flaming station in either pack**, and the only one that
+reads Indian without a repaint. S1-12 is a near-perfect handi as drawn.
 
 ### 3b. Two more, from level 3
 
-| Prop | Art | Verb | Why it arrives late |
+| Prop | Sprite | Verb | Why it arrives late |
 |---|---|---|---|
-| **Prep counter** | P-08, sheet 1 | knead | It is the **gate producer** — the only prop that tags an ingredient `kneaded`. Introducing it *is* the gate tutorial |
-| **Masala dabba** | P-18, sheet 1 | season | Second gate. Tiny sprite change, so it teaches that a gate can be subtle |
+| **Prep counter** | **S1-17** wooden counter | knead | The **gate producer** — the only prop that tags an ingredient `kneaded`. Introducing it *is* the gate tutorial |
+| **Masala dabba** | **S2-13/14/15** the three spice bowls | season | Second gate. A trio of bowls, so the colour can match what is being added |
 
-> ⚠️ **P-08 is the identification I am least sure of.** I read it as a wooden counter
-> with a built-in oven; I want it as a plain prep counter. If the oven detail is
-> unmistakable this becomes a crop job, or we borrow a counter module from the isometric
-> pack and repaint it. Worth your eye before it becomes an id.
+> ✅ **The P-08 worry is resolved.** Seen at full size as S1-17, the wooden top dominates
+> the sprite and already carries two pans; the oven is a small inset panel underneath. It
+> reads as a counter. **No crop needed.**
 
 ### 3c. Stretch — only if time allows
 
-| Prop | Art | Verb | Note |
+| Prop | Sprite | Verb | Note |
 |---|---|---|---|
-| **Rice cooker** | P-09, sheet 1 | boil rice | Deliberately *worse* than the Handi: one job instead of two, so it should cost far less. That is the whole economy lesson in one pair of props |
-| **Chai urn** | P-04, sheet 1 | brew | `milk → chai`. The strongest thematic beat we are not using — but **`chai` has no sprite**, so it is the first generation job, not a pack item |
+| **Rice cooker** | **S1-19** copper rice cooker | boil rice | Deliberately *worse* than the handi: one job instead of two, so it should cost far less. That is the whole economy lesson in one pair of props |
+| **Chai urn** | **S1-04** espresso machine | brew | `milk → chai`. The strongest thematic beat we are not using — but **`chai` has no sprite**, so it is the first generation job, not a pack item |
 
 ---
 
-## 4. The interaction graph — every transform, all sprite-backed
+## 4. The interaction graph — every transform, pinned to a real sprite
 
 `after` is what the ingredient must already carry; `tags` is what it carries onward.
+Every `in` and `out` below is a numbered item in [SpriteIndex.md](SpriteIndex.md).
 
-| Prop | `in` | `out` | `after` | Sprite for `out` |
+| Prop | `in` | `out` | `after` | Container changes? |
 |---|---|---|---|---|
-| Prep counter | `flour` | `dough` | — | dough in a tin, sheet 3 |
-| Prep counter | `mango` | `mango-pickle` | — | green pickle jar, sheet 3 |
-| Tandoor | `dough` | `naan` | `kneaded` | naan slabs in tins, sheet 3 |
-| Handi | `dal-raw` | `dal-cooked` | — | dal in a pan #1, sheet 2 |
-| Handi | `rice-raw` | `rice-cooked` | — | bowl of rice, sheet 1 |
-| Masala dabba | `dal-cooked` | `dal-tadka` | `simmered` | dal in a pan #2, sheet 2 |
-| Kadhai | `okra` | `bhindi-fry` | — | chillies/carrots in a pan, sheet 1 |
-| Kadhai | `tomato` | `tomato-gravy` | — | tomato curry in a pan, sheet 3 |
-| Kadhai | `cabbage` | `pakora` | — | fried pieces, sheet 3 |
-| Grinder | `whole-spices` | `garam-masala` | — | spice bowl, sheet 1/2 |
-| Grinder | `coriander` | `green-chutney` | — | sauce bowl, sheet 2 |
+| Prep counter | `flour` **S1-15** | `dough` **S1-28** | — | sack → bowl |
+| Prep counter | `mango` **S3-01** | `mango-pickle` **S3-06** | — | fruit → jar |
+| Tandoor | `dough` **S1-28** | `naan` **S1-32** | `kneaded` | ✅ **no — bowl to bowl** |
+| Handi | `dal-raw` **S3-16** | `dal-cooked` **S2-30** | — | jar → pan |
+| Handi | `rice-raw` **S2-26** | `rice-cooked` **S1-07** | — | jar → pan |
+| Masala dabba | `dal-cooked` **S2-30** | `dal-tadka` **S2-31** | `simmered` | ✅ **no — pan to pan** |
+| Kadhai | `okra` **S3-24** | `bhindi-fry` **S1-31** | — | loose → bowl |
+| Kadhai | `tomato` **S3-10** | `tomato-gravy` **S3-32** | — | loose → pan |
+| Kadhai | `cabbage` **S2-02** | `pakora` **S3-34** | — | ✅ **no — loose to loose** |
+| Grinder | `whole-spices` **S2-09** | `garam-masala` **S2-15** | — | sticks → bowl |
+| Grinder | `coriander` **S3-43** | `green-chutney` **S2-14** | — | ✅ **no — bowl to bowl** |
 
-> ⚠️ **A spawn may carry initial tags, and it has to.** Levels 2, 4 and 5 spawn
-> `dough` ready-made rather than `flour`, and ready-made dough *is* kneaded — so its
-> spawn entry declares `"tags": ["kneaded"]` and the tandoor accepts it. Without this the
-> `after` gate would reject every pre-made ingredient, which is not what a gate is for.
-> **A gate asks what has happened to an ingredient, not which prop did it.**
+> ⚠️ **A hot-swap works best when only the food changes, not the container.** A dish
+> that jumps from a sack to a bowl mid-belt reads as *substitution*; one that stays in the
+> same vessel and only changes colour reads as *cooking*. Four pairs above already have
+> this. **The tandoor's `dough → naan` is one of them** — which is lucky, because it is
+> the signature interaction of the whole game. The weak pairs are the raw-produce ones,
+> and those are the least surprising: a tomato genuinely does go into a pan.
 
 Tags produced: Prep counter → `kneaded`; Handi → `simmered`; Grinder → `ground`;
 Kadhai → `fried`; Tandoor → `baked`.
 
-Note how much the props double up. The **Handi covers dal and rice**, the **Kadhai
-covers three ingredients**, the **Grinder covers two**. That is not tidiness — it is
-the reason four slots are enough, which §5 makes precise.
+> ⚠️ **A spawn may carry initial tags, and it has to.** Levels 2, 4 and 5 spawn `dough`
+> ready-made rather than `flour`, and ready-made dough *is* kneaded — so its spawn entry
+> declares `"tags": ["kneaded"]` and the tandoor accepts it. Without this the `after` gate
+> would reject every pre-made ingredient, which is not what a gate is for. **A gate asks
+> what has happened to an ingredient, not which prop did it.**
+
+Note how much the props double up. The **handi covers dal and rice**, the **kadhai covers
+three ingredients**, the **grinder covers two**. That is not tidiness — it is the reason
+four slots are enough, which §5 makes precise.
 
 ---
 

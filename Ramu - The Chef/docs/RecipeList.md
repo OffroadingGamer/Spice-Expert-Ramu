@@ -14,8 +14,13 @@ Companion to [PropList.md](PropList.md). A recipe drives two things on screen at
 
 ## 1. Ingredients we own
 
+> 🛑 **SUPERSEDED by [SpriteIndex.md](SpriteIndex.md), Sep 4 20:24 IST.** All three
+> sheets have been sliced into **129 individually numbered, named items** with contact
+> pages you can read at full size. The eyeballed table below is kept only to explain
+> older references. **Use `S3-24` style ids.**
+
 All from `Art/01 - Kitchen Essentials/`, sheet **`No-3-51.png`** unless noted. Identified
-by eye from the art — **please correct any I've misread before these become ids.**
+by eye from the art — superseded, see above.
 
 ### 1a. Produce — the clearly readable ones
 
