@@ -1,0 +1,44 @@
+# ── Dependencies ──────────────────────────────────────────────
+node_modules/
+
+# ── Build output ──────────────────────────────────────────────
+dist/
+dist-ssr/
+*.tgz
+*.zip
+
+# ── Secrets — never commit ────────────────────────────────────
+# rundot CLI credentials live in %USERPROFILE%\.rundot_cli, outside this repo.
+.env
+.env.*
+*.pem
+*.key
+*.p12
+.rundot_cli/
+.rundot/
+
+# ── Fetched SDK docs (regenerate: npx rundot-sdk-setup -y) ─────
+**/rundot/docs/
+**/.rundot-docs
+
+# ── Logs ──────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# ── OS / editor cruft ─────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*~
+
+# ── Test / coverage ───────────────────────────────────────────
+coverage/
+
+# ── Generation sidecars: keep locally, never publish ──────────
+# rundot generate image writes these beside each PNG. They carry the
+# prompt, seed, and a storage URL embedding the creator account id.
+*.png.json
