@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 20:24 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 21:03 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -702,6 +702,63 @@ property of *this* art, and moves if the art style does.
 The exact numbers move with the final billboard width — re-derive from the formula once
 `Art/Billboard.png` is styled and its inner panel measured. The **shape** of the result
 (a hard cap in the 5–6 range) does not move.
+
+---
+
+### 8a.7 🔒 Take QA — measured Sep 4 2026, 21:03 IST
+
+Seven takes exist. The audio agent reported it could not judge fade, key drift or
+vocals from its side; those are **measurable without listening**, so they were measured.
+Reproduce with `tools/qa_bgm.py` (needs `soundfile`; libsndfile 1.2+ decodes MP3).
+
+| Take | peak | rms | head Δ | tail Δ | seam | bpm | verdict |
+|---|---|---|---|---|---|---|---|
+| `bgm-menu-take1` | −4.3 | −17.8 | −0.8 | −1.0 | **0.6** | **112** | ✅ **clean on every measure** |
+| `bgm-menu-take2` | −2.9 | −16.6 | **−4.0** | **−3.4** | 1.8 | 110 | ❌ fades both ends |
+| `bgm-service-high-take1` | −4.7 | −20.7 | −0.4 | **−6.0** | 5.5 | **75** | ❌ fade-out |
+| `bgm-service-high-take2` | −1.9 | −16.3 | +1.3 | −2.8 | 4.6 | **75** | ⚠️ no fade, but tempo is wrong |
+| `bgm-service-low-take1` | −2.0 | −15.5 | −2.6 | −2.4 | 4.5 | **112** | ✅ best of the low takes |
+| `bgm-service-low-take2` | −6.1 | −24.0 | +0.8 | **−3.1** | **11.2** | 112 | ❌ fade-out, worst seam |
+| `bgm-service-low-take3` | −1.5 | −19.9 | +0.1 | −2.6 | 6.2 | **75** | ⚠️ tempo is wrong |
+
+**head Δ / tail Δ** — level of the first / last 0.5 s against the whole track, dB. **A
+fade is fatal**: it cannot be looped, and `loopStart` / `loopEndTrim` do not fix it, they
+only trim encoder padding. Under about −3 dB is a real fade.
+**seam** — level step between the last and first 0.25 s. This is what a listener hears as
+a click or a lurch each time the loop wraps.
+
+**Three findings the agent could not have seen, and one it should have.**
+
+| Finding | Detail |
+|---|---|
+| 🔒 **Three takes came back near 75 BPM against a prompt that says 112 nine times** | `service-high` take 1 *and* 2, plus `service-low` take 3. The tempo figure is a crude onset-autocorrelation estimate and 75 ≈ 112 × ⅔, so a triplet feel could be fooling it — **but both high-intensity takes measuring slower than the low-intensity ones is the wrong direction for the cue that exists to raise tension.** Needs a listen before a re-roll is bought |
+| ⚠️ **The three cues are not loudness-matched** | RMS spans −15.5 to −24.0 dB — **8.5 dB**. Crossfading between cues at these levels is an audible volume jump. Normalise to a common target in Phase 5, before `MUSIC.gain` is tuned by ear, or the gain figure will be fitted to whichever take was loudest |
+| ✅ **All 7 takes are genuinely distinct** | 7 distinct sha256 and 7 distinct `generationId`. Six files share a byte size to the byte, which looks alarming and is not — constant 128 kbps × an identical 30.04 s duration gives an identical size |
+| ✅ **Spend verified independently** | `rundot credits` reports **131,770** and audiogen at **8 calls / 791 credits**. Before the batch it was 2 calls / 113. Delta is exactly **6 calls / 678 credits** — so the four rate-limited attempts really were never charged |
+
+**What ships, on the measurements alone:**
+
+- **menu** → `bgm-menu-take1`. Clean on every measure, and a 0.6 dB seam is the best
+  number in the table by a wide margin.
+- **service-low** → `bgm-service-low-take1`, the take from the earlier session. Correct
+  tempo, no fade, and the 4.5 dB seam is workable with `loopEndTrim`.
+- **service-high** → **nothing yet.** Take 1 fades out; take 2 is technically clean but
+  measures slower than the low-intensity cue. **This is the one cue still open.**
+
+### 8a.8 The API rate limit — discovered Sep 4 2026, during the batch
+
+**Four of six generations returned `VenusServerApiException: Rate limited; retry in 300
+seconds` on first attempt.** Confirmed via `rundot credits` each time that **a rate-limited
+call is never charged**; waiting out the cooldown and retrying the prompt unchanged
+succeeded every time.
+
+Budget **~5 minutes per generation after the first**, not the couple of minutes the
+handover assumed — the six-take batch took ~25 minutes. Worth knowing before any batch
+is scheduled against a deadline.
+
+> Also: `--game-id` auto-detect fails from `Ramu - The Chef/`, because `jam-entry/` is a
+> **sibling** of it under the git root, not a child. Pass `PpB5gECS0AMU49mGYAKM`
+> explicitly. Same directory-shape trap that cost the planning agent time on Sep 4.
 
 
 ## 9. Deploy pipeline

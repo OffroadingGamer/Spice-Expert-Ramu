@@ -1,6 +1,6 @@
 # SpriteIndex — every item in the Kitchen Essentials packs, numbered
 
-**Last updated:** Sep 4 2026, 20:24 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 21:03 IST (read from the system clock)
 **Status:** 🟢 Complete — **128 items sliced and named.** ⬜ Names are my read of the art; correct any that are wrong before they become ids
 
 Companion to [PropList.md](PropList.md) and [RecipeList.md](RecipeList.md).
