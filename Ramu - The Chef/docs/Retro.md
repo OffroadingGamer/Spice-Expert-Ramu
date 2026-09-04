@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 4 2026, 15:03 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 15:20 IST (read from the system clock)
 
 ---
 
@@ -1104,6 +1104,68 @@ and §1e now closes it.
 
 ---
 
+### Sep 4, 15:20 IST · Audio unblocked (CC0) · the handover that shrank on inspection
+
+User cleared the five supplied WAVs as **CC0** and named three placements: `Ah` at the
+game-over/try-again moment, `Level Up` on any upgrade, `Level Complete` after a wave
+clears. Item 27 closes; item 19's credits screen is **ungated for SFX** — CC0 waives
+attribution outright, so nothing is owed. NCS attribution still stands if BGM ever ships,
+which is a separate obligation and stays open.
+
+**Conversion was never optional, and the number says so.** The three named clips are
+**1,433,008 bytes raw — 2.15× the entire shipped game** (667,292 B). Shipping them as
+delivered would have undone Phase 1.5 twice over, thirteen hours after Phase 1.5 landed.
+`Ah.wav` is a 24-bit/48 kHz stereo export carrying a broadcast `bext` chunk — a pro-audio
+master handed to a browser — and four of the five overstate their RIFF size by 4 bytes.
+Harmless individually; collectively the reason re-encoding is the job rather than copying.
+
+**The handover shrank once I read the file it targeted.** I opened this expecting to
+design a sample-playback system. `src/audio/audio.ts` already had the swap-in path written
+into its header comment by the kit's author — *"SFX: fetch + decodeAudioData small files
+(public/audio/) at boot, then have each named sfx.* function play its AudioBufferSourceNode
+into sfxBus — call sites never change."* And all three requested moments already existed as
+single-meaning named functions:
+
+| Clip | Function | Fires at |
+|---|---|---|
+| `Ah` | `sfx.lose()` | `towerScene.ts:432` on the `lost` event — and `EndScreen` renders on `tdPhase === 'lost'`, so it already lands **exactly** as the try-again window appears |
+| `Level Up` | `sfx.upgrade()` | 4 sites: in-run upgrade, two meta-upgrade buttons, end-screen ad bonus |
+| `Level Complete` | `sfx.waveClear()` | `towerScene.ts:430` |
+
+**Zero call sites move.** The whole change is one file. `sfx.win()` is separate, so "Ah"
+correctly cannot fire on the campaign milestone — a bug I would have written by hand if I
+had built the mapping before reading the seam.
+
+**The design decision worth keeping is the fallback posture.** The synth stays, permanently,
+underneath every one of the three functions. If the fetch fails, if `decodeAudioData`
+throws, if the buffer has not arrived yet, the player hears exactly what they hear today.
+Three sound cues are not worth any probability of a silent game on a device we cannot test
+— and with the App Check wall blocking headless verification against production, "we cannot
+test it" is the honest description of most of the audience.
+
+**A frozen-item drift caught before it happened, not after.** Specs §8a froze the audio
+format as `.ogg`/`.m4a` **sprites**; the handover specifies **MP3, three separate files**.
+Rather than let that drift silently — which is the precise failure §1e diagnosed yesterday
+— §8a now carries the revision with its reasons: `.ogg` fails *silently* on older iOS
+Safari and 26 of 35 players are mobile-web, and the sprite rule exists to cap decoded
+buffer count, which three buffers already satisfies. Flagged to revisit at ~8 cues. This
+belongs in Specs rather than §3 below, because §3 is scoped to **GDD** frozen items and
+this is a Specs decision — worth stating so the distinction survives.
+
+**What no agent in this project can verify: how it sounds.** Mixing the samples against the
+music bed and the remaining synth SFX is a human listening test. The handover says so
+explicitly and requires the three gain constants to sit in one table at the top of the file
+so retuning is a one-line edit. An implementation report claiming the balance is good would
+be a claim neither agent is equipped to make.
+
+**Still only 3 of 8 cues.** The five unpicked ones — sizzle, plate-up bell, ticket-print,
+station-placed, walkout thud — are the *thematic* ones, the ones GDD §12 argues do the
+theme's work. The three picked today are generic arcade feedback: welcome, cheap, and not
+the same job. `Power Up` and `Pouring Water` sit unused and are logged as item 41 rather
+than quietly dropped.
+
+---
+
 ## 2. Checkpoint ledger
 
 Runbook checkpoints. Update as each passes, with the actual time.
@@ -1201,6 +1263,12 @@ uniques are the score; the trend matters more than any single day.
    "damage → doneness, pure presentation, ~1 h" first. The frozen design asked for
    component pips — mechanical, structural, and the actual point. Cheap and adjacent is
    not the same as cheap and sufficient.
-17. **Record what to ignore, not just what to do.** Two unlisted games on the account
+17. **Read the seam before designing one.** The audio job looked like "build a sample
+   system." The target file already documented the swap-in path in its header comment, and
+   all three requested moments were already single-meaning named functions with
+   `sfx.lose()` firing exactly where the end screen mounts. The handover collapsed to one
+   file and zero moved call sites — and reading first also avoided wiring the clip into
+   `sfx.win()`, where it must not fire.
+18. **Record what to ignore, not just what to do.** Two unlisted games on the account
    look exactly like entry candidates in `list-games`. §0 exists so a tired future
    session cannot deploy to the wrong game ID.

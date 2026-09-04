@@ -8,7 +8,7 @@
 > plan item slips or is cut, do not silently delete it — strike it, move it, and
 > log the reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 15:03 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 15:20 IST (read from the system clock)
 **Status:** ▶ **LIVE — v1.1.0** at https://w.run/puneetmakes/spice-expert-ramu since ~15:05 PT Sep 3. Scoring clock running.
 **Scope:** cuisine level run (GDD §10.10) · SFX at P1 (§12) · 3D→sprite art pipeline (§11a).
 
@@ -178,7 +178,7 @@ The root of it is a verb mismatch: **shooting is not cooking.**
 | **2** | **Maze → lanes.** Straight vertical rail; tickets enter top, the pass is the bottom edge | A maze is a puzzle about routing; a line is a kitchen. PvZ is the reference, not Bloons | ~3 h · `CONFIG.path` · **needs `npm run balance` after** |
 | **3** | **Stations straddle the lane** rather than sitting beside it | Even with the shooting sim untouched underneath, the read becomes preparation | folded into 2 · `CONFIG.pads` |
 | **4** | **Walkout feedback** — a customer leaving and a slip spiked, not a life counter ticking down | The failure state is where theme lands hardest | ~1 h |
-| **5** | **SFX** — sizzle on entering a grill's range, bell on plate-up, ticket-printer chatter on rush start | Sound does more thematic work per hour than art | ~2 h · blocked on cue picks |
+| **5** | **SFX** — sizzle on entering a grill's range, bell on plate-up, ticket-printer chatter on rush start | Sound does more thematic work per hour than art | ~2 h · **unblocked**; 3 non-thematic cues in flight (Phase 3), but *these three* still need picks — they are the ones that do the theme work |
 | 6 | Projectiles → heat bursts and steam, or none for the tandoor | Lowest leverage; the sim expects projectiles | later |
 
 ### The shape that matters for sequencing
@@ -703,7 +703,7 @@ and at most one follow-up if something genuinely notable ships.
 | 10 | **Verify NCS licence covers interactive/game use** | User | Before any track ships | ✅ **Cleared by user Sep 4, 06:00 PT — "license allows."** Gate removed. Carry the attribution line into a credits screen anyway (item 19) |
 | 11 | **Verify KayKit licence — creator CC0 vs Unity Asset Store EULA** | User | Before the art pass | ✅ **Cleared by user Sep 4, 06:00 PT — "license allows."** The Phase 2a render pipeline is unblocked |
 | 12 | Render KayKit props to transparent PNG sprites (fixed angle + light rig) | User | Sep 10 | ⬜ Feeds the skin layer; zero credit cost |
-| 13 | Pick SFX set — 8 cues, see GDD §12 | User | Sep 5 | ⬜ Agent requests specific cues by name and timing |
+| 13 | Pick SFX set — 8 cues, see GDD §12 | User | Sep 5 | 🟡 **3 of 8 picked Sep 4** — `Ah` → shift-over/try-again, `Level Up` → upgrade, `Level Complete` → rush cleared. Still unpicked, and these are the *thematic* five: sizzle, plate-up bell, ticket-print, station-placed, walkout thud |
 | 7 | Does the TD kit already ship a level/wave system? | Agent | Tonight | ✅ **YES** — `data/waves.ts` has authored waves + deterministic endless, plus a headless balance sim. **Re-estimate the ~9 h level run down before Sep 8** |
 | 8 | Author ~18 levels (3 cuisines × 6) | **User** | Sep 10 | ⬜ Schema in [Specs.md](Specs.md) §6a — data only, no code |
 | 9 | Cuisine 4+ beyond `counter` / `tandoor` / `wok` | User | — | ⏭ Deferred. Cut-list item 11 — level count is a treadmill |
@@ -725,12 +725,13 @@ and at most one follow-up if something genuinely notable ships.
 | 38 | **Component pips + station typing** | Implementation agent | Sep 6–7 | 🔴 GDD §10.1 step 1 + §10.2 criterion 2. The change that makes stations specialised. Structural — needs `npm run balance`. §1e |
 | 39 | Reconcile walkouts (10 vs frozen 5) and shift length (~9 min vs frozen 90 s) | Planning agent | Before Sep 8 | 🟠 Both are frozen numbers in GDD §10.1. Either the build changes or the GDD takes a documented frozen-item break. §1e |
 | 40 | Shift-end line in Ramu's voice | Implementation agent | Sep 7 | 🟠 GDD §10.4 marks it *do not cut*: near-zero cost, and it *“carries the entire ‘real story’ for editors.”* §1e |
+| 41 | Two supplied clips left unused — `Power Up` (2.32 s) and `Pouring Water` (7.22 s) | Planning agent | With the next audio pass | 🟢 Deliberately outside Phase 3's scope, not forgotten. Natural homes: `Power Up` on a **meta** upgrade specifically, which would distinguish it from the in-run `Level Up`; `Pouring Water` as a chai/pour cue — the closest thing in the supplied set to GDD §12's `sizzle`. Both CC0 |
 | 16 | Re-cost the level run (Phase 4) | Planning agent | Before Sep 8 | ⬜ ~9 h is stale; the kit ships authored waves, deterministic endless, and a balance sim |
 | 17 | Close the auto-enabled `textGen` credit cap | Implementation agent | Phase 2 | ⬜ 500k/day ceiling on an unused surface; see [Specs.md](Specs.md) §10 |
 | 18 | Verify NCS + KayKit licences before either ships | User | Before Phase 2 art | ✅ **Closed Sep 4** — see items 10 and 11 |
-| 19 | Credits/attribution screen — NCS track titles + KayKit credit | Implementation agent | Before any audio ships | ⬜ Cheap safeguard even where the licence permits use; NCS attribution is a standing condition. **Now gated by item 27** |
-| 27 | **Provenance and licence for the 5 user-supplied SFX** | User | Before audio ships | 🔴 Five WAVs appeared in `Ramu - The Chef/Audio/SFX/` at 13:10 IST (`Ah`, `Level Complete`, `Level Up`, `Pouring Water`, `Power Up`). Nothing can ship until we know where they came from — RUN's originality rules and the attribution screen both depend on it |
-| 28 | Convert supplied audio to a web-shippable format | Implementation agent | With P5 | 🟠 3.0 MB of uncompressed WAV for 5 cues. We just cut 16 MB out of the payload; re-adding 3 MB of WAV would undo a third of it |
+| 19 | Credits/attribution screen — NCS track titles + KayKit credit | Implementation agent | Before BGM or rendered props ship | ⬜ **Ungated Sep 4** — the five SFX are CC0 and owe nothing, so this no longer blocks Phase 3. Still live for **NCS** (attribution is a standing condition of that licence) and KayKit |
+| 27 | Provenance and licence for the 5 user-supplied SFX | User | — | ✅ **Closed Sep 4, 15:20 IST — user attributes all five as CC0.** A public-domain dedication waives attribution entirely: nothing is owed on a credits screen and RUN's originality requirement is satisfied outright. The *source* is still unnamed, so the masters stay gitignored — the repo should not carry files whose licence it cannot cite. Audio unblocked |
+| 28 | Convert supplied audio to a web-shippable format | Implementation agent | **In flight — Phase 3** | 🟡 Handed over Sep 4, 15:10 IST. Measured: the three named clips are **1,433,008 B raw = 2.15× the entire shipped game** (667,292 B), so conversion is mandatory rather than tidying. `Ah.wav` is 24-bit/48 kHz with a broadcast `bext` chunk; the other four are 16-bit/44.1 kHz and carry a 4-byte-overstated RIFF size. Target: mono 44.1 kHz MP3, peak-normalised −3 dBFS, ≤ 30 KB/clip and ≤ 90 KB total |
 | 20 | Answer the §5 distribution questions (channels + Discord go/no-go) | User | — | ✅ **Answered Sep 4, 13:36 IST — LinkedIn and Discord only.** Packet minted, copy drafted. See §5.6 |
 | 29 | **Post the LinkedIn launch + first `#back-to-work` post** | User | **Today** | 🔴 Drafts written and waiting. Nothing has been shared anywhere yet; 35 players to date are all organic |
 | 30 | **Daily Discord reciprocity — play and comment on 5 entries** | User | Daily from today | 🔴 With only two surfaces this is the *only* repeatable source of new players. 20 min/day. §5.6 |

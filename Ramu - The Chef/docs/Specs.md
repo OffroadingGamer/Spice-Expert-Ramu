@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 15:03 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 15:20 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.1 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -444,7 +444,7 @@ feedback, and the original defer was wrong for the genre.
 | **Mute parity** | Every cue keeps a visual twin. Muted play is never a worse game |
 | Sourcing | User selects from asset packs and their own picks; **agent requests specific cues by name and timing** when a moment needs one |
 | Loading | Audio decodes **after** first paint. No cue may delay the cold-open into level 1 |
-| Format | Prefer compressed (`.ogg`/`.m4a`) sprites over many small files — mobile webviews handle few decoded buffers better than many |
+| Format | ⚠️ **Revised Sep 4 2026, 15:20 IST → MP3, one file per cue.** The original rule said `.ogg`/`.m4a` *sprites*. Changed for two reasons. (1) `.ogg` is unsupported on older iOS Safari and fails **silently** inside `decodeAudioData`; with 26 of 35 players on mobile-web, a format that can go quiet on an unidentified device is the wrong trade for the few KB it saves. MP3 decodes everywhere. (2) The sprite guidance exists to cap *decoded buffer count*, and at three buffers that cap is already met — sprite offset bookkeeping would be complexity with nobody paying for it. **Revisit at ~8 cues**, which is where the original reasoning starts to bite |
 
 > ✅ **NCS licence gate CLEARED — user, Sep 4 2026, 06:00 PT: "license allows."**
 > The concern was that NCS's standard free permission is written for **video** content
@@ -453,6 +453,13 @@ feedback, and the original defer was wrong for the genre.
 > their licence covers this use. **Attribution remains a standing NCS condition** — track
 > titles go on the credits screen (Plan §7 item 19). `rundot generate music` / `sfx`
 > stays available as a first-party fallback for any track the user does not clear.
+
+> ✅ **Supplied-SFX licence gate CLEARED — user, Sep 4 2026, 15:20 IST: CC0.**
+> The five WAVs delivered at 13:10 IST are dedicated to the public domain. CC0 waives
+> attribution outright, so — unlike NCS — **nothing is owed on the credits screen** and
+> RUN's originality requirement is satisfied with no residual obligation. The source is
+> still unnamed, so `Ramu - The Chef/Audio/` stays gitignored: the repo should not carry
+> masters whose licence it cannot cite in a file beside them. Plan §7 item 27.
 
 ---
 
