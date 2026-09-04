@@ -143,7 +143,7 @@ export default function MetaUpgrades() {
                 <button
                     type="button"
                     className="w-full rounded-2xl bg-white/15 py-4 text-xl font-bold text-white shadow-lg transition-transform active:scale-95"
-                    onClick={() => store.patch({ metaOpen: false })}
+                    onClick={() => { sfx.click(); store.patch({ metaOpen: false }); }}
                 >
                     Back
                 </button>

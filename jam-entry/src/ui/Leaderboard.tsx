@@ -9,6 +9,7 @@
  * the offline state.
  */
 import { useEffect, useState } from 'react';
+import { sfx } from '../audio/audio.ts';
 import { store, useStore } from '../state/store.ts';
 import {
     BOARD_LABELS,
@@ -105,7 +106,7 @@ export default function Leaderboard() {
                 <button
                     type="button"
                     className="rounded-xl bg-white/10 px-4 py-2 text-lg font-bold transition-transform active:scale-95"
-                    onClick={() => store.patch({ ranksOpen: false })}
+                    onClick={() => { sfx.click(); store.patch({ ranksOpen: false }); }}
                 >
                     ←
                 </button>
@@ -126,7 +127,7 @@ export default function Leaderboard() {
                             'flex-1 rounded-xl py-2.5 text-[1.1rem] font-bold transition-colors ' +
                             (mode === m ? 'bg-primary text-black' : 'bg-white/10 text-white/70')
                         }
-                        onClick={() => setMode(m)}
+                        onClick={() => { sfx.click(); setMode(m); }}
                     >
                         {BOARD_LABELS[m]}
                     </button>

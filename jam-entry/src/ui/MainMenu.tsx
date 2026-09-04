@@ -105,7 +105,7 @@ export default function MainMenu() {
                             <button
                                 type="button"
                                 className="rounded-xl bg-white/10 px-5 py-3 text-[1.1rem] font-semibold text-white/85 transition-transform active:scale-95"
-                                onClick={promptLike}
+                                onClick={() => { sfx.click(); promptLike(); }}
                             >
                                 ♥ Like
                             </button>
@@ -115,7 +115,7 @@ export default function MainMenu() {
                         <button
                             type="button"
                             className="rounded-xl bg-white/10 px-5 py-3 text-[1.1rem] font-semibold text-white/85 transition-transform active:scale-95"
-                            onClick={openComments}
+                            onClick={() => { sfx.click(); openComments(); }}
                         >
                             💬 Comments
                         </button>

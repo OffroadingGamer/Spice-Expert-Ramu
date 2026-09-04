@@ -75,6 +75,7 @@ export default function Hud() {
     };
 
     const toggleMusic = () => {
+        sfx.click();
         if (musicMuted) applyVolumes(lastMusic || 0.6, sfxVol);
         else { lastMusic = musicVol; applyVolumes(0, sfxVol); }
     };

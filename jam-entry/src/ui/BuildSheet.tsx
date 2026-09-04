@@ -115,7 +115,7 @@ export default function BuildSheet() {
                                     <button
                                         type="button"
                                         className="rounded-xl bg-red-500/80 px-5 py-3 text-[1.1rem] font-bold text-white transition-transform active:scale-95"
-                                        onClick={() => setConfirmSell(true)}
+                                        onClick={() => { sfx.click(); setConfirmSell(true); }}
                                     >
                                         Sell
                                     </button>
@@ -155,7 +155,7 @@ export default function BuildSheet() {
                                         type="button"
                                         aria-label="What do the targeting options mean?"
                                         className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-[1.1rem] font-bold text-white/70 transition-transform active:scale-95"
-                                        onClick={() => setShowTargetHelp(true)}
+                                        onClick={() => { sfx.click(); setShowTargetHelp(true); }}
                                     >
                                         ?
                                     </button>
@@ -194,7 +194,7 @@ export default function BuildSheet() {
                     <button
                         type="button"
                         className="mt-3 w-full rounded-xl bg-white/10 py-2 text-[1.1rem] font-semibold text-white/70 transition-transform active:scale-95"
-                        onClick={() => store.patch({ selectedPad: null })}
+                        onClick={() => { sfx.click(); store.patch({ selectedPad: null }); }}
                     >
                         Close
                     </button>
@@ -218,7 +218,7 @@ export default function BuildSheet() {
                         <button
                             type="button"
                             className="mt-2 w-full rounded-xl bg-primary py-3 text-[1.1rem] font-bold text-black transition-transform active:scale-95"
-                            onClick={() => setShowTargetHelp(false)}
+                            onClick={() => { sfx.click(); setShowTargetHelp(false); }}
                         >
                             Got it
                         </button>
@@ -235,7 +235,7 @@ export default function BuildSheet() {
                             <button
                                 type="button"
                                 className="flex-1 rounded-xl bg-white/10 py-3 text-[1.1rem] font-bold text-white/80 transition-transform active:scale-95"
-                                onClick={() => setConfirmSell(false)}
+                                onClick={() => { sfx.click(); setConfirmSell(false); }}
                             >
                                 Cancel
                             </button>
