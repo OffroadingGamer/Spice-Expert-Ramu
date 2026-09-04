@@ -61,9 +61,74 @@ export function initAudio(volumes: { music: number; sfx: number }): void {
         if (!c) return;
         if (c.state === 'suspended') c.resume().catch(() => {});
         startMusic();
+        loadSamples();
     };
     window.addEventListener('pointerdown', unlock);
     window.addEventListener('keydown', unlock);
+}
+
+// ---------------------------------------------------------------------------
+// Sampled SFX — the synth stays the permanent fallback (see sfx.lose /
+// sfx.upgrade / sfx.waveClear below). If loadSamples() never resolves, a
+// decode fails, or a buffer just isn't ready yet, playSample() returns
+// false and the caller falls through to the tone()/noise() synth exactly
+// as before.
+// ---------------------------------------------------------------------------
+
+type SampleId = 'lose' | 'upgrade' | 'wave-clear';
+
+/** Playback gain per sample — peak-matched to the synth cues they replace
+ * (MP3s normalise to -3dBFS ~= 0.708 peak; the synth peaks at 0.30-0.35),
+ * biased slightly down for a recording's higher RMS at the same peak. Last
+ * few dB are a human call — retune here, one line each. */
+const SAMPLES: Record<SampleId, { url: string; gain: number }> = {
+    lose: { url: 'audio/ah.mp3', gain: 0.5 },
+    upgrade: { url: 'audio/level-up.mp3', gain: 0.45 },
+    'wave-clear': { url: 'audio/level-complete.mp3', gain: 0.5 },
+};
+
+const sampleBuffers = new Map<SampleId, AudioBuffer>();
+const sampleVoices = new Map<SampleId, AudioBufferSourceNode>();
+
+/**
+ * Fire-and-forget decode of every SAMPLES entry. Called once, right after
+ * the AudioContext unlocks. Never awaited by boot — a slow or failed fetch
+ * just means playSample() keeps returning false a little longer (or
+ * forever), and the synth keeps covering for it.
+ */
+function loadSamples(): void {
+    const c = ctx;
+    if (!c) return;
+    for (const [id, { url }] of Object.entries(SAMPLES) as [SampleId, { url: string; gain: number }][]) {
+        fetch(url)
+            .then((res) => res.arrayBuffer())
+            .then((data) => c.decodeAudioData(data))
+            .then((buffer) => { sampleBuffers.set(id, buffer); })
+            .catch(() => { /* decode/fetch failed — synth fallback covers it */ });
+    }
+}
+
+/** Returns false (and plays nothing) if the sample isn't ready — the
+ * caller is expected to fall through to its synth in that case. */
+function playSample(id: SampleId): boolean {
+    const c = ctx;
+    const buffer = sampleBuffers.get(id);
+    if (!c || !sfxBus || !buffer) return false;
+
+    sampleVoices.get(id)?.stop(); // single voice per sample — no overlapping mush
+
+    const src = c.createBufferSource();
+    src.buffer = buffer;
+    const gainNode = c.createGain();
+    gainNode.gain.value = SAMPLES[id].gain;
+    src.connect(gainNode);
+    gainNode.connect(sfxBus); // Settings volume slider keeps working unchanged
+    src.addEventListener('ended', () => {
+        if (sampleVoices.get(id) === src) sampleVoices.delete(id);
+    });
+    sampleVoices.set(id, src);
+    src.start();
+    return true;
 }
 
 export function setMusicVolume(v: number): void {
@@ -149,6 +214,7 @@ export const sfx = {
     },
     /** In-run or meta upgrade bought. */
     upgrade(): void {
+        if (playSample('upgrade')) return;
         tone('square', 660, 660, 0.07, 0.3);
         tone('square', 880, 880, 0.07, 0.3, 0.07);
         tone('square', 1320, 1320, 0.12, 0.3, 0.14);
@@ -185,6 +251,7 @@ export const sfx = {
         tone('sawtooth', 220, 80, 0.3, 0.4);
     },
     waveClear(): void {
+        if (playSample('wave-clear')) return;
         tone('sine', 880, 880, 0.08, 0.35);
         tone('sine', 1100, 1100, 0.08, 0.35, 0.08);
         tone('sine', 1320, 1320, 0.16, 0.35, 0.16);
@@ -196,6 +263,7 @@ export const sfx = {
         tone('square', 1320, 1320, 0.3, 0.35, 0.36);
     },
     lose(): void {
+        if (playSample('lose')) return;
         tone('sawtooth', 440, 440, 0.16, 0.35);
         tone('sawtooth', 330, 330, 0.16, 0.35, 0.16);
         tone('sawtooth', 220, 110, 0.45, 0.35, 0.32);
