@@ -5,7 +5,7 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 13:36 IST
+**Last updated:** Sep 4 2026, 14:00 IST
 **Live:** v1.2.0 public · <https://w.run/puneetmakes/spice-expert-ramu>
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST**
 
@@ -58,10 +58,10 @@
 
 | | |
 |---|---|
-| **Now** | S1 · P6 post both surfaces · P7 telemetry · P5 audio (files arrived) |
+| **Now** | S1 · P7 telemetry · P6 LinkedIn + daily reciprocity · P5 audio |
 | **Next** | S1 · CP4 items · P2 core-loop read |
 | **Later** | S2 return loop **(re-ranked up — two-surface audience)** · S3 board layout + levels |
-| **Blocked on user** | Posting the two drafts · daily Discord reciprocity · audio provenance/licence |
+| **Blocked on user** | Daily Discord reciprocity · audio provenance/licence |
 
 ---
 
@@ -105,9 +105,12 @@
 - [ ] Close `textGen` 500k/day credit cap
 
 ### P7 · Telemetry
+- [x] Diagnose — pipe works, only `game_loaded` is emitted
+- [~] Handover written — run funnel, core-loop, session-end
 - [ ] Wire core-loop events
 - [ ] Wire session-end events
 - [ ] Verify events land in `analytics export`
+- [ ] Establish which names route to the reserved query buckets
 
 ### P5 · Audio
 - [~] 5 SFX WAVs supplied by user — provenance + licence unconfirmed
@@ -119,8 +122,8 @@
 - [x] Choose posting channels — **LinkedIn + Discord only**
 - [x] `rundot socials prepare` — launch packet + tracked links
 - [x] Launch copy drafted for both surfaces
-- [!] LinkedIn launch post
-- [!] First `#back-to-work` post
+- [~] LinkedIn launch post — scheduled
+- [x] First `#back-to-work` post — **posted Sep 4**
 - [!] Daily reciprocal play-and-comment on other entries
 - [ ] `socials mark-posted` for amplification
 - [-] r/KitchenConfidential recognition post — no Reddit account

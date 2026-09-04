@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 4 2026, 13:36 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 14:00 IST (read from the system clock)
 
 ---
 
@@ -930,6 +930,53 @@ with two surfaces the split is readable from post timing alone.
 
 ---
 
+### Sep 4, 14:00 IST · First post shipped · telemetry re-diagnosed, and a play count that does not add up
+
+**Distribution began.** The `#back-to-work` post went up; the LinkedIn post is scheduled.
+After a day and a half live and 35 players arriving entirely on their own, this is the
+first time anyone has been told the game exists.
+
+**Telemetry was mis-diagnosed yesterday, and the correction is good news.** I recorded
+item 25 as "the game emits ZERO gameplay telemetry" on the evidence that
+`core_loop_events_30d` and `session_end_summary_30d` both exported empty. Two queries I
+had not run say otherwise:
+
+| Query | Result |
+|---|---|
+| `top_custom_events_30d` | `game_loaded` — 62 events, 47 unique players · `game_heartbeat` — 1,252 events, 44 players |
+| `funnel_steps_30d` | `boot` / step 1 / `game_loaded` — 62 events, 100% conversion |
+
+So the pipe works end to end. `main.tsx` step 8 fires one `recordCustomEvent('game_loaded')`
+and one `trackFunnelStep`, and both arrive. The core-loop and session-end queries are empty
+because **the game sends nothing to put in them** — not because delivery is broken. That is
+a wiring job, not an investigation. **Two empty exports were enough to make me say "zero"
+when a third and fourth query said "one event, delivered reliably."** An absence in one
+report is a fact about that report until a second one agrees.
+
+**A number that does not add up, and it is the score.** Summed daily uniques are 9 + 26 =
+**35**. But `game_loaded` counts **47 unique players** and `game_heartbeat` 44 across the
+same 30-day window. Distinct players over a window cannot exceed the sum of per-day
+uniques — the sum double-counts anyone who returns, so it should be the *larger* number.
+It is smaller by twelve. `daily_activity_30d` already revised Sep 3 from 2 to 9 once, so
+lag is the leading explanation and the true count is probably higher than anything written
+in these documents so far. Logged as item 32 and to be re-read tomorrow, when Sep 4 has
+settled. Nothing is decided on it today, but no play-count figure here should be quoted as
+final.
+
+**The taxonomy is not documented.** `ANALYTICS.md` gives exactly two methods and no
+mapping from event name to query bucket; the analytics catalogue describes
+`core_loop_events_30d` as "core-loop event counts" without saying what qualifies. The
+handover therefore treats the reserved names as a hypothesis to be tested in production
+rather than a fact to be coded against — with `top_custom_events_30d` as the safety net,
+since it catches every custom event regardless of name. Worst case we learn the routing
+rule and rename; no data is lost either way.
+
+**Traffic at 14:00 IST:** unchanged at 26 for Sep 4, 35 cumulative, rank #3 on 15 plays.
+The Discord post is minutes old — too early to read, and the export lag means it will not
+be readable today with any confidence.
+
+---
+
 ## 2. Checkpoint ledger
 
 Runbook checkpoints. Update as each passes, with the actual time.
@@ -970,7 +1017,7 @@ uniques are the score; the trend matters more than any single day.
 | Date | Daily uniques | Cumulative | Board position | Shipped that day | Shared on |
 |---|---|---|---|---|---|
 | Sep 3 | **9** (first reported as 2 — export lag) | 9 | #3 | v1.0.0 public, v1.0.1 UI fixes | — **nowhere** |
-| Sep 4 | **26** at both 12:14 and 13:24 IST, day still open | **35** | #3 (13 plays) | **v1.1.0** title fix + 15 assets · **v1.2.0** payload 16.30 → 0.64 MB | — **still nowhere.** All organic |
+| Sep 4 | **26** at 12:14, 13:24 and 14:00 IST, day still open. ⚠️ `game_loaded` says **47 distinct players** — see item 32 | **35** (probably low) | #3 (15 plays) | **v1.1.0** title fix + 15 assets · **v1.2.0** payload 16.30 → 0.64 MB | **RUN Discord `#back-to-work` — first post ever.** LinkedIn scheduled |
 
 ---
 
@@ -1004,10 +1051,14 @@ uniques are the score; the trend matters more than any single day.
 10. **Ask what surfaces exist before planning the distribution.** §5 was written across six
    channels; two of them were real. The plan was not wrong so much as unasked — and the
    answer changed which *build* work ranks highest, not just which posts get written.
-11. **Verify the report against the artefact, not against itself.** Phase 1.5's numbers
+11. **An absence in one report is a fact about that report.** Two empty analytics exports
+   became "the game emits zero telemetry" in the open-items list. A third query showed one
+   event delivered 62 times to 47 players. Before writing *nothing is happening*, find the
+   report that would show it if it were.
+12. **Verify the report against the artefact, not against itself.** Phase 1.5's numbers
    were all correct — but they were only *known* to be correct after reading IHDR bytes,
    `du`, `git ls-files` and `rundot game info`. The gate is worth nothing if the briefing
    is a paraphrase of the report.
-12. **Record what to ignore, not just what to do.** Two unlisted games on the account
+13. **Record what to ignore, not just what to do.** Two unlisted games on the account
    look exactly like entry candidates in `list-games`. §0 exists so a tired future
    session cannot deploy to the wrong game ID.

@@ -8,7 +8,7 @@
 > plan item slips or is cut, do not silently delete it — strike it, move it, and
 > log the reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 13:36 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 14:00 IST (read from the system clock)
 **Status:** ▶ **LIVE — v1.1.0** at https://w.run/puneetmakes/spice-expert-ramu since ~15:05 PT Sep 3. Scoring clock running.
 **Scope:** cuisine level run (GDD §10.10) · SFX at P1 (§12) · 3D→sprite art pipeline (§11a).
 
@@ -618,7 +618,9 @@ and at most one follow-up if something genuinely notable ships.
 | 22 | Exclude `*.png.json` generation sidecars from `dist/` | Implementation agent | — | ✅ **Closed Sep 4 in v1.2.0** — moved to `art-source/`, outside `public/` and gitignored. `dist/` verified clean |
 | 23 | Explain the credit rises — **now two** | Planning agent | Low priority | 🟡 +8,620 (125,980 → 132,275), then **+300 (132,275 → 132,575) on Sep 4 with zero spend**. Spend column unchanged at 2,325/17 calls both times. Reads like periodic top-up; still unexplained, still not counted on |
 | 24 | Determine RUN's scoring-day boundary | Planning agent | — | ✅ **Resolved Sep 4, 12:14 IST — PT ruled out by measurement; UTC is the working assumption. Rollover = 05:30 IST.** §2.0 |
-| 25 | **The game emits ZERO gameplay telemetry** | Implementation agent | **Today** | 🔴 `core_loop_events_30d` and `session_end_summary_30d` both export **empty**. We can see arrivals but nothing about what players do — every fix is a guess. Skill: `rundot-feature-analytics`. Cheap; fold into Phase 1.5 |
+| 25 | **The game emits almost no gameplay telemetry** | Implementation agent | **Today** | 🔴 **Re-diagnosed Sep 4, 14:00 IST — the pipe works.** `top_custom_events_30d` shows `game_loaded` 62/47 players and the SDK's automatic `game_heartbeat` 1,252/44. The game emits exactly one event of its own, at boot. `core_loop_events_30d` and `session_end_summary_30d` are empty because nothing is *sent*, not because delivery is broken. Phase 2 |
+| 32 | **`daily_activity_30d` undercounts — 47 distinct players, not 35** | Planning agent | Verify Sep 5 | 🟠 Summed daily uniques = 35, but `game_loaded` reports **47 unique players** and `game_heartbeat` 44 over the same window. Distinct-over-window cannot exceed the sum of dailies, so one of the two is wrong — most likely `daily_activity_30d` lag, which already revised Sep 3 from 2 to 9. **Every play-count figure in these docs may be low.** §2.1 |
+| 33 | The reserved event taxonomy for `core_loop_events_30d` is undocumented | Implementation agent | With item 25 | 🟡 `ANALYTICS.md` documents only `recordCustomEvent` / `trackFunnelStep`; it never says which names route into the core-loop or session-end buckets. Must be established empirically. `top_custom_events_30d` catches everything regardless, so no data is lost if the guess is wrong |
 | 26 | D1 retention reads 0.0% across all platforms | Planning agent | Re-check Sep 5 | 🟡 Cohort is too young to call (26 of 35 players are from today). **If it holds, CP5 return loop becomes the single highest-value work in the project** |
 | 16 | Re-cost the level run (Phase 4) | Planning agent | Before Sep 8 | ⬜ ~9 h is stale; the kit ships authored waves, deterministic endless, and a balance sim |
 | 17 | Close the auto-enabled `textGen` credit cap | Implementation agent | Phase 2 | ⬜ 500k/day ceiling on an unused surface; see [Specs.md](Specs.md) §10 |
