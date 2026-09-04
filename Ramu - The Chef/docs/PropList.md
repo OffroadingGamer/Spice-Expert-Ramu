@@ -166,6 +166,12 @@ pack that already reads Indian without a repaint.
 | Grinder | `whole-spices` | `garam-masala` | — | spice bowl, sheet 1/2 |
 | Grinder | `coriander` | `green-chutney` | — | sauce bowl, sheet 2 |
 
+> ⚠️ **A spawn may carry initial tags, and it has to.** Levels 2, 4 and 5 spawn
+> `dough` ready-made rather than `flour`, and ready-made dough *is* kneaded — so its
+> spawn entry declares `"tags": ["kneaded"]` and the tandoor accepts it. Without this the
+> `after` gate would reject every pre-made ingredient, which is not what a gate is for.
+> **A gate asks what has happened to an ingredient, not which prop did it.**
+
 Tags produced: Prep counter → `kneaded`; Handi → `simmered`; Grinder → `ground`;
 Kadhai → `fried`; Tandoor → `baked`.
 
