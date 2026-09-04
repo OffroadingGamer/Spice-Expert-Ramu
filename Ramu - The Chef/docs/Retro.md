@@ -1517,3 +1517,19 @@ uniques are the score; the trend matters more than any single day.
    than starting from peak again. The wider lesson: when a measurement is cheap and the
    thing it predicts is expensive to test, take the measurement first and let the ear
    confirm rather than search.
+
+29. **A memory that says "this thread" is a bug, because memory is scoped to a directory,
+   not to a conversation.** The audio agent recorded its own boundaries as *"This
+   conversation thread is a scoped audio-generation agent … never runs git."* That file
+   lives in the memory directory for the git root, so **every** session under it loads it —
+   including the implementation agent, which works in `jam-entry/` beneath that root. It
+   had been quietly contradicting the memory for four deploys; the first handover explicit
+   enough about git tripped its scope guard and halted it mid-task with a conflict prompt.
+   The instinct that produced the memory was right — two agents really do have different
+   boundaries, and one had already been handed the other's brief. The error was writing an
+   identity claim ("this thread is X") into a file that cannot know which thread is
+   reading it. **Scoped state must describe the conditions under which it applies, not
+   assert who the reader is** — rewritten as a table keyed on what the session is doing,
+   so a `jam-entry/` deploy reads as the implementation agent's job rather than as a
+   violation. Same family as lesson 25: the artifact on disk was not what the log claimed,
+   and here the file's audience was not what its author assumed.
