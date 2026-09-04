@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 16:50 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 16:56 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -496,6 +496,66 @@ Every track is generated at **112 BPM, A minor, 4/4, instrumental** so rush-stag
 can crossfade — §8a's "reports pressure rather than decorating it" only works if tempo
 and key are shared. **MusicGen is music-only:** the five unpicked SFX cues need AudioGen
 or CC0 packs.
+
+### 8a.3 🔒 MusicGen toolchain — installed and verified Sep 4 2026, 16:56 IST
+
+Local BGM generation. **The environment lives entirely outside the repo** at
+`D:\AudioGen` — a venv and ~15 GB of model weights must never land near a public
+repository.
+
+| | |
+|---|---|
+| Location | `D:\AudioGen` — `.venv`, `gen.py`, `requirements.txt`, `hf-cache/` |
+| Python | **3.11.9** (the only interpreter on the machine; `py -3.11 -m venv`) |
+| Model cache | `HF_HOME=D:\AudioGen\hf-cache`, persisted with `setx`. Keeps ~15 GB off C: |
+| GPU | RTX 4090, 24 GB — headroom for the largest checkpoint |
+| Runner | `D:\AudioGen\gen.py` — argparse, seeded, prints every parameter so takes are reproducible and loggable |
+
+**Why `transformers` and not Meta's `audiocraft`.** AudioCraft pins torch 2.1.0 with
+`xformers` and officially targets Python 3.9; on Windows with 3.11 that combination is a
+long dependency fight for no gain here. Hugging Face `transformers` carries MusicGen
+natively, loads the same Meta checkpoints, and needs no xformers. What is given up is the
+MultiBandDiffusion decoder, which BGM does not use. **AudioGen — Meta's *sound-effect*
+model — is audiocraft-only**, so the five unpicked SFX cues cannot come from this
+environment; they need CC0 packs or a separate install (Plan §7 item 13).
+
+**Pinned versions** (`pip freeze` → `D:\AudioGen\requirements.txt`, 39 packages; the ones
+that matter):
+
+| Package | Version |
+|---|---|
+| `torch` | **2.5.1+cu121** |
+| `torchaudio` | **2.5.1+cu121** |
+| `transformers` | **5.16.1** |
+| `huggingface_hub` | 1.30.0 |
+| `tokenizers` | 0.23.2 |
+| `safetensors` | 0.8.0 |
+| `numpy` | 2.4.6 |
+| `scipy` | 1.17.1 |
+| `soundfile` | 0.14.0 |
+
+Install order matters: **torch from the CUDA index first**
+(`--index-url https://download.pytorch.org/whl/cu121`), then the rest from PyPI. Installing
+`transformers` first pulls a CPU-only torch.
+
+**Verified end to end, not assumed.** `facebook/musicgen-small`, 5 s, seed 1 →
+**4.94 s @ 32 kHz mono, generated in 4.0 s**, read back at **peak 0.94 / RMS 0.175** — real
+audio, not a silent file. At that rate a 30 s take costs roughly 25 s of GPU time, so
+iterating on prompts is cheap. `facebook/musicgen-stereo-large` is the working model.
+
+**Benign warnings, recorded so they are not re-investigated:**
+
+- `pad_token_id`/`bos_token_id` reported as 2048 against a 2047 vocab — a known MusicGen
+  config quirk in `transformers` 5.x. Output is correct.
+- *"cache-system uses symlinks by default … your machine does not support them"* — the
+  cache falls back to copies and uses more disk. 978 GB free; ignore.
+- *"unauthenticated requests to the HF Hub"* — rate limits only. No token needed for
+  public checkpoints.
+
+**Output contract.** MusicGen writes **32 kHz WAV**. That is a master, not a shippable
+asset: it must be compressed and then streamed from `public/cdn-assets/` per §8a.2. A
+30 s stereo loop is ~360 KB against a 667 KB game — music never enters the bundle.
+
 
 ---
 
