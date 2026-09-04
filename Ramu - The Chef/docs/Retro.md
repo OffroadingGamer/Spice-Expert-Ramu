@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 4 2026, 20:05 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 20:15 IST (read from the system clock)
 
 ---
 
@@ -1307,6 +1307,37 @@ turns out not to be blocked. It would not have been if the jam had ended first.
 
 ---
 
+### Sep 4, 20:15 IST · One agent owns music generation, and nothing else may produce a track
+
+**Standing rule, effective now:** *no music file enters this project from any source
+except the audio generation agent.* Not from me, not from the implementation agent, not
+from a stray local `python gen.py` run. One producer, one log, one folder.
+
+**Why it needed saying.** By this evening there were **three** live routes to a music
+file: `rundot generate music` through the CLI, the local MusicGen venv at `D:\AudioGen`,
+and me — I generated take 1 myself while proving the pipeline worked. Three producers means
+takes with no prompt logged, no seed, no credit record, and no way to answer *"how did we
+get this one?"* a week later. The provenance sidecar only helps if every file has one.
+
+**What the agent now owns**, expanded from prompt-writing only:
+
+| Before | Now |
+|---|---|
+| Write a prompt, log it to `AudioGenPrompts.md` | Same, **plus** run the generation itself |
+| No file access beyond that one doc | Read/write `Ramu - The Chef/Audio/BGM/` — gitignored, so no repo risk |
+| — | Spends **real credits**, so: `estimate` first, log the number, hard cap per batch |
+
+Hard limits unchanged: no source, no git, no deploy, no `public/cdn-assets/`. Masters
+only — converting a master into a shippable asset stays the implementation agent's job.
+
+**The part worth remembering beyond this project:** the moment a second producer of the
+same artifact exists, provenance stops being automatic and starts being a discipline. It
+is cheaper to name the single owner than to reconstruct history later — the same shape as
+lesson 20, where a second *recipient* broke routing. Adding a second anything to a
+pipeline is what breaks the assumptions built when there was one.
+
+---
+
 ## 2. Checkpoint ledger
 
 Runbook checkpoints. Update as each passes, with the actual time.
@@ -1429,6 +1460,11 @@ uniques are the score; the trend matters more than any single day.
 21. **Record what to ignore, not just what to do.** Two unlisted games on the account
    look exactly like entry candidates in `list-games`. §0 exists so a tired future
    session cannot deploy to the wrong game ID.
+23. **Name the single producer of any artifact that carries provenance.** Three routes
+   to a music file existed at once — the RUN CLI, a local MusicGen venv, and me. Only one
+   agent generates music now, and every take is logged with its prompt, parameters and
+   credit cost. A second producer does not halve the work, it destroys the audit trail.
+   Same family as lesson 20: adding a second anything breaks assumptions built for one.
 22. **Before recording that something is impossible, search the platform's whole surface
    for it.** I parked the five thematic SFX cues as ungeneratable because Meta's AudioGen
    is audiocraft-only — true, and irrelevant: the RUN SDK ships `audioGen.generate()` for
