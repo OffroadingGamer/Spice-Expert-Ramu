@@ -428,33 +428,50 @@ has been happening.
 it is a real signal, and 51 s is barely past the loading screen. Read it with the funnel
 below, not on its own.
 
-### 🚨 The finding that outranks the rest: 44% of arrivals never reach the menu
+### ❌ RETRACTED — "44% of arrivals never reach the menu" was wrong
 
-`funnel_steps_30d`, by unique session:
+**The instrumentation check this section demanded was run at 01:40 IST, and it refutes the
+finding.** Recorded in full rather than deleted, because the reasoning error is worth more
+than the claim was.
 
-| Step | sessions | step conversion |
+The numbers are real: `funnel_steps_30d` gives `game_loaded` **150 unique sessions** and
+`menu_shown` **84**. What was wrong was reading that gap as players abandoning during the
+critical-asset load. **`menu_shown` fires *before* `game_loaded`, not after.** Both are in
+the tail of the same `boot()` function in `src/main.tsx`:
+
+| Step | Line | What happens |
 |---|---|---|
-| `game_loaded` | **150** | — |
-| `menu_shown` | **84** | **56%** ← **the hole** |
-| `run_start` | 73 | 86.9% |
-| `first_tower_placed` | 71 | 97.3% |
-| `first_wave_started` | 71 | 100% |
-| `wave_1_cleared` | 58 | 81.7% |
-| `run_end` | 25 | 43.1% |
+| 5 | ~71 | `await warmAssets()` — the 651 KB critical warm |
+| 6 | ~73 | `store.patch({ phase: 'menu' })` → `MainMenu` mounts → **`menu_shown`** |
+| 7 | ~95 | lifecycle hooks |
+| 8 | ~122 | **`game_loaded`**, guarded by `if (sdkReady())` |
 
-**Everything after the menu is healthy.** 87% of people who see the menu start a run, 97%
-of those place a tower, 100% of those start a wave. The game converts well once it is
-*seen*. **The loss is entirely upstream of the menu** — 66 sessions loaded the bundle and
-never got to a menu.
+`MainMenu`'s emit is a mount effect with an empty dependency array — *"fires once per
+mount, i.e. every time phase transitions into 'menu'"* — so it does fire on first display.
+That part of the check passed. But the two events are **microseconds apart in the same
+synchronous tail**, with `menu_shown` first. **There is no window in which a player could
+abandon between them.** A 44% drop across it cannot be behaviour.
 
-That is worth more than any content work: the fix is a loading-screen problem, and the
-players are already arriving.
+**So the funnel is not measuring what it appears to measure**, and the honest read is that
+this is the same class of problem as item 32: RUN's aggregates under-report against what
+the code demonstrably emits. Two independent tables now disagree with our own events in
+the same direction.
 
-> ⚠️ **Verify the instrumentation before acting.** This reads as a real bounce only if
-> `menu_shown` fires on the *first* menu display and not just on returns. If it is wired
-> to a menu *re-entry*, the 56% is an artifact and there is no hole. **Check that first —
-> it is a five-minute code read and it decides whether this is the top priority or
-> nothing at all.**
+> 🧭 **The reasoning error, kept deliberately.** A funnel step ordering is *stated* by
+> the tool and *determined* by the code. I read the conversion downward because that is
+> what a funnel view invites, without checking which call actually runs first — and the
+> two events are not even in the order the funnel displays them. **Before drawing a
+> behavioural conclusion from a funnel, confirm the emit order in source.** The only thing
+> that saved this from becoming a work item was writing the verification requirement into
+> the finding itself.
+
+**What this does not change:** everything genuinely downstream of the menu still looks
+healthy — 87% of `menu_shown` sessions reach `run_start`, 97% of those place a tower, 100%
+of those start a wave. Those steps *are* in emit order and separated by real player
+decisions.
+
+**What it does change:** there is no known loading-screen problem, and no evidence for one.
+Do not spend time on the loading screen on the strength of this section.
 
 ### ✅ Item 32 resolved — `daily_activity_30d` definitively undercounts
 
@@ -472,9 +489,11 @@ The discrepancy is no longer a suspicion; it is arithmetic.
 window** — a player active on two days counts twice in the sum and once in the distinct.
 88 < 114 is impossible if both measure the same population, so they do not.
 
-The coherent explanation ties this to the funnel hole: **the ~26 players and ~37 sessions
-that RUN does not count are the same ones that never reached the menu.** They load, bounce
-during the load, and never register as a session. One cause, two symptoms.
+⚠️ **An earlier draft explained this by tying it to the "funnel hole" above — that the
+uncounted players were the ones who never reached the menu. That explanation died with
+the retraction.** What remains is the arithmetic: two RUN aggregates disagree with our own
+event counts, in the same direction, and no mechanism is known. It is one more question
+for Operators, not an explained phenomenon.
 
 **Consequence, and it matters:** if the jam's *Total Unique Daily Plays* is computed from
 RUN's daily activity, **we are scored on the undercount** and the real arrival count is
