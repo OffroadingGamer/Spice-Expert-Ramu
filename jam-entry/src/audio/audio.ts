@@ -25,11 +25,13 @@ import { track } from '../sdk/analytics.ts';
 let ctx: AudioContext | null = null;
 let musicBus: GainNode | null = null;
 let sfxBus: GainNode | null = null;
-/** Children of musicBus: seqGain carries the procedural sequencer, trackGain
- * carries the CDN track. crossfadeToTrack() ramps one down as the other
- * ramps up; musicBus itself stays the volume-slider master throughout. */
+/** Children of musicBus: seqGain carries the procedural sequencer (the
+ * permanent fallback), trackA/trackB carry CDN cues — two nodes, not one,
+ * so switchCue() can crossfade between two music cues without cutting the
+ * outgoing one first. musicBus itself stays the volume-slider master. */
 let seqGain: GainNode | null = null;
-let trackGain: GainNode | null = null;
+let trackA: GainNode | null = null;
+let trackB: GainNode | null = null;
 
 let musicVolume = 0.6;
 let sfxVolume = 0.8;
@@ -48,9 +50,12 @@ function ensureCtx(): AudioContext | null {
         seqGain = ctx.createGain();
         seqGain.gain.value = 1.0;
         seqGain.connect(musicBus);
-        trackGain = ctx.createGain();
-        trackGain.gain.value = 0.0;
-        trackGain.connect(musicBus);
+        trackA = ctx.createGain();
+        trackA.gain.value = 0.0;
+        trackA.connect(musicBus);
+        trackB = ctx.createGain();
+        trackB.gain.value = 0.0;
+        trackB.connect(musicBus);
         sfxBus = ctx.createGain();
         sfxBus.gain.value = sfxVolume * SFX_BASE;
         sfxBus.connect(ctx.destination);
@@ -75,7 +80,7 @@ export function initAudio(volumes: { music: number; sfx: number }): void {
         if (c.state === 'suspended') c.resume().catch(() => {});
         startMusic();
         loadSamples();
-        loadMusicTrack();
+        switchCue('menu');
     };
     window.addEventListener('pointerdown', unlock);
     window.addEventListener('keydown', unlock);
@@ -101,14 +106,21 @@ const SAMPLES: Record<SampleId, { url: string; gain: number }> = {
     'wave-clear': { url: 'audio/level-complete.mp3', gain: 0.5 },
 };
 
-/** The CDN-streamed music track (see loadMusicTrack/crossfadeToTrack near
- * the sequencer, below). loopStart/loopEndTrim exist because MP3 carries
- * encoder padding at both ends (~1152 samples @ 44.1k), which makes
- * loop = true click audibly — they're the lever for tuning the seam by ear
- * once a real track exists. gain and fadeSeconds are one-line retunes too. */
+/** The CDN-streamed music cues (see switchCue near the sequencer, below).
+ * loopStart/loopEndTrim exist because MP3 carries encoder padding at both
+ * ends (~1152 samples @ 44.1k), which makes loop = true click audibly — same
+ * encoder, same padding, for all three masters, so one trim serves all of
+ * them. gain is RMS-matched per cue to service_low (Specs §8a.7b) and is a
+ * one-line retune; so is fadeSeconds. */
+type CueId = 'menu' | 'service_low' | 'service_high';
+
+const CUES: Record<CueId, { path: string; gain: number }> = {
+    menu: { path: 'bgm-menu.mp3', gain: 1.308 },
+    service_low: { path: 'bgm-service-low.mp3', gain: 1.0 },
+    service_high: { path: 'bgm-service-high.mp3', gain: 1.101 },
+};
+
 const MUSIC = {
-    path: 'bgm-service-low.mp3',   // relative to public/cdn-assets/
-    gain: 1.0,
     loopStart: 0.026,
     loopEndTrim: 0.026,
     fadeSeconds: 1.2,
@@ -389,77 +401,138 @@ function startMusic(): void {
 }
 
 // ---------------------------------------------------------------------------
-// CDN music track — crossfades in over the sequencer once it loads. The
-// sequencer is the permanent fallback: a 404, timeout, or decode failure
-// just means it keeps playing, exactly what v1.2.3 already sounds like.
-// Same posture as the sampled-SFX layer above.
+// CDN music cues — three named tracks (menu / service_low / service_high)
+// crossfaded via switchCue(). The sequencer is the permanent fallback for
+// the very first cue only: a 404, timeout, or decode failure on 'menu'
+// just leaves the sequencer playing, same posture as the sampled-SFX layer
+// above. Once any cue has started, later switches crossfade cue-to-cue —
+// the sequencer never comes back.
 // ---------------------------------------------------------------------------
 
-let musicSource: AudioBufferSourceNode | null = null;
+const cueBuffers = new Map<CueId, AudioBuffer>();
+const cueFetches = new Map<CueId, Promise<AudioBuffer | null>>();
+
+/** activeSlot is null until the first cue starts playing — that's what
+ * tells startCueBuffer() this is the one-time handoff off the sequencer. */
+let activeSlot: 'A' | 'B' | null = null;
+let activeCue: CueId | null = null;
+let sourceA: AudioBufferSourceNode | null = null;
+let sourceB: AudioBufferSourceNode | null = null;
 
 /**
- * Fire-and-forget: fetch the CDN track, decode it, crossfade it in over the
- * sequencer. Called once, right after loadSamples(). Never awaited by boot —
- * any failure along the chain just leaves the sequencer playing.
+ * Fetch + decode one cue, caching the result so a later switchCue() or
+ * prefetchCue() call for the same id is instant. Never rejects — failures
+ * are reported via track() and resolve to null; callers just don't switch.
  */
-function loadMusicTrack(): void {
-    const c = ctx;
-    if (!c) return;
+function fetchCueBuffer(id: CueId): Promise<AudioBuffer | null> {
+    const cached = cueBuffers.get(id);
+    if (cached) return Promise.resolve(cached);
+    const inFlight = cueFetches.get(id);
+    if (inFlight) return inFlight;
+
+    const path = CUES[id].path;
     const t0 = performance.now();
-    (async () => {
-        const res = await fetchCdnAsset(MUSIC.path);
+    const p = (async (): Promise<AudioBuffer | null> => {
+        const res = await fetchCdnAsset(path);
         if (!res.ok) {
             // 'unavailable' is deliberately unreportable: track() is itself
             // sdkReady()-guarded, so off-host it drops this event rather than
             // logging a misleading 'fetch'. That asymmetry is intended.
-            track('music_track_failed', { path: MUSIC.path, reason: res.reason });
-            return;
+            track('music_track_failed', { path, reason: res.reason });
+            return null;
         }
+        const c = ctx;
+        if (!c) return null;
         let buffer: AudioBuffer;
         try {
             buffer = await c.decodeAudioData(res.data);
         } catch {
             // NOTE: in `vite dev` a MISSING file does not reach here as a
             // fetch failure — Vite's SPA history fallback answers 200 with
-            // index.html, which then fails to decode. Locally a missing track
+            // index.html, which then fails to decode. Locally a missing cue
             // reports 'decode'; in production it reports 'fetch'. Do not read
             // local telemetry as if it matched production.
-            track('music_track_failed', { path: MUSIC.path, reason: 'decode' });
-            return;
+            track('music_track_failed', { path, reason: 'decode' });
+            return null;
         }
         track('music_track_loaded', {
-            path: MUSIC.path,
+            path,
             fetch_ms: Math.round(performance.now() - t0),
             duration_s: Number(buffer.duration.toFixed(2)),
         });
-        crossfadeToTrack(buffer);
-    })().catch(() => { /* last-resort net — the steps above already handle their own failures */ });
+        cueBuffers.set(id, buffer);
+        return buffer;
+    })().catch(() => null); // last-resort net — the steps above already handle their own failures
+
+    cueFetches.set(id, p);
+    return p;
 }
 
-/** Starts the decoded track looping into trackGain and crossfades it in
- * over MUSIC.fadeSeconds while the sequencer fades out, then stops the
- * sequencer's timer for good. No-ops if a track is already playing. */
-function crossfadeToTrack(buffer: AudioBuffer): void {
+/** Fire-and-forget: warm the cache for a cue before it's actually needed
+ * (service_high, fetched at run start so it's ready well before lives < 3). */
+export function prefetchCue(id: CueId): void {
+    fetchCueBuffer(id);
+}
+
+/**
+ * Switch the playing cue. Fetches (or reuses a cached/in-flight fetch of)
+ * the buffer, then crossfades it in on the idle trackA/trackB slot while
+ * ramping the previously-active slot to 0. No-ops if `id` is already
+ * active or already the target of an in-flight switch.
+ */
+export function switchCue(id: CueId): void {
+    if (activeCue === id) return;
+    activeCue = id;
+    fetchCueBuffer(id).then((buffer) => {
+        // Bail if superseded by a later switchCue() call while this fetch
+        // was in flight, or if the AudioContext is gone.
+        if (!buffer || !ctx || activeCue !== id) return;
+        startCueBuffer(id, buffer);
+    });
+}
+
+/** Starts `buffer` looping into the idle trackA/trackB slot and crossfades
+ * it in over MUSIC.fadeSeconds while the previously-active slot (a cue, or
+ * — only the first time — the sequencer) ramps to 0, then stops whatever
+ * was outgoing. */
+function startCueBuffer(id: CueId, buffer: AudioBuffer): void {
     const c = ctx;
-    if (!c || !seqGain || !trackGain || musicSource) return;
+    if (!c || !trackA || !trackB) return;
+
+    const outgoingSlot = activeSlot;
+    const incomingSlot: 'A' | 'B' = outgoingSlot === 'A' ? 'B' : 'A';
+    const incomingGain = incomingSlot === 'A' ? trackA : trackB;
+    const outgoingGain = outgoingSlot === 'A' ? trackA : outgoingSlot === 'B' ? trackB : null;
+    const outgoingSource = outgoingSlot === 'A' ? sourceA : outgoingSlot === 'B' ? sourceB : null;
 
     const src = c.createBufferSource();
     src.buffer = buffer;
     src.loop = true;
     src.loopStart = MUSIC.loopStart;
     src.loopEnd = Math.max(MUSIC.loopStart, buffer.duration - MUSIC.loopEndTrim);
-    src.connect(trackGain);
+    src.connect(incomingGain);
     src.start();
-    musicSource = src;
+    if (incomingSlot === 'A') sourceA = src; else sourceB = src;
+    activeSlot = incomingSlot;
 
     const t0 = c.currentTime;
-    trackGain.gain.setValueAtTime(0, t0);
-    trackGain.gain.linearRampToValueAtTime(MUSIC.gain, t0 + MUSIC.fadeSeconds);
-    seqGain.gain.setValueAtTime(1, t0);
-    seqGain.gain.linearRampToValueAtTime(0, t0 + MUSIC.fadeSeconds);
+    incomingGain.gain.setValueAtTime(0, t0);
+    incomingGain.gain.linearRampToValueAtTime(CUES[id].gain, t0 + MUSIC.fadeSeconds);
+
+    if (outgoingGain) {
+        outgoingGain.gain.setValueAtTime(outgoingGain.gain.value, t0);
+        outgoingGain.gain.linearRampToValueAtTime(0, t0 + MUSIC.fadeSeconds);
+    }
+    // The sequencer only fades on the very first cue — a one-time handoff,
+    // not part of every switch.
+    if (outgoingSlot === null && seqGain) {
+        seqGain.gain.setValueAtTime(1, t0);
+        seqGain.gain.linearRampToValueAtTime(0, t0 + MUSIC.fadeSeconds);
+    }
 
     setTimeout(() => {
-        if (musicTimer) {
+        outgoingSource?.stop();
+        if (outgoingSlot === null && musicTimer) {
             clearInterval(musicTimer);
             musicTimer = null;
         }

@@ -5,6 +5,7 @@
  */
 import { store } from '../state/store.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
+import { switchCue, prefetchCue } from '../audio/audio.ts';
 import { WAVES } from './data/waves.ts';
 import type { TargetingMode } from './data/targeting.ts';
 import type { Engine } from './sim/engine.ts';
@@ -27,6 +28,9 @@ const slot = (host.__spice_ramu_engine__ ??= { current: null });
  */
 let runStartedAt = 0;
 let runAnalytics = { towersPlaced: 0, firstTowerPlaced: false, firstWaveStarted: false };
+/** service_high is one-way per run: lives only fall (see engine.ts), so this
+ * never needs to un-latch. Reset alongside runAnalytics in registerEngine. */
+let highTensionLatched = false;
 
 /** For towerScene.ts's run_end payload (towers_placed). */
 export function getTowersPlacedThisRun(): number {
@@ -38,6 +42,9 @@ export function registerEngine(e: Engine | null): void {
     if (e) {
         runStartedAt = performance.now();
         runAnalytics = { towersPlaced: 0, firstTowerPlaced: false, firstWaveStarted: false };
+        highTensionLatched = false;
+        switchCue('service_low');
+        prefetchCue('service_high');
         trackFunnelStep(2, 'run_start', 'run', 2);
         track('run_start', { wave_target: WAVES.length, lives_start: e.state.lives });
     }
@@ -61,6 +68,7 @@ export function syncStore(): void {
         cur.tdPhase !== s.phase
     ) {
         store.patch({ coins: s.coins, lives: s.lives, wave, tdPhase: s.phase });
+        if (!highTensionLatched && s.lives < 3) { highTensionLatched = true; switchCue('service_high'); }
     }
 }
 
