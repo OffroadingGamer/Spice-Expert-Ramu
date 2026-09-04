@@ -3,8 +3,10 @@
  * one line; buttons in a stack share one width. The Like/Comments row only
  * renders once the host confirms those prompts are available (engagement.ts).
  */
+import { useEffect } from 'react';
 import { sfx } from '../audio/audio.ts';
 import { openComments, promptLike } from '../sdk/engagement.ts';
+import { trackFunnelStep } from '../sdk/analytics.ts';
 import { store, useStore } from '../state/store.ts';
 import GemCounter from './GemCounter.tsx';
 
@@ -13,6 +15,12 @@ export default function MainMenu() {
     const likeAvailable = useStore((s) => s.likeAvailable);
     const commentsAvailable = useStore((s) => s.commentsAvailable);
     const isLiked = useStore((s) => s.isLiked);
+
+    // fires once per mount, i.e. every time phase transitions into 'menu'
+    useEffect(() => {
+        trackFunnelStep(1, 'menu_shown', 'run', 2);
+    }, []);
+
     return (
         <div className="relative flex h-full flex-col items-center justify-center gap-4 px-10">
             <div

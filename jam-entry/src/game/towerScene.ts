@@ -18,8 +18,9 @@ import {
 } from 'pixi.js';
 import { CONFIG } from './config.ts';
 import { WAVES } from './data/waves.ts';
-import { createEngine } from './sim/engine.ts';
-import { registerEngine, syncStore } from './actions.ts';
+import { createEngine, type EngineEvent } from './sim/engine.ts';
+import { registerEngine, syncStore, getTowersPlacedThisRun } from './actions.ts';
+import { track, trackFunnelStep } from '../sdk/analytics.ts';
 import {
     freeTexture,
     makeBearTexture,
@@ -169,7 +170,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
 
     // ---- engine (with the player's persistent meta upgrades applied) -------
     const engine = createEngine(getSave().meta);
-    registerEngine(engine);
+    registerEngine(engine); // also fires the run_start funnel step + event (actions.ts)
     store.patch({
         selectedPad: null,
         waveCount: WAVES.length,
@@ -177,6 +178,57 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         wave: 1,
     });
     syncStore();
+
+    // ---- analytics bookkeeping (wall-clock, this run only) -----------------
+    const runStartedAt = performance.now();
+    let waveStartedAt = performance.now();
+    let prevPhase = engine.state.phase;
+    // uid -> enemy type, so a leaked ticket can report which dish it was;
+    // only ever grows (uids never repeat), which is fine for one run's life
+    const enemyDefByUid = new Map<number, string>();
+
+    /** Attribute this step's leak(s) to an enemy type when unambiguous —
+     *  i.e. nothing also died in the same physics step. Never guesses. */
+    function trackLeaksForStep(stepEvents: EngineEvent[], preUids: Set<number>): void {
+        const leakCount = stepEvents.filter((e) => e.type === 'leak').length;
+        if (leakCount === 0) return;
+        const deathCount = stepEvents.filter((e) => e.type === 'death').length;
+        const postUids = new Set(engine.state.enemies.map((e) => e.uid));
+        const missing = [...preUids].filter((uid) => !postUids.has(uid));
+        const attributable = deathCount === 0 && missing.length === leakCount;
+        const wave = engine.state.waveIndex + 1;
+        for (let i = 0; i < leakCount; i++) {
+            const enemyId = attributable ? enemyDefByUid.get(missing[i]) : undefined;
+            track('ticket_leaked', {
+                ...(enemyId ? { enemy_id: enemyId } : {}),
+                wave,
+                lives_remaining: engine.state.lives,
+            });
+        }
+    }
+
+    function trackWaveClears(evts: EngineEvent[]): void {
+        for (const e of evts) {
+            if (e.type !== 'wave-clear') continue;
+            track('level_complete', {
+                wave: e.cleared,
+                lives_remaining: engine.state.lives,
+                duration_s: (performance.now() - waveStartedAt) / 1000,
+            });
+            if (e.cleared === 1) trackFunnelStep(5, 'wave_1_cleared', 'run', 2);
+        }
+    }
+
+    function trackRunEnd(outcome: 'lost' | 'quit'): void {
+        track('run_end', {
+            waves_cleared: engine.state.waveIndex,
+            duration_s: (performance.now() - runStartedAt) / 1000,
+            towers_placed: getTowersPlacedThisRun(),
+            lives_remaining: engine.state.lives,
+            outcome,
+        });
+        trackFunnelStep(6, 'run_end', 'run', 2);
+    }
 
     // ---- tap-to-select pads ------------------------------------------------
     const onTap = (e: FederatedPointerEvent) => {
@@ -401,6 +453,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 runKills: engine.state.kills,
                 selectedPad: null,
             });
+            trackRunEnd('lost');
         }
     }
 
@@ -409,8 +462,23 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         const dt = Math.min(ticker.deltaMS, 50) / 1000;
         // Speed-up runs MORE substeps of the same dt (never one bigger step),
         // so 4x is exactly 4 seconds of identical simulation per second.
-        for (let i = 0; i < store.get().speed; i++) engine.step(dt);
-        playEvents(engine.drainEvents());
+        // Drained per substep (not once after the loop) so a leak can be
+        // attributed to the enemy that vanished in THAT step; the sound/UI
+        // sync below still sees every event, in the same order, unchanged.
+        const allEvents: EngineEvent[] = [];
+        for (let i = 0; i < store.get().speed; i++) {
+            const preUids = new Set(engine.state.enemies.map((e) => e.uid));
+            for (const e of engine.state.enemies) enemyDefByUid.set(e.uid, e.def.id);
+            const wasWave = prevPhase === 'wave';
+            engine.step(dt);
+            if (!wasWave && engine.state.phase === 'wave') waveStartedAt = performance.now();
+            prevPhase = engine.state.phase;
+            const stepEvents = engine.drainEvents();
+            trackLeaksForStep(stepEvents, preUids);
+            allEvents.push(...stepEvents);
+        }
+        playEvents(allEvents);
+        trackWaveClears(allEvents);
         syncStore();
         syncEnemies();
         syncProjectiles();
@@ -423,6 +491,10 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
 
     return {
         destroy() {
+            if (!ended) {
+                ended = true;
+                trackRunEnd('quit');
+            }
             app.ticker.remove(tick);
             app.stage.off('pointertap', onTap);
             offResize();

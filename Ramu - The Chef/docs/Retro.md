@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 4 2026, 14:00 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 14:41 IST (read from the system clock)
 
 ---
 
@@ -977,6 +977,86 @@ be readable today with any confidence.
 
 ---
 
+### Sep 4, 14:41 IST · Phase 2 shipped — v1.2.1 · the game can finally be watched
+
+Nine custom events and a six-step funnel, live. The determinism guarantee held: `npm run
+balance` hashes **310e6e7a…c7b411b** before and after, and `src/game/sim/` and
+`src/game/data/` contain no reference to the SDK. The engine still surfaces `EngineEvent[]`
+and the consumer still does the emitting, which is the whole reason the balance verifier
+survived a telemetry pass.
+
+**The report's headline conclusion was wrong, and it was wrong in the exact way the
+handover predicted.** It stated: *"None of ours — every custom event lands only in
+`top_custom_events_30d`, NOT in `core_loop_events_30d` or `session_end_summary_30d`."*
+Forty minutes later:
+
+```
+session_end_summary_30d
+screen,trigger,event_count,unique_sessions,unique_players,avg_duration_s
+playing,pause,1,1,1,0.0
+playing,visibilitychange,1,1,1,0.0
+```
+
+`screen` and `trigger` carry exactly the values the game sends. **`session_end` routes
+correctly; the taxonomy for that bucket is solved.** The agent had *itself* flagged
+`session_end` as inconclusive-by-lag two paragraphs earlier, then wrote the categorical
+version in the summary section. Both statements were in the same report, and the confident
+one was the false one. The lesson is not about this agent — a summary line written from a
+snapshot outlives the caveat attached to the snapshot, and a reader takes the summary.
+**Where a caveat applies, it belongs in the conclusion, not beside it.**
+
+`core_loop_events_30d` is genuinely still empty, and that one is now well-evidenced:
+`level_start` (17 events) and `level_complete` (14) are demonstrably landing and are
+verbatim the names `ANALYTICS.md` uses in its own example. So the bucket wants something
+else — a registration step, or a narrower reserved vocabulary. The agent's recommendation
+to stop guessing and ask RUN Operators is right, and renaming live events that are already
+collecting real data would be the wrong trade.
+
+**A third thing, found by not stopping at the first answer.** `session_end_summary_30d`
+reports `avg_duration_s` **0.0**. The value actually sent, read back from
+`custom_event_metrics_30d`, is **505.45 seconds** — a real 8.4-minute mobile session. So
+two of the three columns map and one does not; the query reads some other field name for
+duration. Purely cosmetic, since the true durations are intact one query over, but it would
+have been easy to read that 0.0 as a bug in our own payload and go fix working code.
+
+**First behavioural data in the project's history.** Tiny sample — v1.2.1 is minutes old
+— and stated here only so tomorrow has a baseline:
+
+| Funnel step | Sessions | Conversion |
+|---|---|---|
+| `menu_shown` | 3 | — |
+| `run_start` | 2 | 66.7% |
+| `first_tower_placed` | 2 | 100% |
+| `first_wave_started` | 2 | 100% |
+| `wave_1_cleared` | 2 | 100% |
+| `run_end` | 1 | 50% |
+
+Everyone who started a run placed a station and cleared the first wave. That is the
+opposite of the failure I had been most worried about — an onboarding that does not
+communicate that stations must be placed — and if it survives contact with a real sample,
+§1d's ranking changes: the board would be failing to feel like a kitchen without failing
+to be playable. **Two sessions prove nothing.** Re-read tomorrow.
+
+One real gap in the instrumentation: `boot` and `run` are separate funnels, so
+`funnel_steps_30d` cannot show `game_loaded` → `menu_shown`, which is the single most
+valuable drop-off we have — it is the one the 16 MB preload was destroying. Logged as
+item 36.
+
+**The 14-credit charge was mine, not Phase 2's.** Three `llm` calls appeared against the
+account; the agent guessed "platform/deploy overhead." They are `rundot socials prepare`
+generating caption variants at 13:40. The agent spent nothing, as specified. Worth naming
+because an unexplained charge on a shared account is exactly the kind of thing that gets
+attributed to whoever touched the account last.
+
+**Also reported, correctly out of scope and correctly not fixed:** the live host page
+serves a Firebase App Check *"App Integrity check failed"* wall to automated browsers,
+which is why no verification sessions could be played against production. Expected for
+headless Chromium. The open question is whether it ever catches a *real* player behind a
+privacy browser or a corporate proxy — that would be a silently lost play, and plays are
+the score. Item 35, one hour, tomorrow.
+
+---
+
 ## 2. Checkpoint ledger
 
 Runbook checkpoints. Update as each passes, with the actual time.
@@ -1059,6 +1139,13 @@ uniques are the score; the trend matters more than any single day.
    were all correct — but they were only *known* to be correct after reading IHDR bytes,
    `du`, `git ls-files` and `rundot game info`. The gate is worth nothing if the briefing
    is a paraphrase of the report.
-13. **Record what to ignore, not just what to do.** Two unlisted games on the account
+13. **Put the caveat in the conclusion, not beside it.** A report flagged `session_end`
+   as inconclusive-by-lag, then summarised it as "none of our events routed." Forty
+   minutes later it had routed. Summaries are what get read and acted on; a hedge two
+   paragraphs up does not travel with them.
+14. **Don't stop at the first thing the query explains.** `avg_duration_s` read 0.0. The
+   value sent was 505.45. Reading the reserved query alone would have sent someone to fix
+   correct code.
+15. **Record what to ignore, not just what to do.** Two unlisted games on the account
    look exactly like entry candidates in `list-games`. §0 exists so a tired future
    session cannot deploy to the wrong game ID.

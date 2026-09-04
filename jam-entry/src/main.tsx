@@ -5,6 +5,7 @@ import App from './ui/App.tsx';
 import { store } from './state/store.ts';
 import { loadSave, flushSave } from './state/save.ts';
 import { initSdk, registerLifecycles, sdkReady } from './sdk/runSdk.ts';
+import { track } from './sdk/analytics.ts';
 import { refreshEngagement } from './sdk/engagement.ts';
 import { generateTowerIcons } from './game/towerIcons.ts';
 import { initAudio, resumeAudio, suspendAudio } from './audio/audio.ts';
@@ -18,6 +19,15 @@ import './styles/app.css';
  * marked points.
  */
 async function boot() {
+    const sessionStartedAt = performance.now();
+    const fireSessionEnd = (trigger: string) => {
+        track('session_end', {
+            screen: store.get().phase,
+            trigger,
+            duration_s: (performance.now() - sessionStartedAt) / 1000,
+        });
+    };
+
     // 1. SDK first. Nothing may call RundotGameAPI before this resolves.
     //    Resolves even if init fails (local dev outside the RUN host).
     await initSdk();
@@ -71,13 +81,17 @@ async function boot() {
         onPause: () => {
             store.patch({ paused: true });
             suspendAudio();
+            fireSessionEnd('pause');
         },
         onResume: () => {
             store.patch({ paused: false });
             resumeAudio();
             void refreshServerTime(); // keep the trusted clock fresh
         },
-        onSleep: () => flushSave(),
+        onSleep: () => {
+            flushSave();
+            fireSessionEnd('sleep'); // the docs recommend batching analytics here
+        },
         onAwake: () => { void refreshServerTime(); }, // long suspend: resample
         onQuit: () => flushSave(), // treat onSleep as the reliable one
     });
@@ -88,9 +102,14 @@ async function boot() {
     //    throttling). Resume is guarded so a tab-show never restarts audio
     //    the host itself suspended.
     document.addEventListener('visibilitychange', () => {
-        if (document.hidden) suspendAudio();
-        else if (!store.get().paused) resumeAudio();
+        if (document.hidden) {
+            suspendAudio();
+            fireSessionEnd('visibilitychange');
+        } else if (!store.get().paused) resumeAudio();
     });
+    // Catches actual tab/app close, which 'hidden' doesn't always precede
+    // reliably on mobile browsers.
+    window.addEventListener('pagehide', () => fireSessionEnd('pagehide'));
 
     // 8. Post-boot, fire-and-forget work goes here — analytics boot event,
     //    server time refresh, notification re-arming, subscription status

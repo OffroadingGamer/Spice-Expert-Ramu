@@ -5,8 +5,8 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 14:00 IST
-**Live:** v1.2.0 public · <https://w.run/puneetmakes/spice-expert-ramu>
+**Last updated:** Sep 4 2026, 14:41 IST
+**Live:** v1.2.1 public · <https://w.run/puneetmakes/spice-expert-ramu>
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST**
 
 ---
@@ -58,7 +58,7 @@
 
 | | |
 |---|---|
-| **Now** | S1 · P7 telemetry · P6 LinkedIn + daily reciprocity · P5 audio |
+| **Now** | S1 · P6 LinkedIn + daily reciprocity · P2 core-loop read · P5 audio |
 | **Next** | S1 · CP4 items · P2 core-loop read |
 | **Later** | S2 return loop **(re-ranked up — two-surface audience)** · S3 board layout + levels |
 | **Blocked on user** | Daily Discord reciprocity · audio provenance/licence |
@@ -97,6 +97,9 @@
 - [x] 15 generated assets shipped + wired (v1.1.0)
 - [ ] KayKit 3D → sprite render pass
 
+### P0 · Stability
+- [ ] Characterise the App Check integrity wall — can it hit real players?
+
 ### P1.5 · Performance & Hygiene
 - [x] Downscale 15 assets — 16.30 MB → 0.64 MB (v1.2.0)
 - [x] Exclude `*.png.json` sidecars from `dist/` (v1.2.0)
@@ -106,11 +109,13 @@
 
 ### P7 · Telemetry
 - [x] Diagnose — pipe works, only `game_loaded` is emitted
-- [~] Handover written — run funnel, core-loop, session-end
-- [ ] Wire core-loop events
-- [ ] Wire session-end events
-- [ ] Verify events land in `analytics export`
-- [ ] Establish which names route to the reserved query buckets
+- [x] Wire core-loop events — 9 events live (v1.2.1)
+- [x] Wire session-end events — `screen`/`trigger` confirmed routing
+- [x] 6-step `run` funnel + determinism preserved
+- [x] Verify events land in `analytics export`
+- [~] Reserved bucket routing — `session_end` solved, `core_loop` open
+- [ ] Ask RUN Operators the `core_loop_events_30d` name shape
+- [ ] Join `game_loaded` → `menu_shown` for load-to-menu conversion
 
 ### P5 · Audio
 - [~] 5 SFX WAVs supplied by user — provenance + licence unconfirmed

@@ -9,21 +9,21 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 14:00 IST (read from the system clock)
-**Implementation status:** ▶ **LIVE — v1.2.0 public + approved.**
+**Last updated:** Sep 4 2026, 14:41 IST (read from the system clock)
+**Implementation status:** ▶ **LIVE — v1.2.1 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
 ### Live state snapshot
 
 | | |
 |---|---|
-| Public version | **v1.2.0** (verified on Private/Review/Public via `rundot game info`) |
+| Public version | **v1.2.1** (verified on Private/Review/Public via `rundot game info`) |
 | Live audience | **35 summed daily uniques** (Sep 3: 9 · Sep 4: 26). **26 of 35 on mobile-web.** ⚠️ `game_loaded` reports **47 distinct players** over the same window — the two disagree and the daily figure is probably low; Plan §7 item 32 |
 | Repo | `September GameJam/jam-entry` (sibling of the docs folder) |
 | Stack | Vite + Pixi.js v8 + React 19 + Tailwind v4, from `september-jam-tower-defense` |
 | Art | **15 generated assets live**, all in the `critical` bundle. ✅ **Downscaled in v1.2.0: 16.30 MB → 0.64 MB, ~60 MB → ~3.9 MB decoded.** 1024px masters kept out of `public/` in `art-source/`; `npm run art:resize` reproduces the ship sizes. See §5a |
 | Board | Still the kit's example serpentine path and pad layout. **Phase 2 replaces this** |
-| Credits | **132,575** (2,325 spent on 17 `imagegen` calls in Phase 1; Phase 1.5 spent **0**). The balance has now risen **twice** with no spend — unexplained, Plan §7 item 23 |
+| Credits | **132,561** (2,325 spent on 17 `imagegen` calls in Phase 1; Phase 1.5 spent **0**). The balance has now risen **twice** with no spend — unexplained, Plan §7 item 23 |
 | Thumbnail | Real, generated, exactly 512×512 JPG |
 | Title | ✅ Fixed — SVG `textLength` + `lengthAdjust`, verified 320/390/430 |
 
