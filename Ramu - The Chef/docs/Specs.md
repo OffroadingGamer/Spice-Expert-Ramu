@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 4 2026, 20:15 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 20:14 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -625,6 +625,39 @@ Re-encode through `npm run audio:convert` before it reaches `public/cdn-assets/`
 which is what makes `loopStart`/`loopEndTrim` (§8a.4) able to close the seam. Prompting
 for *"no build, no drop, no fade in or out"* is what produced that; keep it in every BGM
 prompt.
+
+
+### 8a.6 🔒 The BGM prompt set — issued Sep 4 2026, 20:1x IST
+
+Handed to the audio generation agent (Plan item 49 — **it is the only producer of music
+files**). Recorded here because a handover that lives only in chat is lost on the next
+compaction; Retro lesson 18.
+
+**Fixed constants across every cue, so stages crossfade:** **112 BPM · A minor · 4/4 ·
+instrumental · no vocals.**
+
+**🔒 Every BGM prompt ends with the no-shape clause:**
+
+> *"Consistent energy and instrumentation throughout with no build, no drop, no fade in or
+> out. No vocals."*
+
+This is not stylistic. It is what made take 1 loopable — measured head and tail means
+landed **within 0.3 dB** of each other, so `loopStart`/`loopEndTrim` (§8a.4) have a seam
+they can actually close. A track that fades cannot be looped by trimming.
+
+| Cue | Takes | Purpose |
+|---|---|---|
+| `bgm-menu` | 2 | Main menu. Sparse: bansuri over tanpura drone, finger cymbals, minimal percussion. *A kitchen before service* |
+| `bgm-service-low` | 2 | Early waves. Tabla + dholak, bansuri melody, tanpura, santoor. Focused, not dramatic. **Take 1 already exists** — these are alternates |
+| `bgm-service-high` | 2 | Peak rush. Tighter sixteenth-note tabla/dholak, urgent sarangi and bansuri, low percussive pulse. Tense but controlled, never chaotic. Same key and tempo as `service-low` **so the two crossfade** |
+
+Full prompt text is logged per take by the agent in
+[AudioGenPrompts.md](AudioGenPrompts.md), which is the running record.
+
+**Batch economics:** 6 generations at 30 s = **678 credits** (~0.5% of the 132,448
+balance). Twelve CLI calls — each generation is preceded by a free `estimate`, which meters
+as a call at zero cost. Agent cap is **10 generations**, deliberately 4 above the plan so a
+faded or off-key take can be retried without another round trip.
 
 
 ## 8b. 🔒 Billboard ingredient row — the overflow rule and its ceiling
