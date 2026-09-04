@@ -315,6 +315,42 @@ a manual expedite. It is not a tower defense wearing an apron.
 | 1 | **Station placement & upgrade** along the rail — each station type services one component type | *Set the line* | **Low** — the kit's native placement loop, reskinned and re-typed. Ships tonight. |
 | 2 | **"Hands!" expedite** — tap a ticket to instantly finish one component; limited charges, refills between rushes | *Save the ticket* | **Medium** — ~1 evening (Day 2). Converts watching into playing; it is the skill ceiling. |
 
+### 10.3a 🔒 Gated order — decided Sep 4 2026, 20:05 IST
+
+**Supersedes mechanic 1 above if the new game view ships** (Plan item 48). §10.3 stays
+frozen and unedited because the shipped v1.2.3 still runs it; this records what replaces
+it, and why this shape and not the two obvious ones.
+
+**The model.** Ingredients ride a reverse-V belt past four front-facing prop slots. A prop
+does not shoot — it **hot-swaps the ingredient sprite in place**, momentum untouched.
+Most swaps are order-free. A few declare a prerequisite:
+
+```json
+{ "in": "dough", "out": "naan", "after": "kneaded" }
+```
+
+An ingredient that reaches the tandoor before it has been kneaded **visibly does not
+transform.** That is the entire failure message, and it costs nothing to build.
+
+**Why gated, and not the two obvious options.**
+
+| | Verdict |
+|---|---|
+| **Set only** — any prop, any time | Rejected. Slot position goes decorative, the Λ belt becomes a picture, and the real decision moves to the shop. That is the same thinness the conformance audit already failed us on |
+| **Full order** — strict sequence | Rejected *for now*. Slot position becomes the game, which is right — but it needs per-step failure UI, and every level needs solvability proving across 4 slots with **no simulator**, since `npm run balance` does not survive this pivot |
+| **🔒 Gated order** | **Chosen.** Solvability is a linear check, not a permutation search. Most ingredients stay order-free so recipes stay quick to author. And it **degrades to "set only" with zero gates** — so it ships simple and the depth turns up later as *data*, not code |
+
+**The property that decided it:** difficulty becomes an authoring dial, not a rewrite.
+Levels 1–2 ship with no gates and play as a checklist. Gates appear from level 3. Nothing
+in the build changes.
+
+**🔒 The billboard row is the progress readout.** Each ingredient image on the lower
+billboard lights up or ticks off as its step is satisfied. Without this, an ingredient
+arriving at the tray *wrong* is invisible — and the dustbin skip (−1 walk-out) can only be
+a real decision if the player can see the dish is already doomed. **This is not optional
+polish; it is what makes the mechanic legible**, and it carries whichever gating depth a
+level uses. Row ceiling and scale floor: Specs §8b.
+
 ### 10.4 Secondary mechanics — **all cuttable on day 8**
 
 | # | Mechanic | Cut if behind? |

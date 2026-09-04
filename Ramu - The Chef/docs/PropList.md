@@ -1,6 +1,6 @@
 # PropList — stations that sit in the prop slots
 
-**Last updated:** Sep 4 2026, 19:49 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 20:05 IST (read from the system clock)
 **Status:** 🟡 Inventory done, picks pending — **user input required** (marked ⬜ below)
 
 Companion to [RecipeList.md](RecipeList.md). Props are what the old build called
@@ -84,7 +84,7 @@ Proposed JSON, one entry per prop. Lives beside the level data, not in `sim/`.
   "slot": "any",
   "feedback": { "sfx": "sizzle", "vfx": "ember-puff", "shake": 3, "tweenMs": 220 },
   "interactions": [
-    { "in": "dough",  "out": "naan" },
+    { "in": "dough",  "out": "naan",         "after": "kneaded" },
     { "in": "paneer", "out": "paneer-tikka" }
   ]
 }
@@ -93,6 +93,13 @@ Proposed JSON, one entry per prop. Lives beside the level data, not in `sim/`.
 - **`interactions`** is the whole mechanic. An ingredient whose id matches an `in`
   swaps to `out` as it passes. No match → the prop still plays its feedback, but the
   ingredient continues unchanged.
+- **🔒 `after` is the gate — decided Sep 4, 20:05 IST (GDD §10.3a).** Optional. When
+  present, the swap only fires if the ingredient has already been through a step with
+  that tag. Arriving early plays the feedback and **visibly leaves the sprite alone** —
+  which is the failure message, at no build cost.
+- **Omit `after` and the prop is order-free.** A level with no gates anywhere plays
+  exactly as a checklist, so levels 1–2 ship ungated and gates start at level 3.
+  Difficulty is an authoring dial, not a code change.
 - **Momentum is never touched.** The swap is a texture change on a moving sprite.
 - **`slot`** reserved for later, if some props only fit certain slots.
 
@@ -111,9 +118,8 @@ Proposed JSON, one entry per prop. Lives beside the level data, not in `sim/`.
 
 ## 4. Open questions I'd want answered before this is built
 
-- **Does an ingredient need props in order?** If dough must be kneaded *then* baked,
-  slot position becomes the strategy, and the reverse-V belt is a sequencer. If order
-  doesn't matter, slot position is decoration.
+- ~~Does an ingredient need props in order?~~ ✅ **Answered Sep 4, 20:05 IST: gated
+  order.** Optional `after` prerequisites, most interactions order-free. GDD §10.3a.
 - **What happens at the tray if the recipe isn't complete?** Presumably a walkout —
   worth stating.
 - **Can two props act on one ingredient in one pass?** The belt is Λ-shaped, so an

@@ -1,6 +1,6 @@
 # RecipeList — dishes, and the ingredients they call for
 
-**Last updated:** Sep 4 2026, 19:49 IST (read from the system clock)
+**Last updated:** Sep 4 2026, 20:05 IST (read from the system clock)
 **Status:** 🟡 Ingredient inventory done, recipes pending — **user input required** (⬜ below)
 
 Companion to [PropList.md](PropList.md). A recipe drives two things on screen at once:
@@ -90,7 +90,12 @@ by eye from the art — **please correct any I've misread before these become id
 
 - **`name`** is the single sentence on the scroll. Write it as a pass call, not a menu
   label — *"One chana masala, hot"* beats *"Chana Masala"*.
-- **`ingredients`** is the billboard row, in order, joined by `+`.
+- **`ingredients`** is the billboard row, in order, joined by `+`. **That order is
+  display order.** Whether it is also *required* order is decided per interaction by
+  `after` in [PropList.md](PropList.md), not here — see GDD §10.3a.
+- **🔒 The row doubles as the progress readout.** Each image lights up or ticks off as
+  its step is satisfied, so a player can see a doomed dish in time to spend the dustbin
+  skip on it. Required, not polish.
 - **`requires`** is derived from PropList interactions; keep it explicit so a level can
   be validated as solvable with the props it offers.
 
@@ -117,8 +122,10 @@ before the recipes are written.
    cartoon art, and an id is forever once level data references it.
 2. **The recipe list itself** — dish name, ingredient sequence, finished-dish sprite.
 3. **How many ingredients per recipe**, and whether that grows with difficulty.
-4. **Does ingredient *order* matter**, or only the set? This decides whether the belt
-   is a sequencer or a checklist — the single biggest open design question.
+4. ~~Does ingredient order matter?~~ ✅ **Answered Sep 4, 20:05 IST: gated order**
+   (GDD §10.3a). Author levels 1–2 with no gates; introduce them from level 3. What is
+   still needed from you is **which chains are gated** — e.g. knead → bake, marinate →
+   grill.
 
 ---
 
