@@ -51,3 +51,13 @@ coverage/
 # LICENSE.txt). Converted, budgeted copies ship from jam-entry/public/audio/
 # instead. Plan §7 items 27, 28.
 Ramu - The Chef/Audio/
+
+# ── Purchased art packs: must NOT be redistributed ─────────────
+# Two commercial itch.io tilesets arrived Sep 4 (toxiccolors "Kitchen
+# Inventory Decoration", hoshiixs "Kitchen Props") with .aseprite sources
+# and Tiled .tsx/.tsj. This repo is PUBLIC: paid asset packs typically
+# license use *inside* a game, not redistribution of the raw sheets, so
+# committing these would republish purchased art. Sprites cut from them
+# ship as baked atlases under jam-entry/public/images/ instead. Licence
+# terms still need reading per pack — Plan §7.
+Ramu - The Chef/Art/
