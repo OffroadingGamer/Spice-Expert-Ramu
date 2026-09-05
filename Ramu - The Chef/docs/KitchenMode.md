@@ -1,6 +1,6 @@
 # KitchenMode — the belt game view as a second mode
 
-**Last updated:** Sep 5 2026, 21:19 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 00:47 IST (read from the system clock)
 **Status:** 🟢 **Architecture settled.** Eight decisions taken Sep 4, 23:10 IST — all
 eight went to the recommended option. ⬜ Nothing built yet.
 **🛑 Hard gate: playable end to end by Sep 10, or it is cut.** §5.
@@ -311,4 +311,74 @@ entry untouched.
 - **The boost list** beyond Fast Hands, Reach and per-prop traits.
 - **The live tower defence's upgrade-does-not-change-sprite behaviour** — fix, or leave
   as superseded by the belt.
+
+---
+
+## 7. 🛑 Scope read against Sep 19 — Sep 6 2026, 00:47 IST
+
+Written the moment the last node was picked, so it costs nothing to act on. Deadline is
+**Sep 19, 00:30 IST — 13 days from now.**
+
+### 7.1 What the full design now weighs
+
+| | Amount |
+|---|---|
+| Nodes | 5 |
+| Dishes | 28 — 24 picked ([RecipeList.md](RecipeList.md) §7) + ~4 beverages |
+| **Levels** | **~38** — Beverages ~5, node 1 × 8, node 2 × **9**, nodes 3–4 × 8 |
+| Art | ~6–7 h — 19 containers, 4 loose sprites, 12 dishes drawn, 9 recoloured, chai glass |
+| **Systems still unbuilt** | `sim/kitchen.ts` · level loader + schema · star evaluation · The Kitchen hub · tier placement + cost · the loaner rule · masala carry-over within a node · boss mode (endless, speed ramp, walkout terminate) · chef hats + boosts · the amended save shape · leaderboard config · `mode` telemetry |
+
+### 7.2 🔴 The honest read: five nodes do not fit, and two do
+
+Four days go to the Sep 10 gate (§6.3) — belt, slots, one recipe, walkouts, end screen.
+That leaves **nine days** for twelve unbuilt systems, 38 levels of authored data, seven
+hours of art, *and* the daily promotion the scoring metric actually depends on.
+
+**And the metric is the argument.** The jam scores **Total Unique Daily Plays**. The belt
+does not feed that — the return loop does, and the return loop (`rundot-feature-save`,
+daily rewards, quests, notifications) is **still unbuilt** with 13 days left. §5's original
+reasoning was right even though its deadline has moved.
+
+➡️ **Recommended jam scope: Beverages + North Indian.** Two nodes, ~13 levels, and the
+art narrows from 6–7 h to about **2 h** — 4 container labels, 5 plated dishes, the chai
+glass. That is enough to prove the node structure end to end: FTUE, grinding level, tier
+unlock, loaner, boss. Nodes 2–4 are fully designed and recorded; they are built after the
+jam with no clock on them.
+
+⬜ **User decision.** Recorded here rather than argued later.
+
+### 7.3 What ships in which order
+
+1. **Sep 6–10** — the gate: `sim/kitchen.ts`, belt, 4 slots, Chai, walkouts, end screen,
+   menu branch. Procedural textures throughout.
+2. **In parallel, any time** — the Aseprite queue. Art is not on the gate's critical path.
+3. **Sep 10–13** — save shape, level loader, stars, tier placement, The Kitchen hub.
+4. **Sep 13–16** — node 1 authored; boss mode; chef hats.
+5. **Throughout** — the return loop and the daily posts, which are what the metric rewards.
+
+### 7.4 The custom-LoRA question — ⚠️ licence first, and not during the jam
+
+Raised Sep 6: train a style LoRA on the sprite sheets (Kohya_ss / OneTrainer) so new
+ingredients and dishes can be generated in-style, futureproofing the art dependency.
+
+**The idea is sound and the timing is wrong. Three reasons, in order of weight:**
+
+1. 🔴 **Licence.** These are **purchased itch.io packs**, already gitignored as
+   non-redistributable. Most asset licences permit use *in a game*; using them as
+   **training data to produce more assets** is a different grant and many licences now
+   forbid it explicitly. **This must be read before any training happens, jam or not.**
+2. 🟡 **It does not save time on this batch.** The whole remaining art queue is ~6–7 h
+   of Aseprite, and ~2 h under §7.2's scope. Dataset prep, captioning, training and
+   iteration will not beat that, and diffusion output is weakest at exactly what sprites
+   need — clean alpha edges, consistent outline weight at small size, palette discipline.
+   The cleanup lands back in Aseprite anyway.
+3. ℹ️ **Fooocus is an inference UI, not a trainer.** It can *use* a LoRA; Kohya_ss and
+   OneTrainer are the right tools to *make* one.
+
+✅ **The version worth doing, post-jam:** by the end of this art pass there will be
+**~30 sprites the user drew** in the pack's style — 19 containers, 4 loose items, the
+plated dishes. **Train on those.** The licence question disappears entirely, the style is
+already the user's own, and a set that size is a workable style-LoRA dataset. That is the
+futureproofing, without the exposure.
 

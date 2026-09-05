@@ -1,6 +1,6 @@
 # PropList — stations that sit in the prop slots
 
-**Last updated:** Sep 5 2026, 21:19 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 00:47 IST (read from the system clock)
 **Status:** 🟡 Inventory done, **picks proposed Sep 4, 20:24 IST** — awaiting sign-off (⬜ §3)
 
 Companion to [RecipeList.md](RecipeList.md). Props are what the old build called
@@ -285,4 +285,20 @@ and a chopping-knife SFX.
 - **Container** is an **ingredient**, not a station. Labelled vessels are drawn off
   `S3-50` (`Untagged/23`) at 2–5 minutes each. See
   [RecipeList.md](RecipeList.md) §6.3.
+
+### 7.4 ⚠️ The §4 interaction graph needs re-pinning wholesale
+
+Three of the eleven rows in §4 point at sprites that changed meaning during the rename
+pass:
+
+| §4 says | Actually is now |
+|---|---|
+| Prep counter, `S1-17` | `props/06-Cooktop only oven(Level1)` — §7.2 |
+| `flour` **S1-15** | `props/36-Spice grinder(Level2)` — flour has **no sprite** |
+| `tomato-gravy` **S3-32** | `Untagged/62 — UI prop, Serving tray(Curry)` |
+
+All three are the same error: ids pinned before the sheets were sliced and named. **Do not
+patch these row by row.** The graph is re-pinned in one pass once the `Untagged/`
+hand-sort names the ingredient sprites — until then any individual fix is a guess against
+the same unnamed set that produced the mistakes.
 

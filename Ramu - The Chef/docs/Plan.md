@@ -8,7 +8,7 @@
 > plan item slips or is cut, do not silently delete it — strike it, move it, and
 > log the reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 5 2026, 21:19 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 00:47 IST (read from the system clock)
 **Status:** ▶ **LIVE — v1.1.0** at https://w.run/puneetmakes/spice-expert-ramu since ~15:05 PT Sep 3. Scoring clock running.
 **Scope:** cuisine level run (GDD §10.10) · SFX at P1 (§12) · 3D→sprite art pipeline (§11a).
 

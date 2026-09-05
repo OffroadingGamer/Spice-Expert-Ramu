@@ -5,7 +5,7 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 5 2026, 21:19 IST
+**Last updated:** Sep 6 2026, 00:47 IST
 **Live:** **v1.7.0 public** · <https://w.run/puneetmakes/spice-expert-ramu> — went public Sep 5 2026 with the full audio layer; was v1.2.3 from Sep 4
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST**
 

@@ -1,6 +1,6 @@
 # RecipeList — dishes, and the ingredients they call for
 
-**Last updated:** Sep 5 2026, 21:19 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 00:47 IST (read from the system clock)
 **Status:** 🟡 Inventory done, **recipes proposed Sep 4, 20:24 IST** — awaiting sign-off (⬜ §3)
 
 Companion to [PropList.md](PropList.md). A recipe drives two things on screen at once:
@@ -272,4 +272,156 @@ cannot be answered.
 **Beverages (FTUE, Chai → High-Tea)** → **North Indian** → **South Indian**
 → **Italian** → **North Eastern**. Candidate dish lists per node were put to the
 user Sep 5, 21:19 IST; ⬜ selection pending, and asset requirements follow from it.
+
+---
+
+## 7. 🔒 The node selections — Sep 6 2026, 00:47 IST
+
+Six dishes chosen per cuisine node by the user, one node at a time. **§6.4's
+"selection pending" is closed.** Format is §6.1's; the masala occupies one cell in
+every dish of its node, so it is written once per node rather than per row.
+
+### 7.0 Node 0 — Beverages (FTUE)
+
+**Chai → High-Tea.** The FTUE is the whole beverage node, not a single tutorial level.
+Props: Water Dispenser (`props/43–44`), Kettle (`19–21`), Beverage Dispenser
+(`01–02`). ⬜ Dish list not yet fixed; Chai and High-Tea are named, the levels
+between them are not.
+
+### 7.1 Node 1 — North Indian · masala: **Garam Masala**
+
+| Dish | Primary | Oil | Secondary | Utensil |
+|---|---|---|---|---|
+| Baingan Bharta | Aubergine | Mustard oil | Onion | **Brazier** `03` |
+| Naan / Roti | Dough | Ghee | — | Tandoor `09–10` ⚠️ §7.5 |
+| Rajma | Kidney beans | Ghee | Tomato | Pressure Cooker `23–25` |
+| Jeera Rice | Rice | Ghee | — | Rice Cooker `26–28` |
+| Gobhi Masala | Cauliflower | Mustard oil | Onion | Cast Iron Skillet `04–05` |
+| Palak Aloo | Spinach | Ghee | Potato | Fry Pan `14–18` |
+
+Ground from cumin seed, coriander seed, black pepper, cardamom, clove, cinnamon, bay
+leaf, red chilli, turmeric. **One grinding level.**
+
+### 7.2 Node 2 — South Indian · masalas: **Sambar podi** *and* **Rasam podi**
+
+| Dish | Primary | Oil | Secondary | Utensil |
+|---|---|---|---|---|
+| Coconut Chutney | Coconut | Sesame oil | Green chilli | **Spice Grinder** `35–38` |
+| Upma | Semolina | Ghee | Onion | Sauce Pan `29–31` |
+| Rasam | Tomato | Ghee | Tamarind | Sauce Pot `32–34` |
+| Idli | Batter | — | — | **Steam Cooktop** `39` |
+| Beans Poriyal | Green beans | Coconut oil | Coconut | Cast Iron Skillet `04–05` |
+| Sambar | Toor dal | Sesame oil | Tomato | Pressure Cooker `23–25` |
+
+⚠️ **The only node needing two grinding levels — 9 levels, not 8.** Rasam podi and
+Sambar podi are different blends and neither can stand in for the other.
+
+🔥 **A universal tadka.** Mustard seed + curry leaf + urad dal appears in five of
+six dishes and **must be one container, not three cells.** Sambar and Rasam both land at
+exactly 5 cells with it folded; split it and both become unauthorable.
+
+🔥 The Spice Grinder grinds the node's podi **and** is Coconut Chutney's station —
+the tool the node introduces is the tool its first recipe needs.
+
+### 7.3 Node 3 — Italian · masala: **Italian herb blend**
+
+| Dish | Primary | Oil | Secondary | Utensil |
+|---|---|---|---|---|
+| Pesto | Basil | Olive oil | Pine nut | **Spice Grinder** `35–38` |
+| Aglio e Olio | Spaghetti | Olive oil | Garlic | Fry Pan `14–18` |
+| Minestrone | Mixed veg | Olive oil | Beans | **Stock Pot** `40–42` — new family |
+| Bruschetta | Bread | Olive oil | Tomato | **Oven** = Cooktop **L1** `06` |
+| Arrabbiata | Tomato | Olive oil | Garlic | Sauce Pot `32–34` |
+| Risotto | Arborio rice | Olive oil | Onion | Sauce Pan `29–31` |
+
+Ground from oregano, basil, parsley, black pepper, chilli flakes, bay leaf.
+
+✅ **Every dish lands at exactly 4 cells with one spare** — the cleanest node.
+⚠️ **Every dish also uses olive oil**, so the oil cell carries no information for this
+node. Either accept it as flavour or let a node declare a default oil.
+
+### 7.4 Node 4 — North Eastern · masala: **the paste** (ginger, garlic, **bhut jolokia**)
+
+| Dish | Primary | Oil | Secondary | Utensil |
+|---|---|---|---|---|
+| Xaak Bhaji | Spinach | Mustard oil | Garlic | Fry Pan `14–18` |
+| Bamboo Shoot Fry | Bamboo shoot | Mustard oil | Onion | 🔒 **Wok** = Fry Pan **L4** `17` |
+| Veg Thukpa | Noodles | Mustard oil | Cabbage | Stock Pot `40–42` |
+| Sticky Rice | Rice | — | — | Steam Cooktop `39` |
+| Ooti | Peas | Mustard oil | Onion | Pressure Cooker `23–25` |
+| Veg Momo | Dough | — | Cabbage | Steam Cooktop `39` |
+
+🔒 **Node 4 introduces no new prop family — its new tool is a *tier*.** The Wok is
+Fry Pan L4, the top of a ladder the player has climbed since node 1. Four distinct
+families across six dishes, which fits the 4 slots exactly: the boss can put all four on
+the belt at once, which no other node can do.
+
+🔥 **A fresh paste, not a dry blend — and bhut jolokia rather than green chilli.**
+North Eastern cooking is defined by the *absence* of a dry masala; a
+"North-Eastern garam masala" would be an invention. Bhut jolokia makes the paste
+**specific rather than merely authentic** — it is the one NE ingredient a player anywhere
+recognises — and it turns the container **red-orange**, so the node's most-seen cell stops
+reading as another green chutney.
+
+### 7.5 ⚠️ Naan needs Cooktop L4 in the *first* cuisine node
+
+Tandoor is not its own prop — it is `09-Cooktop only tandoor(Level4)` /
+`10-Cooktop & Tandoor(Level5)`. Bruschetta (§7.3) needs `06-Cooktop only oven(Level1)`.
+**So under the current node order the player meets the Cooktop ladder at L4 in node 1 and
+at L1 in node 3 — backwards.**
+
+➡️ **Recommend Roti, not Naan, in node 1.** Roti is a tawa dish — Cast Iron Skillet,
+tier 1. Cooktop is then introduced at L1 as the oven in node 3, climbs, and Naan at L4
+becomes a late-run or boss dish the ladder has earned. Same bread, right place.
+⬜ User decision.
+
+### 7.6 🔥 Build node 3 before node 4
+
+Aglio e Olio and Veg Thukpa are the only two noodle dishes and **the pack has no noodle
+form at all**, raw or cooked. Draw it once for Aglio e Olio and Thukpa is a recolour into
+broth. Reverse the order and it is drawn twice.
+
+---
+
+## 8. Asset requirements — all four cuisine nodes
+
+### 8.1 Props — **zero new, across 24 dishes**
+
+Every utensil in every selected dish is already in `props/`. The 44-sprite prop set was
+sized correctly the first time. **The entire remaining art cost of the game is ingredients
+and plated dishes.**
+
+### 8.2 Container labels — 19, drawn off `S3-50`
+
+| Node | New containers |
+|---|---|
+| 1 | Ghee · Kidney beans · Rice · **Garam Masala** |
+| 2 | Sesame oil · Coconut oil · Semolina · Idli batter · Tamarind · **Sambar podi** · **Rasam podi** · **Tadka** |
+| 3 | Olive oil · Spaghetti · Arborio rice* · White beans* · **Italian herb blend** |
+| 4 | Noodles · **NE paste** |
+
+\* recolours of containers made for node 1. Mustard oil `S3-19` and sunflower `S3-20` were
+already in the pack; **mustard oil is node 4's signature and needed no work at all.**
+
+### 8.3 Loose sprites — 4 genuinely absent from the pack
+
+**Coconut** (node 2) · **Pine nut** (node 3) · **Bamboo shoot** (node 4) ·
+**Bhut jolokia** (node 4). Everything else — aubergine, cauliflower, spinach, potato,
+onion, tomato, garlic, ginger, green chilli, cabbage, peas, green beans, bread, basil —
+is 🟡 **probably already among the 23 Ingredient and 9 Pending sprites**, unconfirmable
+until the `Untagged/` hand-sort names them.
+
+### 8.4 Finished dishes — the dominant cost
+
+| | Count | Dishes |
+|---|---|---|
+| 🎨 **Draw** | **12** | Baingan Bharta, Rajma, Jeera Rice, Gobhi Masala, Palak Aloo, Idli, Rasam, Aglio e Olio, Risotto, Veg Momo, Veg Thukpa*, and one spare |
+| 🎨 Recolour | **9** | Coconut Chutney, Beans Poriyal, Sambar, Minestrone, Arrabbiata, Bruschetta, Xaak Bhaji, Bamboo Shoot Fry, Ooti |
+| 🟡 Possibly free | 4 | Naan `S1-32` · Upma `S1-27` · Pesto `S2-14` · Sticky Rice `S1-07` |
+
+\* Thukpa becomes a recolour if node 3 ships first — §7.6.
+
+Only **four** Finished sprites exist in the whole pack and one of them is already Naan.
+Plated dishes scale linearly with the menu and are the single largest art line in the
+project.
 
