@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 5 2026, 02:00 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 12:56 IST (read from the system clock)
 
 ---
 
@@ -1338,6 +1338,52 @@ pipeline is what breaks the assumptions built when there was one.
 
 ---
 
+### Sep 5, 12:56 IST · D1 answered at 2.2% · two of my own findings withdrawn, and the players were right
+
+The D1 read that items 26 and 31 waited a day for came back at **2.2%** — 3 of 134 players
+returned. It cost one command. **The query was in the catalog the whole time**
+(`retention_by_platform_30d`); the two names I had recorded as missing were names I made
+up. I wrote *"no retention query exists in the CLI's approved set"* on the strength of two
+guesses failing, and blocked a decision on it for a day.
+
+Two findings of mine died in the same pass, both from the same root:
+
+**Item 32's "impossible arithmetic" was a partial-day read.** Sep 4 gave 79 unique players
+when I sampled it at 01:00 IST and **117** when the day closed. The sum of dailies now
+exceeds the distinct count, exactly as returning players require. There was never an
+undercount, and the consequence I drew — that the jam was scoring us ~30% low — is
+withdrawn with it. The scoring day rolls at 05:30 IST; I read it four and a half hours
+early and called it settled.
+
+**The funnel retraction needed retracting.** Correcting the "44% never reach the menu"
+claim, I asserted that `menu_shown` fires before `game_loaded`. It does not — it is a React
+mount effect, deferred past the synchronous tail, so `game_loaded` reaches the wire first.
+I had replaced a wrong ordering with another wrong ordering and used it as the proof. The
+conclusion held anyway, for a reason I should have led with: **`game_loaded` is downstream
+of both `await warmAssets()` and the `phase: 'menu'` patch**, so anyone who emitted it had
+already finished loading. That is structural. Firing order is the scheduler's business.
+
+And I had paired that retraction with item 32 into a story about RUN under-reporting. Both
+halves were mine. `run_start` reads **126 / 90 / 74** in the funnel table and **126 / 90 /
+74** in the custom-event table. The platform was accurate throughout.
+
+**What the same read found that matters more than any of it.** The user relayed player
+feedback — *entering the game mode, it is confusing to figure out what to do* — and the
+funnel had been describing exactly that without my seeing it. Placing a tower converts at
+95%, because the build sheet is the only touchable thing on screen. Then `wave_1_cleared`
+→ `run_end` converts at **40%**, and `tower_upgraded` reaches **22 of the 70** players who
+placed a tower. The 22 who upgrade and the 22 who finish a run are the same count.
+**Nothing teaches the second verb**, so from wave 2 the game stops answering anything the
+player knows how to do, and they leave mid-run rather than losing.
+
+I had been treating 2.2% D1 as a missing-return-loop problem, with S2 queued against it.
+It is a comprehension problem. **A daily reward cannot retrieve a player who never reached
+the fun.** CP4 has been open since Sep 3 as a checkpoint we were behind on; it is now the
+measured cause of a flat score, and it outranks both the return loop and the belt.
+
+The players diagnosed this in one sentence. The funnel had been saying it for two days.
+
+
 ## 2. Checkpoint ledger
 
 Runbook checkpoints. Update as each passes, with the actual time.
@@ -1546,3 +1592,32 @@ uniques are the score; the trend matters more than any single day.
    else, read what that state already knows.** Reverted; the general point that a
    directory-scoped file should not assert "this thread" survives, but it was not what was
    happening here.
+
+30. **A day still in progress is not a data point.** Sep 4 read 79 unique players at
+    01:00 IST and closed at 117 — 48% higher. I built an impossibility proof on the gap the
+    partial read left, and published a consequence (*"we are scored ~30% low"*) that was
+    never true. **The scoring day rolls at 05:30 IST; anything sampled before then is
+    partial by construction.** The arithmetic was sound. One of its inputs simply had not
+    finished happening yet.
+
+31. **Reason about what is upstream of a call, not about which line fires first.**
+    Correcting a funnel claim, I asserted a new emit order as confidently as the one I was
+    retracting — and got that backwards too, because a React mount effect does not run in
+    the order it is written relative to the synchronous code around it. The argument that
+    actually held was structural: `game_loaded` sits downstream of the asset warm and the
+    menu patch, so everyone who emitted it had already loaded. **Firing order belongs to
+    the scheduler; upstream-ness belongs to the code.** Only one of those is safe to reason
+    from.
+
+32. **"The tool doesn't support it" needs the tool's own catalog checked first.** Two
+    invented query names failed, and I recorded the failure as *no retention query exists*,
+    blocking a decision for a day. `rundot analytics queries` listed
+    `retention_by_platform_30d` all along. **A guess that fails is evidence about the
+    guess, not about the surface.**
+
+33. **When users and instrumentation agree, the instrumentation was probably saying it
+    first.** Player feedback — *"confusing to figure out what to do"* — arrived pointing at
+    exactly what the funnel had shown for two days: 95% place a tower, 40% finish a run,
+    69% never upgrade. I had been reading that funnel as *healthy downstream of the menu*
+    because I was looking for a load-time problem. **The qualitative report did not add
+    data; it told me which number was the story.**

@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 5 2026, 02:00 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 12:56 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -930,6 +930,30 @@ fires in the ad's `onReward` callback. Separated by the whole ad. Correct, not a
 
 
 ## 9. Deploy pipeline
+
+## 8c. Analytics query names — use the catalog, never a guess
+
+**`rundot analytics queries` lists every pre-approved key.** Run it before concluding a
+metric cannot be obtained. Item 26 sat blocked for a day because two plausible-sounding
+names — `retention_d1_30d` and `retention_30d` — were **invented**, returned *Unknown
+analytics query*, and the failure was recorded as *"no retention query exists"* rather than
+as *"those two names do not exist."*
+
+The retention query is **`retention_by_platform_30d`** (D1/D7/D30 by platform).
+
+**Cross-checking rule, from the same session.** `run_start` and `game_loaded` are each
+emitted twice — once as a funnel step and once as a custom event — so
+`funnel_steps_30d` and `top_custom_events_30d` can be compared directly. On Sep 5 they
+agreed to the digit (`run_start` **126 / 90 / 74**, `game_loaded` **172 / 172 / 130**),
+which is what established that the funnel accounting is exact. **Use that pair whenever a
+funnel number looks wrong, before concluding the platform is under-reporting.**
+
+⚠️ **The scoring day rolls at 05:30 IST.** A day read before its roll is partial by
+construction and is not a data point. Sep 4 read 79 unique players at 01:00 IST and closed
+at **117** — a 48% difference that produced one false "impossible arithmetic" finding
+(Plan item 32).
+
+---
 
 ### 9.0 ⚠️ `rundot deploy` bumps the MINOR version, every time
 

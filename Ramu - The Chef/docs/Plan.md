@@ -8,7 +8,7 @@
 > plan item slips or is cut, do not silently delete it — strike it, move it, and
 > log the reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 5 2026, 02:00 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 12:56 IST (read from the system clock)
 **Status:** ▶ **LIVE — v1.1.0** at https://w.run/puneetmakes/spice-expert-ramu since ~15:05 PT Sep 3. Scoring clock running.
 **Scope:** cuisine level run (GDD §10.10) · SFX at P1 (§12) · 3D→sprite art pipeline (§11a).
 
@@ -430,82 +430,170 @@ below, not on its own.
 
 ### ❌ RETRACTED — "44% of arrivals never reach the menu" was wrong
 
-**The instrumentation check this section demanded was run at 01:40 IST, and it refutes the
-finding.** Recorded in full rather than deleted, because the reasoning error is worth more
-than the claim was.
+**Retracted 01:40 IST Sep 5. The retraction's own mechanism corrected 12:56 IST Sep 5.**
+Kept in full rather than deleted, because the claim has now been wrong twice in two
+different ways and the second way is the more instructive one.
 
-The numbers are real: `funnel_steps_30d` gives `game_loaded` **150 unique sessions** and
-`menu_shown` **84**. What was wrong was reading that gap as players abandoning during the
-critical-asset load. **`menu_shown` fires *before* `game_loaded`, not after.** Both are in
-the tail of the same `boot()` function in `src/main.tsx`:
+**The claim.** `funnel_steps_30d` gave `game_loaded` 150 unique sessions against
+`menu_shown` 84, read as players abandoning during the critical-asset load.
+
+**First correction, 01:40 IST — right answer, wrong reason.** I wrote that `menu_shown`
+fires *before* `game_loaded`. **It does not.** `MainMenu`'s emit is a mount effect
+(`useEffect` with an empty dependency array), and React defers effects past the synchronous
+tail of `boot()` — so **`game_loaded` reaches the wire first.** I had the order exactly
+backwards while using that order as the proof.
+
+**Second correction, 12:56 IST — the conclusion survives, on stronger ground.** Read the
+boot sequence for what is *upstream* of each call rather than for which one fires first:
 
 | Step | Line | What happens |
 |---|---|---|
-| 5 | ~71 | `await warmAssets()` — the 651 KB critical warm |
-| 6 | ~73 | `store.patch({ phase: 'menu' })` → `MainMenu` mounts → **`menu_shown`** |
-| 7 | ~95 | lifecycle hooks |
+| 3 | ~50 | React mounts at `phase: 'loading'` — the loading screen, **not** `MainMenu` |
+| 5 | ~71 | `await warmAssets()` — boot suspends here for the whole critical warm |
+| 6 | ~73 | `store.patch({ phase: 'menu' })` |
+| 7 | ~80 | lifecycle hooks |
 | 8 | ~122 | **`game_loaded`**, guarded by `if (sdkReady())` |
 
-`MainMenu`'s emit is a mount effect with an empty dependency array — *"fires once per
-mount, i.e. every time phase transitions into 'menu'"* — so it does fire on first display.
-That part of the check passed. But the two events are **microseconds apart in the same
-synchronous tail**, with `menu_shown` first. **There is no window in which a player could
-abandon between them.** A 44% drop across it cannot be behaviour.
+**`game_loaded` sits downstream of both the asset warm and the menu patch.** Every session
+that emitted it had already finished loading *and* already had `phase: 'menu'` in the
+store. Abandonment during the load cannot produce this gap, whichever event reaches the
+wire first. That is a structural fact about the code, not a claim about scheduling, which
+is why it is the version worth keeping.
 
-**So the funnel is not measuring what it appears to measure**, and the honest read is that
-this is the same class of problem as item 32: RUN's aggregates under-report against what
-the code demonstrably emits. Two independent tables now disagree with our own events in
-the same direction.
+What is left is a gap between *"the store was patched"* and *"React ran the effect"* — a
+rendering-lifecycle question, not a player-behaviour one. A backgrounded tab throttling
+`requestAnimationFrame` so React never paints would produce exactly this shape.
+⚠️ **That is a hypothesis, not a finding.** It needs instrumentation rather than another
+query, and it must not be cited as a cause.
 
-> 🧭 **The reasoning error, kept deliberately.** A funnel step ordering is *stated* by
-> the tool and *determined* by the code. I read the conversion downward because that is
-> what a funnel view invites, without checking which call actually runs first — and the
-> two events are not even in the order the funnel displays them. **Before drawing a
-> behavioural conclusion from a funnel, confirm the emit order in source.** The only thing
-> that saved this from becoming a work item was writing the verification requirement into
-> the finding itself.
+**❌ Also withdrawn: "RUN's aggregates under-report against what the code emits."** The
+01:40 retraction reached for that, pairing this with item 32. **Both halves have since
+failed.** `run_start` is emitted twice — once as a funnel step, once as a custom event —
+and the two tables agree to the digit: **126 events / 90 sessions / 74 players in both.**
+`game_loaded` likewise reads **172 / 172 / 130** in both. **The funnel accounting is
+exact.** Item 32's arithmetic dissolved separately, for a reason that was mine — see below.
 
-**What this does not change:** everything genuinely downstream of the menu still looks
-healthy — 87% of `menu_shown` sessions reach `run_start`, 97% of those place a tower, 100%
-of those start a wave. Those steps *are* in emit order and separated by real player
-decisions.
+> 🧭 **The reasoning error, kept deliberately — and its sequel.** A funnel's step
+> ordering is *stated* by the tool and *determined* by the code. I read the conversion
+> downward because that is what a funnel view invites. Then, correcting it, I asserted a new
+> ordering just as confidently and got that backwards too. **Confirm emit order in source —
+> and when the source is a React effect, "which line comes first" is a different question
+> from "which call fires first."** The durable form is the second one: reason about what is
+> *upstream* of a call, which is structural, rather than about firing order, which belongs
+> to the scheduler.
 
-**What it does change:** there is no known loading-screen problem, and no evidence for one.
+**What this does not change:** everything genuinely downstream of the menu is measured
+correctly, and the Sep 5 read below is where those numbers now live.
+
+**What it does change:** there is no known loading-screen problem and no evidence for one.
 Do not spend time on the loading screen on the strength of this section.
 
-### ✅ Item 32 resolved — `daily_activity_30d` definitively undercounts
+### ✅ Item 32 closed — there was no undercount. I read a partial day.
 
-The discrepancy is no longer a suspicion; it is arithmetic.
+**Corrected Sep 5, 12:56 IST.** The Sep 4 figure I built the anomaly on was **79 unique
+players, read while Sep 4 was still running.** The day closed at **117**. With the real
+number the arithmetic reverses and stops being paradoxical at all:
 
-| Measure | Value |
-|---|---|
-| Sum of daily unique players (Sep 3 + Sep 4) | **88** |
-| `game_loaded` unique players over the window | **114** |
-| `game_heartbeat` unique players | 104 |
-| Sum of daily sessions | 113 |
-| `game_loaded` unique sessions | 150 |
+| Measure | Sep 4 read (01:00 IST) | Sep 5 read (12:56 IST) |
+|---|---|---|
+| Sum of daily unique players | 88 | **137** |
+| `game_loaded` unique players | 114 | **130** |
+| Verdict | 88 < 114 — "impossible" | 137 > 130 — **exactly as expected** |
 
-**A sum of daily uniques can never be smaller than the distinct count over the same
-window** — a player active on two days counts twice in the sum and once in the distinct.
-88 < 114 is impossible if both measure the same population, so they do not.
+A player active on two days counts **twice** in the sum of dailies and **once** in the
+distinct count, so the sum *should* exceed the distinct count once anyone returns. It now
+does, by 7 — which is close to the 3 confirmed returners plus the Sep 3→Sep 4 overlap.
+**`daily_activity_30d` is consistent with our own events. There is nothing to ask
+Operators about here**, and the Operators message drops from five questions to four.
 
-⚠️ **An earlier draft explained this by tying it to the "funnel hole" above — that the
-uncounted players were the ones who never reached the menu. That explanation died with
-the retraction.** What remains is the arithmetic: two RUN aggregates disagree with our own
-event counts, in the same direction, and no mechanism is known. It is one more question
-for Operators, not an explained phenomenon.
+⚠️ **The consequence I drew from this was wrong and is withdrawn:** *"if Total Unique
+Daily Plays is computed from RUN's daily activity, we are scored on the undercount and the
+real arrival count is ~30% higher."* There is no undercount. **We are scored on an accurate
+number, and Sep 4 scored 117, not 79.**
 
-**Consequence, and it matters:** if the jam's *Total Unique Daily Plays* is computed from
-RUN's daily activity, **we are scored on the undercount** and the real arrival count is
-about 30% higher. Nothing to do about it except know it — and ask Operators, which is now
-the fourth question for that one message (items 33, 34, App Check, this).
+> 🧭 **The error.** I called a live, still-accumulating day a settled measurement, then
+> built an impossibility proof on the gap it left. The arithmetic was sound; one of its
+> inputs was simply not finished yet. **A day still in progress is not a data point — and
+> the scoring day rolls at 05:30 IST, so anything read before then is partial by
+> construction.**
 
-### Item 26 — D1 retention still cannot be computed
+### ✅ Item 26 answered — D1 retention is **2.2%**
 
-There is **no retention query** in the CLI's pre-approved set (`retention_d1_30d` and
-`retention_30d` both return *Unknown analytics query*), and the daily table is proven
-unreliable, so a hand-computed D1 would inherit the undercount. **Item 26 stays open and
-now depends on the Operators answer**, not on waiting another day.
+**The query existed the whole time.** `retention_d1_30d` and `retention_30d` both returned
+*Unknown analytics query* because **I invented both names.** The catalog carries
+**`retention_by_platform_30d`** — *"D1/D7/D30 retention by platform for recent acquisition
+cohorts."* One `rundot analytics queries` would have found it. Item 26 sat blocked for a
+day on a search I never ran.
+
+| Platform | Cohort | Retained D1 | D1 rate |
+|---|---|---|---|
+| mobile-web | 112 | 2 | **1.8%** |
+| web | 19 | 1 | 5.3% |
+| android | 3 | 0 | 0.0% |
+| **Total** | **134** | **3** | **2.2%** |
+
+**Independently bounded by a second table**, which is why this one is not being taken on
+trust: Sep 5 has **11 unique players all day**, so at most 11 of Sep 4's cohort could have
+returned. Three did. Eight of today's eleven are new arrivals. The ceiling and the
+reported figure agree, and they agree from tables that do not share a code path.
+
+Casual-web D1 benchmarks run 25–30%. **This is about ten times below floor.**
+
+### 📊 Metrics read — Sep 5 2026, 12:56 IST
+
+**Traffic.** `daily_activity_30d`, all three days closed or current:
+
+| Day | Sessions | Unique players | Median duration |
+|---|---|---|---|
+| Sep 3 | 17 | 9 | 301 s |
+| **Sep 4** | 148 | **117** | 115 s |
+| Sep 5 (partial) | 13 | 11 | 0 s |
+
+**Sep 4's 117 came from one Discord post.** That is the entire promotional history of this
+entry, and it is the strongest single fact on this page: acquisition is not the broken
+part.
+
+**The run funnel**, by unique players, now that the accounting is verified exact:
+
+| Step | Players | Conversion |
+|---|---|---|
+| `menu_shown` | 82 | — |
+| `run_start` | 74 | 90% |
+| `first_tower_placed` | 70 | 95% |
+| `first_wave_started` | 72 | — |
+| `wave_1_cleared` | 55 | 76% |
+| **`run_end`** | **22** | **40%** 🔴 |
+
+**The leak is not at the top. It is after wave 1.** Three-fifths of the players who clear
+the first wave never reach the end of a single run. Two supporting counts from
+`top_custom_events_30d` say the same thing from a different angle:
+
+- **`tower_upgraded` reaches 22 players of the 70 who placed a tower** — 69% never
+  discover upgrading at all.
+- `run_end` is also 22 players. **The same 22.** Finishing a run and finding the upgrade
+  are, on this data, the same population.
+
+### 🔴 What the players actually said, and why it fits
+
+**User-reported Sep 5:** *on entering the game mode it is confusing to figure out what to
+do.* This is the mechanism the funnel could only point at:
+
+- Placing a tower is discoverable — 95% do it, because the build sheet is the only thing
+  on screen asking to be touched.
+- **Nothing teaches the next verb.** Upgrading is a second interaction on an
+  already-placed tower and 69% never find it, so from wave 2 onward the game stops
+  responding to anything the player knows how to do.
+- They leave *before the run ends* rather than losing — the drop is at `run_end`, not at a
+  loss screen.
+
+**A player who never understood the game will not be retrieved by a daily reward.** This
+reorders the return-loop argument: the 2.2% D1 is downstream of a comprehension failure,
+not of a missing reason to come back. **Fix the first ninety seconds before building
+anything that depends on players wanting a second session.**
+
+This is **CP4** — *"a first-timer reaches the fun in under 30 s, unaided"* — which has been
+on the board since Sep 3 and is still unmet. It is no longer a checkpoint we are behind on;
+it is the measured cause of the score not growing.
 
 ### Still true, unchanged
 
@@ -840,12 +928,12 @@ and at most one follow-up if something genuinely notable ships.
 | 24 | Determine RUN's scoring-day boundary | Planning agent | — | ✅ **Resolved Sep 4, 12:14 IST — PT ruled out by measurement; UTC is the working assumption. Rollover = 05:30 IST.** §2.0 |
 | 25 | The game emits almost no gameplay telemetry | Implementation agent | — | ✅ **Closed Sep 4, 14:41 IST in v1.2.1.** 9 custom events + a 6-step `run` funnel, all confirmed landing with correct payloads. `npm run balance` byte-identical, sim still free of any SDK import. Superseded detail below |
 | 25a | *(superseded)* Original diagnosis | Implementation agent | — | 🔴 **Re-diagnosed Sep 4, 14:00 IST — the pipe works.** `top_custom_events_30d` shows `game_loaded` 62/47 players and the SDK's automatic `game_heartbeat` 1,252/44. The game emits exactly one event of its own, at boot. `core_loop_events_30d` and `session_end_summary_30d` are empty because nothing is *sent*, not because delivery is broken. Phase 2 |
-| 32 | **`daily_activity_30d` undercounts — 47 distinct players, not 35** | Planning agent | Verify Sep 5 | 🟠 Summed daily uniques = 35, but `game_loaded` reports **47 unique players** and `game_heartbeat` 44 over the same window. Distinct-over-window cannot exceed the sum of dailies, so one of the two is wrong — most likely `daily_activity_30d` lag, which already revised Sep 3 from 2 to 9. **Every play-count figure in these docs may be low.** §2.1 |
+| 32 | ✅ **Withdrawn — there was no undercount; I read a partial day** | Planning agent | — | ✅ **CLOSED Sep 5, 12:56 IST.** The Sep 4 input was **79 unique players read while Sep 4 was still running**; the day closed at **117**. Sum of dailies is now **137** against **130** distinct — sum exceeding distinct is exactly what returning players produce, so the arithmetic that made this "impossible" was never violated. **`daily_activity_30d` agrees with our own events.** Drops off the Operators message, which goes from five questions to four. ⚠️ The consequence drawn here — *"we are scored on the undercount, real arrivals ~30% higher"* — is **withdrawn**: the number is accurate and **Sep 4 scored 117**. Original note: 🟠 🟠 Summed daily uniques = 35, but `game_loaded` reports **47 unique players** and `game_heartbeat` 44 over the same window. Distinct-over-window cannot exceed the sum of dailies, so one of the two is wrong — most likely `daily_activity_30d` lag, which already revised Sep 3 from 2 to 9. **Every play-count figure in these docs may be low.** §2.1 |
 | 33 | Reserved event taxonomy — **`session_end` solved, `core_loop` not** | Planning agent | Ask RUN Operators | 🟡 **`session_end` with `screen` + `trigger` routes correctly into `session_end_summary_30d`** — confirmed live. `core_loop_events_30d` stays empty even though `level_start` (17) and `level_complete` (14) are landing, so it wants names the docs' own examples do not supply. Not worth further guessing; ask Operators. No data is at risk — `top_custom_events_30d` and `custom_event_metrics_30d` hold everything |
 | 34 | `session_end_summary_30d.avg_duration_s` reads 0.0 while the value sent is 505.45 s | Planning agent | Low | 🟡 `screen` and `trigger` map; `duration_s` does not — that column reads some other field name. Cosmetic only: the real durations are intact in `custom_event_metrics_30d`. Fold into the Operators question |
 | 35 | **Firebase App Check wall on the live host page** | Planning agent | Investigate Sep 5 | 🟠 Every automated browser hitting the public URL is stopped by an *"App Integrity check failed"* screen (reCAPTCHA Enterprise / Play Integrity), throttled ~24 h after a failure. Expected against headless Chromium. **Unknown whether it ever catches real players** — privacy browsers, corporate proxies, or blockers that break reCAPTCHA would lose the play entirely and silently. Predates all our work; worth one hour to characterise, since the cost is a lost player. **✅ Characterised Sep 4, 22:05 IST — and the answer is that there is no engineering task here.** The wall is Firebase App Check on **RUN's** hosting, not ours; it is served *before* our bundle loads, so we cannot even render a fallback message; and **the RUN platform docs never mention App Check at all** (searched all of `rundot/docs/`) — there is no creator-side switch. Probing or defeating it is disqualifying, so that route does not exist either. What remains: **(a)** add it to the single Operators message that already carries items 33 and 34 — it is their wall, so they can simply say whether it can fire for a real player; **(b)** measure by subtraction, platform play count minus our own `game_loaded`, since a blocked player never reaches our SDK and can only ever show up on the platform side. **(b) is blocked on item 32** — the platform's two counters presently disagree **35 vs 47 in the opposite direction**, so the platform figure is not yet a trustworthy baseline to subtract from. Re-status: 🟡 waiting on item 32 and one Operators message, **not** 🟠 needing an hour of investigation |
 | 36 | Wire the missing `menu_shown` → `game_loaded` join | Implementation agent | Low | ⬜ `boot` and `run` are separate funnels, so `funnel_steps_30d` cannot show load→menu conversion — the single most important drop-off we have. Either fold `game_loaded` in as `run` step 0 or read it manually across the two tables |
-| 26 | D1 retention reads 0.0% across all platforms | Planning agent | Re-check Sep 5 | 🟡 Cohort is too young to call (26 of 35 players are from today). **If it holds, CP5 return loop becomes the single highest-value work in the project** |
+| 26 | ✅ **D1 retention answered — 2.2%** | Planning agent | — | ✅ **CLOSED Sep 5, 12:56 IST.** **3 of 134 players returned the next day.** mobile-web 1.8%, web 5.3%, android 0.0%. Bounded independently: Sep 5 has 11 unique players in total, so 11 was the ceiling and 3 is the count. Casual-web benchmarks run 25–30%, so this is ~10× below floor. ⚠️ **The query existed all along** — `retention_by_platform_30d`. The two names recorded here as missing, `retention_d1_30d` and `retention_30d`, were **invented by me**; one `rundot analytics queries` would have found the real one. The item was blocked for a day on a search never run. ➡️ **Cause is item 55, not a missing return loop** |
 | 37 | **Build “Hands!” expedite — primary mechanic 2 of 2** | Implementation agent | Sep 5–6 | 🔴 GDD §10.3, frozen, unstarted. *“Converts watching into playing; it is the skill ceiling.”* ~1 evening. §1e |
 | 38 | **Component pips + station typing** | Implementation agent | Sep 6–7 | 🔴 GDD §10.1 step 1 + §10.2 criterion 2. The change that makes stations specialised. Structural — needs `npm run balance`. §1e |
 | 39 | Reconcile walkouts (10 vs frozen 5) and shift length (~9 min vs frozen 90 s) | Planning agent | Before Sep 8 | 🟠 Both are frozen numbers in GDD §10.1. Either the build changes or the GDD takes a documented frozen-item break. §1e |
@@ -865,7 +953,7 @@ and at most one follow-up if something genuinely notable ships.
 | 20 | Answer the §5 distribution questions (channels + Discord go/no-go) | User | — | ✅ **Answered Sep 4, 13:36 IST — LinkedIn and Discord only.** Packet minted, copy drafted. See §5.6 |
 | 29 | **Post the LinkedIn launch + first `#back-to-work` post** | User | **Today** | 🔴 Drafts written and waiting. Nothing has been shared anywhere yet; 35 players to date are all organic |
 | 30 | **Daily Discord reciprocity — play and comment on 5 entries** | User | Daily from today | 🔴 With only two surfaces this is the *only* repeatable source of new players. 20 min/day. §5.6 |
-| 31 | Re-rank the return loop against the craft pass | Planning agent | With item 26, Sep 5 | 🟠 A two-surface audience means the score must come from returns, not arrivals. §5.6 consequence 2 |
+| 31 | ✅ **Re-rank answered — onboarding first, then the return loop** | Planning agent | — | ✅ **CLOSED Sep 5, 12:56 IST with item 26.** The premise held — the score must come from returns — but the *fix* is not where it was assumed. **D1 is 2.2% because players do not understand the game, not because they have no reason to return** (item 55: 40% of wave-1 clearers never finish a run; 69% never find the upgrade). A daily reward cannot retrieve a player who never reached the fun. **New order: (1) items 29/30 acquisition — proven, 117 players from one post; (2) CP4 onboarding; (3) S2 return loop; (4) the Kitchen belt.** The belt neither acquires nor retains — see item 52, whose stop rule cited D1 as justification and is now **measured** rather than assumed |
 | 46 | 🔒 **Purchased art packs must not be republished** | User + planning agent | Before any art ships | ✅ **Closed Sep 4, 20:24 IST — user owns both packs (\$4 total) and elects to use them under the purchase.** That covers use *inside the game*, which is what ships. It is not a grant to redistribute the raw sheets, and neither vendor publishes terms — so the position is unchanged and now deliberate: `Art/` stays gitignored, only baked atlases ship, and both creators are credited on the jam page regardless. ⚠️ **Each pack folder contains a `License.txt`, and neither is a licence.** `01 - Kitchen Essentials/License.txt` reads only *"Bought the pack from : <the itch.io URL>"* and `02 - Kitchen Props/License.txt` only *"Bought from <URL>"* — they are the user's own purchase notes. A future session will find files named `License.txt` and reasonably assume terms exist. **They do not.** Original note: 🟡 Both vendor pages checked Sep 4, 18:2x IST — neither publishes licence terms at all.** toxiccolors (\$1+) and hoshiixs (\$3+, tagged *"No generative AI was used"*) both say only *"contact me"*. User confirms purchase and right to use in the game; **that is not a grant to redistribute the raw sheets, and silence is not permission** — so `Art/` stays ignored and only baked atlases ship. Credit both creators on the jam page regardless: it costs nothing and covers the common unstated "attribution appreciated". Original note: 🟠 Two commercial itch.io tilesets landed Sep 4 ~17:30 in `Ramu - The Chef/Art/` — toxiccolors *Kitchen Inventory Decoration* and hoshiixs *Kitchen Props*, 19 files / 2.8 MB with `.aseprite` sources and Tiled `.tsx`/`.tsj`. They were untracked **but not ignored**, one `git add -A` from a public repo. Gitignored in `2b8ec90`. **Still open:** paid packs typically licence use *inside* a game, not redistribution of raw sheets — read each pack's terms, confirm the jam permits third-party art, and record the attribution each vendor requires. Same gate as item 27 was for audio |
 | 47 | **The RUN SDK generates audio — `RundotGameAPI.audioGen`** | Planning agent + user | — | ✅ **Chosen Sep 4, 18:25 IST.** Route is the CLI, not an in-game call: `rundot generate music\|sfx`. Verified end to end — a 30 s take cost 113 credits and came back as real, un-faded, loopable audio. Full workflow, costs and output format in Specs §8a.5. Original note: 🟠 Found Sep 4, 17:5x IST while verifying `fetchAsset`'s typings. `generate(params)` takes `{type:'sfx', description, durationSec 0.5–30}`, `{type:'music', prompt, durationSec 3–300, model: elevenlabs \| lyria3 \| lyria3-pro \| minimax-music-2.6}` or `{type:'tts', …}`, returning `{audioUrl, durationSec, generationId}`. **This unblocks item 13** — the five thematic cues were parked as "AudioGen is audiocraft-only", which was true of *Meta's* AudioGen and irrelevant, because RUN ships its own. It also makes MusicGen optional for BGM: Lyria 3 / MiniMax are stronger, but cost credits (132,561 available) where MusicGen costs only GPU time and is already wired to the prompt-agent workflow |
 | 48 | 🔒 **New game-view proposal — belt + props, not towers** | User + planning agent | Scope call needed **now** | 🔴 Hand-drawn layout received Sep 4, 19:0x IST (`references/Errors/NewMapLayoutProposal.jpeg`) plus a written spec. Dual hanging billboard (walk-outs / READY? / FAILED above, ingredient row below), reverse-V conveyor, 4 front-facing prop slots, task scroll, dustbin skip at −1 walkout, hands + plate + tray. **This is not a re-skin: props do not shoot, they hot-swap the ingredient sprite as it passes.** No range, no HP, no damage — `sim/engine.ts`, `data/towers.ts`, `data/enemies.ts`, `data/waves.ts` and the pads/path in `config.ts` are all replaced, and the frozen balance hash stops meaning anything. **Ordering decided Sep 4, 20:05 IST — gated order (GDD §10.3a):** optional `after` prerequisites, most interactions order-free, ungated levels play as a checklist so difficulty is an authoring dial rather than a rewrite. The billboard row doubles as the progress readout, which is what makes failure legible and the dustbin skip a real decision. Inventories done in [PropList.md](PropList.md) and [RecipeList.md](RecipeList.md); **Picks proposed Sep 4, 20:24 IST** — 6 props + 2 stretch, 11 interactions, 5 recipes across 5 levels, **every `out` state backed by a sprite we already own** and every recipe solvable inside 4 slots. Two invariants fell out of the Λ-belt (PropList §5): *distinct props ≤ slots*, and *never both the raw and processed form of one ingredient* — whose flip side, the **over-processing fail**, is the best mechanic of the pass and costs no art. **Awaiting user sign-off on the identifications and the dish names.** **Live v1.2.3 is scoring at rank #3 right now — build alongside, never in place.** ✅ **Scope call ANSWERED Sep 4, 23:10 IST: the belt ships as a *second mode*, not a replacement.** Primary `Play` stays the tower defence; a secondary `Kitchen (beta)` button sits beneath it, and the belt is promoted to primary only on the user's approval. Eight architecture decisions taken in one pass — leaderboard, save shape, menu, telemetry, sim strategy, art order, walkout count and a stop rule — all recorded with their rejected alternatives in **[KitchenMode.md](KitchenMode.md)**. 🛑 **Hard gate: playable end to end by Sep 10 or the belt is cut**, see item 52 |
@@ -875,3 +963,4 @@ and at most one follow-up if something genuinely notable ships.
 | 52 | 🛑 **Kitchen mode stop rule — Sep 10** | Planning agent + user | **Sep 10** | 🟠 **Set Sep 4, 23:10 IST, deliberately in advance.** If the belt is not **playable end to end** by Sep 10 it is **cut**, the menu button is removed, and the remaining days go to the return loop (S2) — which is what Total Unique Daily Plays actually rewards, and which is still unbuilt while D1 retention reads 0.0%. **"Playable end to end" is defined precisely** in [KitchenMode.md](KitchenMode.md) §5: one recipe spawn-to-tray without a crash ten runs running, walkouts decrement, the shift ends, the end screen shows, reachable from the menu and back. **Procedural textures are acceptable — art is explicitly not part of this gate.** The rule exists because writing it on Sep 4 costs nothing and making the same call on Sep 14, with six days sunk, is much harder to do well |
 | 53 | ⚠️ **Music trigger must be a fraction, not the literal 3** | Implementation agent | With the Phase 5 return | 🟠 **Amendment to a handover already in flight, Sep 4 23:10 IST.** The Phase 5 music handover triggers the high-intensity cue at `lives < 3`, calibrated as 20% of `startLives: 10`. Decision 7 gives the belt **5** walkouts, where a literal 3 is **60% remaining** — the cue would fire almost immediately and mean nothing. **Relay: use `lives < startLives * 0.3`.** Reads as 3 of 10 in tower defence and 1 of 5 in the belt, the same dramatic position in both. Everything else in that handover is mode-agnostic |
 | 54 | 🚩 **Flagged, not fixed: the danger cue can start at the moment of death** | User | Revisit with the belt sim | 🟡 **Deliberately left alone Sep 4, 23:45 IST.** The high-intensity cue latches on `lives < 3`. A **Full Thali costs 3 lives in one leak** (`data/enemies.ts:27`), so a player at exactly 3 goes straight to 0 — the condition turns true *as they die*, and the danger music starts on the game-over screen having never played during the run. It may read as a sting or as a confusing swell; only a listen decides. **Not being fixed now**, because the tower-defence sim is likely to be replaced wholesale by the belt view (item 48, [KitchenMode.md](KitchenMode.md)) and this is its bug, not the cue system's. **The one-line guard if it is ever wanted: `s.lives > 0 && s.lives < 3`** in `actions.ts` `syncStore`. ⚠️ Carry this into the belt sim's own tension trigger — the same shape of bug reappears wherever a single hit can cross the threshold and end the run in one step |
+| 55 | 🔴 **Players cannot tell what to do after wave 1 — the measured cause of 2.2% D1** | Planning agent + implementation agent | **Now, ahead of S2 and the belt** | 🔴 **Opened Sep 5, 12:56 IST from user-reported player feedback**, corroborated by three independent counts. Feedback: *entering the game mode, it is confusing to figure out what to do.* The funnel agrees and localises it — **placing a tower converts at 95%** (the build sheet is the only touchable thing on screen), but **`wave_1_cleared` → `run_end` converts at 40%** and **`tower_upgraded` reaches only 22 of the 70 players who placed a tower.** The 22 who upgrade and the 22 who finish a run are the same count. **Nothing teaches the second verb**, so from wave 2 the game stops responding to anything the player knows how to do, and they leave mid-run rather than losing. ➡️ **This is CP4** (*first-timer reaches the fun in under 30 s, unaided*), open since Sep 3 and now the measured reason the score is flat. **A daily reward cannot retrieve a player who never understood the game** — which is why item 31 ranks this above the S2 return loop and well above the Kitchen belt |

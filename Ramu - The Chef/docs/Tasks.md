@@ -5,7 +5,7 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 5 2026, 02:00 IST
+**Last updated:** Sep 5 2026, 12:56 IST
 **Live:** **v1.6.0 public** · <https://w.run/puneetmakes/spice-expert-ramu> — went public Sep 5 2026 with the full audio layer; was v1.2.3 from Sep 4
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST**
 
@@ -58,11 +58,12 @@
 
 | | |
 |---|---|
-| **Now** | S1 · **✅ Audio complete** · next: Kitchen mode build order, Sep 10 gate · P6 LinkedIn + daily reciprocity · P2 core-loop read |
-| **Next** | S1 · CP4 items · P2 core-loop read |
-| **Later** | S2 return loop **(re-ranked up — two-surface audience)** · S3 board layout + levels |
+| **Now** | 🔴 **CP4 onboarding — players cannot tell what to do after wave 1** (item 55, the measured cause of 2.2% D1) · P6 LinkedIn + daily reciprocity |
+| **Next** | S2 return loop · P2 "Hands!" expedite — **both downstream of CP4**: a daily reward cannot retrieve a player who never understood the game |
+| **Later** | Kitchen belt — **re-ranked down Sep 5**: it neither acquires nor retains (item 31) · S3 board layout + levels |
 | **Decided** | Art direction — **Props for the room, Essentials for the line** (Sep 4, 22:05 IST). KayKit Phase 2a cut · **Kitchen mode ships as a second menu entry, 8 architecture calls settled** (Sep 4, 23:10 IST) |
-| **🛑 Gate** | **Sep 10 — belt playable end to end, or it is cut.** [KitchenMode.md](KitchenMode.md) §5 |
+| **🛑 Gate** | **Sep 10 — belt playable end to end, or it is cut.** [KitchenMode.md](KitchenMode.md) §5 — ⚠️ its stated justification (D1 at 0.0%) is now **measured at 2.2%**, which strengthens the cut case |
+| **📊 Measured** | **D1 retention 2.2%** (3 of 134) · **Sep 4 closed at 117 unique players from one Discord post** · wave-1→run-end **40%** |
 | **Blocked on user** | Daily Discord reciprocity · the remaining 5 SFX cue picks · gain audition |
 
 ---
@@ -130,7 +131,7 @@
 - [x] **CDN plumbing for music** — Phases 4 + 4.1 landed, Specs §8a.4
 - [x] MusicGen local pipeline — **installed + smoke-tested**, Specs §8a.3
 - [x] **BGM tracks chosen Sep 4, 22:35 IST — all three, zero credits.** menu `bgm-menu-take1` · service_low `bgm-service-low-take1` · service_high `bgm-service-high-take2`. Specs §8a.7
-- [ ] **Phase 5 — three-cue music: convert, trim gains, wire the switch.** `MUSIC` is one `as const` with one `path` today ([audio.ts:109]) and `crossfadeToTrack` no-ops when a source exists, so this is a small feature, not a config edit. Gains **1.308 / 1.000 / 1.101** (Specs §8a.7b). Trigger: walkouts remaining **< 3**, one-way, reset on run start (Specs §8a.7c)
+- [x] **Phase 5 — three-cue music: convert, trim gains, wire the switch.** Shipped in v1.3.0. `MUSIC` is one `as const` with one `path` today ([audio.ts:109]) and `crossfadeToTrack` no-ops when a source exists, so this is a small feature, not a config edit. Gains **1.308 / 1.000 / 1.101** (Specs §8a.7b). Trigger: walkouts remaining **< 3**, one-way, reset on run start (Specs §8a.7c)
 - [-] ~~mid-intensity cue~~ — dropped; three cues is the design, not four
 - [x] **Phase 5.1 — cue exits.** `switchCue` on the three menu-return routes. Caught by ear, not by measurement: the danger cue carried into the main menu, and the pause-menu route had the same bug mid-run. Specs §8a.10
 - [x] **Phase 5.3 — click feedback on 13 silent buttons.** Verified statically: 33 sounding handlers, exactly one with two `sfx` calls, and that one is correct. Specs §8a.10
@@ -160,6 +161,7 @@
 > Anti-reskin test (GDD §10.2) currently scores **2 of 4** — see Plan §1e.
 - [ ] **"Hands!" expedite — primary mechanic 2 of 2, unstarted**
 - [ ] **Component pips + station typing** — makes stations specialised
+- [ ] 🔴 **Teach the second verb — 69% of players never upgrade a tower.** Item 55. The 22 players who upgrade and the 22 who finish a run are the same count
 - [ ] Damage → doneness meter
 - [ ] Walkout feedback — customer leaves, slip spiked
 - [ ] Shift-end line in Ramu's voice
@@ -168,10 +170,10 @@
 
 ### P0 · CP4 · Survive First Contact
 - [~] Mobile pass — `rundot-mobile-ux`
-- [ ] FTUE cold-open — 30-second beat sheet
+- [ ] 🔴 **FTUE cold-open — 30-second beat sheet.** Promoted Sep 5: item 55 makes this the measured cause of 2.2% D1, not a polish task
 - [ ] Stability — every SDK call in try/catch
 - [ ] HANDS! expedite — primary mechanic 2
-- [ ] **CP4 gate** — first-timer reaches the fun in under 30 s, unaided
+- [ ] 🔴 **CP4 gate** — first-timer reaches the fun in under 30 s, unaided. **Open since Sep 3; now the top build item** (items 31, 55)
 
 ### P0 · Pipeline
 - [x] Git repository initialised — `main`, baseline commit
