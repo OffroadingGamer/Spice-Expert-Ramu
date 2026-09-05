@@ -1,6 +1,6 @@
 # SpriteIndex — every item in the Kitchen Essentials packs, numbered
 
-**Last updated:** Sep 5 2026, 20:15 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 21:05 IST (read from the system clock)
 **Status:** 🟢 Complete — **128 items sliced and named.** ⬜ Names are my read of the art; correct any that are wrong before they become ids
 
 > 📐 **This index covers the Kitchen Essentials pack only.** The second pack, Kitchen Props, is 32px **isometric** art and lives in its own index: [PropSpriteIndex.md](PropSpriteIndex.md), 284 items, recoloured onto this pack's palette. ⚠️ Read its §5 first — the two packs are 4× apart in resolution and cannot share a frame at the same scale.
@@ -716,4 +716,52 @@ singletons in total (03, 22, 39).
 ⚠️ **`15-Fry pan(Level 2).png` still carries a space** where its four siblings use
 `(LevelN)`. The sort parses the tier rather than the string so it lands correctly, but a
 naive filename parser will not.
+
+### 6.20 `Untagged/` — every non-Prop sprite, staged for hand-sorting
+
+**Sep 5, 21:05 IST.** The 78 sprites that are **not** Props were copied to
+`Art/_sliced/01 - Kitchen Essentials/Untagged/`, numbered **01–78** and grouped by
+category, with the category written into each filename so the set can be re-sorted by
+hand: `21-Ingredient.png`, `62-UI prop-Serving tray(Curry).png`.
+
+| Category | Untagged/ | Count |
+|---|---|---|
+| Ingredient | 01–23 | 23 |
+| Midway | 24–28 | 5 |
+| Finished | 29–32 | 4 |
+| Condiment | 33–58 | 26 |
+| Cooking oil | 59–60 | 2 |
+| UI prop | 61–63 | 3 |
+| Effects prop | 64–69 | 6 |
+| Pending | 70–78 | 9 |
+| | | **78** |
+
+**78 Untagged + 50 Prop = 128**, verified before the copy ran: all ids present, none
+duplicated across categories.
+
+⚠️ **The category in each filename is the planning agent's classification, not the
+user's.** Only the §6.1 answers and the Prop set have been signed off. Given how many prop
+identifications were overturned in §6.8, **all 78 tags should be read as first drafts.**
+
+### 6.21 🔒 Where the id maps live, and why they are in the repo
+
+Both working folders are numbered independently of the sheet ids every document uses.
+**Two CSVs are the only route between them**, and they were written into
+`Art/`, which is **gitignored** — one disk, no history. Copies now live in the repo:
+
+| Repo copy | Working copy | Maps |
+|---|---|---|
+| `tools/props-map.csv` | `props/_props_map.csv` | `props/07` → `S1-01` |
+| `tools/untagged-map.csv` | `Untagged/_untagged_map.csv` | `Untagged/21` → `S3-43` |
+
+Both are rebuilt **by content hash**, so they survive renaming on either side. They carry
+filenames and ids only — no art — so committing them does not redistribute the purchased
+pack. **Refresh the repo copies whenever a folder is re-sorted**; a stale map is worse than
+none, because it looks authoritative.
+
+The scripts that maintain them are `tools/sort_props.py` (sort by family + tier, renumber),
+`tools/build_untagged.py` (rebuild `Untagged/` from the category lists) and
+`tools/analyse_props.py` (read-only: what is in `props/` now, matched back to source).
+⚠️ **`build_untagged.py` holds the category membership as literal id lists** — it is a
+second copy of the categorisation and will drift from §6 unless both are edited together.
 

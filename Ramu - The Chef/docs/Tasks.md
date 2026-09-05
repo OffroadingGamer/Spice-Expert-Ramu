@@ -5,7 +5,7 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 5 2026, 20:15 IST
+**Last updated:** Sep 5 2026, 21:05 IST
 **Live:** **v1.7.0 public** · <https://w.run/puneetmakes/spice-expert-ramu> — went public Sep 5 2026 with the full audio layer; was v1.2.3 from Sep 4
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST**
 
@@ -149,6 +149,7 @@
 - [ ] Kitchen Props background layer at its own scale
 
 ### P6 · Distribution
+- [x] **Posting schedule written Sep 5 — every post for the rest of the jam.** **LinkedIn 09:30 IST weekdays** (9 posts) · **RUN Discord 21:00 IST daily** (14 posts). 21:00 hits 11:30 ET and 17:30 CEST together, and leaves **8.5 h inside the scoring day**, which rolls at 05:30 IST. ⚠️ **The launch post waits for Monday Sep 7** — Sep 5 is a Saturday and LinkedIn weekend reach is ~half. Discord posts the same evening. Full copy + shot list: [Ramu's Service Rota](https://claude.ai/code/artifact/11d3ba93-9c72-4851-ae15-818e215a8446) (account-gated)
 - [x] Choose posting channels — **LinkedIn + Discord only**
 - [x] `rundot socials prepare` — launch packet + tracked links
 - [x] Launch copy drafted for both surfaces

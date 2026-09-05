@@ -1,0 +1,48 @@
+# props/ map - Kitchen Essentials, Prop category, sorted by family+tier
+# Written Sep 5 2026. Docs refer to sprites by sheet id (S1-20 etc.);
+# this folder is numbered 01..44. Keep this file with the folder.
+new_number,sheet_id,filename
+01,S1-04,01-Beverage Dispenser(Level1).png
+02,S1-05,02-Beverage Dispenser(Level2).png
+03,S2-38,03-Brazier.png
+04,S2-31,04-Cast iron skillet(Level1).png
+05,S2-30,05-Cast iron skillet(Level2).png
+06,S1-17,06-Cooktop only oven(Level1).png
+07,S1-01,07-Cooktop without anything(Level2).png
+08,S1-14,08-Cooktop with Oven(Level3).png
+09,S1-20,09-Cooktop only tandoor(Level4).png
+10,S2-05,10-Cooktop & Tandoor(Level5).png
+11,S1-29,11-Dough making counter(Level1).png
+12,S2-01,12-Dough making counter(Level2).png
+13,S1-03,13-Dough making counter(Level3).png
+14,S2-08,14-Fry pan(Level1).png
+15,S2-07,15-Fry pan(Level 2).png
+16,S2-06,16-Fry pan(Level3).png
+17,S2-21,17-Fry pan(Level4).png
+18,S1-12,18-Fry pan(Level5).png
+19,S1-18,19-Kettle(Level1).png
+20,S1-13,20-Kettle(Level2).png
+21,S2-22,21-Kettle(Level3).png
+22,S3-12,22-Masala container.png
+23,S1-21,23-Pressure cooker(Level1).png
+24,S2-17,24-Pressure cooker(Level2).png
+25,S2-33,25-Pressure cooker(Level3).png
+26,S3-11,26-Rice cooker(Level1).png
+27,S1-19,27-Rice cooker(Level2).png
+28,S3-42,28-Rice cooker(Level3).png
+29,S2-20,29-Sauce pan(Level1).png
+30,S2-12,30-Sauce pan(Level2).png
+31,S2-11,31-Sauce pan(Level3).png
+32,S2-32,32-Sauce pot(Level1).png
+33,S2-37,33-Sauce pot(Level2).png
+34,S2-40,34-Sauce pot(Level3).png
+35,S3-30,35-Spice grinder(Level1).png
+36,S1-15,36-Spice grinder(Level2).png
+37,S1-16,37-Spice grinder(Level3).png
+38,S1-36,38-Spice grinder(Level4).png
+39,S1-02,39-Steam Cooktop.png
+40,S2-35,40-Stock pot(Level1).png
+41,S2-34,41-Stock pot(Level2).png
+42,S2-36,42-Stock pot(Level3).png
+43,S1-35,43-Water dispenser(Level1).png
+44,S1-24,44-Water dispenser(Level2).png

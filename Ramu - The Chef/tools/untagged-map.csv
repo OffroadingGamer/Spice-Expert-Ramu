@@ -1,0 +1,82 @@
+# Untagged/ map - every Kitchen Essentials sprite that is NOT a Prop.
+# Numbered 01..78, grouped by current category. Names carry the
+# category so it can be re-sorted by hand. Keep this file with the folder.
+number,category,sheet_id,source_filename,filename
+01,Ingredient,S2-02,02.png,01-Ingredient.png
+02,Ingredient,S2-16,16.png,02-Ingredient.png
+03,Ingredient,S2-18,18.png,03-Ingredient.png
+04,Ingredient,S2-19,19.png,04-Ingredient.png
+05,Ingredient,S2-23,23.png,05-Ingredient.png
+06,Ingredient,S2-24,24.png,06-Ingredient.png
+07,Ingredient,S2-26,26.png,07-Ingredient.png
+08,Ingredient,S2-28,28.png,08-Ingredient.png
+09,Ingredient,S3-01,01.png,09-Ingredient.png
+10,Ingredient,S3-03,03-Milk jar.png,10-Ingredient-Milk jar.png
+11,Ingredient,S3-04,04-Cream container.png,11-Ingredient-Cream container.png
+12,Ingredient,S3-07,07.png,12-Ingredient.png
+13,Ingredient,S3-09,09.png,13-Ingredient.png
+14,Ingredient,S3-10,10.png,14-Ingredient.png
+15,Ingredient,S3-13,13.png,15-Ingredient.png
+16,Ingredient,S3-15,15.png,16-Ingredient.png
+17,Ingredient,S3-16,16.png,17-Ingredient.png
+18,Ingredient,S3-23,23.png,18-Ingredient.png
+19,Ingredient,S3-24,24.png,19-Ingredient.png
+20,Ingredient,S3-33,33.png,20-Ingredient.png
+21,Ingredient,S3-43,43.png,21-Ingredient.png
+22,Ingredient,S3-49,49.png,22-Ingredient.png
+23,Ingredient,S3-50,50.png,23-Ingredient.png
+24,Midway,S1-07,07.png,24-Midway.png
+25,Midway,S1-28,28.png,25-Midway.png
+26,Midway,S2-10,10.png,26-Midway.png
+27,Midway,S3-08,08.png,27-Midway.png
+28,Midway,S3-51,51.png,28-Midway.png
+29,Finished,S1-27,27.png,29-Finished.png
+30,Finished,S1-31,31.png,30-Finished.png
+31,Finished,S1-32,32.png,31-Finished.png
+32,Finished,S3-34,34.png,32-Finished.png
+33,Condiment,S1-08,08.png,33-Condiment.png
+34,Condiment,S1-09,09.png,34-Condiment.png
+35,Condiment,S1-10,10.png,35-Condiment.png
+36,Condiment,S1-11,11.png,36-Condiment.png
+37,Condiment,S1-26,26.png,37-Condiment.png
+38,Condiment,S2-04,04.png,38-Condiment.png
+39,Condiment,S2-09,09.png,39-Condiment.png
+40,Condiment,S2-13,13.png,40-Condiment.png
+41,Condiment,S2-14,14.png,41-Condiment.png
+42,Condiment,S2-15,15.png,42-Condiment.png
+43,Condiment,S2-29,29.png,43-Condiment.png
+44,Condiment,S3-05,05.png,44-Condiment.png
+45,Condiment,S3-06,06.png,45-Condiment.png
+46,Condiment,S3-17,17.png,46-Condiment.png
+47,Condiment,S3-18,18.png,47-Condiment.png
+48,Condiment,S3-21,21.png,48-Condiment.png
+49,Condiment,S3-22,22.png,49-Condiment.png
+50,Condiment,S3-25,25.png,50-Condiment.png
+51,Condiment,S3-26,26.png,51-Condiment.png
+52,Condiment,S3-27,27.png,52-Condiment.png
+53,Condiment,S3-28,28.png,53-Condiment.png
+54,Condiment,S3-29,29.png,54-Condiment.png
+55,Condiment,S3-31,31.png,55-Condiment.png
+56,Condiment,S3-38,38.png,56-Condiment.png
+57,Condiment,S3-44,44.png,57-Condiment.png
+58,Condiment,S3-48,48.png,58-Condiment.png
+59,Cooking oil,S3-19,19.png,59-Cooking oil.png
+60,Cooking oil,S3-20,20.png,60-Cooking oil.png
+61,UI prop,S3-14,14-Serving tray(Standing).png,61-UI prop-Serving tray(Standing).png
+62,UI prop,S3-32,32-Serving tray(Curry).png,62-UI prop-Serving tray(Curry).png
+63,UI prop,S3-35,35-Serving tray(Empty).png,63-UI prop-Serving tray(Empty).png
+64,Effects prop,S1-34,34-Chocolate syrup dispenser.png,64-Effects prop-Chocolate syrup dispenser.png
+65,Effects prop,S2-03,03-Spatula.png,65-Effects prop-Spatula.png
+66,Effects prop,S2-27,27-Ladle.png,66-Effects prop-Ladle.png
+67,Effects prop,S3-36,36-Spoon.png,67-Effects prop-Spoon.png
+68,Effects prop,S3-37,37-Fork.png,68-Effects prop-Fork.png
+69,Effects prop,S3-47,47-Piping bag.png,69-Effects prop-Piping bag.png
+70,Pending,S1-23,23.png,70-Pending.png
+71,Pending,S1-33,33.png,71-Pending.png
+72,Pending,S2-25,25.png,72-Pending.png
+73,Pending,S3-02,02.png,73-Pending.png
+74,Pending,S3-39,39.png,74-Pending.png
+75,Pending,S3-40,40.png,75-Pending.png
+76,Pending,S3-41,41.png,76-Pending.png
+77,Pending,S3-45,45.png,77-Pending.png
+78,Pending,S3-46,46.png,78-Pending.png
