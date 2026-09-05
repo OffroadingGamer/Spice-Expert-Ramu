@@ -1,6 +1,6 @@
 # SpriteIndex — every item in the Kitchen Essentials packs, numbered
 
-**Last updated:** Sep 5 2026, 19:30 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 20:15 IST (read from the system clock)
 **Status:** 🟢 Complete — **128 items sliced and named.** ⬜ Names are my read of the art; correct any that are wrong before they become ids
 
 > 📐 **This index covers the Kitchen Essentials pack only.** The second pack, Kitchen Props, is 32px **isometric** art and lives in its own index: [PropSpriteIndex.md](PropSpriteIndex.md), 284 items, recoloured onto this pack's palette. ⚠️ Read its §5 first — the two packs are 4× apart in resolution and cannot share a frame at the same scale.
@@ -665,4 +665,55 @@ designed with station tiers in it, not have them retrofitted.**
 - **`12-Fry pan(Level 2).png` has a space** where every other tier is `(LevelN)`. The sort
   parses the tier rather than the string so it lands correctly, but anything that later
   parses these filenames naively will trip on it.
+
+### 6.18 ✅ Prop ordering complete · Sep 5, 20:15 IST
+
+`props/` holds **44 sprites, numbered 01–44**, sorted by family then tier.
+Nine files were pulled out to be recategorised as **Ingredients or Effects prop** later:
+S1-23, S1-33, S2-25, S3-02, S3-39, S3-40, S3-41, S3-45, S3-46. Sources in `sheet1..3/` are
+untouched, so nothing is lost.
+
+**Thirteen tiered families, 39 of the 44:**
+
+| Family | Tiers | props/ |
+|---|---|---|
+| **Cooktop** | **5** | 06–10 |
+| **Fry pan** | **5** | 14–18 |
+| Spice grinder | 4 | 35–38 |
+| Dough making counter | 3 | 11–13 |
+| Kettle | 3 | 19–21 |
+| Pressure cooker | 3 | 23–25 |
+| Rice cooker | 3 | 26–28 |
+| Sauce pan | 3 | 29–31 |
+| Sauce pot | 3 | 32–34 |
+| Stock pot | 3 | 40–42 |
+| Beverage dispenser | 2 | 01–02 |
+| Cast iron skillet | 2 | 04–05 |
+| Water dispenser | 2 | 43–44 |
+
+Untiered: **Brazier 03, Masala container 22, Steam Cooktop 39, Rice cooker…** — three
+singletons in total (03, 22, 39).
+
+**Absorbed families:** *Saute pan* → **Fry pan** L3–L5. *Wok* → Fry pan L4.
+*Spice grinding station* → **Spice grinder** L2–L3. *Covered tandoor* → **Cooktop** L4.
+*Stone oven & Tandoor* → Cooktop L5. Those five names are retired and should not be used.
+
+### 6.19 Counts · Sep 5, 20:15 IST
+
+| # | Category | Count | Δ |
+|---|---|---|---|
+| 1 | **Prop** | **50** | −9 · 6 `omit` → **44 in `props/`** |
+| — | ⏳ **Pending recategorisation** | **9** | new — bound for Ingredients or Effects prop |
+| 2 | Raw / Ingredients | 23 | — |
+| 3 | Midway | 5 | — |
+| 4 | Finished | 4 | — |
+| 5 | Additive / Condiment | 26 | — |
+| 6 | Cooking oil | 2 | — |
+| 7 | UI prop | 3 | — |
+| 8 | Effects prop | 6 | — |
+| | **Total** | **128** | ✓ |
+
+⚠️ **`15-Fry pan(Level 2).png` still carries a space** where its four siblings use
+`(LevelN)`. The sort parses the tier rather than the string so it lands correctly, but a
+naive filename parser will not.
 
