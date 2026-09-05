@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 5 2026, 15:10 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 14:15 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -709,6 +709,21 @@ Three properties make it safe, and each was checked rather than assumed:
   (`< 3.0`), so **no behaviour changed today** — it is purely so the belt's 5 walkouts get
   the same dramatic position rather than a cue that fires at 60% remaining.
 
+**📏 The measurement boundary — v1.7.0 went public Sep 5 2026, 14:10:21 IST.** The hint
+exists to move two numbers, and both were measured on v1.6.0 immediately before it shipped:
+
+| Metric | Before (v1.6.0, Sep 5 12:56 IST) | After |
+|---|---|---|
+| `wave_1_cleared` → `run_end` | **40%** (55 → 22 players) | ⬜ pending |
+| `tower_upgraded` reach | **22 of 70** who placed a tower | ⬜ pending |
+
+⚠️ **Read the after-figures against the boundary, not against the calendar day.** The scoring
+day rolls at **05:30 IST**, so Sep 5 spans both versions — a same-day comparison blends the
+two builds and will understate any effect. The first clean read is Sep 6. If neither number
+moves, **the diagnosis in Plan item 55 was wrong**, and that is worth knowing rather than
+assuming.
+
+
 ⚠️ **Not a browser bug: audio silence on desktop was Opera GX.** Reported Sep 5 and chased
 to a dead end worth recording so it is not chased twice. Both music *and* SFX were silent,
 which rules out the CDN, the cue logic and mute — all of those kill one channel, not both.
@@ -959,7 +974,7 @@ Sep 4, after four private deploys and a listen at each one.
 | 1.4.0 | private | **Phase 5.1** — cue exits. `switchCue` wired into the three menu-return routes |
 | 1.5.0 | private | **Phase 5.2** — SFX gains rebalanced: `upgrade` 0.45→0.35, `wave-clear` 0.5→0.72 |
 | **1.6.0** | **private + review + public** | **Phase 5.3** — click feedback on 13 silent buttons, then `rundot game set-public` |
-| **1.7.0** | **private** | **The upgrade hint** (Plan item 55) + `textGen` closed (item 17) + the music trigger fractioned (item 53). Commit `0ff37e7`. ✅ Hint confirmed working by the user; **not yet public** |
+| **1.7.0** | **private + review + public** | **The upgrade hint** (Plan item 55) + `textGen` closed (item 17) + the music trigger fractioned (item 53). Commit `0ff37e7`. Promoted **Sep 5 2026, 14:10:21 IST** — review did *not* auto-approve instantly this time; it resolved within ~2 min of polling |
 
 **Phase 5.1 — the bug a listen caught and no measurement could.** `switchCue('menu')` existed
 in exactly one place, the audio-unlock handler, which runs once ever. **Nothing ever
@@ -1013,6 +1028,15 @@ funnel number looks wrong, before concluding the platform is under-reporting.**
 construction and is not a data point. Sep 4 read 79 unique players at 01:00 IST and closed
 at **117** — a 48% difference that produced one false "impossible arithmetic" finding
 (Plan item 32).
+
+⚠️ **Reading the clock on this machine.** The shell's local time is **already IST**, so
+plain `date` is correct and **`TZ=Asia/Kolkata date` is wrong** — Git Bash re-applies the
+offset and silently returns a time 5h30m early. Both a subagent and I produced a bad
+timestamp this way on Sep 5, and nine doc stamps had to be corrected from a value written
+an hour into the future. **Use `date` for IST, `date -u` for UTC, and cross-check with
+PowerShell `(Get-Date).ToString('yyyy-MM-dd HH:mm:ss K')`, which prints the offset
+explicitly rather than leaving it to be inferred.** Re-read the clock for every stamp;
+do not carry one forward from earlier in a session.
 
 ---
 
