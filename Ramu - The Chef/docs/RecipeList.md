@@ -1,6 +1,6 @@
 # RecipeList — dishes, and the ingredients they call for
 
-**Last updated:** Sep 5 2026, 21:05 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 21:19 IST (read from the system clock)
 **Status:** 🟡 Inventory done, **recipes proposed Sep 4, 20:24 IST** — awaiting sign-off (⬜ §3)
 
 Companion to [PropList.md](PropList.md). A recipe drives two things on screen at once:
@@ -200,3 +200,76 @@ three are expensive to discover in playtest.
 
 Worth writing as a script the day the recipe data exists, not the day a level feels
 wrong.
+
+---
+
+## 6. 🔒 The recipe format and the node run — Sep 5 2026, 21:19 IST
+
+### 6.1 The format — the user's, recorded verbatim
+
+```
+Dish = "Ingredient" + "Oil" + "Secondary ingredient" + Spices (which ones)
+       + Utensil (Skillet / Pressure Cooker / Container / Tandoor / Oven /
+                  Saucepan / Fry Pan / Wok)
+```
+
+The two worked examples given:
+
+```
+Kaddu Curry     = Pumpkin      + Ghee         + Spices           + Cooker
+Karela Bhujiya  = Bitter Gourd + Mustard oil  + Onion  + Spices  + Skillet
+```
+
+**Recipes are written in their simplest form that still tastes right** — no dish earns
+a step it does not need. A secondary ingredient is left blank where the dish genuinely has
+none, as Kaddu Curry does.
+
+Two amendments from [KitchenMode.md](KitchenMode.md) §6:
+
+- **`Container` leaves the utensil slot** — it is an ingredient. Where a dish needs
+  assembly rather than cooking, the utensil is the **Dough Making Counter**.
+- **`Wok` means Fry Pan at Level 4 or above**, not a separate station.
+
+### 6.2 🔒 The row arithmetic finally closes
+
+The billboard row caps at **5 cells** ([Specs.md](Specs.md) §8b). Under decisions 7
+and 8:
+
+| Cell | Carries |
+|---|---|
+| 1 | Primary ingredient |
+| 2 | Oil |
+| 3 | Secondary ingredient |
+| 4 | **The node's masala** — one container, however many spices went into it |
+| 5 | *spare* — a garnish, or a second secondary |
+
+**Four cells against a ceiling of five, with one spare.** This was the tightest constraint
+in the whole design and it is now comfortable, entirely because a masala is ground *once
+per node* and then carried as a single object.
+
+### 6.3 The container list — 24 items
+
+Everything needing a labelled vessel drawn off `S3-50`, at 2–5 min each. Roughly
+**1–2 hours of Aseprite**, and it covers every recipe in all five nodes.
+
+| Group | Items | # |
+|---|---|---|
+| **Masalas** — one per node, the output of its grinding levels | Chai Masala · Garam Masala · Sambar Podi · Rasam Podi · North-Eastern blend · Italian herb blend | 6 |
+| **Oils** — mustard `S3-19` and sunflower `S3-20` already exist | Ghee · Sesame · Coconut · Olive | 4 |
+| **Grains and pulses** | Flour · Rice · Arborio rice · Toor dal · Chickpeas · Kidney beans · Semolina · Spaghetti · Noodles | 9 |
+| **Beverage dry goods** | Tea leaf · Sugar · Coffee extract | 3 |
+| **Wet** — milk `S3-03` and cream `S3-04` already exist | Mozzarella · Tamarind | 2 |
+| | **Total** | **24** |
+
+Fresh produce — pumpkin, potato, aubergine, tomato, onion, cabbage, bamboo shoot,
+coconut, green beans, peanut — are **loose sprites, not containers**, and most are
+probably already among the 23 Ingredient and 9 Pending items. ⬜ **Blocked on the
+`Untagged/` hand-sort**: until those are named, which recipes are already fully covered
+cannot be answered.
+
+### 6.4 Node order
+
+**Beverages (FTUE, Chai → High-Tea)** → **North Indian** → **South Indian**
+→ **Italian** → **North Eastern**. Candidate dish lists per node were put to the
+user Sep 5, 21:19 IST; ⬜ selection pending, and asset requirements follow from it.
+

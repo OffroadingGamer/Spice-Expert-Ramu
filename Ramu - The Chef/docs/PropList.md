@@ -1,6 +1,6 @@
 # PropList — stations that sit in the prop slots
 
-**Last updated:** Sep 5 2026, 21:05 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 21:19 IST (read from the system clock)
 **Status:** 🟡 Inventory done, **picks proposed Sep 4, 20:24 IST** — awaiting sign-off (⬜ §3)
 
 Companion to [RecipeList.md](RecipeList.md). Props are what the old build called
@@ -235,3 +235,54 @@ The flip side is the best mechanic to come out of this pass, and it costs zero a
 | Can a prop be upgraded? | **No — sell and replace only, in v1** | Upgrade tiers cost art we do not have, and the tension already lives in slot scarcity. Revisit after the jam |
 | What happens at the tray if the dish is incomplete? | **Wrong state → walkout −1, and the billboard row does not tick** | Wrong *is* the fail. It also makes the row a live readout: you can see a dish is doomed while it is still on the belt, which is what turns the dustbin skip into a decision rather than a panic button |
 | Can two props act on one ingredient in one pass? | **Yes — that is the point** | The Λ passes all slots. `flour → dough → naan` is two props in one pass, and it is the level-3 lesson |
+
+---
+
+## 7. 🔄 Corrections — Sep 5 2026, 21:19 IST
+
+Three entries above are now wrong. They are left in place because other documents cite
+them; this section is what supersedes them.
+
+### 7.1 §6 — "Can a prop be upgraded? **No**" is **reversed**
+
+The reason recorded for that answer was *"upgrade tiers cost art we do not have."* The
+rename pass ([SpriteIndex.md](SpriteIndex.md) §6.14, §6.18) found **39 of 44 props
+tiered across 13 families**, Cooktop and Fry pan five deep. The stated reason no longer
+exists.
+
+**The replacement is not the same mechanic.** Props are *not* upgraded in place:
+
+> A tier is **unlocked permanently** by earning stars, and then **placed at a higher
+> cost** on any level whose theme allows that family. The lower tier stays placeable, so
+> the choice is a live one every round: one strong station, or two weak ones.
+
+This also fixes a cosmetic bug in the shipped tower defence, where pressing upgrade never
+changed the sprite — in the belt, a different tier *is* a different sprite.
+
+### 7.2 §3b — the Prep counter points at the wrong sprite
+
+§3b assigns **knead** to `S1-17`, described as a wooden counter. After the rename pass
+`S1-17` is `props/06-Cooktop only oven(Level1)`. **The role had quietly lost its sprite.**
+
+Knead — and now assembly — belong to the **Dough making counter** family:
+
+| props/ | Sheet id | Tier |
+|---|---|---|
+| 11 | S1-29 | Level 1 |
+| 12 | S2-01 | Level 2 |
+| 13 | S1-03 | Level 3 |
+
+It carries two verbs: **knead** (`flour → dough`, the `kneaded` gate producer) and
+**assemble** (no-cook dishes, which have no other station now that Container has left the
+prop vocabulary). Assembly feedback: a generated cloud scale-tweening above the counter,
+and a chopping-knife SFX.
+
+### 7.3 §1a / §3 — Wok and Container are no longer props
+
+- **Wok** was retired by absorption; `S2-21` is `props/17-Fry pan(Level4)`. A recipe that
+  says *Wok* means **Fry pan at Level 4 or above** — a tier requirement, reachable
+  through the loaner rule ([KitchenMode.md](KitchenMode.md) §6, decision 6).
+- **Container** is an **ingredient**, not a station. Labelled vessels are drawn off
+  `S3-50` (`Untagged/23`) at 2–5 minutes each. See
+  [RecipeList.md](RecipeList.md) §6.3.
+

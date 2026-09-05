@@ -1,6 +1,6 @@
 # SpriteIndex — every item in the Kitchen Essentials packs, numbered
 
-**Last updated:** Sep 5 2026, 21:05 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 21:19 IST (read from the system clock)
 **Status:** 🟢 Complete — **128 items sliced and named.** ⬜ Names are my read of the art; correct any that are wrong before they become ids
 
 > 📐 **This index covers the Kitchen Essentials pack only.** The second pack, Kitchen Props, is 32px **isometric** art and lives in its own index: [PropSpriteIndex.md](PropSpriteIndex.md), 284 items, recoloured onto this pack's palette. ⚠️ Read its §5 first — the two packs are 4× apart in resolution and cannot share a frame at the same scale.

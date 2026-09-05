@@ -1,6 +1,6 @@
 # KitchenMode — the belt game view as a second mode
 
-**Last updated:** Sep 5 2026, 21:05 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 21:19 IST (read from the system clock)
 **Status:** 🟢 **Architecture settled.** Eight decisions taken Sep 4, 23:10 IST — all
 eight went to the recommended option. ⬜ Nothing built yet.
 **🛑 Hard gate: playable end to end by Sep 10, or it is cut.** §5.
@@ -204,3 +204,111 @@ menu button removed, so the live entry carries nothing half-built into the final
 
 > The rule exists because it is being written on Sep 4, when it costs nothing. On Sep 14,
 > with six days of work sunk into the belt, the same call is much harder to make well.
+
+---
+
+## 6. 🔒 The belt design decisions — Sep 5 2026, 21:19 IST
+
+Fourteen decisions taken in one pass: ten compatibility questions raised against the
+user's node/level proposal, plus four follow-ups. **Three of them reverse earlier frozen
+answers** — flagged below and mirrored in [PropList.md](PropList.md) §7.
+
+| # | Question | Decision |
+|---|---|---|
+| 1 | Do prop upgrades ship? | 🔄 **Unlock a tier, then place it at a higher cost.** *Not* upgrade-in-place. **Reverses [PropList.md](PropList.md) §6** |
+| 2 | Tier = purchase or unlock? | **Both.** Permanently unlocked in The Kitchen, paid for again on every placement |
+| 3 | Do unlocks trivialise replays? | **Cost absorbs it.** Starting cash is authored for the level's intended tier, so a returning player brings a higher tier and affords fewer props — power traded for slots |
+| 4 | Wok — own family or a tier? | **Fry pan L4+, tier-gated.** "Wok" in a recipe *means* the tier, so the recipe is the reason to upgrade |
+| 5 | What is a Container? | 🔄 **An ingredient, not a utensil.** Labelled vessels drawn off `S3-50` (`Untagged/23`), 2–5 min each in Aseprite. **Container leaves the prop vocabulary** |
+| 6 | How is a tier requirement reached? | **Loaner for the round.** A level needing an unearned tier lends it; keeping it requires the star. Satisfies GDD §10.10's *"no hard block, ever"* |
+| 7 | Is oil a belt item or a station property? | **Belt ingredient**, one row cell. Oil is the sharpest cuisine signal in the set |
+| 8 | How do spices reach the dish? | 🔥 **Ground once per node into a named masala**, then carried as a *single* container cell in every later level of that node — the way Kadhai Masala and Shahi Masala exist in a real kitchen |
+| 9 | Chai has no sprite | **Drawn in Aseprite** in the pack's outline style, not generated |
+| 10 | Jam scope | **All five nodes.** Each: 1–2 grinding levels → recipe levels → one boss |
+| 11 | What does the boss escalate? | **Speed.** Same node recipes, faster each wave |
+| 12 | Do boosts cross between modes? | **Fully separate.** Belt currency is the **chef hat** (generated later); belt boosts never touch `MetaLevels` |
+| 13 | Where do no-cook dishes resolve? | **Dough Making Counter is the assembly station.** VFX: a generated cloud scale-tweening above it. SFX: chopping knife |
+| 14 | Does the Sep 10 gate hold? | 🔄 **Narrowed to the FTUE node** — §6.3 |
+
+### 6.1 Node structure
+
+**FTUE is the Beverage node, and it runs all the way to High-Tea** — it is not one
+tutorial level. Then four cuisine nodes in this order:
+
+| Order | Node | Opens with |
+|---|---|---|
+| 0 | **Beverages** — Chai → High-Tea | The FTUE. Teaches placement, then unlocking, then placing the unlocked tier |
+| 1 | **North Indian** | 1–2 spice-grinding levels producing its masala |
+| 2 | **South Indian** | ditto |
+| 3 | **Italian** | ditto |
+| 4 | **North Eastern** | ditto |
+
+Every node ends in a **boss**: all props unlocked *for that node* available across the 4
+slots, starting cash covering **tier 1 only**, waves accelerating until the walkout limit.
+Chef hats scale with waves cleared.
+
+> ⚠️ **The boss terminates on walkouts, not on a ticket count.**
+> [Specs.md](Specs.md) §6a's level object ends when its authored `tickets` have all
+> resolved; the boss needs the other loop. [RecipeList.md](RecipeList.md) §4 already
+> reserved the billboard's `WALK-OUTS LEFT: ∞` state for endless rounds, written
+> before this mode existed.
+
+### 6.2 🔒 Save shape — this **amends §2.2**, and it is still free to change
+
+§2.2's `kitchen` branch was written before tiers, masalas, stars and a second currency
+existed. Four decisions push against it. **The branch is still unbuilt, so this costs
+nothing today and costs a migration after the first belt player saves.**
+
+```ts
+kitchen: {                              // NEW - absent on every existing blob
+    bestLevel: number;
+    propTiers: Record<string, number>;  // prop id -> highest tier unlocked
+                                        // (was propsOwned: string[])
+    masalas: string[];                  // node masalas ground so far
+    levels: Record<string, number>;     // level id -> stars, 0-3
+    hats: number;                       // belt-only currency, the chef hat
+    boosts: Record<string, number>;     // belt-only; NEVER MetaLevels
+    shiftsCompleted: number;
+}
+```
+
+🔒 **`gems` and `MetaLevels` are not touched.** That is exactly what decision 12
+buys: the live scoring game is never rebalanced around a currency earned in a mode it has
+not seen. `propsOwned: string[]` could not have held a tier — that is the load-bearing
+change.
+
+### 6.3 The Sep 10 gate, narrowed — **amends §5**
+
+The rule in §5 was written on Sep 4 to stop a half-finished belt damaging the live
+entry. Two things have since changed: the belt now lives on **its own git branch behind a
+private build and the human gate**, so that damage is no longer possible; and scope grew
+from one recipe to five nodes.
+
+**The gate is now: Chai runs spawn-to-tray, walkouts count, the shift ends — ten times,
+no crash.** Everything else in §5 stands, including *"procedural textures are
+acceptable, art is explicitly not part of this gate."*
+
+| Gate needs | Gate does **not** need |
+|---|---|
+| `sim/kitchen.ts`, belt, 4 slots, one recipe, walkouts, end screen, menu branch | The chai glass · the 24 containers · the chef hat · any node past Beverages |
+
+➡️ **So the Aseprite queue and the Sep 10 gate run in parallel and neither blocks
+the other.** That is the useful consequence of narrowing it rather than dropping it.
+
+### 6.4 Release workflow
+
+The belt is built on **its own branch**, published as a **private** build, and reaches
+`public` only through the standing human gate. `main` keeps carrying the live scoring
+entry untouched.
+
+### 6.5 Still open
+
+- **`Untagged/` hand-sort.** The produce sprites are probably among the 23 Ingredient and
+  9 Pending items, but none are named — so which recipes are already fully covered
+  cannot be answered yet.
+- **Recipe-level counts per node** — grinding levels and the boss are fixed; the levels
+  between them are not.
+- **The boost list** beyond Fast Hands, Reach and per-prop traits.
+- **The live tower defence's upgrade-does-not-change-sprite behaviour** — fix, or leave
+  as superseded by the belt.
+
