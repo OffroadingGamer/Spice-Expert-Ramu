@@ -1,6 +1,6 @@
 # SpriteIndex — every item in the Kitchen Essentials packs, numbered
 
-**Last updated:** Sep 5 2026, 14:15 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 16:40 IST (read from the system clock)
 **Status:** 🟢 Complete — **128 items sliced and named.** ⬜ Names are my read of the art; correct any that are wrong before they become ids
 
 > 📐 **This index covers the Kitchen Essentials pack only.** The second pack, Kitchen Props, is 32px **isometric** art and lives in its own index: [PropSpriteIndex.md](PropSpriteIndex.md), 284 items, recoloured onto this pack's palette. ⚠️ Read its §5 first — the two packs are 4× apart in resolution and cannot share a frame at the same scale.
@@ -213,3 +213,120 @@ What we have:
 from pale to baked. Every other pairing changes the *container* as well as the food,
 which reads as a swap rather than a transformation. Worth a look before the tandoor
 chain is committed — it is the signature interaction of the whole game.
+
+---
+
+## 5. Functional categories — what each item can *do* on the belt
+
+**Added Sep 5 2026, 16:40 IST for Plan item 48.** The names in §§1–3 say what each sprite
+*is*. This says what each one can be *used as*, which is the question the belt sim actually
+asks. ⬜ **Every call here is mine and needs the user's sign-off before recipes are built
+on it** — §5.7 lists the ones I am least sure of.
+
+### 5.1 The five categories, and the rule that separates them
+
+| Category | Rule | Count |
+|---|---|---|
+| **Prop** | Not food. Furniture, stations, tools, empty or covered cookware, serviceware, unlabelled storage | **67** |
+| **Raw** | Edible, identifiable, and visibly not yet cooked | **24** |
+| **Midway** | Food visibly *part-way* between raw and done — it is not what it will become | **5** |
+| **Finished** | Food that reads as servable now | **8** |
+| **Additive** | Applied *to* a dish rather than being one — chutneys, pickles, spice, ghee, sauce | **24** |
+
+> 🔒 **The rule that decides Midway vs Finished is legibility, not the container.** Curry
+> in a pan is **Finished** — an Indian kitchen serves from the pan and it reads as edible.
+> A bowl of dough is **Midway** — same kind of vessel, but nobody would eat it. Asking
+> *"would a customer accept this?"* separates the two consistently; asking *"is it in
+> cookware?"* does not.
+
+### 5.2 🔴 The finding that matters most
+
+**Only 5 items are Midway and only 8 are Finished. That is the whole transformation
+vocabulary of the pack** — 13 sprites out of 128, and **67 items (52%) are props that can
+never travel on a belt at all.**
+
+Worse, the 5 Midway sprites cover only **two substances**: dough (S1-28, S3-08, S3-51) and
+batter (S2-10). Nothing else in the pack has a visible in-between state.
+
+**Consequence for the belt design, and it is a hard one:** most recipes physically cannot
+show a middle stage. Only **dal** has a true three-stage chain in art. Everything else has
+to be a two-stage `raw → finished` hop, or invent its midway state from a prop.
+
+**The compensation is in the Additive column.** 24 items — chutneys, pickles, ghee, sauce
+bottles, spice shakers — is the second-largest category and the deepest one after props.
+➡️ **The pack supports a rich *garnish/condiment* verb far better than it supports a long
+*cooking* verb.** If the belt wants depth, it is cheaper to find it in what gets added to a
+dish than in how many stages the dish passes through.
+
+### 5.3 The only chains the art can actually support
+
+| # | Chain | Sprites | Stages |
+|---|---|---|---|
+| 1 | **Dough → Naan** | S1-28 → S1-32 | 2 — both bowls, only the contents change. The cleanest read in the pack |
+| 2 | **Grain → Dal → Dal Tadka** | S2-19 → S2-30 → S2-31 | **3 — the only true three-stage chain that exists** |
+| 3 | **Okra → Bhindi fry** | S3-24 → S1-31 | 2 — container changes as well as contents |
+| 4 | **Tomatoes → Tomato curry** | S2-24 or S3-10 → S3-32 | 2 |
+| 5 | **Batter → Pakora** | S2-10 → S3-34 | 2 |
+
+**Five chains, five dishes in [RecipeList.md](RecipeList.md).** That alignment is not luck
+— the recipe list was written from this art. But it means **the pack is fully consumed by
+the current design**: there is no sixth dish available without new art or reusing a sprite.
+
+### 5.4 Prop · 67 items
+
+*Cannot go on a belt. These are the room, the stations and the tools.*
+
+**Stations and appliances** — S1-01 countertop oven, S1-04 espresso machine, S1-05 espresso
+machine var, S1-12 handi, S1-14 gas range, S1-17 prep counter, S1-19 rice cooker, S1-24
+water dispenser, S1-34 spice mill, S1-36 grinder urn, **S2-05 wood-fired range (the
+tandoor — the only lit sprite in either pack)**.
+
+**Cookware, empty or covered** — S1-02, S1-13, S1-21, S1-33, S2-01, S2-17, S2-22, S2-32,
+S2-33, S2-34, S2-35, S2-36, S2-37, S2-38, S2-39, S2-40, S3-11.
+
+**Tools and serviceware** — S1-18 cup and saucer, S1-35 travel mug, S2-03 spatula, S2-27
+wooden ladle, S3-02 masher, S3-14 serving stand, S3-30 pestle, S3-36 spoon, S3-37 fork,
+S3-42 tiffin box, S3-47 funnel.
+
+**Furniture and soft goods** — S1-03 shelf, S1-06 stool, S1-23 cloth stack, S1-29 bench.
+
+**Storage, contents unidentifiable** — S1-20, S1-22, S1-25, S1-30, S1-37, S2-11, S2-12,
+S2-20, S3-03, S3-12, S3-19, S3-20, S3-21, S3-22, S3-35, S3-39, S3-40, S3-41, S3-45, S3-46.
+
+**Plants** — S2-06 seedling, S2-07 chive pot, S2-08 sprout pot, S2-25 potted herb.
+
+### 5.5 Raw · 24 items
+
+S1-15 flour sack · S1-16 produce sack · S2-02 cabbage · S2-16 spinach · S2-18 flour shaker ·
+S2-19 grain jar · S2-23 spring onions · S2-24 tomatoes on the vine · S2-26 rice jar ·
+S2-28 tomato+chilli basket · S3-01 mango/papaya · S3-04 milk · S3-07 flour sack sm ·
+S3-09 cherry tomatoes · S3-10 tomatoes · S3-13 green beans · S3-15 peas jar sm ·
+S3-16 peas jar md · S3-23 flour sack md · **S3-24 okra** · S3-33 guava/pear ·
+**S3-43 coriander** · S3-49 peas in pods · S3-50 flour jar.
+
+### 5.6 Midway · 5 — and Finished · 8
+
+**Midway.** S1-07 pan with flatbread · **S1-28 bowl of dough** · S2-10 plate of batter ·
+S3-08 basket of dough · S3-51 dough in a pan *(crop the knife and peppercorns first)*.
+
+**Finished.** S1-27 bread basket + loaf · S1-31 bowl of fried chillies · **S1-32 bowl of
+bread rolls** · S2-21 bowl of dal · S2-30 curry in copper pan · **S2-31 curry in dark pan,
+garnished** · S3-32 tomato curry · S3-34 pakora.
+
+### 5.7 ⬜ Fifteen calls that need the user's sign-off
+
+**These are the ones a recipe would break on if I have them wrong.**
+
+| Item | I called it | The doubt |
+|---|---|---|
+| **S3-43 coriander in a bowl** | Raw | ⚠️ **The sharpest conflict.** [RecipeList.md](RecipeList.md) wants it *raw* in levels 1 and 3, but functionally coriander is a **garnish** — an Additive. If it is an Additive the recipe list needs editing; if it is Raw the additive layer loses its most legible item |
+| **S1-31 bowl of chillies** | Finished | §1's note calls these *fried* chillies. If they are **raw** chillies in a bowl, chain 3 (Okra → Bhindi) loses its only output sprite |
+| **S2-18 flour shaker jar** | Raw | The substance is raw flour; the *action* is dusting, which is an Additive verb. Split depends on whether dusting is a mechanic |
+| **S1-15, S1-16, S3-07, S3-23, S3-50** flour and produce sacks | Raw | Five near-identical sacks. If they are meant as **set dressing** rather than pickable stock, they move to Prop and Raw drops to 19 |
+| **S2-07, S2-08, S2-25** herb pots | Prop | Living plants — decor, or a harvestable garnish source? |
+| **S3-42 tiffin box** | Prop | Could be the **order-out vessel** — the sprite a completed dish leaves on. That would make it the single most important prop in the pack |
+| **The 20 unlabelled jars and bottles** | Prop | 🔴 **The biggest block of uncertainty by far.** S3-19/20/21/22, S3-39/40/41/45/46 and the rest are containers whose contents the art does not state. **If any are meant to read as chutneys, they are Additives**, and the Additive column grows from 24 to as many as 40 |
+
+> The last row is the one worth deciding first. It moves up to 16 sprites between two
+> categories, and the Additive column is — per §5.2 — where the belt's depth has to come
+> from, because the cooking chains cannot supply it.
