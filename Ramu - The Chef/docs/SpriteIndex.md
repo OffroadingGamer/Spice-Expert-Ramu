@@ -1,6 +1,6 @@
 # SpriteIndex — every item in the Kitchen Essentials packs, numbered
 
-**Last updated:** Sep 5 2026, 17:25 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 18:10 IST (read from the system clock)
 **Status:** 🟢 Complete — **128 items sliced and named.** ⬜ Names are my read of the art; correct any that are wrong before they become ids
 
 > 📐 **This index covers the Kitchen Essentials pack only.** The second pack, Kitchen Props, is 32px **isometric** art and lives in its own index: [PropSpriteIndex.md](PropSpriteIndex.md), 284 items, recoloured onto this pack's palette. ⚠️ Read its §5 first — the two packs are 4× apart in resolution and cannot share a frame at the same scale.
@@ -445,4 +445,139 @@ argument identifies *a* shared property, not necessarily the one that matters. S
 and same palette can mean same object class **or** same manufacturer's drawing style. Only
 someone who knows the domain can say which, and the confidence I attached to that call
 ("correction, not judgement") was not earned by the evidence I had.
+
+### 6.8 The rename pass · Sep 5, 18:10 IST — 48 files renamed by the user
+
+The user renamed 48 of the 128 sliced files in place, keeping the numbering
+(`NN-Name.png`), and confirmed **all 48 are Props** except the exceptions in §6.9.
+80 files are still bare numbers and will be named later.
+
+**🔴 Six of my identifications were wrong in a way that changes categories:**
+
+| Id | My name → category | ✅ User's name | New category |
+|---|---|---|---|
+| S1-15 | *Flour sack, tied* → **Raw** | **Spice grinding station (Small)** | **Prop — station** |
+| S1-16 | *Produce sack, open* → **Raw** | **Spice grinding station (Large)** | **Prop — station** |
+| S2-21 | *Bowl of dal + spoon* → **Finished** | **Wok** | **Prop — cookware** |
+| S2-30 | *CURRY in copper pan* → **Finished** | **Cast iron skillet (Level 2)** | **Prop — cookware** |
+| S2-31 | *CURRY in dark pan* → **Finished** | **Cast iron skillet (Level 1)** | **Prop — cookware** |
+| S3-32 | *TOMATO CURRY in pan* → **Finished** | **Serving tray (Curry)** | **UI prop** |
+
+Three more were renamed without changing category: S1-03 *shelf* → **dough making counter**,
+and S2-06/07/08 *potted plants* → **saute pan, fry pan L2, fry pan L1**.
+
+> 🧭 **The pattern in my errors.** I named vessels by their **contents** and their
+> **silhouette**; the user named them by **what they are**. Reading painterly art at
+> thumbnail scale, a skillet with curry in it looks like a dish and a fry pan seen from
+> above looks like a potted plant. Every one of my six mistakes is a container I described
+> by what was sitting in it. **When an artist and a categoriser disagree about an object,
+> the artist is describing the asset and the categoriser is describing the picture.**
+
+### 6.9 🆕 Category 8 — Effects prop · 7 items
+
+Moved out of Prop by the user, Sep 5 18:10 IST.
+
+| Id | File | Item |
+|---|---|---|
+| S1-34 | `sheet1/34-Chocolate syrup dispenser.png` | Chocolate syrup dispenser |
+| S2-03 | `sheet2/03-Spatula.png` | Spatula |
+| S2-27 | `sheet2/27-Ladle.png` | Ladle |
+| S3-30 | `sheet3/30-Pestle & Mortar.png` | Pestle & mortar |
+| S3-36 | `sheet3/36-Spoon.png` | Spoon |
+| S3-37 | `sheet3/37-Fork.png` | Fork |
+| S3-47 | `sheet3/47-Piping bag.png` | Piping bag |
+
+**🚨 Behaviour spec — the user's, recorded in full.** This is the second belt mechanic to
+be defined by the sprite pass rather than by the plan:
+
+> Effects props **hover over different kitchen props while those props are working**, to add
+> visual feedback. They are **encapsulated in a thought-chat-box layout**. The prop inside
+> **tweens in size and rotation slightly, in a loop**; the **encapsulating thought box stays
+> static**. The prop appears with a **0.25 s delay** after the thought box appears. This
+> effect only occurs **when a placed kitchen prop is in game, after pressing Ready**.
+
+Four things that follow, and they are design consequences rather than restatements:
+
+1. **This is a busy indicator**, and it is the belt's answer to a legibility problem the
+   tower defence already measures — players not being able to tell what the game is doing.
+   A station that visibly *thinks* while it works reads without any text.
+2. **The static box / animated contents split is deliberate.** The box is a frame; only the
+   tool moves. That keeps a loop of seven different silhouettes reading as one UI element
+   rather than seven separate animations.
+3. **It is gated on Ready**, so it belongs to the service phase, not the build phase — the
+   same build/service split the tower defence already runs on.
+4. ⚠️ **Seven effects props against eight tiered cookware families is not a mapping.** Which
+   tool appears over which station is undefined, and a spatula over a kettle would read as
+   a bug. **The tool→station table needs writing before this is built.**
+
+### 6.10 🆕 UI prop · 3 items — the serving tray is a state machine
+
+The tray family resolves into one switched sprite, not three separate props.
+
+| State | Id | File | Shown when |
+|---|---|---|---|
+| **Base / static** | S3-35 | `sheet3/35-Serving tray(Empty).png` | Default — the resting state |
+| **Edible dish** | S3-32 | `sheet3/32-Serving tray(Curry).png` | A food order completes |
+| **Beverage** | S3-14 | `sheet3/14-Serving tray(Standing).png` | A drink order completes |
+
+**User's spec:** these exist *"solely to add visual feedback and offer no interactivity
+directly through input from the player end."* S3-35 is the static base, **switched** with
+S3-32 for an edible dish or S3-14 for a beverage.
+
+Combined with §6.3: the tray sits beneath the hand at the bottom of the screen, the
+completed dish appears with **VFX smoke**, and the tray clears for the next task.
+
+**🔴 Two consequences worth deciding before this is built:**
+
+- **It is a switch, not a composite.** Every edible dish shows the *same* S3-32 sprite, so
+  **the tray does not tell the player which dish they made.** That may be fine if the order
+  ticket carries identity — but it means the four remaining Finished sprites are not the
+  tray art, and their actual job is now undefined.
+- **Beverages are a first-class order type.** §6.11.
+
+### 6.11 🆕 The pack contains a beverage line nobody had specified
+
+S3-14 existing as a *beverage* tray state means drinks are an order class, not flavour text.
+The art supports it far better than anyone had noticed:
+
+| Item | Id |
+|---|---|
+| Beverage dispenser (Small / Large) | S1-04, S1-05 |
+| Kettle (Level 1 / Level 2) | S1-18, S2-22 |
+| Water dispenser | S1-24 |
+| Chocolate syrup dispenser | S1-34 *(effects prop)* |
+| Milk jar, Cream container | S3-03, S3-04 *(ingredients)* |
+| Travel mug | S1-35 |
+| Serving tray (Standing) | S3-14 |
+
+**Ten items across dispensers, heat, ingredients and presentation — a complete second line.**
+And **Masala Chai is already a named order** in the shipped tower defence (`data/enemies.ts`),
+so the fiction is in place too. ➡️ Worth an explicit decision: does the belt ship a
+beverage line, or is this art left unused?
+
+### 6.12 Counts after the rename pass
+
+| # | Category | Count | Δ |
+|---|---|---|---|
+| 1 | **Prop** | **58** | −4 · of which **5 `omit`**, **5 deferred**, 1 open (S3-42) |
+| 2 | **Raw / Ingredients** | **23** | −1 |
+| 3 | **Midway** | 5 | — |
+| 4 | **Finished** | **4** | 🔴 **−4** |
+| 5 | **Additive / Condiment** | 26 | — |
+| 6 | **Cooking oil** | 2 | — |
+| 7 | **UI prop** | **3** | +2 |
+| 8 | 🆕 **Effects prop** | **7** | +7 |
+| | **Total** | **128** | ✓ |
+
+**🔴 Finished has halved, and it takes a chain with it.** The four survivors are S1-27
+bread basket, S1-31 bowl of chillies, S1-32 bowl of bread rolls, S3-34 pakora.
+**Chain 2 — `grain → dal → dal tadka` — no longer exists**: S2-30 and S2-31 are skillets.
+It was the only three-stage chain in the pack. **§5.2's claim that the pack supports
+2-stage cooking is now the ceiling, not the floor**, and `sim/kitchen.ts` should be designed
+knowing that every recipe is `raw → done`.
+
+**Also corrected:** S3-04 is a **cream container**, not a milk bottle — the milk is S3-03.
+And S3-03 moves **Prop → Ingredients**, superseding the user's own §6.1 call of *"milk
+vessel; prop"*; the rename to *Milk jar* makes the contents the point. Both recorded as
+deliberate, not as drift.
 
