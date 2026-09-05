@@ -5,7 +5,7 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 6 2026, 01:51 IST
+**Last updated:** Sep 6 2026, 02:05 IST
 **Live:** **v1.7.0 public** · <https://w.run/puneetmakes/spice-expert-ramu> — went public Sep 5 2026 with the full audio layer; was v1.2.3 from Sep 4
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST**
 
@@ -62,7 +62,7 @@
 | **Next** | S2 return loop · P2 "Hands!" expedite — **both downstream of CP4**: a daily reward cannot retrieve a player who never understood the game |
 | **Later** | Kitchen belt — **re-ranked down Sep 5**: it neither acquires nor retains (item 31) · S3 board layout + levels |
 | **Decided** | Art direction — **Props for the room, Essentials for the line** (Sep 4, 22:05 IST). KayKit Phase 2a cut · **Kitchen mode ships as a second menu entry, 8 architecture calls settled** (Sep 4, 23:10 IST) |
-| **🛑 Gate** | **Sep 10 — belt playable end to end, or it is cut.** [KitchenMode.md](KitchenMode.md) §5 — ⚠️ its stated justification (D1 at 0.0%) is now **measured at 2.2%**, which strengthens the cut case |
+| **🛑 Gate** | **Sep 10 — the FTUE node playable end to end, or it is cut.** 🔄 **Narrowed Sep 6** to Chai spawn-to-tray ([KitchenMode.md](KitchenMode.md) §6.3); the belt now sits on its own branch behind a private build, so it cannot damage the live entry. Art is **not** on this gate |
 | **Live** | **v1.7.0 public** on all three tags since Sep 5, 14:10 IST — carries the upgrade hint |
 | **📊 Measured** | **D1 retention 2.2%** (3 of 134) · **Sep 4 closed at 117 unique players from one Discord post** · wave-1→run-end **40%** |
 | **Blocked on user** | Daily Discord reciprocity · the remaining 5 SFX cue picks · gain audition |
@@ -145,6 +145,12 @@
 - [ ] **`sim/kitchen.ts` grey-box — this is the Sep 10 gate.** Belt, slots, one recipe, 5 walkouts, win/lose. Procedural textures throughout
 - [ ] `mode` property on `run_start` / `run_end` / core-loop events
 - [ ] Levels 2–5 from [RecipeList.md](RecipeList.md) §3
+- [ ] **Tier placement + cost** — unlock a tier, place it dearer; lower tiers stay placeable. KitchenMode §6 decision 1
+- [ ] **The loaner rule** — a level needing an unearned tier lends it for the round. Decision 6, and what keeps GDD §10.10's *no hard block* true
+- [ ] **Masala carry-over** — a node's grinding level produces the container its later levels consume. Decision 8
+- [ ] **Star evaluation + The Kitchen hub** — stars are 0 / ≤2 / cleared walkouts, and unlocks have to live somewhere
+- [ ] **Boss mode** — terminates on walkouts, not on a ticket count; waves accelerate; chef hats scale with waves cleared. Decisions 10–12
+- [ ] 🔒 **Re-pin the [PropList.md](PropList.md) §4 interaction graph in one pass** after the `Untagged/` sort — 3 of its 11 rows point at sprites that changed meaning in the rename pass. PropList §7.4
 - [ ] Sprites — one PNG + one manifest line at a time, no code change per sprite
 - [ ] Kitchen Props background layer at its own scale
 

@@ -1,6 +1,6 @@
 # RecipeList — dishes, and the ingredients they call for
 
-**Last updated:** Sep 6 2026, 01:51 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 02:05 IST (read from the system clock)
 **Status:** 🟡 Inventory done, **recipes proposed Sep 4, 20:24 IST** — awaiting sign-off (⬜ §3)
 
 Companion to [PropList.md](PropList.md). A recipe drives two things on screen at once:
@@ -424,4 +424,62 @@ until the `Untagged/` hand-sort names them.
 Only **four** Finished sprites exist in the whole pack and one of them is already Naan.
 Plated dishes scale linearly with the menu and are the single largest art line in the
 project.
+
+---
+
+## 9. The reserve pool — dishes proposed but not selected
+
+Twenty-seven dishes were put up across the four cuisine nodes; **24 were picked**
+(§7). The rest are kept here as the **swap list**: if a selected dish turns out too
+expensive to draw, or a node needs rebalancing, these are already costed against the same
+prop set and the same masala. Format is §6.1's.
+
+| Node | Dish | Primary | Oil | Secondary | Utensil |
+|---|---|---|---|---|---|
+| **NI** | Kaddu Curry | Pumpkin | Ghee | — | Pressure Cooker |
+| **NI** | Karela Bhujiya | Bitter gourd | Mustard oil | Onion | Cast Iron Skillet |
+| **NI** | Aloo Jeera | Potato | Ghee | — | Fry Pan |
+| **NI** | Dal Tadka | Toor dal | Ghee | Onion | Pressure Cooker |
+| **NI** | Chana Masala | Chickpeas | Ghee | Tomato | Pressure Cooker |
+| **SI** | Lemon Rice | Cooked rice | Sesame oil | Peanut | Fry Pan |
+| **SI** | Kootu | Pumpkin | Coconut oil | Toor dal | Pressure Cooker |
+| **SI** | Avial | Mixed veg | Coconut oil | Coconut | Sauce Pan |
+| **SI** | Curd Rice | Cooked rice | Sesame oil | Curd | Dough Counter — assembly |
+| **SI** | Medu Vada | Urad dal batter | Sunflower oil | — | Fry Pan |
+| **IT** | Margherita | Dough | Olive oil | Tomato, Mozzarella | Tandoor — Cooktop L4 |
+| **IT** | Focaccia | Dough | Olive oil | — | Oven — Cooktop L1 |
+| **IT** | Caprese | Tomato | Olive oil | Mozzarella | Dough Counter — assembly |
+| **IT** | Polenta | Cornmeal | Olive oil | — | Stock Pot |
+| **NE** | Aloo Pitika | Potato | Mustard oil | Onion | Dough Counter — assembly |
+| **NE** | Bilahi Anja | Tomato | Mustard oil | Onion | Sauce Pan |
+| **NE** | Lau Bhaji | Bottle gourd | Mustard oil | — | Sauce Pan |
+| **NE** | Kholar Curry | Kidney beans | Mustard oil | Tomato | Pressure Cooker |
+| **NE** | Gundruk Soup | Fermented greens | Mustard oil | Tomato | Stock Pot |
+
+**Two things the selection dropped that this pool still holds:**
+
+- ⚠️ **No selected dish uses the assembly station.** Curd Rice, Caprese and Aloo
+  Pitika were the three no-cook dishes, and all three went unpicked — so the Dough
+  Counter's *assemble* verb, decision 13 and its cloud-VFX/chopping-SFX spec, currently has
+  **nothing to do**. Either one of these three comes back in, or assembly is cut and the
+  Dough Counter keeps only its knead verb.
+- **Cheap swaps if art time runs short.** Kaddu Curry, Dal Tadka and Chana Masala are all
+  Pressure Cooker dishes whose plated states are pan-of-curry recolours — materially
+  cheaper than Baingan Bharta or Gobhi Masala, which must be drawn.
+
+### 9.1 ⬜ The Beverage node is still unspecified
+
+**Chai and High-Tea are named; the levels between them are not.** The FTUE runs the whole
+node, so it needs its own dish list before it can be authored — and under
+[KitchenMode.md](KitchenMode.md) §7.2's recommended scope it is **one of only two nodes
+that ship inside the jam**. Proposed but not confirmed: Chai → Masala Chai → Coffee
+→ High-Tea.
+
+### 9.2 Why six per node
+
+Recorded because the number will be questioned later. Six matches GDD §10.10's frozen
+*"a run of ~6 levels"*; six dishes overlap enough that their spice union is **one**
+grinding level rather than two (node 2 is the exception that proves it); and 6 × 3 stars
+= 18 stars, enough to pace three or four tier unlocks across a node without starving the
+player or handing everything over by level 3.
 
