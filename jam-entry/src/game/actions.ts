@@ -6,6 +6,7 @@
 import { store } from '../state/store.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
 import { switchCue, prefetchCue } from '../audio/audio.ts';
+import { CONFIG } from './config.ts';
 import { WAVES } from './data/waves.ts';
 import type { TargetingMode } from './data/targeting.ts';
 import type { Engine } from './sim/engine.ts';
@@ -68,7 +69,7 @@ export function syncStore(): void {
         cur.tdPhase !== s.phase
     ) {
         store.patch({ coins: s.coins, lives: s.lives, wave, tdPhase: s.phase });
-        if (!highTensionLatched && s.lives < 3) { highTensionLatched = true; switchCue('service_high'); }
+        if (!highTensionLatched && s.lives < CONFIG.economy.startLives * 0.3) { highTensionLatched = true; switchCue('service_high'); }
     }
 }
 

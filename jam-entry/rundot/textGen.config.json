@@ -1,4 +1,1 @@
-{
-  "dailyCreditCap": 500000,
-  "perUserDailyCreditCap": 10000
-}
+{ "disabled": true }

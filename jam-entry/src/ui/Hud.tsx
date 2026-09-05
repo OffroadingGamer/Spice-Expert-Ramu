@@ -136,7 +136,12 @@ export default function Hud() {
 
             {/* Ready: bottom centre, out of the way of the build sheet */}
             {tdPhase === 'build' && selectedPad === null && !menuOpen && (
-                <div className="absolute inset-x-0 bottom-0 flex justify-center px-3 pb-safe-bottom">
+                <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-3 pb-safe-bottom">
+                    {wave >= 2 && wave <= 4 && (
+                        <p className="mb-2 rounded-xl bg-black/55 px-3 py-2 text-lg font-bold">
+                            Tap a cook to upgrade
+                        </p>
+                    )}
                     <button
                         type="button"
                         className="pointer-events-auto mb-3 rounded-2xl bg-primary px-14 py-4 text-2xl font-bold text-black shadow-lg transition-transform active:scale-95"
