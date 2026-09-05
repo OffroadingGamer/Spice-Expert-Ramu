@@ -5,7 +5,7 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 5 2026, 12:56 IST
+**Last updated:** Sep 5 2026, 15:10 IST
 **Live:** **v1.6.0 public** · <https://w.run/puneetmakes/spice-expert-ramu> — went public Sep 5 2026 with the full audio layer; was v1.2.3 from Sep 4
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST**
 
@@ -58,11 +58,12 @@
 
 | | |
 |---|---|
-| **Now** | 🔴 **CP4 onboarding — players cannot tell what to do after wave 1** (item 55, the measured cause of 2.2% D1) · P6 LinkedIn + daily reciprocity |
+| **Now** | 🟡 **Promote v1.7.0 to public** — the upgrade hint is built and confirmed but private, so it reaches nobody · P6 LinkedIn + daily reciprocity |
 | **Next** | S2 return loop · P2 "Hands!" expedite — **both downstream of CP4**: a daily reward cannot retrieve a player who never understood the game |
 | **Later** | Kitchen belt — **re-ranked down Sep 5**: it neither acquires nor retains (item 31) · S3 board layout + levels |
 | **Decided** | Art direction — **Props for the room, Essentials for the line** (Sep 4, 22:05 IST). KayKit Phase 2a cut · **Kitchen mode ships as a second menu entry, 8 architecture calls settled** (Sep 4, 23:10 IST) |
 | **🛑 Gate** | **Sep 10 — belt playable end to end, or it is cut.** [KitchenMode.md](KitchenMode.md) §5 — ⚠️ its stated justification (D1 at 0.0%) is now **measured at 2.2%**, which strengthens the cut case |
+| **Live** | **v1.6.0 public** · **v1.7.0 private**, awaiting the call to promote |
 | **📊 Measured** | **D1 retention 2.2%** (3 of 134) · **Sep 4 closed at 117 unique players from one Discord post** · wave-1→run-end **40%** |
 | **Blocked on user** | Daily Discord reciprocity · the remaining 5 SFX cue picks · gain audition |
 
@@ -109,7 +110,7 @@
 - [x] Exclude `*.png.json` sidecars from `dist/` (v1.2.0)
 - [x] Visual regression check after downscale
 - [x] Repeatable `npm run art:resize` + masters kept in `art-source/`
-- [ ] Close the `textGen` surface — **`jam-entry/rundot/textGen.config.json` → `{"disabled": true}`, then deploy.** One line. ⚠️ **Not** "cap to 0" and **not** "delete the file": RUN's own AI.md says deleting it falls back to *platform defaults* (~\$500/game/day), and `rundot deploy` recreates it anyway. `disabled` makes every call fail `AI_POLICY_DENIED`. Policy resolves from the **published `public` tag**, so it is inert until a deploy publishes. Plan item 17
+- [x] **Closed the `textGen` surface** — v1.7.0. Original note: — **`jam-entry/rundot/textGen.config.json` → `{"disabled": true}`, then deploy.** One line. ⚠️ **Not** "cap to 0" and **not** "delete the file": RUN's own AI.md says deleting it falls back to *platform defaults* (~\$500/game/day), and `rundot deploy` recreates it anyway. `disabled` makes every call fail `AI_POLICY_DENIED`. Policy resolves from the **published `public` tag**, so it is inert until a deploy publishes. Plan item 17
 
 ### P7 · Telemetry
 - [x] Diagnose — pipe works, only `game_loaded` is emitted
@@ -161,7 +162,7 @@
 > Anti-reskin test (GDD §10.2) currently scores **2 of 4** — see Plan §1e.
 - [ ] **"Hands!" expedite — primary mechanic 2 of 2, unstarted**
 - [ ] **Component pips + station typing** — makes stations specialised
-- [ ] 🔴 **Teach the second verb — 69% of players never upgrade a tower.** Item 55. The 22 players who upgrade and the 22 who finish a run are the same count
+- [x] **Taught the second verb** — *"Tap a cook to upgrade"* on waves 2–4, v1.7.0, user-confirmed. ⚠️ **private only — reaches no real player until public**. Item 55, Specs §8a.11
 - [ ] Damage → doneness meter
 - [ ] Walkout feedback — customer leaves, slip spiked
 - [ ] Shift-end line in Ramu's voice

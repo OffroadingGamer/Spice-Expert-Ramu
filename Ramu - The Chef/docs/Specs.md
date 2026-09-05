@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 5 2026, 12:56 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 15:10 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -662,6 +662,66 @@ as a call at zero cost. Agent cap is **10 generations**, deliberately 4 above th
 faded or off-key take can be retried without another round trip.
 
 
+### 8a.11 The upgrade hint — v1.7.0, and the one-liner that would have broken the game
+
+**Shipped Sep 5 2026 as the cheap answer to Plan item 55**, chosen over a full FTUE because
+the belt mode is expected to replace this game view (KitchenMode.md). Eight lines of JSX in
+`Hud.tsx`, no new state, no persistence, no save migration.
+
+🔒 **The obvious fix is a trap; do not take it later.** `placeTower`'s handler ends with
+`store.patch({ selectedPad: null })`, so the build sheet closes the instant a tower lands.
+Keeping the pad selected would flip the sheet straight to the manage view with **Upgrade**
+visible — one line, and it looks like the whole answer. **It hides the Ready! button.**
+`Hud.tsx` gates Ready on `selectedPad === null`, and the file's own layout contract says
+why: BuildSheet and Ready are both `inset-x-0 bottom-0` and *"must never coexist."* That
+trade turns a 69% discovery problem into a 100% one.
+
+**What shipped instead**, in the block that was already conditional:
+
+```tsx
+{wave >= 2 && wave <= 4 && (
+    <p className="mb-2 rounded-xl bg-black/55 px-3 py-2 text-lg font-bold">
+        Tap a cook to upgrade
+    </p>
+)}
+```
+
+Three properties make it safe, and each was checked rather than assumed:
+
+1. **`wave >= 2` is exactly the leak.** `store.wave` is `waveIndex + 1` and `waveIndex`
+   counts *cleared* waves (`actions.ts:63`), so the hint appears in the first build phase
+   after wave 1 — where `wave_1_cleared` → `run_end` converts at 40%.
+2. **It cannot swallow a tap.** The `<p>` has no `pointer-events-auto`, so it inherits the
+   HUD overlay's `pointer-events-none` and pad selection still falls through to the canvas.
+3. **It resets every run.** `Retry` patches `tdPhase`/`selectedPad`/`runId` and **never
+   touches `wave`** — which would have stranded the hint after a deep run. It is saved by
+   `App.tsx:33` rendering `<GameCanvas key={runId} />`: bumping `runId` forces a remount,
+   and towerScene's setup patches `wave: 1`. **Verified, not inferred** — this is the one
+   path the implementing agent's code review did not cover.
+
+**Also in this deploy:**
+
+- **`textGen` closed** (item 17): `rundot/textGen.config.json` → `{ "disabled": true }`.
+  The file is **kept, not deleted** — RUN's AI.md says a missing file falls back to platform
+  defaults, which is worse than the caps it replaced (500,000/day).
+- **Music trigger fractioned** (item 53): `s.lives < CONFIG.economy.startLives * 0.3`
+  instead of the literal `3`. With `startLives: 10` this is arithmetically identical
+  (`< 3.0`), so **no behaviour changed today** — it is purely so the belt's 5 walkouts get
+  the same dramatic position rather than a cue that fires at 60% remaining.
+
+⚠️ **Not a browser bug: audio silence on desktop was Opera GX.** Reported Sep 5 and chased
+to a dead end worth recording so it is not chased twice. Both music *and* SFX were silent,
+which rules out the CDN, the cue logic and mute — all of those kill one channel, not both.
+The code is correct: `ensureCtx()` has exactly one call site, inside the `pointerdown` /
+`keydown` handler, so the AudioContext is constructed during a real gesture. **The cause was
+Opera GX suspending audio on a background tab**; returning to the tab restored it, via the
+`visibilitychange` → `resumeAudio()` handler in `main.tsx` doing its job. My own leading
+hypothesis — cross-origin iframe autoplay permission on `w.run` — **was also wrong**, and
+was flagged as a hypothesis rather than recorded as a finding, which is the only reason it
+cost nothing.
+
+---
+
 ## 8b. 🔒 Billboard ingredient row — the overflow rule and its ceiling
 
 Added Sep 4 2026, 19:49 IST, from the new game-view proposal (Plan item 48). The lower
@@ -899,6 +959,7 @@ Sep 4, after four private deploys and a listen at each one.
 | 1.4.0 | private | **Phase 5.1** — cue exits. `switchCue` wired into the three menu-return routes |
 | 1.5.0 | private | **Phase 5.2** — SFX gains rebalanced: `upgrade` 0.45→0.35, `wave-clear` 0.5→0.72 |
 | **1.6.0** | **private + review + public** | **Phase 5.3** — click feedback on 13 silent buttons, then `rundot game set-public` |
+| **1.7.0** | **private** | **The upgrade hint** (Plan item 55) + `textGen` closed (item 17) + the music trigger fractioned (item 53). Commit `0ff37e7`. ✅ Hint confirmed working by the user; **not yet public** |
 
 **Phase 5.1 — the bug a listen caught and no measurement could.** `switchCue('menu')` existed
 in exactly one place, the audio-unlock handler, which runs once ever. **Nothing ever
