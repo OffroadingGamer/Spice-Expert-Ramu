@@ -1,6 +1,6 @@
 # SpriteIndex — every item in the Kitchen Essentials packs, numbered
 
-**Last updated:** Sep 5 2026, 18:10 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 19:30 IST (read from the system clock)
 **Status:** 🟢 Complete — **128 items sliced and named.** ⬜ Names are my read of the art; correct any that are wrong before they become ids
 
 > 📐 **This index covers the Kitchen Essentials pack only.** The second pack, Kitchen Props, is 32px **isometric** art and lives in its own index: [PropSpriteIndex.md](PropSpriteIndex.md), 284 items, recoloured onto this pack's palette. ⚠️ Read its §5 first — the two packs are 4× apart in resolution and cannot share a frame at the same scale.
@@ -580,4 +580,89 @@ knowing that every recipe is `raw → done`.
 And S3-03 moves **Prop → Ingredients**, superseding the user's own §6.1 call of *"milk
 vessel; prop"*; the rename to *Milk jar* makes the contents the point. Both recorded as
 deliberate, not as drift.
+
+### 6.13 `props/` — the working folder, and what naming it revealed
+
+**Sep 5, 19:30 IST.** The Prop category was copied into
+`Art/_sliced/01 - Kitchen Essentials/props/`, the omitted items removed, and the
+survivors renamed and renumbered **01–53** by family and tier.
+
+🔒 **`props/_props_map.csv` is the only link back to the sheet ids.** Every doc refers to
+sprites as `S1-20`, `S2-05`; the folder is numbered `01..53`. The map carries
+`new_number,sheet_id,filename` and is rebuilt **by content hash**, not by filename, so it
+survives any amount of manual renaming in either place. **Do not delete it** — without it
+`07-Covered tandoor.png` has no traceable relationship to `S1-20`.
+
+⚠️ **`props/` has diverged from `sheet1..3/` and that is expected.** The user renames in
+`props/`; the sheet folders hold the raw slicer output. `props/` is authoritative for
+naming, the sheets for provenance.
+
+### 6.14 🔥 Fourteen upgrade ladders — 39 of 53 props are tiered
+
+The rename pass turned out to be a design pass. What looked like a pile of cookware is a
+station progression:
+
+| Family | Tiers | props/ |
+|---|---|---|
+| **Spice grinder** | **4** | 32–35 |
+| Dough making counter | 3 | 08–10 |
+| Kettle | 3 | 13–15 |
+| Pressure cooker | 3 | 17–19 |
+| Rice cooker | 3 | 20–22 |
+| Sauce pan | 3 | 23–25 |
+| Sauce pot | 3 | 26–28 |
+| Saute pan | 3 | 29–31 |
+| Stock pot | 3 | 37–39 |
+| Stovetop | 3 | 40–42 |
+| Beverage dispenser | 2 | 01–02 |
+| Cast iron skillet | 2 | 04–05 |
+| Fry pan | 2 | 11–12 |
+| Water dispenser | 2 | 43–44 |
+
+Plus **5 untiered singletons** — Brazier 03, Counter with oven 06, Covered tandoor 07,
+Masala container 16, Steam Cooktop 36 — and **9 still unnamed**, 45–53.
+
+➡️ **This is the single most consequential thing the sprite pass has produced.** The belt
+was specced with fixed stations. The art supports **upgradeable** ones, ten families deep
+enough for three tiers. And upgrading is precisely the verb the shipped tower defence
+measures **69% of players never discovering** — so the mechanic is both already understood
+by the design and already known to need better teaching. **`sim/kitchen.ts` should be
+designed with station tiers in it, not have them retrofitted.**
+
+### 6.15 Moves and closures in this pass
+
+| Change | Effect |
+|---|---|
+| **S3-30 pestle & mortar** — Effects prop → **Prop** | User: *"I brought in the pestle and mortar again as spice grinder, this is where it'll reside."* It is now **Spice grinder (Level 1)** |
+| **Both grinder families merged** | *Spice grinding station (Small/Large)* + *Spice grinder* are now **one 4-tier family**: S3-30, S1-15, S1-16, S1-36 |
+| **S2-21 Wok → Saute pan (Level 2)** | The Wok name is retired |
+| **S2-39 removed** | Sixth `omit` item |
+| ✅ **S3-42 tiffin box = Rice cooker (Level 3)** | **Question 4 is closed.** It was never the order-out vessel — that role belongs wholly to the serving-tray family (§6.10) |
+| **Typo fixed** | *Spice griding* → *grinding*, before the family merge absorbed it |
+
+### 6.16 Counts · Sep 5, 19:30 IST
+
+| # | Category | Count | Δ |
+|---|---|---|---|
+| 1 | **Prop** | **59** | +1 · **6 `omit`** → **53 in `props/`** |
+| 2 | Raw / Ingredients | 23 | — |
+| 3 | Midway | 5 | — |
+| 4 | Finished | 4 | — |
+| 5 | Additive / Condiment | 26 | — |
+| 6 | Cooking oil | 2 | — |
+| 7 | UI prop | 3 | — |
+| 8 | **Effects prop** | **6** | −1 |
+| | **Total** | **128** | ✓ |
+
+**The six `omit` items:** S1-06, S1-22, S1-25, S1-30, S1-37, S2-39.
+
+### 6.17 ⚠️ Two naming issues left in `props/`
+
+- **Stovetop is the only family whose tiers descend.** `40-Stovetop & Tandoor(Level3)`,
+  `41-Stovetop with Oven(Level2)`, `42-Stovetop without flames(Level1)`. The three carry
+  **different base names**, so alphabetical sorting puts `&` first and the tiers run
+  backwards. Every other family ascends. Fixing it means giving all three a common base.
+- **`12-Fry pan(Level 2).png` has a space** where every other tier is `(LevelN)`. The sort
+  parses the tier rather than the string so it lands correctly, but anything that later
+  parses these filenames naively will trip on it.
 
