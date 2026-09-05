@@ -1,6 +1,6 @@
 # SpriteIndex — every item in the Kitchen Essentials packs, numbered
 
-**Last updated:** Sep 5 2026, 16:40 IST (read from the system clock)
+**Last updated:** Sep 5 2026, 17:25 IST (read from the system clock)
 **Status:** 🟢 Complete — **128 items sliced and named.** ⬜ Names are my read of the art; correct any that are wrong before they become ids
 
 > 📐 **This index covers the Kitchen Essentials pack only.** The second pack, Kitchen Props, is 32px **isometric** art and lives in its own index: [PropSpriteIndex.md](PropSpriteIndex.md), 284 items, recoloured onto this pack's palette. ⚠️ Read its §5 first — the two packs are 4× apart in resolution and cannot share a frame at the same scale.
@@ -330,3 +330,119 @@ garnished** · S3-32 tomato curry · S3-34 pakora.
 > The last row is the one worth deciding first. It moves up to 16 sprites between two
 > categories, and the Additive column is — per §5.2 — where the belt's depth has to come
 > from, because the cooking chains cannot supply it.
+
+---
+
+## 6. ✅ Sign-off log — user decisions, in the order they were given
+
+**Running record. Each block is the user's answer verbatim in effect, plus what it changed.**
+Where a decision contradicts §5, §6 wins and §5 is annotated rather than rewritten — the
+original call is kept so the disagreement stays visible.
+
+### 6.1 Question 1 — the 20 unlabelled jars and bottles · answered Sep 5, 17:25 IST
+
+**15 of 20 decided. 5 deferred** until every other item is categorised.
+
+| Id | Was (my call) | ✅ User's identification | Category |
+|---|---|---|---|
+| S2-11 | ❌ I proposed **Additive** | **Open cooktop ware, large** | **Prop** |
+| S2-12 | ❌ I proposed **Additive** | **Open cooktop ware, medium** | **Prop** |
+| S2-20 | ❌ I proposed **Additive** | **Open cooktop ware, small** | **Prop** |
+| S3-19 | Prop | **Mustard oil** | 🆕 **Cooking oil** |
+| S3-20 | Prop | **Sunflower oil** | 🆕 **Cooking oil** |
+| S3-21 | Prop | **Green chilli pickle** | **Condiment** |
+| S3-22 | Prop | **Black salt** | **Condiment** |
+| S1-20 | Prop — *"ceramic canister"* | 🔥 **Covered tandoor** | **Prop — station** |
+| S3-03 | Prop — *"ceramic jug"* | **Milk vessel** | **Prop** |
+| S3-12 | Prop — *"jar, brown"* | **Masala / spice box** | **Prop** |
+| S3-35 | Prop — *"teal tin, round"* | 🚨 **Serving tray** | 🆕 **UI — plating surface** |
+| S1-22 | Prop — *"barrel, cream lid"* | **Hotcase for roti / naan** | **Prop — omit** |
+| S1-25 | Prop | **Wooden container, small** | **Prop — omit** |
+| S1-30 | Prop | **Glass container** | **Prop — omit** |
+| S1-37 | Prop | **Wooden container, large** | **Prop — omit** |
+| S3-39, S3-40, S3-41, S3-45, S3-46 | Prop | ⬜ **Deferred** — revisit once everything else is categorised | — |
+
+> 📝 **Id correction noted:** the deferred five were written as `S2-39…41, 45, 46`. Sheet 2
+> has only 40 items and its 39/40 are stockpots, so these are **sheet 3** — S3-39, S3-40,
+> S3-41, S3-45, S3-46. Recorded as S3.
+
+### 6.2 What this changed beyond the rows themselves
+
+**🆕 Two new categories, both from the user's answers:**
+
+| Category | Members so far | Why it is not just "Additive" |
+|---|---|---|
+| **Cooking oil** | S3-19 mustard, S3-20 sunflower | An oil is a **cooking medium**, consumed during the transform. A condiment is applied to a finished dish. Different verb, different timing |
+| **UI — plating surface** | S3-35 serving tray | Not set dressing and not cargo — **screen furniture with behaviour** |
+
+**➕ A new *disposition*, orthogonal to category: `omit`.** S1-22, S1-25, S1-30 and S1-37 stay
+Props but are marked **background, not to be used**. Category says *what a sprite is*;
+disposition says *whether it ships*. Four items are now out of scope without being
+recategorised.
+
+### 6.3 🚨 S3-35 is a mechanic, not a prop
+
+**User's specification, recorded in full because it is the first piece of belt UI to be
+designed:**
+
+> *Serving tray — placed beneath the hand at the bottom of the screen. Displays the
+> finalised dish on top of it with VFX smoke upon recipe completion, and clears for the
+> next task.*
+
+Three consequences for `sim/kitchen.ts`:
+
+1. **There is now a defined completion moment** — dish appears on the tray, smoke fires,
+   tray clears. That is the belt's win-feedback loop, and it did not exist in any spec
+   before this answer.
+2. **The tray is persistent screen furniture**, anchored bottom-centre beneath the hand.
+   ⚠️ That is the same strip of screen the tower defence HUD reserves for `Ready!` and the
+   build sheet — see the layout contract in `Hud.tsx`. **The belt's bottom edge needs
+   planning before anything is placed there.**
+3. **Every Finished sprite needs to read at tray scale**, composited over S3-35 rather than
+   free-standing on a belt.
+
+### 6.4 🔥 S1-20 is a second tandoor
+
+Re-identified from *"ceramic canister"* to **covered tandoor**. The pack now has two:
+
+- **S2-05** — wood-fired range, **lit**, 246×191. The only flaming sprite in either pack
+- **S1-20** — covered tandoor, 94×144
+
+➡️ **These are plausibly the same station in two states** (idle/covered vs fired), which
+would give the belt a station that visibly changes when in use — something no other item
+in the pack offers. Worth confirming when the station list is settled.
+
+### 6.5 ⚠️ The naan chain lost a stage it did not know it had
+
+**S1-22 is a hotcase for roti and naan**, and it is marked `omit`. That is the only
+*holding / keeping-warm* vessel identified anywhere in the pack, and it sits directly on
+chain 1 (`dough → naan`). Omitting it is a legitimate call — recorded here only so that if
+the belt later wants a "cooked and waiting" state, it is known that the art exists.
+
+### 6.6 Where the counts stand
+
+| Category | Before Q1 | After Q1 |
+|---|---|---|
+| Prop | 67 | **62** — of which **4 are `omit`** and **5 are deferred** |
+| Raw | 24 | 24 |
+| Midway | 5 | 5 |
+| Finished | 8 | 8 |
+| Additive / Condiment | 24 | **26** |
+| 🆕 Cooking oil | — | **2** |
+| 🆕 UI — plating surface | — | **1** |
+| **Total** | **128** | **128** |
+
+### 6.7 🧭 Where I was wrong, and why it is worth recording
+
+I argued S2-11/12/20 were **Additives** and called it *"a correction rather than a
+judgement call"* — on the reasoning that they were the same object as the S2-13/14/15 spice
+bowls at a larger size. **They are open cooktop ware.** I read the red as the *contents*;
+it is the *vessel*. The spice bowls are small dishes, these are pots, and the shared red is
+enamel rather than masala.
+
+**The lesson is narrower than "look at the art" — I did look.** It is that a visual-family
+argument identifies *a* shared property, not necessarily the one that matters. Same silhouette
+and same palette can mean same object class **or** same manufacturer's drawing style. Only
+someone who knows the domain can say which, and the confidence I attached to that call
+("correction, not judgement") was not earned by the evidence I had.
+
