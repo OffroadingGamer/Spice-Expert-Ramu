@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 6 2026, 00:47 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 01:51 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -1037,6 +1037,27 @@ an hour into the future. **Use `date` for IST, `date -u` for UTC, and cross-chec
 PowerShell `(Get-Date).ToString('yyyy-MM-dd HH:mm:ss K')`, which prints the offset
 explicitly rather than leaving it to be inferred.** Re-read the clock for every stamp;
 do not carry one forward from earlier in a session.
+
+⚠️ **The user's working day runs past midnight IST — a doc stamp is a clock
+reading, not a working day.** Confirmed by the user on Sep 6 at 01:00 IST: *"According to
+my time zone I am still on 5th September work hours. 6th starts tomorrow for me."* So the
+sections stamped **Sep 5 21:19** and **Sep 6 00:47** are the *same* working session, not
+consecutive days. Three consequences:
+
+1. **Schedule arithmetic.** A window the calendar says has started may not have started
+   for the user. On Sep 6 at 00:47 I read the Sep 6–8 return-loop window as *"today,
+   already running"* and told the user their build window had opened; it had not — they
+   still had all three days intact. **Ask which working day the user is on before
+   concluding that work is late.**
+2. **Doc archaeology.** Two adjacent sections whose stamps straddle midnight are one
+   session. Do not infer a day's gap, or a day's progress, from the date changing.
+3. **The scoring day already agrees.** It rolls at **05:30 IST**, so the working day and
+   the scoring day close at roughly the same moment — which is why item 55's read was
+   correctly deferred rather than taken at 00:47.
+
+✅ **Keep stamping clock time.** The stamp records when a thing was written, and
+rewriting it to a notional "working day" would make the record less true, not more. The
+convention only has to be *known* when the record is read.
 
 ---
 
