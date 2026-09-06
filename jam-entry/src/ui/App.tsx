@@ -16,6 +16,7 @@ import MetaUpgrades from './MetaUpgrades.tsx';
 import Leaderboard from './Leaderboard.tsx';
 import Settings from './Settings.tsx';
 import GameCanvas from '../game/GameCanvas.tsx';
+import TestBelt from './TestBelt.tsx';
 
 export default function App() {
     const phase = useStore((s) => s.phase);
@@ -36,6 +37,7 @@ export default function App() {
                     <EndScreen />
                 </div>
             )}
+            {phase === 'testbelt' && <TestBelt />}
             {/* overlays, not phases, so nothing unmounts underneath */}
             {metaOpen && <MetaUpgrades />}
             {ranksOpen && <Leaderboard />}

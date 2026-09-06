@@ -13,8 +13,10 @@ import type { MetaLevels } from './save.ts';
 
 /** The UI-facing app state. */
 export interface AppState {
-    /** 'loading' → 'menu' → 'playing' */
-    phase: 'loading' | 'menu' | 'playing';
+    /** 'loading' → 'menu' → 'playing'. 'testbelt' is a private, menu-gated
+     *  grey-box test screen (src/ui/TestBelt.tsx) — never reachable from
+     *  'playing', never deployed public-facing content. */
+    phase: 'loading' | 'menu' | 'playing' | 'testbelt';
     /** 0..1 progress of the critical-asset warm during 'loading' */
     loadProgress: number;
     /** Set by the host's onPause/onResume lifecycle hooks */
