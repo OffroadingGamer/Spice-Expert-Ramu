@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 6 2026, 21:32 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 22:46 IST (read from the system clock)
 
 ---
 
@@ -1845,3 +1845,21 @@ uniques are the score; the trend matters more than any single day.
     a lesson down does not apply it. **A pipeline that produces intermediates needs the
     canonical output named in the docs at the moment the intermediates are created, not
     at the end.**
+
+48. **Both times I got the cup wrong, the measurement was right and the baseline was
+    wrong.** Padding the two drink sprites to the dish canvas, I anchored the contact
+    line on `getbbox()` — which counts every pixel down to **alpha = 1**. Both cups
+    carried strays at **alpha ≤ 16**, in `tray-coffee` separated from the real art by
+    an entirely empty row, so the visible cup landed 4 px high and 5 px right while the
+    numbers all reported success. The fix was to measure the silhouette at **alpha > 32**,
+    the same threshold the pans are measured at, and then to delete the dust by a rule
+    about **detachment rather than faintness** — a flat threshold would have eaten the
+    pans' genuine antialiasing. An hour earlier I had called the same
+    three sprites mislabelled — *"there is no chai"* — after comparing each against
+    `cup-empty`, which turned out to be the odd one out; comparing the three against
+    **each other** showed chai and coffee sharing a silhouette pixel for pixel, differing
+    only in a 226-px ellipse. Same root both times. **A measurement is only as good as
+    what it is measured against, and the baseline is the part nobody checks. State the
+    baseline out loud before trusting the number — and when a tool offers a default one
+    (`getbbox`, a folder default, a script's `repeats`), that is exactly where to look
+    first.**

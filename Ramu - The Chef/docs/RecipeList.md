@@ -1,6 +1,6 @@
 # RecipeList — dishes, and the ingredients they call for
 
-**Last updated:** Sep 6 2026, 21:32 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 22:46 IST (read from the system clock)
 **Status:** 🟢 **Node selections locked** (§7, Sep 6) · FTUE fixed (§7.0) · asset inventory typed (§8.5). §3's early proposal is superseded by §7.
 
 Companion to [PropList.md](PropList.md). A recipe drives two things on screen at once:
@@ -305,18 +305,35 @@ spice-union economics across a cuisine run and does not apply to a tutorial node
 **Art:** two new dish sprites (Chai, Coffee); level 3 reuses both. **Zero new props** —
 Brazier and Tandoor already exist.
 
-⛔ **BLOCKER — the drinks have no serving vessel.** Searched the whole pack: there is
-**no cup, glass or mug**. The only drink-adjacent sprites are Kettles and Beverage
-Dispensers, which are *stations*, not servings.
+✅ **CLEARED Sep 6 2026, 22:45 IST — the vessel exists, drawn by hand.** The pack
+has no cup, glass or mug; the only drink-adjacent sprites are Kettles and Beverage
+Dispensers, which are *stations*, not servings. The user drew one, and **both drinks are
+finished**: `Art\_gen\dishes-final\tray-chai.png` and `tray-coffee.png`.
 
-This is not a generation problem. The tray-inpaint method repaints food **into a fixed
-vessel**; with no vessel there is nothing to inpaint into, and the curry bowl reads as
-soup when filled with tea. 🔥 **One hand-drawn cup or chai glass unblocks both
-drinks** — same vessel, different liquid colour, which is exactly what inpainting is good
-at. Roughly 30 minutes of hand work for two dishes.
+**One vessel, two fills — verified by measurement, not by eye.** The two sprites share
+a silhouette pixel for pixel (solid extent x 68–142, y 43–97 in both) and their alpha
+differs on 81 pixels, only 4 of those above antialiasing noise. The one substantive
+difference is a **226-pixel ellipse** at x 81–109, y 57–66 — the liquid surface. Chai
+reads milky at value 0.72, coffee dark at 0.27, so the two orders are unmistakable at
+sprite scale. That is exactly the structure §8.4a's pipeline was built around, reached
+without it.
 
-⚠️ **The FTUE is the Sep 10 gate** ([KitchenMode.md](KitchenMode.md) §6.3), so this is
-on the critical path, not the art backlog.
+⚠️ **Generation was considered and rejected, and the reason generalises.** The
+inpaint path repaints food into a **fixed vessel**, so with no vessel there is nothing to
+inpaint into. Generating the cup *itself* would have broken all three tools at once:
+`gate_workflow_template.json` is inpaint-only and has no txt2img path,
+`composite_check.py` gets its alpha by copying the source **verbatim**, and `recolour.py`
+derives its region as *pixels differing from the source*. **No source means no alpha and
+no region.** Every clean edge shipped so far came from copying the pan's alpha — none
+was ever generated.
+
+🔴 **No editable source survives.** The `.aseprite` working file was deleted after
+export. The 28 generated dishes can be rebuilt from their raw ComfyUI frames; these two
+cannot be rebuilt from anything. They exist only as the two PNGs, in a gitignored tree
+([.gitignore](../.gitignore) line 63). **Any change to the cup means redrawing it.**
+
+⚠️ **The FTUE is still the Sep 10 gate** ([KitchenMode.md](KitchenMode.md) §6.3) —
+the vessel no longer blocks it. What remains is [Plan.md](Plan.md) item 11.
 
 ### 7.1 Node 1 — North Indian · masala: **Garam Masala**
 
@@ -479,19 +496,20 @@ project.
 
 ---
 
-#### 8.4a ✅ **ART COMPLETE — Sep 6 2026, 28 of 28 plated dishes**
+#### 8.4a ✅ **ART COMPLETE — Sep 6 2026, 30 of 30 servings**
 
-All 28 dishes exist in `Art\_gen\dishes-final\`, generated with `ramuess-ess-v3`
-at LoRA 0.6 / denoise 0.70 / mask v2, one model and one tray across the whole set.
-Verified independently: alpha byte-identical to the source tray on all 28, provenance of
-every file traced (10 recoloured, 18 straight from `dishes-v3\`), zero untraceable.
+`Art\_gen\dishes-final\` holds **30 files, all 212×141**: **28 generated** with
+`ramuess-ess-v3` at LoRA 0.6 / denoise 0.70 / mask v2 — one model and one tray across
+the whole set — plus the **2 hand-drawn drinks** (§7.0). Verified independently: alpha
+byte-identical to the source tray on all 28 generated, provenance of every one traced
+(10 recoloured, 18 straight from `dishes-v3\`), zero untraceable.
 
 | | Count | |
 |---|---|---|
 | ✅ Cuisine dishes | **24** | nodes 1–4, six each |
 | ✅ Interaction-graph dishes | **4** | `dal-cooked`, `dal-tadka`, `bhindi-fry`, `tomato-gravy` |
 | ✅ Palette-corrected | **10** | see §8.6 |
-| ⛔ FTUE drinks | **2** | Chai, Coffee — blocked on a vessel, §7.0 |
+| ✅ FTUE drinks | **2** | Chai, Coffee — **hand-drawn**, one vessel two fills, §7.0 |
 
 ⚠️ **None of the four "possibly free" candidates were free.** Naan and Sticky Rice
 are plated food, but on a **bare bowl and a dark oval plate** — neither carries the

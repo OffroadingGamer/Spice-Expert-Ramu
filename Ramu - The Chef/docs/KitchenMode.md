@@ -1,6 +1,6 @@
 # KitchenMode — the belt game view as a second mode
 
-**Last updated:** Sep 6 2026, 21:32 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 22:46 IST (read from the system clock)
 **Status:** 🟢 **Architecture settled.** Eight decisions taken Sep 4, 23:10 IST — all
 eight went to the recommended option. ⬜ Nothing built yet.
 **🛑 Hard gate: playable end to end by Sep 10, or it is cut.** §5.
@@ -596,7 +596,7 @@ existing dishes are regenerated deliberately: **a belt row must come from one mo
 tray is bit-exact regardless, but the food would drift, and that is the part players look
 at.
 
-⬜ **Chai and Coffee are excluded** — blocked on the vessel, RecipeList §7.0.
+~~⬜ **Chai and Coffee are excluded** — blocked on the vessel.~~ ✅ **Resolved Sep 6, 22:45 IST** — both drawn by hand, RecipeList §7.0 and §8.9a.
 
 🟡 **Four dishes may cost nothing**, pending a look: Naan →
 `Final Recipe/02-Bread` · Coconut Chutney → `Container/07-Chutney-Coconut` ·
@@ -648,17 +648,19 @@ new code with a new failure mode.
 naturally. Spinach dishes are the **darkest, most muted** greens on the list — the
 table had it backwards. Retuned to 0.55 / 0.58 with `median_target` 0.40 / 0.42.
 
-### 8.9 🔒 Four dish folders exist — only one is canonical
+### 8.9 🔒 Five folders hold servings — only one is canonical
 
-⚠️ **Read this before touching anything under `Art\_gen\`.** The pipeline left
-four folders holding 78 files between them, and the names do not say which one ships.
+⚠️ **Read this before touching anything under `Art\_gen\`.** Five folders now
+hold servings or vessels — 81 files between them — and the names do not say which one
+ships.
 
 | Folder | Files | Status |
 |---|---|---|
-| **`dishes-final\`** | **28** | ✅ **CANONICAL — this is the deliverable.** 18 straight from `dishes-v3\`, 10 palette-corrected |
+| **`dishes-final\`** | **30** | ✅ **CANONICAL — this is the deliverable.** 18 straight from `dishes-v3\`, 10 palette-corrected, **2 hand-drawn drinks** |
 | `dishes-v3\` | 28 | 🗃️ Archive — pre-recolour generation output |
 | `dishes-v3-recolour\` | 10 | 🗃️ Archive — the corrected 10 only, before assembly |
 | `dishes\` | 12 | 🔒 **READ-ONLY.** The batch accepted Sep 6 afternoon, from `ess-v2`. Superseded, kept as fallback |
+| `sources\` | 1 | 🟡 Hand-authored **source vessels**, not servings. Never wire the belt to this folder |
 
 🛑 **`Art\_gen\dishes\` is never an output target.** Two separate sessions
 independently mistook its contents for corruption and prepared scripts to overwrite it;
@@ -676,3 +678,49 @@ folder is canonical only by this table.
 folder) · `recolour.py` + `recolour_params.json` · `composite_check.py` ·
 `gate_workflow_template.json`, still at its committed 0.6/0.6 and 0.7 because both new
 flags patch the in-memory dict only.
+
+#### 8.9a ✅ The cup — hand-drawn, and the one asset with no way back
+
+The FTUE drinks are **not generated**. The pack contains no cup, glass or mug, and
+generating one would have broken every tool in the pipeline at once — the reasoning is
+in [RecipeList.md](RecipeList.md) §7.0 and it is the useful half of this entry. The two
+sprites were drawn by hand and padded to the dish canvas.
+
+| | |
+|---|---|
+| Canvas | **212×141**, matching all 28 generated dishes |
+| Solid silhouette | x 68–142, y 43–97 — **identical in both files** |
+| Anchoring | **centre-centre**, on the pans' own centre (105.0, 70.0) |
+| Difference between them | **226 px**, x 81–109 y 57–66 — the liquid ellipse, nothing else |
+| Scale | solid width 75 px against the pan's 203 — about **37%** |
+
+⚠️ **The cup's base is at y=97; the pans' is at y=136.** That is what centre-centre
+anchoring means for a small object beside a large one, and it is correct for a
+centre-pivot renderer. **If the belt seats sprites on a surface line instead, the cup
+will read as hovering** and needs a per-item vertical offset in code — one value, not an
+art change. [Plan.md](Plan.md) item 11 owns that call.
+
+✅ **`getbbox()` now equals the silhouette — it did not before.** Both cups carried
+strays at **alpha ≤ 16**: invisible, and in `tray-coffee` separated from the real art by
+an entirely empty row. The first padding pass anchored the contact line to that dust and
+landed the cup 4 px high and 5 px right. Anchoring is now measured at **alpha > 32**, the
+same threshold the pans are measured at.
+
+The dust was then removed — **42 px from chai, 55 from coffee** — by a rule about
+**detachment, not faintness**: a pixel goes only if it is ≤ 32 *and* has no 8-neighbour
+above 32. Every pixel above alpha 32 is byte-identical to the drawing, the liquid region
+is untouched at 226 px, and the two cups now differ on **4 alpha pixels**, down from 81.
+
+⚠️ **Never run that rule over the generated dishes.** A flat threshold, or a rule
+about faintness, would eat their edges: the pans carry a full antialiasing ramp with
+**638 of their 727** low-alpha pixels touching solid, against the cups' **1 of 43**. That
+ratio is the test for whether low alpha is an edge or debris — not the alpha value.
+
+🟡 **`sources\cup-empty.png` is 98×69 and is not empty** — it is a third drawing,
+brimful of dark liquid with no interior wall showing, so it is not the same vessel state
+as the pair. It is unused, and a mask derived from it would cover the rim. Redraw it or
+delete it; do not treat it as the empty vessel.
+
+🔴 **There is no editable source.** The `.aseprite` was deleted after export. Unlike
+the 28 generated dishes, which can be rebuilt from their raw ComfyUI frames, these two
+PNGs are the only copy of the work — in a tree that is gitignored.
