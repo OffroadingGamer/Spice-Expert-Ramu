@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 6 2026, 17:14 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 17:25 IST (read from the system clock)
 
 ---
 
@@ -1797,3 +1797,11 @@ uniques are the score; the trend matters more than any single day.
     byte-identical to files still sitting unnamed in the sheets, so every name assigned
     there fixed nothing. The same shape had just been fixed for `dishes/` vs
     `dishes-m2/`. **One canonical location per asset, or the naming work does not land.**
+41. **I published a number I had not checked, and it reached a commit.** I said the
+    hand-sort would take the LoRA set from *163 to ~241 images*; it changes the count by
+    **zero**. The error was assuming the agent's prep script behaved like mine — mine
+    skips bare-numbered sprites, the agent's captions them with the number. One `ls` of
+    the dataset would have shown `sheet3_08.png` sitting in it. The real finding — 78
+    captions with a numeric subject — was **better** than the invented one, and I
+    would have had it a day earlier by looking first. **Check the artefact, not your
+    memory of the tool that made it.**

@@ -1,6 +1,6 @@
 # KitchenMode — the belt game view as a second mode
 
-**Last updated:** Sep 6 2026, 17:14 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 17:25 IST (read from the system clock)
 **Status:** 🟢 **Architecture settled.** Eight decisions taken Sep 4, 23:10 IST — all
 eight went to the recommended option. ⬜ Nothing built yet.
 **🛑 Hard gate: playable end to end by Sep 10, or it is cut.** §5.
@@ -554,3 +554,49 @@ Palak Aloo, Risotto). Enlarging the mask gave the model the whole bowl and it fi
 one of them warm anyway. Untried levers: LoRA weight at 0.30–0.40 for pale dishes, or
 a retrain on the now-larger 241-image set. **User's call: accepted as-is, recolour
 later.**
+
+### 8.7 The v3 retrain — planned Sep 6 2026, not yet run
+
+**Why, and why not.** Not for more data — the image count does not change
+([RecipeList.md](RecipeList.md) §8.5). For **captions**: ~78 of 163 carry a bare
+number as their subject noun, so half the set teaches the trigger nothing but "warm
+kitchen object."
+
+⚠️ **It will not fix the colour bias.** Measured across the current dataset:
+
+| | green | white/pale | warm |
+|---|---|---|---|
+| `ess-v2` training pixels | **3.6%** | 5.3% | 56.9% |
+
+The model has already seen 3.6% green and still cannot paint green. **Re-captioning
+changes no pixels.** Expect better subject/style separation, not better colour.
+
+🔒 **One blocker in the tooling.** `Art\_lora\tools\lora_prep.py` line 34 is
+`SUBDIRS = ["sheet1", "sheet2", "sheet3", "props"]` — hardcoded, and the typed folders
+are not in it. A naive re-run rebuilds **the same numeric captions**. Two fixes needed:
+point it at `Ingredient/`, `Container/`, `Cooking Oil/`, `Utensil/`, `Final Recipe/`,
+`props/` (**never** the sheets — they are duplicates now and would double every image),
+and make the name parser strip both the `NN-` prefix **and** the subcategory segment, so
+`14-Primary-Okra.png` captions as `Okra`.
+
+**The plan, in order:**
+
+| Phase | What | Time |
+|---|---|---|
+| 1 | LoRA weight test at **0.30–0.40** on one pale dish — the untried lever, and it targets the actual defect | 10 min |
+| 2 | Fix `SUBDIRS` + name parser, rebuild as `ess-v3` | 15 min |
+| 3 | Train `ramuess-ess-v3` | ~45 min, unattended |
+| 4 | Verify four dishes that may already exist | 10 min |
+| 5 | Generate **24** dishes with v3 | ~90 min |
+
+**24 = 12 regenerated + 8 new cuisine + 4 from [PropList.md](PropList.md) §4.** All 12
+existing dishes are regenerated deliberately: **a belt row must come from one model.** The
+tray is bit-exact regardless, but the food would drift, and that is the part players look
+at.
+
+⬜ **Chai and Coffee are excluded** — blocked on the vessel, RecipeList §7.0.
+
+🟡 **Four dishes may cost nothing**, pending a look: Naan →
+`Final Recipe/02-Bread` · Coconut Chutney → `Container/07-Chutney-Coconut` ·
+Pesto → `Container/08-Chutney-Green` · Sticky Rice →
+`Ingredient/20-Secondary-Rice`.

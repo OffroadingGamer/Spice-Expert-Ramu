@@ -1,6 +1,6 @@
 # RecipeList — dishes, and the ingredients they call for
 
-**Last updated:** Sep 6 2026, 17:14 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 17:25 IST (read from the system clock)
 **Status:** 🟢 **Node selections locked** (§7, Sep 6) · FTUE fixed (§7.0) · asset inventory typed (§8.5). §3's early proposal is superseded by §7.
 
 Companion to [PropList.md](PropList.md). A recipe drives two things on screen at once:
@@ -305,6 +305,19 @@ spice-union economics across a cuisine run and does not apply to a tutorial node
 **Art:** two new dish sprites (Chai, Coffee); level 3 reuses both. **Zero new props** —
 Brazier and Tandoor already exist.
 
+⛔ **BLOCKER — the drinks have no serving vessel.** Searched the whole pack: there is
+**no cup, glass or mug**. The only drink-adjacent sprites are Kettles and Beverage
+Dispensers, which are *stations*, not servings.
+
+This is not a generation problem. The tray-inpaint method repaints food **into a fixed
+vessel**; with no vessel there is nothing to inpaint into, and the curry bowl reads as
+soup when filled with tea. 🔥 **One hand-drawn cup or chai glass unblocks both
+drinks** — same vessel, different liquid colour, which is exactly what inpainting is good
+at. Roughly 30 minutes of hand work for two dishes.
+
+⚠️ **The FTUE is the Sep 10 gate** ([KitchenMode.md](KitchenMode.md) §6.3), so this is
+on the critical path, not the art backlog.
+
 ### 7.1 Node 1 — North Indian · masala: **Garam Masala**
 
 | Dish | Primary | Oil | Secondary | Utensil |
@@ -522,9 +535,26 @@ as an archive, not as a source of truth. **Do not pin an id to a sheet path.**
 and §8.2 already expects four labels to be recolours, so these are the bases for them
 rather than a gap.
 
-🔄 **Side effect on the LoRA:** those 78 sprites were skipped by the dataset prep
-because bare numbers produce no caption. They are all named now, so a retrain takes the
-training set from **163 to ~241 images**.
+🛑 **CORRECTION — an earlier claim here was wrong.** This section first said the
+rename takes the LoRA training set from *163 to ~241 images*. **It does not. The image
+count does not change at all.**
+
+The claim assumed the prep script skips bare-numbered sprites. It does not — `ess-v2`
+already contains them (`props` 40 + `sheet1` 34 + `sheet2` 38 + `sheet3` 51 = **163**).
+The rename moved and renamed files that were *already* training data.
+
+✅ **The real gain is caption quality, and it is larger than the false one.** About **78
+of the 163 captions carry a bare number where the subject noun belongs**:
+
+```
+ramuess, 08, smooth shaded game asset, soft gradients, ...
+ramuess, 48, smooth shaded game asset, ...
+```
+
+— against a named one, `ramuess, Fry pan (Level 2), ...`. For nearly half the set the
+subject slot carries no information, so by §8.3's own invariant the trigger absorbs what
+has nowhere else to go: **`ramuess` has been learning *generic warm kitchen object*.**
+That is worth a retrain on its own, and the hand-sort is what makes it possible.
 
 ---
 

@@ -1,6 +1,6 @@
 # PropList — stations that sit in the prop slots
 
-**Last updated:** Sep 6 2026, 17:14 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 17:25 IST (read from the system clock)
 **Status:** 🟢 **Picks locked**; §4 interaction graph **re-pinned Sep 6** against the typed asset folders (§7.4 resolved).
 
 Companion to [RecipeList.md](RecipeList.md). Props are what the old build called
