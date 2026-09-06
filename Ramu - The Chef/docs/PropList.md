@@ -1,7 +1,7 @@
 # PropList — stations that sit in the prop slots
 
-**Last updated:** Sep 6 2026, 02:05 IST (read from the system clock)
-**Status:** 🟡 Inventory done, **picks proposed Sep 4, 20:24 IST** — awaiting sign-off (⬜ §3)
+**Last updated:** Sep 6 2026, 17:14 IST (read from the system clock)
+**Status:** 🟢 **Picks locked**; §4 interaction graph **re-pinned Sep 6** against the typed asset folders (§7.4 resolved).
 
 Companion to [RecipeList.md](RecipeList.md). Props are what the old build called
 towers. They do **not** shoot. A prop reacts to an ingredient passing it on the belt:
@@ -157,19 +157,31 @@ reads Indian without a repaint. S1-12 is a near-perfect handi as drawn.
 `after` is what the ingredient must already carry; `tags` is what it carries onward.
 Every `in` and `out` below is a numbered item in [SpriteIndex.md](SpriteIndex.md).
 
-| Prop | `in` | `out` | `after` | Container changes? |
-|---|---|---|---|---|
-| Prep counter | `flour` **S1-15** | `dough` **S1-28** | — | sack → bowl |
-| Prep counter | `mango` **S3-01** | `mango-pickle` **S3-06** | — | fruit → jar |
-| Tandoor | `dough` **S1-28** | `naan` **S1-32** | `kneaded` | ✅ **no — bowl to bowl** |
-| Handi | `dal-raw` **S3-16** | `dal-cooked` **S2-30** | — | jar → pan |
-| Handi | `rice-raw` **S2-26** | `rice-cooked` **S1-07** | — | jar → pan |
-| Masala dabba | `dal-cooked` **S2-30** | `dal-tadka` **S2-31** | `simmered` | ✅ **no — pan to pan** |
-| Kadhai | `okra` **S3-24** | `bhindi-fry` **S1-31** | — | loose → bowl |
-| Kadhai | `tomato` **S3-10** | `tomato-gravy` **S3-32** | — | loose → pan |
-| Kadhai | `cabbage` **S2-02** | `pakora` **S3-34** | — | ✅ **no — loose to loose** |
-| Grinder | `whole-spices` **S2-09** | `garam-masala` **S2-15** | — | sticks → bowl |
-| Grinder | `coriander` **S3-43** | `green-chutney` **S2-14** | — | ✅ **no — bowl to bowl** |
+> 🔄 **RE-PINNED Sep 6 2026, 17:08 IST** against the new asset folders
+> (`Ingredient/`, `Container/`, `Cooking Oil/`, `Utensil/`, `Final Recipe/`, `props/`).
+> Every id below was resolved by **content hash**, not by name, so the pins survive any
+> future renumbering. §7.4's estimate of "three rows" was low: **10 of 11 rows carried
+> at least one wrong pin.**
+
+| # | Prop | `in` | `out` | `after` | State |
+|---|---|---|---|---|---|
+| 1 | Dough counter | ❌ `flour` — **no sprite in the pack** | `Ingredient/18-Secondary-Flour Dough` | — | ⚠️ needs a flour sprite, or levels spawn dough directly |
+| 2 | Dough counter | `Ingredient/06-Primary-Nut Type` | ❌ `mango-pickle` — **no sprite** | — | ⚠️ target missing |
+| 3 | Tandoor | `Ingredient/22-Secondary-Kneaded Dough` | `Final Recipe/02-Bread` | `kneaded` | ✅ fixed — bowl to bowl |
+| 4 | Handi | ❌ `dal-raw` — **no sprite** | ❌ `dal-cooked` — **no sprite** | — | ⚠️ both missing |
+| 5 | Handi | `Container/02-Rice` | `Ingredient/20-Secondary-Rice` | — | ✅ fixed — jar → plate |
+| 6 | Masala dabba | ❌ `dal-cooked` — **no sprite** | ❌ `dal-tadka` — **no sprite** *(container exists: `Container/29-Tadka`)* | `simmered` | ⚠️ both missing |
+| 7 | Kadhai | `Ingredient/14-Primary-Okra` | ❌ `bhindi-fry` — **no sprite** | — | ⚠️ target missing |
+| 8 | Kadhai | `Ingredient/09-Primary-Tomato` | ❌ `tomato-gravy` — **no sprite** | — | ⚠️ target missing |
+| 9 | Kadhai | `Ingredient/01-Primary-Cabbage` | `Final Recipe/03-Fried Snack` | — | ✅ **was already correct — the only such row** |
+| 10 | Grinder | `Ingredient/25-Spices-Cinnamon` | `Container/22-Spice Blends-Garam Masala` | — | ✅ fixed — sticks → jar |
+| 11 | Grinder | `Ingredient/16-Primary-Spinach` | `Container/08-Chutney-Green` | — | ✅ fixed — ⚠️ spinach stands in; the pack has **no coriander** |
+
+🔄 **Six sprites are named here that do not exist.** Four of them — `dal-cooked`,
+`dal-tadka`, `bhindi-fry`, `tomato-gravy` — are **plated dishes**, which is exactly what
+the tray-inpaint pipeline now produces ([KitchenMode.md](KitchenMode.md) §8.2). Only
+**`flour`** and **`dal-raw`** are missing *ingredient* sprites, and both are loose-produce
+items that must be drawn or generated another way.
 
 > ⚠️ **A hot-swap works best when only the food changes, not the container.** A dish
 > that jumps from a sack to a bowl mid-belt reads as *substitution*; one that stays in the
@@ -283,7 +295,7 @@ and a chopping-knife SFX.
   says *Wok* means **Fry pan at Level 4 or above** — a tier requirement, reachable
   through the loaner rule ([KitchenMode.md](KitchenMode.md) §6, decision 6).
 - **Container** is an **ingredient**, not a station. Labelled vessels are drawn off
-  `S3-50` (`Untagged/23`) at 2–5 minutes each. See
+  `S3-50` (now `Container/06-Idli Batter`) at 2–5 minutes each. See
   [RecipeList.md](RecipeList.md) §6.3.
 
 ### 7.4 ⚠️ The §4 interaction graph needs re-pinning wholesale
@@ -297,8 +309,10 @@ pass:
 | `flour` **S1-15** | `props/36-Spice grinder(Level2)` — flour has **no sprite** |
 | `tomato-gravy` **S3-32** | `Untagged/62 — UI prop, Serving tray(Curry)` |
 
-All three are the same error: ids pinned before the sheets were sliced and named. **Do not
-patch these row by row.** The graph is re-pinned in one pass once the `Untagged/`
-hand-sort names the ingredient sprites — until then any individual fix is a guess against
-the same unnamed set that produced the mistakes.
+All three are the same error: ids pinned before the sheets were sliced and named.
+
+✅ **RESOLVED Sep 6 2026.** The hand-sort is complete — `Untagged/` is dissolved into
+`Ingredient/`, `Container/`, `Cooking Oil/`, `Utensil/` and `Final Recipe/`, and §4 has
+been re-pinned in one pass against them by content hash. **The estimate above was low:
+10 of the 11 rows carried at least one wrong pin, not three.** See §4.
 

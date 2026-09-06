@@ -1,7 +1,7 @@
 # RecipeList — dishes, and the ingredients they call for
 
-**Last updated:** Sep 6 2026, 02:05 IST (read from the system clock)
-**Status:** 🟡 Inventory done, **recipes proposed Sep 4, 20:24 IST** — awaiting sign-off (⬜ §3)
+**Last updated:** Sep 6 2026, 17:14 IST (read from the system clock)
+**Status:** 🟢 **Node selections locked** (§7, Sep 6) · FTUE fixed (§7.0) · asset inventory typed (§8.5). §3's early proposal is superseded by §7.
 
 Companion to [PropList.md](PropList.md). A recipe drives two things on screen at once:
 
@@ -281,12 +281,29 @@ Six dishes chosen per cuisine node by the user, one node at a time. **§6.4's
 "selection pending" is closed.** Format is §6.1's; the masala occupies one cell in
 every dish of its node, so it is written once per node rather than per row.
 
-### 7.0 Node 0 — Beverages (FTUE)
+### 7.0 🔒 Node 0 — Beverages (FTUE) — fixed Sep 6 2026
 
-**Chai → High-Tea.** The FTUE is the whole beverage node, not a single tutorial level.
-Props: Water Dispenser (`props/43–44`), Kettle (`19–21`), Beverage Dispenser
-(`01–02`). ⬜ Dish list not yet fixed; Chai and High-Tea are named, the levels
-between them are not.
+**Two drinks, four levels.** The FTUE is the whole beverage node, not a single tutorial
+level. Props: Water Dispenser (`props/43–44`), Kettle (`19–21`), Beverage
+Dispenser (`01–02`).
+
+| Level | Dish | What it teaches |
+|---|---|---|
+| 1 | **Chai** | one chain, one prop |
+| 2 | **Coffee** | a second, independent chain |
+| 3 | **Chai & Coffee** | both chains live on one belt |
+| 4 | **Boss** | pressure — and it **unlocks Brazier `03` + Tandoor `09–10`** |
+
+🔥 **The boss hands over two advanced stations early, deliberately.** The user's
+reason, recorded verbatim: *"early unlock but helps people use advanced tool early on
+sometimes make people latch onto gameplay more."* This is the decision that closes
+§7.5 — see there.
+
+⚠️ **Node 0 is four levels, not six.** §9.2's six-per-node reasoning is about
+spice-union economics across a cuisine run and does not apply to a tutorial node.
+
+**Art:** two new dish sprites (Chai, Coffee); level 3 reuses both. **Zero new props** —
+Brazier and Tandoor already exist.
 
 ### 7.1 Node 1 — North Indian · masala: **Garam Masala**
 
@@ -373,13 +390,23 @@ at L1 in node 3 — backwards.**
 ➡️ **Recommend Roti, not Naan, in node 1.** Roti is a tawa dish — Cast Iron Skillet,
 tier 1. Cooktop is then introduced at L1 as the oven in node 3, climbs, and Naan at L4
 becomes a late-run or boss dish the ladder has earned. Same bread, right place.
-⬜ User decision.
+
+✅ **CLOSED Sep 6 2026 — Naan stays in node 1.** The recommendation above is
+**declined, and the objection it rested on no longer exists.** §7.0's FTUE boss now
+unlocks the Tandoor, so the player meets Cooktop L4 *before* node 1 begins. The ladder is
+not encountered backwards by accident — the top tier is handed over on purpose, as a
+hook. Naan is then a dish the player already owns the station for.
 
 ### 7.6 🔥 Build node 3 before node 4
 
 Aglio e Olio and Veg Thukpa are the only two noodle dishes and **the pack has no noodle
 form at all**, raw or cooked. Draw it once for Aglio e Olio and Thukpa is a recolour into
 broth. Reverse the order and it is drawn twice.
+
+🔄 **SUPERSEDED Sep 6 — the pack does have a noodle form.** The hand-sort found
+it: `Final Recipe/01-Cooked Noodles` (was the unnamed sprite `S1-31`). **The build-order
+constraint dissolves** — both dishes have a base, and node 3 no longer has to precede
+node 4 on art grounds. Any remaining ordering argument has to stand on its own.
 
 ---
 
@@ -403,13 +430,25 @@ and plated dishes.**
 \* recolours of containers made for node 1. Mustard oil `S3-19` and sunflower `S3-20` were
 already in the pack; **mustard oil is node 4's signature and needed no work at all.**
 
-### 8.3 Loose sprites — 4 genuinely absent from the pack
+### 8.3 🔄 Loose sprites — **2** genuinely absent, down from 4
 
-**Coconut** (node 2) · **Pine nut** (node 3) · **Bamboo shoot** (node 4) ·
-**Bhut jolokia** (node 4). Everything else — aubergine, cauliflower, spinach, potato,
-onion, tomato, garlic, ginger, green chilli, cabbage, peas, green beans, bread, basil —
-is 🟡 **probably already among the 23 Ingredient and 9 Pending sprites**, unconfirmable
-until the `Untagged/` hand-sort names them.
+✅ **Resolved Sep 6 by the hand-sort.** `Untagged/` is dissolved; every Essentials
+sprite now sits in a typed folder (§8.5). Searching the named set settles this:
+
+| Ingredient | Status |
+|---|---|
+| **Bamboo shoot** (node 4) | ✅ found — `Ingredient/03-Primary-Bamboo Shoot` |
+| **Bhut jolokia** (node 4) | ✅ found — `Ingredient/04-Spices-Bhut Jolokia` |
+| **Coconut** (node 2) | ❌ **still absent** — blocks Coconut Chutney, Beans Poriyal |
+| **Pine nut** (node 3) | ❌ **still absent** — blocks Pesto |
+
+⚠️ Both missing items are **loose produce**, which the tray-inpaint pipeline cannot
+make — it repaints food *into a fixed vessel*, and a loose ingredient has no vessel.
+They are hand-drawn, or generated some other way.
+
+The rest — aubergine, cauliflower, spinach, potato, onion, tomato, garlic, ginger,
+cabbage, peas, green beans, bread, basil — are ✅ **confirmed present** in
+`Ingredient/`.
 
 ### 8.4 Finished dishes — the dominant cost
 
@@ -424,6 +463,68 @@ until the `Untagged/` hand-sort names them.
 Only **four** Finished sprites exist in the whole pack and one of them is already Naan.
 Plated dishes scale linearly with the menu and are the single largest art line in the
 project.
+
+---
+
+#### 8.4a 🔄 Actual state — Sep 6 2026, after the first generation batch
+
+**12 of the 24 plated dishes now exist**, produced by the tray-inpaint pipeline
+([KitchenMode.md](KitchenMode.md) §8.2), stored in `Art\_gen\dishes\`:
+
+> Baingan Bharta · Rajma · Gobhi Masala · Palak Aloo · Upma · Idli ·
+> Beans Poriyal · Aglio e Olio · Minestrone · Risotto · Bamboo Shoot Fry ·
+> Veg Momo
+
+⚠️ **The draw/recolour/free split above no longer describes the work.** The batch
+took 8 from the *Draw* list, **3 that were classed as recolours** (Beans Poriyal,
+Minestrone, Bamboo Shoot Fry) and **1 classed as possibly-free** (Upma). The distinction
+has collapsed: every dish goes through the same pipeline at the same cost, so the only
+number that matters is **how many dishes remain**.
+
+| | Count | |
+|---|---|---|
+| ✅ Done | **12** | listed above |
+| ⬜ Remaining, cuisine nodes | **12** | Naan, Jeera Rice, Coconut Chutney, Rasam, Sambar, Pesto, Bruschetta, Arrabbiata, Xaak Bhaji, Veg Thukpa, Sticky Rice, Ooti |
+| ⬜ Remaining, FTUE | **2** | Chai, Coffee (§7.0) |
+| ⬜ From the interaction graph | **4** | `dal-cooked`, `dal-tadka`, `bhindi-fry`, `tomato-gravy` — [PropList.md](PropList.md) §4 |
+
+⚠️ **Six dishes do not read as their named dish** even though all 12 are stylistically
+consistent: Idli, Veg Momo, Beans Poriyal, Palak Aloo, Risotto and Baingan Bharta. The
+cause is measured, not guessed — **the LoRA renders warm brown/orange/gold reliably and
+cannot paint white or green** (7 of 7 warm targets landed; 0 of 5 pale targets did). The
+user's call, recorded: **accepted as-is, to be recoloured later.**
+
+### 8.5 🔒 The asset folders — Sep 6 2026
+
+`Untagged/` is **dissolved.** Every sliced Kitchen Essentials sprite now sits in exactly
+one typed folder under `Art\_sliced - Kitchen Essentials\`:
+
+| Folder | Count | Filename form |
+|---|---|---|
+| `Ingredient/` | 27 | `NN-Primary\|Secondary\|Spices-Name` |
+| `Container/` | 34 | `NN-Chutney\|Pastes\|Spice Blends-Name` |
+| `Cooking Oil/` | 7 | `NN-Name` |
+| `Utensil/` | 12 | `NN-Name` |
+| `Final Recipe/` | 4 | `NN-Name` |
+| `props/` | 44 | unchanged — tool-derived, not hand-edited |
+
+**84 + 44 = 128**, which is every sprite the slicer produced. Nothing is orphaned and
+nothing is duplicated between folders. The map is `_asset_map.csv` in the pack root,
+carrying folder, number, subcategory, name, old `Untagged/` number and original sheet id,
+so any sprite traces back to its source.
+
+⚠️ **`sheet1/`, `sheet2/`, `sheet3/` are now fully redundant** — verified by
+content hash: zero sprites live only there. They are the slicer's raw output and are kept
+as an archive, not as a source of truth. **Do not pin an id to a sheet path.**
+
+⬜ **11 items remain `Pending`** — `Container/14, 18, 25, 26, 27, 28, 32, 33, 34` and
+`Cooking Oil/04, 05`. All are generic jars and bottles with no distinguishing contents,
+and §8.2 already expects four labels to be recolours, so these are the bases for them
+rather than a gap.
+
+🔄 **Side effect on the LoRA:** those 78 sprites were skipped by the dataset prep
+because bare numbers produce no caption. They are all named now, so a retrain takes the
+training set from **163 to ~241 images**.
 
 ---
 
@@ -467,13 +568,12 @@ prop set and the same masala. Format is §6.1's.
   Pressure Cooker dishes whose plated states are pan-of-curry recolours — materially
   cheaper than Baingan Bharta or Gobhi Masala, which must be drawn.
 
-### 9.1 ⬜ The Beverage node is still unspecified
+### 9.1 ✅ The Beverage node — **specified Sep 6**, see §7.0
 
-**Chai and High-Tea are named; the levels between them are not.** The FTUE runs the whole
-node, so it needs its own dish list before it can be authored — and under
-[KitchenMode.md](KitchenMode.md) §7.2's recommended scope it is **one of only two nodes
-that ship inside the jam**. Proposed but not confirmed: Chai → Masala Chai → Coffee
-→ High-Tea.
+Chai → Coffee → both together → boss. **Two drinks, not four.** The earlier
+proposal (Chai → Masala Chai → Coffee → High-Tea) is dropped: High-Tea and
+Masala Chai are gone, and the node teaches *chain composition* rather than a drinks
+ladder. Full list in §7.0.
 
 ### 9.2 Why six per node
 

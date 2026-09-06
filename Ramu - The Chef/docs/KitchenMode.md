@@ -1,6 +1,6 @@
 # KitchenMode — the belt game view as a second mode
 
-**Last updated:** Sep 6 2026, 02:05 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 17:14 IST (read from the system clock)
 **Status:** 🟢 **Architecture settled.** Eight decisions taken Sep 4, 23:10 IST — all
 eight went to the recommended option. ⬜ Nothing built yet.
 **🛑 Hard gate: playable end to end by Sep 10, or it is cut.** §5.
@@ -348,6 +348,17 @@ jam with no clock on them.
 
 ⬜ **User decision.** Recorded here rather than argued later.
 
+🔄 **DECIDED Sep 6 2026 — full scope. The recommendation above is declined.**
+User's reason, recorded: *"We will go for full scope now that art can be generated
+locally, art barrier has shortened multifolds."*
+
+The recommendation rested on art being the binding constraint at 6–7 hours. **It is
+not any more.** The tray-inpaint pipeline produced 12 plated dishes in a single afternoon
+(§8.2), and the remaining 18 are one more batch of roughly the same length. The
+argument that survives is the *other* half of §7.2 — the metric is Total Unique
+Daily Plays and the return loop is what feeds it — and that is a scheduling
+constraint on **engineering**, not on art. Track it there, not here.
+
 ### 7.3 What ships in which order
 
 1. **Sep 6–10** — the gate: `sim/kitchen.ts`, belt, 4 slots, Chai, walkouts, end screen,
@@ -357,7 +368,11 @@ jam with no clock on them.
 4. **Sep 13–16** — node 1 authored; boss mode; chef hats.
 5. **Throughout** — the return loop and the daily posts, which are what the metric rewards.
 
-### 7.4 The custom-LoRA question — ⚠️ licence first, and not during the jam
+### 7.4 The custom-LoRA question — 🔄 **SUPERSEDED Sep 6 by §8**
+
+*Kept for the reasoning. Three of its conclusions were reversed: the licence cleared, the jam-scope call flipped to production, and Fooocus was dropped. Read §8 instead.*
+
+#### 7.4a The original answer (Sep 6, 00:47)
 
 Raised Sep 6: train a style LoRA on the sprite sheets (Kohya_ss / OneTrainer) so new
 ingredients and dishes can be generated in-style, futureproofing the art dependency.
@@ -382,3 +397,160 @@ plated dishes. **Train on those.** The licence question disappears entirely, the
 already the user's own, and a set that size is a workable style-LoRA dataset. That is the
 futureproofing, without the exposure.
 
+---
+
+## 8. The LoRA + inpaint pathway — as built, Sep 6
+
+Supersedes §7.4. Everything here was **measured**, not assumed; the numbers are
+reproducible from `Art\_sliced\`.
+
+### 8.1 The two packs are two different art forms
+
+| | **01 - Kitchen Essentials** | **02 - Kitchen Props** |
+|---|---|---|
+| Unique opaque colours | **460,584** | **57** |
+| Horizontal runs of length 1 | **93.6%** | 43.5% |
+| What it actually is | smooth-shaded illustration | true flat pixel art |
+
+⚠️ **Kitchen Essentials is not pixel art.** The `16x16` in its filenames is the
+seller's design-grid label, not the delivered format — 93.6% of pixel runs are a single
+pixel long, so there is no grid, no flat fill, no hard palette. Median sliced sprite is
+**124 px**; these are multi-tile props, not 32×32 icons.
+
+Three consequences, each of which reversed an earlier decision:
+
+1. **SDXL, not SD 1.5.** SD 1.5's advantage was its pixel-art ecosystem; that does not
+   apply to art which is not pixel art, and 460k colours of smooth shading is what SDXL
+   is best at.
+2. **Lanczos, not nearest-neighbour.** Nearest preserves a pixel grid. There is none, so
+   nearest only injects blocky aliasing into smooth art. *(Nearest stays correct for the
+   Props profile.)*
+3. **Never one LoRA across both packs.** 57 colours vs 460,584 is not a variation in
+   style; a single model would learn the average of two art forms and serve neither.
+
+### 8.2 The method: inpaint, not text-to-image
+
+**`Art\_sliced\01 - Kitchen Essentials\sheet3\32-Serving tray(Curry).png`**
+— 212×141 canvas, 206×134 trimmed — is the **only plated dish among 153 named
+sprites**. Everything else is cooktops, pans, grinders, dispensers.
+
+A style LoRA on that set learns *"this pack renders hard-surfaced kitchen equipment."*
+Asking it to text2img a Baingan Bharta takes the subject entirely from base SDXL while the
+LoRA pulls toward metal props — subject contamination, and at 152:1 it is the likely
+outcome, not the risk case.
+
+✅ **So the dishes are not generated. They are inpainted into that sprite.** Fixed tray,
+fixed pan, fixed 3/4 perspective and lighting; mask only the food. Four problems collapse:
+
+- **Consistency** — tray, handle, rim and lighting identical across all 12. On a belt
+  where dishes sit side by side this outranks any single image.
+- **Alpha** — the silhouette never changes, so the original's alpha channel is reused.
+  The no-alpha limit of diffusion stops applying.
+- **Style** — real pack pixels are kept rather than reinvented.
+- **Scale** — output is already correct size; no downsample-and-snap pass.
+
+**The LoRA's job changes rather than disappearing:** from *"generate sprites"* to *"make
+the inpainted food look painted by the same hand."* Run at weight **0.5–0.7**, never
+1.0.
+
+### 8.3 🔒 Dataset invariants — load-bearing, and outside version control
+
+`Art\` is gitignored (`.gitignore:63`), so **both prep scripts live outside git**. These
+five rules are the reasoning; the code is reconstructible from them, and has been once.
+
+1. **Resample filter must match the art.** Lanczos for smooth, nearest for flat pixel art.
+2. **One upscale factor for the whole set.** Fitting each sprite to the target individually
+   produced factors from 2× to 9× — eight pixel sizes in one dataset. Pad every
+   sprite into a uniform cell first, then scale once. `--cell 208 --target 1024` = 4×.
+3. **Flat background, baked in and named in the caption** — no alpha in training images.
+4. **Templated captions, never BLIP/WD14** — automatic captioners are trained on photos
+   and would caption this pack as pixel art, which it is not.
+5. ⚠️ **Only STYLE words may be constant across captions.** Whatever text repeats in
+   every caption becomes what the trigger token means. Captioning 163 images
+   *"kitchen equipment"* taught `ramuess` to mean *a kitchen appliance* rather than
+   *this pack's rendering* — which then fights every request for food. The subject
+   noun varies per image, so it stays bound to the image. **Both the agent's template and
+   mine carried this bug and both were fixed.**
+
+### 8.4 Toolchain
+
+**OneTrainer** (Python 3.10–3.13, so 3.11.9 works as-is) → **ComfyUI Desktop**.
+
+❌ **Fooocus was dropped.** It is SDXL-*exclusive* and its README declares limited
+long-term support. §7.4's claim that it is merely "an inference UI" understated the
+problem: an SD 1.5 LoRA would not have loaded in it at all.
+
+❌ **Kohya_ss was dropped** — it routes through `uv`/`pip` doc files and still
+references Python 3.10, i.e. a second Python install for no gain.
+
+### 8.5 State at compaction
+
+| Item | State |
+|---|---|
+| `ess-v1` LoRA | ✅ trained — 395 MB, 41:42, ~1.0 it/s, loss ~0.017, KOHYA_LORA |
+| `ess-v1` captions | ❌ carried the §8.3.5 bug |
+| `ess-v2` dataset | ✅ 163 pairs, captions corrected |
+| `ess-v2` LoRA | ✅ trained Sep 6 13:38 — 15 epochs, 43:43, loss 0.0172 |
+| ComfyUI | ✅ rebuilt, Desktop **0.34.5**, zero custom nodes |
+| SDXL checkpoint | ✅ `sd_xl_base_1.0` complete, 6.94 GB |
+| The gate | ✅ **PASSED Sep 6** — 12 dishes produced, see §8.6 |
+
+⛔ **The gate, unchanged:** one dish end to end with the v2 LoRA, judged beside
+`32-Serving tray(Curry).png`. *Is it usable, and does it look like the same artist drew
+it?* Fallback if not: **12 dishes hand-drawn in Aseprite, ~6 h**, already costed
+([RecipeList.md](RecipeList.md) §8).
+
+### 8.6 ✅ The gate — passed Sep 6 2026, and the two bugs on the way
+
+**Outcome: 12 plated dishes, style-consistent, alpha bit-exact to the source sprite.**
+The Aseprite fallback (12 dishes, ~6 h) was not needed.
+
+#### The first bug was resolution, not the host
+
+The pipeline failed twice with saturated neon smear, and the second failure — on a
+clean ComfyUI 0.34.5 with zero custom nodes — fired the stop-and-hand-back trigger for
+a **host-level fault**. It was not host-level.
+
+The diagnostic fed SDXL a **212×141** image, which is a **26×17 latent** against
+SDXL's native 128×128. That produces neon smear on any machine. The earlier
+*"txt2img clean, img2img corrupt"* isolation had run txt2img at 1024 and img2img at the
+sprite's native size — **it varied resolution and code path together and attributed
+the result to the code path.**
+
+🔒 **The fix was one file.** Inference must mirror training: feed the
+**1024×1024 padded canvas that already exists in the training set**
+(`Art\_lora\datasets\ess-v2\sheet3_32-Serving_tray_Curry_.png`), not the raw sprite.
+§8.3's *"one upscale factor, pad into a uniform cell"* invariant was written for the
+dataset and never carried across to inference. **It applies to both.**
+
+⚠️ The rebuild that preceded this changed node environment *and* version at once,
+so it proves nothing; the same failure signature appears in the pre-rebuild sample at the
+same resolution. The rebuild was probably unnecessary.
+
+#### The second bug was the mask, and it was the interesting one
+
+First pass: 7 of 12 dishes came out as brown chunky curry regardless of prompt. The
+diagnosis offered was a LoRA colour attractor. **It was the mask.**
+
+The food mask covered **27.8%** of the sprite — a conservative ellipse leaving a ring
+of the *original curry's gravy* all around it. That brown is **source pixels, composited
+back in by us**; the model never had the chance to paint it.
+
+✅ **Fix: segment the cream rim and flood-fill the bowl interior** rather than scaling
+an ellipse — the bowl is not elliptical. Coverage went 27.8% → 45.3%, and every
+colour-blocked dish improved.
+
+🔒 **And composite from source, never round-trip.** `SetLatentNoiseMask` steers
+denoising; it does **not** preserve unmasked pixels — the whole frame still goes
+through VAE encode → decode → downsample. Building the output as
+`where(mask, generated, source)` with the source's own alpha makes tray, rim, handle and
+silhouette **bit-exact by construction** instead of something to re-verify twelve times.
+
+#### What remains true
+
+⚠️ **The LoRA renders warm tones and cannot paint white or green.** 7 of 7
+warm-target dishes landed; **0 of 5** pale targets did (Idli, Veg Momo, Beans Poriyal,
+Palak Aloo, Risotto). Enlarging the mask gave the model the whole bowl and it filled every
+one of them warm anyway. Untried levers: LoRA weight at 0.30–0.40 for pale dishes, or
+a retrain on the now-larger 241-image set. **User's call: accepted as-is, recolour
+later.**

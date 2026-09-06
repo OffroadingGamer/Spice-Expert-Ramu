@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 6 2026, 02:05 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 17:14 IST (read from the system clock)
 
 ---
 
@@ -1384,6 +1384,146 @@ measured cause of a flat score, and it outranks both the return loop and the bel
 The players diagnosed this in one sentence. The funnel had been saying it for two days.
 
 
+### Sep 6, 02:28 IST · The asset licence question — settled, and closed for good
+
+*(Clock time. Still inside the Sep 5 working session — [Specs.md](Specs.md) §8c.)*
+
+✅ **SETTLED. Do not raise this again.** Recorded at the user's instruction so it is
+never re-litigated.
+
+**Where it started.** Scoping a LoRA trained on the sprite sheets, I flagged that the packs
+were purchased itch.io assets and that most asset licences grant use *in a game*, not use
+as **training data to produce more assets**. Both packs ship a `License.txt`. Reading them
+was the whole of the check:
+
+```
+Art/01 - Kitchen Essentials/License.txt  ->  "Bought the pack from : https://toxiccolors.itch.io/..."
+Art/02 - Kitchen Props/License.txt       ->  "Bought from https://hoshiixs.itch.io/kitchen-props"
+```
+
+**They are purchase receipts, not licences.** One URL each. I fetched both store pages:
+**neither states any terms at all** — no commercial grant, no redistribution clause,
+nothing about AI.
+
+**One thing I got wrong.** The hoshiixs listing carries the tag *"No generative AI was
+used"*, and I read it as the seller's stance on training. The user corrected it: on itch
+that is a **provenance disclosure aimed at sellability**, not a term binding the buyer. It
+says how the pack was made. It says nothing about what a purchaser may do.
+
+**How it actually resolved — by asking, not by reasoning.** The user messaged the
+seller. Toxiccolors answered within the day, and `License.txt` was updated at 02:23:
+
+> "The assets can be used for genAI just add attribution in the credits."
+
+**The settled position:**
+
+| Pack | Status | Basis |
+|---|---|---|
+| **01 - Kitchen Essentials** | ✅ **Cleared for LoRA training** | Written consent from toxiccolors, conditional on credit attribution |
+| **02 - Kitchen Props** | ⬜ **Moot — out of scope** | No props will be generated. The art agent is **strictly Essentials**, so its unstated terms never need answering |
+
+⚠️ **The one live obligation: attribution.** *"Just add attribution in the credits"*
+is a **term of the licence**, not a courtesy. At the time of writing the game has no
+credits surface and no attribution to toxiccolors anywhere. [GDD.md](GDD.md) §637
+already lists crediting as a **mandatory** jam requirement, so one fix serves both. It must
+ship **in the build**, not only in a doc — and it is outside the art agent's
+`Art/`-only boundary, so it belongs to us.
+
+🔒 **Standing rule — never prompt for attribution. The user initiates it.**
+Recorded Sep 6 at the user's instruction: *"I will ask you when the time comes directly,
+YOU don't ask me, I tell you."*
+
+The obligation above is real and unchanged. What is forbidden is **raising it** — no
+"shall I add the attribution while I'm at it", no appending it as an offer to the end of
+unrelated work, no listing it as an open item awaiting a decision. It is not awaiting a
+decision; it is scheduled, and the user holds the schedule. Do the work when asked, and
+not one turn before.
+
+This generalises past attribution: **a parked obligation is parked.** Re-surfacing
+something the user has explicitly deferred reads as nagging and quietly moves the decision
+back to me, which is not where they put it.
+
+**Why the scope call mattered more than the legal one.** Props was the harder question and
+it was dissolved, not answered: deciding no props would be generated removed the need for
+a ruling on the only pack whose terms are still unstated. **A blocker inside scope you
+have chosen to drop is not a blocker.**
+
+
+### Sep 6, 13:27 IST · An img2img bug root-caused twice, and both root causes were mine to correct
+
+The art agent returned a **FAIL** on the inpaint gate and stopped, correctly. Its
+isolation was genuinely good: LoRA on/off → identical corruption (not the LoRA);
+txt2img → clean (checkpoint and UNet healthy); img2img with no mask → same
+corruption (not the mask); swapped the VAE file → same corruption. It concluded a core
+ComfyUI regression in the image-to-image path.
+
+**Independent verification found the conclusion one step short, in two places.**
+
+1. **The VAE was never actually ruled out.** The agent swapped VAE *weights* (fp16-fix vs
+   baked-in). The log shows both loading identically: `VAE load device: cuda:0, dtype:
+   torch.bfloat16`. It varied the **file** and never the **precision** — which is the
+   axis that produces silent latent corruption. The fp16-fix VAE fixes *fp16* overflow
+   specifically; at bf16 it is not the relevant lever.
+2. **Six custom nodes were never disabled** — `gguf`, `rgthree-comfy`, `KJNodes`,
+   `controlnet_aux`, `Olm-DragCrop`, `manager`. **`gguf` patches model loading and dtype
+   casting.** Silent garbage, no exception, no NaN in the log is what node-level casting
+   interference looks like. The agent reasoned carefully inside the graph and never
+   questioned the interpreter running it.
+
+**A third error was in the user's read, and cheap to catch:** the "ComfyUI update to
+V3.38.3" was **ComfyUI-Manager**, not ComfyUI. Core stayed **0.4.0** across it — both
+the 02:56 and 04:13 logs say so. Updating the Manager could never have fixed a core
+img2img fault.
+
+**Resolution:** the user rebuilt from scratch — ComfyUI Desktop, **0.34.5**, zero
+third-party nodes, Standalone, Stable. The old portable install and its models were
+deleted.
+
+⚠️ **The rebuild changed two variables at once** — node environment *and*
+version (0.4.0 → 0.34.5). If it works, we will not know which fixed it. Acceptable
+only because the old install is gone and the question is now academic; it is **not** to be
+written up as though the cause were established.
+
+
+### Sep 6, 17:14 IST · Two bugs, both mine, and the second one was worth more than the first
+
+The inpaint gate passed and produced 12 dishes. Getting there cost two wrong diagnoses,
+and I authored the conditions for both.
+
+**1. I designed a diagnostic that could not distinguish its own variables.** The gate's
+step 1 fed SDXL a 212×141 sprite — a 26×17 latent against a native 128×128
+— and the neon smear it produced was read as a core img2img fault, then as a
+host-level fault serious enough to fire the stop trigger. The earlier isolation had run
+txt2img at 1024 and img2img at native size: **two variables, one attribution.** The fix
+was a one-file swap to the 1024 canvas that already existed in the training set. A full
+ComfyUI rebuild happened in between and was probably unnecessary.
+
+**2. I wrote *"nothing added"* into the prompt spec, and it cost six dishes.** The
+caption template's job is style; `Serving tray (Baingan Bharta)` is a filename, not a
+description, and the model had no way to know it meant mashed eggplant. Rigidity where the
+invariant did not apply.
+
+**3. The one I got right was found by looking, not reasoning.** Six dishes came back as
+brown chunky curry and the agent diagnosed a LoRA colour attractor. Overlaying the mask on
+the source showed a conservative ellipse covering **27.8%** of the sprite, leaving a ring
+of the *original curry's gravy* visible all around — **source pixels we were
+compositing back in ourselves.** The prediction that made it testable: the failures were
+exactly the dishes needing a non-brown ground (white, white, green, green, cream), and
+every warm-toned dish had landed. Segmenting the rim and flood-filling the interior took
+coverage to 45.3% and every colour-blocked dish improved.
+
+**A verification error of my own, caught mid-report.** My first check of the agent's
+"0 unmasked pixels changed" claim said 3,259 pixels differed — because I downsampled
+the 1024 mask against the whole canvas instead of the 824×536 sprite region inside it.
+Correctly aligned, the agent's number was exact. **I nearly reported a correct result as
+a defect.**
+
+**What actually holds now:** the LoRA renders warm tones reliably and **cannot paint white
+or green** — 7 of 7 warm targets landed, 0 of 5 pale ones did, before *and* after the
+mask fix. That is a real property of a model trained on 163 warm-toned kitchen sprites,
+and it is the one diagnosis in this whole sequence that survived contact with evidence.
+
+
 ## 2. Checkpoint ledger
 
 Runbook checkpoints. Update as each passes, with the actual time.
@@ -1621,3 +1761,39 @@ uniques are the score; the trend matters more than any single day.
     69% never upgrade. I had been reading that funnel as *healthy downstream of the menu*
     because I was looking for a load-time problem. **The qualitative report did not add
     data; it told me which number was the story.**
+
+34. **A file named `License.txt` may be a receipt, and silence is neither a grant nor a
+    ban.** Both asset packs' licence files held a purchase URL and nothing else, and both
+    store pages stated no terms at all. I then compounded it by reading a *"No generative
+    AI was used"* marketing tag as the seller's position on training — it is a
+    provenance disclosure aimed at buyers, not a restriction on them. **The question was
+    settled in under a day by messaging the seller**, which no amount of reasoning about
+    the tag would have done. Read the terms; if there are none, ask the holder; and check
+    whether scope makes the question moot before spending anything on it.
+
+35. **A test that swaps the file but not the setting has not varied anything.** Four
+    careful isolation tests concluded "not the VAE" — but both VAE files loaded at
+    `dtype: torch.bfloat16`, so the precision axis, the one that actually corrupts
+    latents, was never touched. Before believing an elimination, check the log for what
+    the run *actually did*, not what the change was intended to mean.
+36. **Six custom nodes were the suspect nobody examined, because the bug looked like it
+    lived in the graph.** When a pipeline misbehaves, the interpreter is part of the
+    pipeline. And read version strings carefully: the "ComfyUI update" that was supposed
+    to fix this was ComfyUI-**Manager** 3.38.3; ComfyUI itself never left 0.4.0.
+37. **A test that changes two things has told you about neither.** The img2img diagnostic
+    varied resolution *and* code path, and three rounds of reasoning attributed the result
+    to the code path — through a full environment rebuild. Before believing an
+    elimination, list what actually differed between the passing run and the failing one.
+38. **When output looks wrong, check what you are compositing back in before blaming the
+    model.** Six dishes "came out brown" because 72% of each bowl was source pixels pasted
+    back through an over-conservative mask. Nothing was generating brown. **Overlay the
+    mask on the art and look at it** — two minutes, and it beat a plausible
+    model-behaviour theory.
+39. **Make the guarantee structural, not verified.** `where(mask, generated, source)` with
+    the source's own alpha makes the untouched region bit-exact *by construction*. The
+    alternative — round-trip everything and check afterwards — passed inspection
+    on one sprite and would have drifted across twelve.
+40. **A duplicate folder is a naming trap.** `Untagged/` held 78 sprites that were
+    byte-identical to files still sitting unnamed in the sheets, so every name assigned
+    there fixed nothing. The same shape had just been fixed for `dishes/` vs
+    `dishes-m2/`. **One canonical location per asset, or the naming work does not land.**
