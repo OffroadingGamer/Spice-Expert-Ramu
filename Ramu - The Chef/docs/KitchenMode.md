@@ -1,6 +1,6 @@
 # KitchenMode — the belt game view as a second mode
 
-**Last updated:** Sep 6 2026, 22:46 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 22:54 IST (read from the system clock)
 **Status:** 🟢 **Architecture settled.** Eight decisions taken Sep 4, 23:10 IST — all
 eight went to the recommended option. ⬜ Nothing built yet.
 **🛑 Hard gate: playable end to end by Sep 10, or it is cut.** §5.
@@ -648,11 +648,10 @@ new code with a new failure mode.
 naturally. Spinach dishes are the **darkest, most muted** greens on the list — the
 table had it backwards. Retuned to 0.55 / 0.58 with `median_target` 0.40 / 0.42.
 
-### 8.9 🔒 Five folders hold servings — only one is canonical
+### 8.9 🔒 Four folders hold servings — only one is canonical
 
-⚠️ **Read this before touching anything under `Art\_gen\`.** Five folders now
-hold servings or vessels — 81 files between them — and the names do not say which one
-ships.
+⚠️ **Read this before touching anything under `Art\_gen\`.** Four folders hold
+servings — 80 files between them — and the names do not say which one ships.
 
 | Folder | Files | Status |
 |---|---|---|
@@ -660,7 +659,6 @@ ships.
 | `dishes-v3\` | 28 | 🗃️ Archive — pre-recolour generation output |
 | `dishes-v3-recolour\` | 10 | 🗃️ Archive — the corrected 10 only, before assembly |
 | `dishes\` | 12 | 🔒 **READ-ONLY.** The batch accepted Sep 6 afternoon, from `ess-v2`. Superseded, kept as fallback |
-| `sources\` | 1 | 🟡 Hand-authored **source vessels**, not servings. Never wire the belt to this folder |
 
 🛑 **`Art\_gen\dishes\` is never an output target.** Two separate sessions
 independently mistook its contents for corruption and prepared scripts to overwrite it;
@@ -716,10 +714,13 @@ about faintness, would eat their edges: the pans carry a full antialiasing ramp 
 **638 of their 727** low-alpha pixels touching solid, against the cups' **1 of 43**. That
 ratio is the test for whether low alpha is an edge or debris — not the alpha value.
 
-🟡 **`sources\cup-empty.png` is 98×69 and is not empty** — it is a third drawing,
-brimful of dark liquid with no interior wall showing, so it is not the same vessel state
-as the pair. It is unused, and a mask derived from it would cover the rim. Redraw it or
-delete it; do not treat it as the empty vessel.
+⚠️ **There is no empty-cup sprite, deliberately.** A third drawing existed
+briefly as `sources\cup-empty.png`, but it was brimful of dark liquid with no interior
+wall showing — not the same vessel state as the pair, and a mask derived from it would
+have covered the rim. It was deleted Sep 6 2026, 22:54 IST along with the `sources\`
+folder, rather than left as a file whose name lied. **Nothing needs it:** both drinks are
+finished sprites, so no vessel has to be inpainted into. If an empty cup is ever wanted
+on screen, it is `tray-chai.png` with the cream ellipse left as bare ceramic.
 
 🔴 **There is no editable source.** The `.aseprite` was deleted after export. Unlike
 the 28 generated dishes, which can be rebuilt from their raw ComfyUI frames, these two
