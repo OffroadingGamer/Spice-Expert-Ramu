@@ -1,6 +1,6 @@
 # KitchenMode — the belt game view as a second mode
 
-**Last updated:** Sep 6 2026, 21:27 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 21:32 IST (read from the system clock)
 **Status:** 🟢 **Architecture settled.** Eight decisions taken Sep 4, 23:10 IST — all
 eight went to the recommended option. ⬜ Nothing built yet.
 **🛑 Hard gate: playable end to end by Sep 10, or it is cut.** §5.
@@ -647,3 +647,32 @@ new code with a new failure mode.
 (`sat_scale` 0.85 / 0.80) and they came out neon, while Beans Poriyal at 0.75 read
 naturally. Spinach dishes are the **darkest, most muted** greens on the list — the
 table had it backwards. Retuned to 0.55 / 0.58 with `median_target` 0.40 / 0.42.
+
+### 8.9 🔒 Four dish folders exist — only one is canonical
+
+⚠️ **Read this before touching anything under `Art\_gen\`.** The pipeline left
+four folders holding 78 files between them, and the names do not say which one ships.
+
+| Folder | Files | Status |
+|---|---|---|
+| **`dishes-final\`** | **28** | ✅ **CANONICAL — this is the deliverable.** 18 straight from `dishes-v3\`, 10 palette-corrected |
+| `dishes-v3\` | 28 | 🗃️ Archive — pre-recolour generation output |
+| `dishes-v3-recolour\` | 10 | 🗃️ Archive — the corrected 10 only, before assembly |
+| `dishes\` | 12 | 🔒 **READ-ONLY.** The batch accepted Sep 6 afternoon, from `ess-v2`. Superseded, kept as fallback |
+
+🛑 **`Art\_gen\dishes\` is never an output target.** Two separate sessions
+independently mistook its contents for corruption and prepared scripts to overwrite it;
+neither ran, but the second one only stopped because a permission prompt intervened. The
+guard is now **structural, not documentary**: `run_dish.py` and `recolour.py` each define
+`PROTECTED` and refuse that path, exiting before any generation work. **Any new tool that
+writes sprites must define its own — the guard does not inherit.**
+
+⬜ **Nothing outside `Art\` references any of these yet.** Wiring the belt to
+`dishes-final\` is [Plan.md](Plan.md) item 11's job, and until it happens the canonical
+folder is canonical only by this table.
+
+**Tool inventory, `Art\_gen\tools\`:** `run_dish.py` (now with `--lora-weight`,
+`--denoise`, and a **required** `--out-dir` — it previously defaulted to the protected
+folder) · `recolour.py` + `recolour_params.json` · `composite_check.py` ·
+`gate_workflow_template.json`, still at its committed 0.6/0.6 and 0.7 because both new
+flags patch the in-memory dict only.

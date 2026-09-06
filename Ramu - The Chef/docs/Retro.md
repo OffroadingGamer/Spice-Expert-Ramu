@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 6 2026, 21:27 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 21:32 IST (read from the system clock)
 
 ---
 
@@ -1823,3 +1823,25 @@ uniques are the score; the trend matters more than any single day.
     came out neon and the beans came out right. Spinach is the *darkest* green in a kitchen,
     not the most vivid. **When a parameter table encodes a real-world property, sanity-check
     it against the real world before spending a run on it.**
+
+45. **A handover outlives the state it describes.** Handover C said *write to `dishes-m2\`,
+    leave `dishes\` intact*. Hours later the user renamed one to the other, and I never
+    reissued the spec. An agent then walked into a layout its instructions called
+    impossible and concluded — carefully, and from good evidence — that something
+    had destroyed the accepted batch. It was right to stop; the defect was mine. **When a
+    folder layout changes, every handover that names it is now wrong. Reissue them, or
+    stamp the current state at the top of the next one.**
+46. **"Confirm, or I overwrite" is almost always a false dilemma.** An agent offered two
+    branches and both were worse than the third: the raw frames of the *old* batch were
+    still on disk, so nothing was lost and nothing was urgent — the restore could go to
+    a **new folder** and let both versions coexist. The related cause was a tool default:
+    `run_dish.py`'s `--out-dir` defaulted to the very folder the docs called read-only.
+    **A default that contradicts a documented invariant is a bug, and the fix is to make
+    the tool refuse, not to write the warning down again.**
+47. **We documented the duplicate-folder trap at 17:00 and had four instances of it by
+    21:00.** Lesson 40 says *one canonical location per asset*. By the end of the same day
+    `_gen\` held `dishes`, `dishes-v3`, `dishes-v3-recolour` and `dishes-final` — 78
+    files, four names, and nothing on disk or in the docs saying which one ships. Writing
+    a lesson down does not apply it. **A pipeline that produces intermediates needs the
+    canonical output named in the docs at the moment the intermediates are created, not
+    at the end.**
