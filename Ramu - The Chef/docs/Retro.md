@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 6 2026, 17:25 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 21:27 IST (read from the system clock)
 
 ---
 
@@ -1805,3 +1805,21 @@ uniques are the score; the trend matters more than any single day.
     captions with a numeric subject — was **better** than the invented one, and I
     would have had it a day earlier by looking first. **Check the artefact, not your
     memory of the tool that made it.**
+
+42. **The answer was in the prompt string, and I never read it.** Four levers were tested
+    against the colour bias — LoRA weight, denoise, a full re-caption and retrain —
+    at a cost of roughly two hours and a 57-minute training run. The prompt already said
+    *"three white steamed rice cakes ... matte white"* and had done all along; the model
+    was overriding an explicit instruction. One `Image.open(f).info` on a raw frame would
+    have reframed the whole investigation on day one. **Before testing what a system does,
+    read what you actually asked it for.**
+43. **A "free" asset that breaks the row's silhouette is not free.** Naan and Sticky Rice
+    were sprites of plated food and looked like obvious no-cost wins — but they sit on
+    a bare bowl and a dark oval plate, while every other dish carries a mint-green tray and
+    handle. On a belt, that shared silhouette is what makes 28 dishes read as the same kind
+    of object arriving. **Consistency of the container outranks the cost of the contents.**
+44. **I gave the most muted thing on the list the strongest setting.** The recolour table
+    set spinach dishes to `sat_scale` 0.85 while a green-bean dish got 0.75; the spinach
+    came out neon and the beans came out right. Spinach is the *darkest* green in a kitchen,
+    not the most vivid. **When a parameter table encodes a real-world property, sanity-check
+    it against the real world before spending a run on it.**

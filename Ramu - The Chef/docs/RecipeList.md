@@ -1,6 +1,6 @@
 # RecipeList — dishes, and the ingredients they call for
 
-**Last updated:** Sep 6 2026, 17:25 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 21:27 IST (read from the system clock)
 **Status:** 🟢 **Node selections locked** (§7, Sep 6) · FTUE fixed (§7.0) · asset inventory typed (§8.5). §3's early proposal is superseded by §7.
 
 Companion to [PropList.md](PropList.md). A recipe drives two things on screen at once:
@@ -479,7 +479,28 @@ project.
 
 ---
 
-#### 8.4a 🔄 Actual state — Sep 6 2026, after the first generation batch
+#### 8.4a ✅ **ART COMPLETE — Sep 6 2026, 28 of 28 plated dishes**
+
+All 28 dishes exist in `Art\_gen\dishes-final\`, generated with `ramuess-ess-v3`
+at LoRA 0.6 / denoise 0.70 / mask v2, one model and one tray across the whole set.
+Verified independently: alpha byte-identical to the source tray on all 28, provenance of
+every file traced (10 recoloured, 18 straight from `dishes-v3\`), zero untraceable.
+
+| | Count | |
+|---|---|---|
+| ✅ Cuisine dishes | **24** | nodes 1–4, six each |
+| ✅ Interaction-graph dishes | **4** | `dal-cooked`, `dal-tadka`, `bhindi-fry`, `tomato-gravy` |
+| ✅ Palette-corrected | **10** | see §8.6 |
+| ⛔ FTUE drinks | **2** | Chai, Coffee — blocked on a vessel, §7.0 |
+
+⚠️ **None of the four "possibly free" candidates were free.** Naan and Sticky Rice
+are plated food, but on a **bare bowl and a dark oval plate** — neither carries the
+mint-green tray and handle that every other dish shares, and on a belt that silhouette is
+what makes 28 dishes read as the same kind of object arriving. Coconut Chutney and Pesto
+are storage jars, not servings. All four were generated instead. **A "free" asset that
+breaks the row's silhouette is not free.**
+
+#### 8.4b 🗃️ Superseded — the first batch (kept for the reasoning)
 
 **12 of the 24 plated dishes now exist**, produced by the tray-inpaint pipeline
 ([KitchenMode.md](KitchenMode.md) §8.2), stored in `Art\_gen\dishes\`:

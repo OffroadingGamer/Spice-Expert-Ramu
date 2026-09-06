@@ -1,6 +1,6 @@
 # KitchenMode — the belt game view as a second mode
 
-**Last updated:** Sep 6 2026, 17:25 IST (read from the system clock)
+**Last updated:** Sep 6 2026, 21:27 IST (read from the system clock)
 **Status:** 🟢 **Architecture settled.** Eight decisions taken Sep 4, 23:10 IST — all
 eight went to the recommended option. ⬜ Nothing built yet.
 **🛑 Hard gate: playable end to end by Sep 10, or it is cut.** §5.
@@ -555,7 +555,9 @@ one of them warm anyway. Untried levers: LoRA weight at 0.30–0.40 for pale dis
 a retrain on the now-larger 241-image set. **User's call: accepted as-is, recolour
 later.**
 
-### 8.7 The v3 retrain — planned Sep 6 2026, not yet run
+### 8.7 🔄 The v3 retrain — **RUN, and its colour premise was wrong**
+
+*Kept for the reasoning. The retrain happened and fixed two real dataset defects; the colour claim it also carried did not survive measurement — see §8.8. The "four dishes may cost nothing" note at the end proved wrong too: none of the four were usable.*
 
 **Why, and why not.** Not for more data — the image count does not change
 ([RecipeList.md](RecipeList.md) §8.5). For **captions**: ~78 of 163 carry a bare
@@ -600,3 +602,48 @@ at.
 `Final Recipe/02-Bread` · Coconut Chutney → `Container/07-Chutney-Coconut` ·
 Pesto → `Container/08-Chutney-Green` · Sticky Rice →
 `Ingredient/20-Secondary-Rice`.
+
+### 8.8 ✅ Colour — four levers, four measurements, and the answer was in the prompt
+
+The v3 LoRA trained clean (2,445 steps, matching v2 exactly via a `balancing` correction
+from 2.0 to 2.91 against a 112-image set). It fixed two real defects: ~78 captions whose
+subject noun was a bare number, and a **27% duplicate-equipment set** — all 44
+`props/` sprites also existed in the sheets, so `ess-v2` trained on them twice.
+
+⚠️ **It did not move colour at all**, and neither did anything else:
+
+| Lever | Range tested | Result |
+|---|---|---|
+| LoRA weight | 0.30 – 0.60 | mean ΔRGB 38–54, **median hue moved 0°** |
+| Denoise | 0.70 – 1.00 | desaturates, but into a **bimodal mottle** — half the pieces flip, half don't |
+| Captions (`ess-v3`) | full retrain | pale% 1.2 / 8.9 / 28.7 vs v2's 1.9 / 12.7 / 26.9 — **noise** |
+| Explicit colour words | — | **already in the prompt the whole time, and ignored** |
+
+That last row settled it. Recovered from ComfyUI metadata on the raw frames:
+
+```
+ramuess, Serving tray (Idli), three white steamed rice cakes, smooth domed discs,
+matte white, smooth shaded game asset, ...
+```
+
+**The prompt says "white" twice and the output is orange.** This was never a conditioning
+gap; it is an explicit instruction being overridden. Final generated set: **28 of 28 with
+median hue in the warm band, 9–27°.**
+
+✅ **So colour was moved off the generation path entirely.** `Art\_gen\tools\recolour.py`
+applies a deterministic HSV transform to the food region only — region derived
+empirically as *pixels differing from the source tray*, which by the composite rule **is**
+the inpainted set, so it needs no mask-alignment arithmetic. Value is **median-anchored**
+(`v' = target + (v - median) * contrast`) so shading survives; strength is feathered across
+the same 2px as the mask; parameters live in `recolour_params.json`, not in code.
+
+⚠️ **Known limit, accepted deliberately:** one region, one transform. A dish whose
+garnish contrasts with its base (Coconut Chutney, Veg Momo, Risotto) washes the garnish
+toward the base colour, and no parameter fixes it — it needs region segmentation.
+Declined four days from the FTUE gate: it shows on 3 of 28 at sprite scale, and the fix is
+new code with a new failure mode.
+
+🔥 **The parameter lesson:** the first table set the *leafy* dishes highest
+(`sat_scale` 0.85 / 0.80) and they came out neon, while Beans Poriyal at 0.75 read
+naturally. Spinach dishes are the **darkest, most muted** greens on the list — the
+table had it backwards. Retuned to 0.55 / 0.58 with `median_target` 0.40 / 0.42.
