@@ -4,6 +4,15 @@
  * belt read as runway or as waiting) and nothing else. Mirrors the shape of
  * sim/engine.ts (state + step + drained events) but is otherwise
  * independent — it never imports config.ts or engine.ts.
+ *
+ * Round 8: the recipe gate. `held` counts ingredients picked up and not yet
+ * spent; a tap that completes a full set (one of every KITCHEN_CONFIG.
+ * recipe.ingredients key) consumes exactly one of each and increments
+ * `completed` — the first gameplay clause this belt has ever enforced, per
+ * KitchenMode §6.3. `served` keeps its original meaning (ingredients picked
+ * up) and is not repurposed. The belt also gained a speed ramp tied to
+ * `completed` (see `currentSpeed`/`beltRamp` below) — dishes already in
+ * flight accelerate too, since `state.beltSpeed` is recomputed every tick.
  */
 import { KITCHEN_CONFIG } from '../kitchenConfig.ts';
 
@@ -27,10 +36,22 @@ export interface KitchenState {
     served: number;
     walkouts: number;
     elapsed: number;
+    /** Round 8: ingredients picked up and not yet spent, keyed by
+     *  ingredientKinds[].key. Every key initialised to 0 at sim creation —
+     *  never undefined. Surplus carries over during the shift; discarded
+     *  silently at shift end (task 4 — not scored, not converted). */
+    held: Record<string, number>;
+    /** Round 8: completed dishes this shift. NOT the same as `served`. */
+    completed: number;
+    /** Round 8: the belt's current design-unit speed, derived from
+     *  `completed` every tick (see `currentSpeed`) — read by kitchenScene.ts,
+     *  never written outside this module. */
+    beltSpeed: number;
 }
 
 export type KitchenEvent =
     | { type: 'served' }
+    | { type: 'completed' }
     | { type: 'walkout' }
     | { type: 'won' }
     | { type: 'lost' };
@@ -54,6 +75,36 @@ for (let i = 0; i < PATH.length - 1; i++) {
     cumLengths.push(cumLengths[i] + len);
 }
 export const BELT_LENGTH = cumLengths[cumLengths.length - 1];
+
+/**
+ * Round 8, task 3: the belt speed ramp. Expressed as a traverse-seconds
+ * target (KITCHEN_CONFIG.beltRamp), never a typed speed constant, so the
+ * 🛑 lock on kitchenConfig.ts's beltPath/beltSpeed pair still holds — see
+ * that file's comments. `completed` (not `served`) drives the ramp: it's
+ * the count of the thing the player actually accomplished.
+ */
+function currentSpeed(completed: number): number {
+    const t = Math.max(
+        KITCHEN_CONFIG.beltRamp.minTraverse,
+        KITCHEN_CONFIG.beltRamp.baseTraverse
+            - KITCHEN_CONFIG.beltRamp.perCompletion * completed,
+    );
+    return BELT_LENGTH / t;
+}
+
+// Dev-time check: kitchenConfig.ts's beltSpeed must equal the ramp's own
+// opening value, or the 🛑 lock's "not a tuning choice" claim would be lying
+// about which number is actually load-bearing.
+{
+    const expectedOpening = BELT_LENGTH / KITCHEN_CONFIG.beltRamp.baseTraverse;
+    if (Math.abs(expectedOpening - KITCHEN_CONFIG.beltSpeed) > 0.01) {
+        console.warn(
+            `[kitchen] beltSpeed (${KITCHEN_CONFIG.beltSpeed}) does not match ` +
+            `BELT_LENGTH / beltRamp.baseTraverse (${expectedOpening}) — see the ` +
+            `🛑 lock in kitchenConfig.ts.`
+        );
+    }
+}
 
 /**
  * Round 6, task 2: props may only interact with a dish on the belt's three
@@ -106,6 +157,9 @@ function makeBag(): () => string {
 }
 
 export function createKitchenSim(): KitchenSim {
+    const held: Record<string, number> = {};
+    for (const k of KITCHEN_CONFIG.ingredientKinds) held[k.key] = 0;
+
     const state: KitchenState = {
         phase: 'running',
         dishes: [],
@@ -113,6 +167,9 @@ export function createKitchenSim(): KitchenSim {
         served: 0,
         walkouts: 0,
         elapsed: 0,
+        held,
+        completed: 0,
+        beltSpeed: currentSpeed(0),
     };
 
     let nextUid = 1;
@@ -159,18 +216,37 @@ export function createKitchenSim(): KitchenSim {
                 }
             }
             if (bestIdx < 0) return;
-            state.dishes.splice(bestIdx, 1);
+            const [d] = state.dishes.splice(bestIdx, 1);
+            state.held[d.kind]++;
             state.served++;
             events.push({ type: 'served' });
+
+            const recipe = KITCHEN_CONFIG.recipe.ingredients;
+            // Write a single if, never a while, and keep this comment: one
+            // tap adds exactly 1 to exactly one counter, and completion is
+            // checked-and-consumed on every tap, so at most one set can ever
+            // newly complete per tap. If a while loop would ever iterate
+            // twice, the state has already gone wrong and the loop would
+            // hide it.
+            if (recipe.every((k) => state.held[k] > 0)) {
+                for (const k of recipe) state.held[k]--;
+                state.completed++;
+                events.push({ type: 'completed' });
+                state.beltSpeed = currentSpeed(state.completed);
+            }
             checkShiftEnd();
         },
         step(dt) {
             if (state.phase !== 'running') return;
             state.elapsed += dt;
             spawnIfDue(dt);
+            // Round 8, task 3: recomputed every tick, not only on completion —
+            // this is what makes dishes already in flight accelerate too. The
+            // drawn belt and the sim must never disagree on the live speed.
+            state.beltSpeed = currentSpeed(state.completed);
             for (let i = state.dishes.length - 1; i >= 0; i--) {
                 const d = state.dishes[i];
-                d.dist += KITCHEN_CONFIG.beltSpeed * dt;
+                d.dist += state.beltSpeed * dt;
                 if (d.dist >= BELT_LENGTH) {
                     state.dishes.splice(i, 1);
                     state.walkouts++;

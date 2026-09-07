@@ -24,6 +24,14 @@
  * markup, not a component). A fix to one does not automatically reach the
  * other; note it in any future change that touches both (same accepted
  * pattern as the duplicated engine tick loop, KitchenMode.md §2.5).
+ *
+ * Round 8: the end screen's stats reflect the recipe gate — `served` keeps
+ * its original meaning (ingredients picked up, renamed honestly to
+ * "ingredients collected" here) and is no longer the only number on screen;
+ * `completed` (chai actually made) gets its own line, and a diagnostic
+ * leftover count (task 4 — discarded held ingredients, not scored) rounds
+ * it out. All five figures are still driven off the frozen `shiftResult`
+ * snapshot, per round 5's fix — never live state.
  */
 import { useEffect, useRef, useState } from 'react';
 import type { Application } from 'pixi.js';
@@ -170,6 +178,12 @@ export default function TestBelt() {
     const shiftPending = shiftResult
         ? KITCHEN_CONFIG.shiftDishCount - shiftResult.served - shiftResult.walkouts - shiftResult.dishes.length
         : 0;
+    // Round 8, task 4: diagnostic only, not scoring — held ingredients are
+    // discarded silently at shift end (parked for a future currency system,
+    // kitchenConfig.ts). Also off the frozen snapshot, per round 5's fix.
+    const shiftLeftover = shiftResult
+        ? Object.values(shiftResult.held).reduce((sum, v) => sum + v, 0)
+        : 0;
 
     return (
         <div className="absolute inset-0 bg-surface">
@@ -216,9 +230,11 @@ export default function TestBelt() {
                         {shiftResult.phase === 'won' ? 'Shift cleared' : 'Too many walkouts'}
                     </p>
                     <div className="flex flex-col items-center gap-1 text-lg text-white/70">
-                        <p>{shiftPending} pending</p>
-                        <p>{shiftResult.served} served</p>
+                        <p>{shiftResult.completed} chai completed</p>
+                        <p>{shiftResult.served} ingredients collected</p>
                         <p>{shiftResult.walkouts} walked out</p>
+                        <p>{shiftPending} pending</p>
+                        <p>{shiftLeftover} ingredients discarded</p>
                     </div>
                     <div className="flex gap-4">
                         <button

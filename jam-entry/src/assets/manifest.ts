@@ -55,6 +55,10 @@ export const MANIFEST: Manifest = {
                 { alias: 'ui-hotbar', src: 'images/ui-hotbar.png' },
                 { alias: 'ui-container', src: 'images/ui-container.png' },
                 { alias: 'ui-billboard', src: 'images/ui-billboard.png' },
+                // Round 8, task 1: badge counter sprite for the billboard
+                // recipe row — derived from UI/Icons (gitignored source), the
+                // plus glyph filled solid so a digit can be drawn over it.
+                { alias: 'ui-badge-count', src: 'images/ui-badge-count.png' },
                 // Round 3: station props + belt ingredients + final dishes.
                 // ing-tea-leaf / ing-sugar / ing-chai-masala have no manifest
                 // line yet (§2.6 — procedural placeholder until art exists).

@@ -46,6 +46,16 @@
  * gained the live game's music/SFX this round (kitchenScene.ts, TestBelt.tsx,
  * PropPicker.tsx) — src/audio/audio.ts itself is untouched, shared with the
  * live game.
+ *
+ * Round 8: the recipe gate (KitchenMode §6.3) — sim/kitchen.ts now tracks
+ * held ingredient counts and consumes one of each on completion, instead of
+ * turning any single ingredient into a served dish. The billboard recipe row
+ * grows a live badge counter per ingredient (`ingredientRow` unchanged;
+ * badge geometry is derived in kitchenScene.ts, not stored here). The belt
+ * also gains a speed ramp keyed to completions (`beltRamp` below) — see its
+ * comment and the 🛑 lock on `beltPath` for how the two stay consistent.
+ * Prop labels abbreviate "Level" to "Lv" (kitchenScene.ts's
+ * formatPropLabel) — independent of the recipe gate, more label room only.
  */
 export const KITCHEN_CONFIG = {
     boardWidth: 720,
@@ -146,6 +156,15 @@ export const KITCHEN_CONFIG = {
      * identical to the validated run — it is not a tuning choice. If the
      * path changes for any reason, recompute the speed from
      * BELT_LENGTH / 16.0 and say so; do not move the runs off x=75.
+     *
+     * Round 8 reinterpretation: what this lock protects is the 16.0 seconds,
+     * not the number 122. `beltRamp` below lets speed vary during a shift
+     * without breaking the lock, because speed is still always derived from
+     * a traverse target — 16.0s is now the ramp's OPENING value instead of a
+     * constant. Do not quietly replace 122 with a bigger typed number; if
+     * the ramp's baseTraverse ever changes, beltSpeed must be recomputed
+     * from it (BELT_LENGTH / beltRamp.baseTraverse) exactly as this lock
+     * always required.
      */
     beltPath: [
         { x: 75, y: 646 },   // OUT of the fridge     176
@@ -281,10 +300,40 @@ export const KITCHEN_CONFIG = {
     finalDishSlotX: [360],
     finalDishSize: { w: 205, h: 136 },
 
+    /**
+     * Round 8: the belt accelerates as the player completes dishes. Expressed
+     * as TRAVERSE SECONDS, not u/s, so the 🛑 lock above still holds — speed is
+     * always BELT_LENGTH / target, never a typed constant.
+     *
+     * Linear in traverse, deliberately: a linear *speed* increase would give a
+     * decelerating loss of reaction time, so the ramp would feel strong early
+     * and fade. Linear in traverse costs the player the same half-second of
+     * thinking time per cup.
+     *
+     *  chai   0     1     2     3     4     5     6     7
+     *  trav  16.0  15.5  15.0  14.5  14.0  13.5  13.0  12.5   seconds
+     *  speed  122   126   130   135   139   145   150   156   u/s
+     *  window 3.54  3.43  3.32  3.21  3.10  2.99  2.88  2.76  s in one slot's reach
+     *
+     * ⬜ UNSETTLED — the user is reviewing this curve after playing round 8 and
+     * will retune it. Keep all three numbers here, in seconds, so a retune is a
+     * one-number edit. Do not inline them.
+     */
+    beltRamp: {
+        baseTraverse: 16.0,
+        perCompletion: 0.5,
+        minTraverse: 10.0,
+    },
+
     /** Design-unit travel speed along the belt. VALIDATED (§6.6: runway,
      *  measured at the old 1600-unit path). Round 4: 100 -> 111 to hold the
      *  traverse time at 16.0s over the 1780-unit path. Round 5: 111 -> 122
-     *  to hold it again over the new 1952-unit path — see beltPath. */
+     *  to hold it again over the new 1952-unit path — see beltPath.
+     *
+     *  Round 8: this is now the OPENING value only — sim/kitchen.ts derives
+     *  the live speed from `beltRamp` above every tick. Must equal
+     *  BELT_LENGTH / beltRamp.baseTraverse = 1952 / 16.0 = 122; a dev-time
+     *  check in sim/kitchen.ts asserts this on load. */
     beltSpeed: 122,
 
     /** Seconds between dish spawns. VALIDATED. */

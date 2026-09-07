@@ -48,6 +48,17 @@
  * will want its own cue once cooking exists; it borrows the tower-firing cue
  * only because nothing closer exists yet. src/audio/audio.ts itself is
  * untouched — this only calls its existing switchCue/prefetchCue/sfx surface.
+ *
+ * Round 8: the recipe gate (sim/kitchen.ts) is now visible here — each
+ * billboard ingredient carries a live badge counter (ui-badge-count, task 5)
+ * redrawn on 'served' and 'completed'; the final-dish ×N counter now fires
+ * on 'completed' only, not on every pickup (task 6); completion gets its own
+ * cue, sfx.upgrade(), resolving round 7's flagged sfx.shot() stand-in for
+ * that moment (task 7); prop labels abbreviate "Level" to "Lv" for more name
+ * room (task 8, independent of the gate). The belt's speed ramp
+ * (kitchenConfig.ts's beltRamp) is read from sim.state.beltSpeed wherever
+ * this file would otherwise reference KITCHEN_CONFIG.beltSpeed directly —
+ * it doesn't, so no rendering code changed for the ramp itself.
  */
 import {
     Assets,
@@ -59,6 +70,7 @@ import {
     type Application,
     type FederatedPointerEvent,
     type Texture,
+    type TextStyleFontWeight,
     type Ticker,
 } from 'pixi.js';
 import { prefetchCue, sfx, switchCue } from '../audio/audio.ts';
@@ -100,7 +112,7 @@ const BAND_TINTS = {
 type IngredientKind = (typeof KITCHEN_CONFIG.ingredientKinds)[number];
 const KIND_INFO = new Map<string, IngredientKind>(KITCHEN_CONFIG.ingredientKinds.map((k) => [k.key, k]));
 
-const UI_ALIASES = ['ui-slot-empty', 'ui-slot-filled', 'ui-hotbar', 'ui-container', 'ui-billboard'];
+const UI_ALIASES = ['ui-slot-empty', 'ui-slot-filled', 'ui-hotbar', 'ui-container', 'ui-billboard', 'ui-badge-count'];
 // Baked art across rounds 3-4: real where it exists (manifest-listed),
 // fallback everywhere else via `Assets.cache.has()` checks below — the
 // fallback alias (ing-tea-leaf) is never requested from Assets, only used
@@ -133,6 +145,7 @@ export async function createKitchenScene(
         hotbar: Assets.get<Texture>('ui-hotbar'),
         container: Assets.get<Texture>('ui-container'),
         billboard: Assets.get<Texture>('ui-billboard'),
+        badgeCount: Assets.get<Texture>('ui-badge-count'),
     };
 
     // A child of stage.root, not stage.root itself — kitchenStage.ts's
@@ -264,6 +277,17 @@ export async function createKitchenScene(
     const baseline = BB.lowerPanel.y + BB.lowerPanel.height - BB.contentInset;
     const rowCenterX = BB.panelInner.x + BB.panelInner.width / 2;
     const spriteBoxH = slotSize - labelHeight - labelGap;
+    // Round 8, task 5: top of each ingredient's sprite box — the badge sits
+    // at this row's top-right corner, 4 units in from each edge.
+    const spriteTop = baseline - labelHeight - labelGap - spriteBoxH;
+    // Badge: 36 design units wide, native aspect (291x305) preserved — never
+    // squashed (round 5's fridge mistake, see kitchenConfig.ts's `fridge`
+    // comment). Digit fit against the badge's clear interior (159/291 of its
+    // width, per the source glyph's own bbox).
+    const BADGE_W = 36;
+    const badgeH = BADGE_W * (tex.badgeCount.height / tex.badgeCount.width);
+    const badgeDigitMaxW = (159 / 291) * BADGE_W;
+    const badgeDigits: { key: string; cx: number; cy: number; text: Text }[] = [];
     let cursorX = rowCenterX - rowWidth / 2;
     ingredients.forEach((key, i) => {
         const info = KIND_INFO.get(key);
@@ -280,6 +304,26 @@ export async function createKitchenScene(
         label.position.set(cx, baseline);
         boardRoot.addChild(label);
 
+        // Round 8, task 5: live badge counter — a checklist, not a score, so
+        // it starts at 0 and stays visible at 0 (confirmed by the user).
+        const badgeCx = cx + slotSize / 2 - 4;
+        const badgeCy = spriteTop + 4;
+        const badge = new Sprite(tex.badgeCount);
+        badge.anchor.set(0.5);
+        badge.width = BADGE_W;
+        badge.height = badgeH;
+        badge.position.set(badgeCx, badgeCy);
+        boardRoot.addChild(badge);
+        const digit = fitText('0', badgeDigitMaxW, 20, 8, { fill: 0xfdfae7, fontWeight: '700' });
+        digit.anchor.set(0.5);
+        // The source sprite carries a bottom drop shadow, so its visual
+        // centre sits slightly above its geometric one — a sub-unit
+        // correction, applied because it's free and correct, not because
+        // it's visible at this size.
+        digit.position.set(badgeCx, badgeCy - badgeH * 0.026);
+        boardRoot.addChild(digit);
+        badgeDigits.push({ key, cx: badgeCx, cy: badgeCy - badgeH * 0.026, text: digit });
+
         cursorX += slotSize;
         if (i < n - 1) {
             const plus = new Text({ text: '+', style: { fill: 0xffffff, fontSize: 22, fontWeight: '700' } });
@@ -289,6 +333,23 @@ export async function createKitchenScene(
             cursorX += plusWidth;
         }
     });
+
+    // Round 8, task 5: redrawn on 'served' and 'completed' (see the tick
+    // loop below) — recreates the digit Text via fitText each time so a
+    // longer recipe or a longer shift can't silently overflow the badge.
+    function syncBadges(): void {
+        for (const b of badgeDigits) {
+            const count = sim.state.held[b.key] ?? 0;
+            const text = String(count);
+            if (b.text.text === text) continue;
+            b.text.destroy();
+            const t = fitText(text, badgeDigitMaxW, 20, 8, { fill: 0xfdfae7, fontWeight: '700' });
+            t.anchor.set(0.5);
+            t.position.set(b.cx, b.cy);
+            boardRoot.addChild(t);
+            b.text = t;
+        }
+    }
 
     // Round 4: measures the level suffix first (never truncates), gives the
     // name whatever width remains, ellipsizing it if needed. One Text probe,
@@ -303,7 +364,10 @@ export async function createKitchenScene(
         stroke: { color: 0x1b1b2b, width: 3 },
     } as const;
     function formatPropLabel(name: string, level: number, maxWidth: number): string {
-        const suffix = ` - Level ${level}`;
+        // Round 8, task 8: "Level" -> "Lv" frees ~19-20 units for the name —
+        // the suffix is still measured first and never truncates; only the
+        // name ever ellipsizes (round 4's rule, unchanged).
+        const suffix = ` - Lv ${level}`;
         const probe = new Text({ text: suffix, style: PROP_LABEL_STYLE });
         const availW = maxWidth - probe.width;
         let candidate = name;
@@ -320,9 +384,20 @@ export async function createKitchenScene(
 
     // Round 4, task 4: shrink-to-fit rather than clip or ellipsis — used for
     // the billboard ingredient names ("Chai Masala" at slot~86 is the check).
-    function fitText(text: string, maxWidth: number, baseSize: number, minSize: number): Text {
+    // Round 8, task 5: `style` override lets the badge digit reuse this same
+    // shrink loop with its own fill/weight instead of duplicating it.
+    function fitText(
+        text: string,
+        maxWidth: number,
+        baseSize: number,
+        minSize: number,
+        style?: { fill?: number; fontWeight?: TextStyleFontWeight }
+    ): Text {
         let size = baseSize;
-        const t = new Text({ text, style: { fill: 0xffffff, fontSize: size, fontWeight: '600' } });
+        const t = new Text({
+            text,
+            style: { fill: style?.fill ?? 0xffffff, fontSize: size, fontWeight: style?.fontWeight ?? '600' },
+        });
         while (t.width > maxWidth && size > minSize) {
             size -= 1;
             t.style.fontSize = size;
@@ -462,7 +537,10 @@ export async function createKitchenScene(
         dishEntrySprite.position.set(spriteX, entryY);
         dishCountText.position.set(spriteX + fdw / 2 + gap, entryY);
     }
-    function onServed(): void {
+    // Round 8, task 6: fires on 'completed' only, not on every pickup — the
+    // ×N under the belt is now the number of chai actually made, which is
+    // what it has always looked like it meant.
+    function onCompletedDish(): void {
         dishCount++;
         layoutDishEntry();
     }
@@ -536,10 +614,14 @@ export async function createKitchenScene(
         const dt = Math.min(ticker.deltaMS, 50) / 1000;
         sim.step(dt);
         for (const e of sim.drainEvents()) {
-            // Round 7, task 3: sfx.shot() here is a deliberate loose-fit
-            // stand-in (see file header) — routed through the shared sfx
-            // object like every other call, never the synth directly.
-            if (e.type === 'served') { onServed(); sfx.shot('kitchen'); }
+            // Round 7, task 3 / Round 8, task 7: sfx.shot() is a deliberate
+            // loose-fit stand-in for a pickup (see file header) — resolved
+            // for completion, which now has its own cue (sfx.upgrade()).
+            // Both routed through the shared sfx object, never the synth
+            // directly. Round 8, task 5: badges redraw on both events since
+            // both change `held`.
+            if (e.type === 'served') { sfx.shot('kitchen'); syncBadges(); }
+            else if (e.type === 'completed') { onCompletedDish(); sfx.upgrade(); syncBadges(); }
             else if (e.type === 'walkout') sfx.leak();
             // Round 5, task 7: the end-screen fires off this event, not off
             // polling `state.phase` on a tick that may not run once the last
