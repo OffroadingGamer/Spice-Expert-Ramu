@@ -23,6 +23,11 @@
  * placed/locked, so kitchenScene.ts owns all of that state and derives it
  * from this module's events ('served'/'completed'/'walkout') exactly as it
  * already derives SFX cues from them.
+ *
+ * Round 12: `posAt` exported (same shape of change as round 11's `playSample`)
+ * so kitchenScene.ts's reach overlay can derive its bands from this module's
+ * own geometry instead of recomputing beltPath's polyline itself — the two
+ * must never be able to disagree about where distance `d` sits on the belt.
  */
 import { KITCHEN_CONFIG } from '../kitchenConfig.ts';
 
@@ -137,7 +142,7 @@ export function isEligibleDist(dist: number): boolean {
     return dist >= ELIGIBLE_DIST_MIN && dist < ELIGIBLE_DIST_MAX;
 }
 
-function posAt(dist: number): { x: number; y: number } {
+export function posAt(dist: number): { x: number; y: number } {
     if (dist <= 0) return { ...PATH[0] };
     if (dist >= BELT_LENGTH) return { ...PATH[PATH.length - 1] };
     let i = 0;

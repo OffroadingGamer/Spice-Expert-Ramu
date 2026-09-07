@@ -99,6 +99,18 @@
  * sfx.shot('kitchen') stand-in) into attemptUseOrSell, where the slot index
  * is known — a Kettle grab plays kettle-boil, a Water Dispenser grab plays
  * water-pour, exactly one sound per grab.
+ *
+ * Round 12: the reach overlay — a placed prop now draws a translucent band
+ * along the belt showing exactly which stretch it can serve from, derived at
+ * scene creation from sim/kitchen.ts's own `posAt`/`isEligibleDist` (never a
+ * second copy of the beltPath polyline — see computeReachBands below) and
+ * shown/hidden alongside slotProp[i], live during setup too. Separately, the
+ * unlock guard (attemptUnlock) no longer requires a prop to already be placed
+ * before a second slot can unlock — it now only refuses an unlock that would
+ * leave the wallet unable to afford the cheapest utensil afterward, closing
+ * LevelEconomy's double-unlock trap without the previous rule's stricter
+ * side effect of blocking a well-funded player from unlocking two slots
+ * before placing anything in either.
  */
 import {
     Assets,
@@ -116,7 +128,7 @@ import {
 import { playSample, prefetchCue, sfx, switchCue } from '../audio/audio.ts';
 import { CONFIG } from './config.ts';
 import { KITCHEN_CONFIG } from './kitchenConfig.ts';
-import { createKitchenSim, isEligibleDist, type KitchenState } from './sim/kitchen.ts';
+import { BELT_LENGTH, createKitchenSim, isEligibleDist, posAt, type KitchenState } from './sim/kitchen.ts';
 import type { KitchenStage } from './kitchenStage.ts';
 
 /** Round 9: a frozen snapshot of the economy at shift end, passed alongside
@@ -183,13 +195,15 @@ const BAND_TINTS = {
 type IngredientKind = (typeof KITCHEN_CONFIG.ingredientKinds)[number];
 const KIND_INFO = new Map<string, IngredientKind>(KITCHEN_CONFIG.ingredientKinds.map((k) => [k.key, k]));
 
-// Round 11: 'ui-chef-hat' is drawn only by TestBelt.tsx's DOM end screen, not
-// on this canvas — it's listed here anyway, purely to force-load it, for the
-// same reason as every other alias in this array (see the comment below):
-// Assets.backgroundLoadBundle() is idle-priority and, left alone, may not
-// resolve before the end screen needs it (it's the first deferred asset
-// nothing here explicitly awaited — every other deferred-bundle sprite this
-// scene draws was already forcing its own load).
+// Round 11 (corrected round 12): 'ui-chef-hat' is force-loaded here even
+// though it's never drawn on this Pixi canvas — TestBelt.tsx's end screen
+// shows it as a plain DOM <img>, which never reads Pixi's Assets/texture
+// cache at all. What forcing the load here actually buys is a warm browser
+// HTTP cache: by the time the end screen mounts, the bytes are already in
+// hand, so the image paints without a pop-in — Assets.backgroundLoadBundle()
+// is idle-priority and can't be trusted to land in time on its own. ui-coin
+// is different and genuinely belongs in this array for the original reason:
+// it's a real Pixi sprite (the HUD coin icon), so it needs the texture cache.
 const UI_ALIASES = ['ui-slot-empty', 'ui-slot-filled', 'ui-hotbar', 'ui-container', 'ui-billboard', 'ui-badge-count', 'ui-coin', 'ui-chef-hat'];
 // Baked art across rounds 3-4: real where it exists (manifest-listed),
 // fallback everywhere else via `Assets.cache.has()` checks below — the
@@ -524,8 +538,9 @@ export async function createKitchenScene(
 
     // ---- Round 9: the coin economy (wallet/coinsEarned/locks/cooldown) ----
     // Lives entirely in this closure — sim/kitchen.ts has no notion of any
-    // of it (see the file header). `hasEverPlacedProp` is one-way: once the
-    // 100 floor lifts it never re-applies, even if that prop is later sold.
+    // of it (see the file header). Round 11 replaced the one-way
+    // `hasEverPlacedProp` lift with the state-derived `walletFloor()` below,
+    // which re-reads live state every time it's applied.
     let wallet: number = KITCHEN_CONFIG.coins.startingFloat;
     let coinsEarned = 0;
     const slotLocked: boolean[] = KITCHEN_CONFIG.slots.map(() => true);
@@ -650,6 +665,7 @@ export async function createKitchenScene(
 
         filledSlotCount++;
         onSlotsFilledChange(filledSlotCount);
+        updateReachOverlay(slotIndex);
         refreshHud();
     }
 
@@ -675,6 +691,7 @@ export async function createKitchenScene(
         // an empty board re-floors at the right tier.
         wallet = Math.max(walletFloor(), wallet);
         onSlotsFilledChange(filledSlotCount);
+        updateReachOverlay(slotIndex);
         sfx.sell();
         refreshHud();
     }
@@ -713,6 +730,78 @@ export async function createKitchenScene(
 
     const world = new Container();
     boardRoot.addChild(world);
+
+    // ---- Round 12, task 1: the reach overlay --------------------------------
+    // A translucent band along the belt showing exactly which stretch a
+    // placed station can serve from. Added to `world` right here — before
+    // any dish view exists — so every dish, present or future, draws on top
+    // of it with no z-order fuss.
+    //
+    // The predicate is copied exactly from sim/kitchen.ts's tapSlot: a point
+    // at distance `d` is in reach of `slot` iff isEligibleDist(d) AND
+    // hypot(posAt(d) - slot) <= slotReach. Sampling posAt() at a fine step
+    // (not recomputing beltPath's polyline here) is what keeps this overlay
+    // from ever drifting out of agreement with the sim — corners fall out of
+    // posAt's own segment walk for free, so tracing sampled points already
+    // "follows the corners" without this file needing to know where they are.
+    //
+    // Geometry (beltPath/slots/slotReach) is static, so every slot's bands
+    // are computed exactly once, right here at scene creation — never in the
+    // tick loop.
+    const REACH_STEP = 0.25;
+    const REACH_COLOR = 0x39d1ff;
+    const REACH_ALPHA = 0.32;
+    interface ReachBand {
+        start: number;
+        end: number;
+        points: { x: number; y: number }[];
+    }
+    function computeReachBands(slot: { x: number; y: number }): ReachBand[] {
+        const bands: ReachBand[] = [];
+        let current: ReachBand | null = null;
+        for (let d = 0; d <= BELT_LENGTH; d += REACH_STEP) {
+            const p = posAt(d);
+            const inReach = isEligibleDist(d) && Math.hypot(p.x - slot.x, p.y - slot.y) <= KITCHEN_CONFIG.slotReach;
+            if (inReach) {
+                if (!current) {
+                    current = { start: d, end: d, points: [] };
+                    bands.push(current);
+                }
+                current.end = d;
+                current.points.push(p);
+            } else {
+                current = null;
+            }
+        }
+        return bands;
+    }
+    const reachBands: ReachBand[][] = KITCHEN_CONFIG.slots.map(computeReachBands);
+
+    const reachOverlays = KITCHEN_CONFIG.slots.map((_, i) => {
+        const g = new Graphics();
+        for (const band of reachBands[i]) {
+            if (band.points.length < 2) continue;
+            g.moveTo(band.points[0].x, band.points[0].y);
+            for (let k = 1; k < band.points.length; k++) g.lineTo(band.points[k].x, band.points[k].y);
+            g.stroke({
+                width: CONFIG.sizes.pathWidth + 14,
+                color: REACH_COLOR,
+                alpha: REACH_ALPHA,
+                cap: 'round',
+                join: 'round',
+            });
+        }
+        g.visible = false;
+        world.addChild(g);
+        return g;
+    });
+    // Visibility mirrors slotProp[i] !== null — called from the same two
+    // places that already fire onSlotsFilledChange (placeProp, sellProp), and
+    // gated on nothing else, so it's live during setup, before Ready.
+    function updateReachOverlay(i: number): void {
+        reachOverlays[i].visible = slotProp[i] !== null;
+    }
+
     const dishViews = new Map<number, Container>();
 
     // Round 4, task 1: one entry per dish type — [sprite] x[count] — instead
@@ -823,12 +912,19 @@ export async function createKitchenScene(
         return { wallet, coinsEarned: Math.max(100, coinsEarned), hats };
     }
 
-    // Round 9, task 5: unlock a LOCKED slot for coins, guarded against a
-    // second unlock before any prop exists yet (LevelEconomy.md §7.2).
+    // Round 9, task 5 (superseded by round 12): unlock a LOCKED slot for
+    // coins. Round 9's guard blocked ANY second unlock until a prop was
+    // placed — safe, but stricter than it needed to be, and it never checked
+    // affordability at all. Round 12: the guard now only refuses an unlock
+    // that would leave the wallet unable to afford even the cheapest utensil
+    // afterward, unless a prop already placed is earning — LevelEconomy.md
+    // §7.2's actual failure mode (unlock, unlock again, land on 0 with two
+    // open slots and no way to earn back the 40 a utensil costs), not a
+    // stand-in for it. A well-funded player can now unlock two slots before
+    // placing anything in either, which the old rule didn't allow.
     function attemptUnlock(i: number): void {
-        const unlockedCount = slotLocked.filter((l) => !l).length;
-        if (unlockedCount >= 1 && filledSlotCount === 0) {
-            onMessage('You must place an Utensil to unlock!');
+        if (filledSlotCount === 0 && wallet < KITCHEN_CONFIG.slotUnlockCost + KITCHEN_CONFIG.propTierCost[0]) {
+            onMessage('Unlocking now would leave nothing for a utensil — place one first.');
             return;
         }
         if (wallet < KITCHEN_CONFIG.slotUnlockCost) {
