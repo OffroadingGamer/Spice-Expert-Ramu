@@ -795,11 +795,22 @@ export async function createKitchenScene(
             if (band.points.length < 2) continue;
             g.moveTo(band.points[0].x, band.points[0].y);
             for (let k = 1; k < band.points.length; k++) g.lineTo(band.points[k].x, band.points[k].y);
+            // Round 12a: `butt` cap and exactly pathWidth, not `round` and
+            // pathWidth+14. A round cap extends a stroke by half its width
+            // BEYOND each endpoint — at width 86 that drew 43 units of band
+            // past both ends, so every band rendered 86 units longer than the
+            // stretch it actually accepts (+23% on the left slots) and the
+            // drawn right-hand overlap read 318 units against a true 232.
+            // The overlay's whole justification is that it cannot disagree
+            // with tapSlot, and a decorative cap was doing exactly that, in
+            // the worst direction: it invited taps just outside the window.
+            // `join` stays round — that shapes the belt's own corners, which
+            // are mid-band, not band ends.
             g.stroke({
-                width: CONFIG.sizes.pathWidth + 14,
+                width: CONFIG.sizes.pathWidth,
                 color: REACH_COLOR,
                 alpha: REACH_ALPHA,
-                cap: 'round',
+                cap: 'butt',
                 join: 'round',
             });
         }
