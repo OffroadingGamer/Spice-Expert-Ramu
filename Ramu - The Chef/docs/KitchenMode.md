@@ -1,6 +1,6 @@
 # KitchenMode — the belt game view as a second mode
 
-**Last updated:** Sep 8 2026, 03:45 IST (read from the system clock)
+**Last updated:** Sep 8 2026, 05:10 IST
 **Status:** 🟢 **Architecture settled.** Eight decisions taken Sep 4, 23:10 IST — all
 eight went to the recommended option. ✅ **Built and running privately** — eight Test Mode rounds, `c043804`, **v1.15.0 private-only**; §6.7. This line read *"Nothing built yet"* until Sep 7 while §6.7 below recorded the opposite.
 **🛑 Hard gate: playable end to end by Sep 10, or it is cut.** §5.
@@ -1408,3 +1408,93 @@ on screen, it is `tray-chai.png` with the cream ellipse left as bare ceramic.
 🔴 **There is no editable source.** The `.aseprite` was deleted after export. Unlike
 the 28 generated dishes, which can be rebuilt from their raw ComfyUI frames, these two
 PNGs are the only copy of the work — in a tree that is gitignored.
+
+### 6.15 ✅ Rounds 13–14 landed · the zones and the price label, Sep 8 2026
+
+**Round 13 — radial reach replaced by four assigned belt zones.** Commit `69c6970`,
+private **v1.23.0**. `slotReach`'s radial test is gone; acceptance is membership of one
+assigned, non-overlapping stretch of belt per station. Verified by independent
+recomputation from `beltPath`, not by trusting the agent's table:
+
+| Zone | Range | Length | Resolves to | Margin over next-nearest slot |
+|---|---|---|---|---|
+| #1 top-left | 176 → 441 | 265 | `slots[0]` | 148.6 vs 308.7 |
+| #2 top-right | 481 → 956 | 475 | `slots[1]` | 199.8 vs 343.7 |
+| #3 bottom-right | 996 → 1471 | 475 | **`slots[3]`** | 199.8 vs 343.7 |
+| #4 bottom-left | 1511 → 1776 | 265 | **`slots[2]`** | 148.6 vs 316.7 |
+
+Coverage 92.5%, zero overlap, seams exactly 40 wide, outer ends landing on 176 and 1776
+so nothing spills onto a fridge stub. **The bottom-two swap was handled by derivation,
+not by pasting the table** — `slots` is ordered TL, TR, BL, BR while the belt visits
+bottom-right first, and nearest-slot-to-`posAt(midpoint)` gets this right on its own.
+
+🔑 **The strongest evidence is structural, not behavioural.** `tapSlot` no longer holds a
+radius bound of any kind: `bestDist` seeds at `Infinity` and `Math.hypot` survives only
+as a tie-break *among dishes already inside the zone*. There is no radial term left in
+the acceptance path to fail.
+
+⚠️ **The agent found a second reader of `slotReach` that the handover did not know
+existed** — `syncSlots`' filled-highlight. Left alone it would have lit a station
+"filled" for a dish `tapSlot` would then refuse. Switched to the same zone test.
+
+**Round 14 — the locked slot shows its price.** Commit `222cffc`, private **v1.24.0**.
+The bare centred padlock becomes a raised padlock (fontSize 40 → 22) over a two-line
+"Unlock for" / "<n>[coin]" label, contained against ItemSlot1.png's inner well.
+
+`LOCK_CONTENT` is derived at runtime from `slotBox`/`slotWell`/`labelGap`, not
+hardcoded — independently recomputed as left −48.5, right +48.5, top −50, bottom +48,
+i.e. **97 × 98 with `centerY` −1**. The well is asymmetric top-to-bottom, so the stack
+centres on the content rect, not on the slot. Measured slack 14.39 left/right and 14.00
+top/bottom; line 1 is the widest element at 68.2. Verified at a forced 3-digit cost
+(125 → line 2 grew to 42.5, no overflow) and reverted.
+
+⚠️ **What round 14's measurement could NOT settle.** The stack centres using
+`lock.height`/`line1.height` — Pixi `Text` **bounds**, which include ascent and descent.
+The open hypothesis was that the emoji's *ink* sits low inside its *box*; a bounding-box
+measurement cannot see that. "No discrepancy survived" is true of the geometry and
+silent on the hypothesis. The offset scales with font size and the padlock shrank
+40 → 22, so whatever it was is now under half — and the user confirmed live that
+everything reads correctly. Closed by observation, not by that measurement.
+
+**Two latent holes, neither reachable today, both routed to round 15:**
+
+1. `SLOT_ZONES`' `bySlot[bestSlot] = zone` has **no bijection check**. A slot
+   *reposition* (not the reorder the comment covers) could put two zones on one slot,
+   leaving another index `undefined` while TypeScript still types it `SlotZone` — a
+   mid-round `TypeError` on the first tap of that station.
+2. Round 14's `totalHeight` is **never clamped** to `LOCK_CONTENT.height` (70 against
+   98 today). A later font-size raise overflows the well silently, breaking round 6's
+   containment rule with no error anywhere.
+
+### 6.16 ✈️ Round 15 in flight — what to check its return against, Sep 8 2026
+
+Scope: **Kitchen Mode becomes the primary play action.** Not a mechanic round.
+
+The user's decisions, Sep 8: Kitchen Mode ships public once the **FTUE node and Node 1**
+are complete; TEST MODE becomes **Play Game**, the tower game becomes **Challenge Mode**
+and keeps its leaderboard statistics without losing them; **boss mode is the last level
+of each node**; **rounds are not linear** — each level carries its own wave target and
+each node its own level count.
+
+Acceptance items for the return:
+
+1. `Play Game` primary and topmost, `Challenge Mode` below it, `The Kitchen` and `Ranks`
+   untouched, **no TEST MODE button anywhere**.
+2. Both buttons reach their modes live; the tower game plays to its end screen unchanged.
+3. Guard A fires at **module load** with a message naming the colliding slot — proven by
+   a temporary forced collision, then reverted to an empty `git diff`.
+4. Guard B shrinks the padlock to fit rather than overflowing — proven by a temporary
+   oversize, then reverted. Slack still ~14 on all four sides at cost 50.
+5. `slotUnlockCost`'s comment matches `attemptUnlock`'s real behaviour. **Comment only —
+   the round 9 guard is NOT restored this round.**
+6. The agent's reading of the menu footer copy, reported and not silently rewritten.
+7. `tsc --noEmit` and `vite build` clean; ten runs, zero exceptions.
+8. Review and public **both still 1.7.0**.
+
+⚠️ **`'testbelt'` stays as the phase string** — a rename buys nothing player-visible and
+touches three files on the critical path. `store.ts`'s comment calling it *"never
+deployed public-facing content"* becomes false with this round and is corrected in place.
+
+🔒 **Explicitly not in this round:** leaderboard config (irreversible, separately
+sequenced), analytics `mode` properties, the FTUE cold-open, and restoring round 9's
+unlock guard.

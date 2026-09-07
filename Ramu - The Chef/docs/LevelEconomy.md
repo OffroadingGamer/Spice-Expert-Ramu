@@ -1,6 +1,6 @@
 # LevelEconomy — the source of truth for every currency value, per level
 
-**Last updated:** Sep 8 2026, 03:45 IST (read from the system clock)
+**Last updated:** Sep 8 2026, 05:10 IST
 **Status:** 🟡 **FTUE level 1 finalised. Every other level is deliberately empty.**
 **Tracked in git** — this file is *not* gitignored and must never be. It carries no
 credentials; it is design data, and it is meant to be read alongside the code.
@@ -455,6 +455,66 @@ which punishes the FTUE float rather than the player. **2.0s makes one station t
 two comfortable and four insurance at speed** — and it stops binding at the boss's floor
 anyway, where dishes arrive every 2.2s and the 1.11s reach window is the real limit. It
 also reads naturally: the kettle is busy.
+
+### 7.3a.3 ✅ The bands survive rounds 12–13 untouched — and they generalise
+
+Recorded Sep 8 2026, after **three briefs of mine wrongly flagged them as invalidated.**
+
+🔴 **The error.** Rounds 12 and 13 changed station acceptance — `slotReach` 260 → 180,
+then radial reach replaced by belt zones entirely — and I recorded in each handover that
+the flawless **348 / 465** baseline and the ⭐ **340 / 295** bands were "derived at
+`slotReach: 260`" and had to be re-earned by play. **They were not, and they do not.**
+`earned` reads `3 × grabs + 20 × dishes − 25 × walkouts`. There is no distance term, no
+reach term, no zone term. Rounds 12 and 13 changed how *hard* it is to reach a given
+walkout count and changed the resulting score by exactly zero. The round 13 agent said so
+plainly in its report; I repeated the stale claim into the round 14 brief anyway.
+
+✅ **Robustness check the bands had never been given.** `leftover` is bounded by the bag
+at `2 × walkouts`, so each walkout count is a **band, not a point**:
+
+| Walkouts | Earned range | Gap to the next band |
+|---|---|---|
+| 0 | **348** | 19 |
+| 1 | 323 – 329 | 13 |
+| 2 | 298 – 310 | **7** |
+| 3 | 273 – 291 | **1** |
+| 4 | 248 – 272 | — |
+
+**340 sits inside the 329→348 gap; 295 sits inside the 291→298 gap.** Both discriminate
+correctly across the whole leftover range, which is the property that actually matters
+and had not been verified before. 295 is the exact midpoint of its gap.
+
+✅ **Generalised, so none of the remaining 36 levels needs hand-tuning.** With `F` the
+flawless earned total, `C` the walkout charge and `G` the per-grab coin:
+
+```
+F = perGrab x target x ingredients + perDish x target
+threshold at boundary k = midpoint( F - (k+1)C + 2G(k+1) ,  F - kC )
+
+3 stars -> k = 0            2 stars -> k = floor(walkoutsAllowed / 2)
+```
+
+On FTUE L1 this yields **339 and 295** — validating what already ships rather than
+replacing it. The mechanism stays **coins**, per the user's Sep 7 reasoning above; only
+the derivation of the two numbers is now mechanical.
+
+🔴 **The constraint that must be asserted, not assumed.** Band separation holds only
+while:
+
+```
+walkoutCharge > 2 x perGrab x (k + 1)
+```
+
+At the 3/4 boundary that is **25 > 24 — true by a single coin.** Any future level that
+raises `perGrab` or `walkoutsAllowed` without raising the walkout charge collapses its
+top bands into each other and silently stops discriminating. Cheap to assert now;
+expensive to discover at level 30.
+
+⚠️ **Structural note, Sep 8:** the user has settled that **rounds are not linear** —
+each level carries its own wave target and each node its own level count, with **boss
+mode as the last level of each node**. The formula above already takes a per-level
+target, so it survives that restructure; the single-fixed-12-dish framing elsewhere in
+this document does not, and is next session's work.
 
 ### 7.3b 👨‍🍳 The boss formula — the ordinary one cannot score an endless round
 

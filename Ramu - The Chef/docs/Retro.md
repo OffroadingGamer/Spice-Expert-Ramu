@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 8 2026, 03:45 IST (read from the system clock)
+**Last updated:** Sep 8 2026, 05:10 IST
 
 ---
 
@@ -1998,3 +1998,25 @@ uniques are the score; the trend matters more than any single day.
     single-constant fix verified by measurement can be done here; anything that changes a
     RULE belongs to the agent thread that owns it. When a change starts touching `sim/`,
     stop and write the handover.**
+63. **When an agent contradicts a caution you keep repeating, check the caution.** I
+    flagged the flawless 348/465 baseline and the star bands as "invalidated by the reach
+    change" in three consecutive handovers. The score formula reads only grabs, dishes and
+    walkouts — no distance term has ever been in it. The round 13 agent stated this
+    plainly in its report and I carried the stale warning into round 14's brief regardless.
+    **A caution repeated often enough starts being treated as a finding. Re-derive it from
+    source the first time something disagrees with it, especially when the disagreement
+    comes from an agent whose work you are checking.**
+64. **A measurement can confirm the geometry and stay silent on the hypothesis.** Round 14
+    centred its stack using Pixi `Text` bounds and reported "no discrepancy survived". The
+    open question was whether the emoji's *ink* sits low inside its *box* — which a
+    bounding-box measurement cannot see, because it is a claim about the difference
+    between the two. The report was honest and correctly hedged; the risk was in how
+    easily it reads as proof. **State what a measurement can and cannot rule out, or it
+    will be read as settling the thing that was actually in question.**
+65. **A blocker carried in a summary is a claim, not a status.** I carried "art licences
+    unread — no public deploy is cleared" for days after Plan items 10, 11, 27 and 46 all
+    closed on Sep 4. It shaped an entire agenda: I ranked a licence review above shipping
+    and told the user a public deploy was gated when it was not. Nothing in the summary
+    was marked stale, because staleness is invisible from inside a summary. **Before
+    repeating a blocker that would change what the user does next, re-read the source
+    document. Compaction preserves claims, not their truth.**
