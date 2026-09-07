@@ -1,6 +1,6 @@
 # KitchenMode — the belt game view as a second mode
 
-**Last updated:** Sep 7 2026, 22:41 IST (read from the system clock)
+**Last updated:** Sep 8 2026, 03:45 IST (read from the system clock)
 **Status:** 🟢 **Architecture settled.** Eight decisions taken Sep 4, 23:10 IST — all
 eight went to the recommended option. ✅ **Built and running privately** — eight Test Mode rounds, `c043804`, **v1.15.0 private-only**; §6.7. This line read *"Nothing built yet"* until Sep 7 while §6.7 below recorded the opposite.
 **🛑 Hard gate: playable end to end by Sep 10, or it is cut.** §5.
@@ -845,6 +845,155 @@ baked to 256×256 at **80.5% content height each** (items 7 and part of 6), 52 K
   and whether it nags by the 30th play of a round, is unanswered.
 - ✈️ **Round 12, the reach overlay** — on hold pending a look at round 11. Spec and the
   measured windows are in §6.11.
+
+---
+
+### 6.13 ✅ Rounds 11–12 landed · the belt geometry, measured · round 13 in flight, Sep 8 2026
+
+§6.12 recorded round 11's spec while it was still in flight. It returned, round 12
+followed, and three smaller fixes went out directly from the main thread. Private is at
+**v1.22.0**; review and public have not moved off **v1.7.0** and `set-public` has never run.
+
+#### What is deployed
+
+| Commit | Private | What it made true |
+|---|---|---|
+| `c12404b` | v1.18.0 | Round 11 — the state-derived wallet floor, four generated assets baked |
+| `8840401` | v1.19.0 | Round 12 — the reach overlay, derived at runtime from `tapSlot`'s own predicate |
+| `3e9674b` | v1.20.0 | HUD coin readout right-anchored (was centred on the panel's right quarter) |
+| `74fbfb0` | v1.21.0 | Overlay stroke: `butt` cap at `pathWidth` (was `round` at `pathWidth+14`) |
+| `dc5050a` | v1.22.0 | `slotReach` **260 → 180** — station bands halved |
+
+Round 11 passed all fifteen of §6.12's acceptance items on independent re-verification.
+One correction to §6.12's own note: the baked icons are **82.0% content height each**, not
+the 80.5% recorded there — that figure was measured off a pre-final bake while the agent
+was still working. Equal to a tenth of a percent between the two, which is the property
+that governs how they look side by side; the absolute target was 80% ±2.
+
+#### 🔴 A trap that did not exist, and a working rule loosened for it
+
+I reported a double-unlock deadlock: unlock twice from the 100 float, land on 0 with two
+open slots and no prop, stuck until a walkout floors you back to 40. **It was not
+reachable.** Round 9 already carried this guard, and round 12's brief was written as
+though it did not exist:
+
+```ts
+if (unlockedCount >= 1 && filledSlotCount === 0) {
+    onMessage('You must place an Utensil to unlock!');
+```
+
+The cause was mine and it is worth naming precisely: I read `attemptUnlock` with a range
+extract anchored on the first `slotUnlockCost` match, which **silently began below the
+guard** and cut four lines off the top of the function. I then quoted the truncation as
+the whole function.
+
+Round 12 replaced that rule with `wallet >= slotUnlockCost + propTierCost[0]`. The two are
+**indistinguishable on the FTUE path** — with no prop placed you cannot earn, so the wallet
+is exactly 100 until you place one, and both rules refuse the second unlock. They diverge
+only with an empty board and a fat wallet, reachable only by earning and then selling
+everything. Neither can strand a player. What was lost is round 9's teaching rhythm
+(unlock → place → unlock → place), which was deliberate enough to be documented in
+`kitchenConfig.ts`'s `slotUnlockCost` comment — **that comment now describes a rule that
+no longer exists**.
+
+⏸️ **Parked by the user on Sep 8** — *"It's inconsequential right now, ignore for now."*
+Restoring round 9's guard, and the stale comment, both wait.
+
+#### 📏 The belt geometry, measured — and what each number is a threshold OF
+
+| Number | What it actually bounds |
+|---|---|
+| **145** | 🔴 **HARD.** The perpendicular distance from a slot row to its own belt run (y615→y470, y785→y930). Below it a station reaches no belt at all and is inert. |
+| **219.66** | The tightest reach keeping 100% of the eligible belt inside some station's reach *at every instant*. Distance from the nearest slot to four points — belt entry, belt exit, and **both** right-hand corners (645,470)/(645,930) — all four identical, by the layout's symmetry. |
+| **~186** | Below this, station bands stop overlapping **at all**. At 260 the overlap was 38.5% of the eligible belt. |
+
+🔴 **I first presented 219.66 as the floor for a winnable round. It is not.** A coverage
+gap does not make a dish uncatchable: a dish travels the whole eligible run and only needs
+to be in *some* band at *some* moment, and it still crosses several. Gaps cost
+**opportunities**, not reachability. Going below 219.66 is therefore a difficulty choice,
+not a correctness one — which is what made `slotReach: 180` available at all.
+
+#### The overlay was drawing band that did not accept
+
+Round 12 stroked the bands at `pathWidth + 14` with `cap: 'round'`. **A round cap extends a
+stroke by half its width past each endpoint** — at width 86 that painted 43 units of band
+beyond both ends of every station, 86 units of fiction each (**+23%** on the left
+stations), and made the drawn right-hand overlap read 318 units against a true 232. The
+overlay's entire justification is that it cannot disagree with `tapSlot`, and a decorative
+cap was doing exactly that, in the direction that most misleads: inviting taps just
+outside the real window. Fixed in v1.21.0 — `butt` at exactly `pathWidth`. `join` stays
+round: that shapes the belt's own corners, which are mid-band, not band ends.
+
+#### `slotReach` 260 → 180, and what it invalidates
+
+Sanctioned by the constant's **own** comment — *"do not raise; narrow the station band
+instead if it ever reads as generous"* — so this is the permitted direction, not a lift of
+the file header's validation lock.
+
+| | 260 | 180 |
+|---|---|---|
+| Left / right band | 381 / 726 units | **213 / 356** |
+| Total overlap | 38.5% | **0%** |
+| Belt covered | 100% | 71.3% |
+| Tap window, full speed | 1.95s / 3.72s | **1.09s / 1.82s** |
+
+🛑 The flawless **348 coins / 465 hats** figures and the **⭐ 340 / 295** thresholds in
+[LevelEconomy.md](LevelEconomy.md) §8 were all derived at 260. **They do not carry over**
+and must be re-earned by play, not by arithmetic. Recorded in `kitchenConfig.ts` beside
+the constant as well as here.
+
+---
+
+### 6.14 ✈️ Round 13 in flight — what to check its return against, Sep 8 2026
+
+Issued as chat text, so it exists nowhere else. Target private **v1.23.0**. Origin: a
+screenshot the user annotated with four bracketed areas, saved to
+`Ramu - The Chef/references/Errors/`.
+
+**The change: radial reach is replaced by an assigned stretch of belt per station.**
+`slotReach`'s circle goes; each of the four slots owns one contiguous zone, zones never
+overlap, and a seam separates neighbours.
+
+Boundaries sit at the **midpoint of each working run**, from `cumLengths`; a new
+`KITCHEN_CONFIG.slotBandSeam: 40` opens ±20 either side; the outer ends are the eligible
+bounds themselves. **Derived at runtime, never pasted** — the table is reference only:
+
+| Zone | Slot | Range | Length |
+|---|---|---|---|
+| #1 top-left | `slots[0]` | 176 → 441 | 265 |
+| #2 top-right | `slots[1]` | 481 → 956 | 475 |
+| #3 bottom-right | **`slots[3]`** | 996 → 1471 | 475 |
+| #4 bottom-left | **`slots[2]`** | 1511 → 1776 | 265 |
+
+Coverage 92.5% of the eligible belt, overlap **zero**. Windows 1.36s (left) and 2.43s
+(right) at full speed, against the 2.0s prop cooldown.
+
+⚠️ **`slots` is ordered TL, TR, BL, BR**, so zone #3 is `slots[3]` and zone #4 is
+`slots[2]`. Swapping the bottom two still looks plausible on screen. The brief asks for
+the mapping to be *derived* — nearest slot to `posAt(zone midpoint)` — which yields
+exactly this table.
+
+`tapSlot`'s membership test becomes zone containment; `Math.hypot` survives only as the
+tie-break for which dish to take. `isEligibleDist` stays, though the zones imply it.
+**`slotReach` is not deleted** — it is under the header's validation lock; readers are
+removed and it is marked superseded. The overlay reads the **same** exported zones, never
+a second derivation.
+
+✅ **Acceptance:** (1) derived zones match the table; (2) #3→`slots[3]`, #4→`slots[2]`;
+(3) no overlap, nothing outside [176, 1776); (4) a dish in a seam serves for neither
+neighbour; (5) **a dish spatially close to a station but in another station's zone does
+not serve** — this is what proves the radial rule is gone; (6) drawn band and accepting
+range coincide at both ends; (7) overlay live during setup; (8) `slotReach` present, no
+readers, marked superseded; (9) ten runs, zero exceptions; (10) review/public still 1.7.0.
+
+🛑 The agent is told **not** to assert the 348/465/340/295 figures still hold, and to
+report what a flawless run actually scores instead. Retuning the thresholds is the user's
+call.
+
+#### Also open, not in round 13
+
+- ⏸️ Round 9's unlock guard and the stale `slotUnlockCost` comment — parked by the user.
+- ✅ The kettle SFX fatigue question is **closed**: the user confirmed it reads fine.
 
 ---
 

@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 7 2026, 22:41 IST (read from the system clock)
+**Last updated:** Sep 8 2026, 03:45 IST (read from the system clock)
 
 ---
 
@@ -1960,3 +1960,41 @@ uniques are the score; the trend matters more than any single day.
     reachable* from outside, gave the true answer at once — 0 px against 14,213 and
     24,117. **Before trusting a measurement that contradicts someone else's, check that it
     measures the thing it is named after.** This one nearly overturned a correct rejection.
+
+59. **A match-anchored extract can begin below the thing you needed to see.** Asked what a
+    guard did, I pulled the function with a range starting at the first line that mentioned
+    the constant — and that range opened *below* an earlier guard, cutting four lines off
+    the top. I then quoted the truncation as the whole function, reported a deadlock that
+    the missing guard already made unreachable, and wrote a handover to fix it. A round
+    shipped, replacing a deliberate rule with a looser one, for a problem that never
+    existed. The agent caught it and said so; nothing else would have. **When existing
+    behaviour is the PREMISE of a change, read the whole function from its signature, not
+    a slice anchored on the token you happened to grep for.**
+60. **Name what a threshold is a threshold OF.** I computed 219.66 as the tightest station
+    reach that keeps every point of the belt inside someone's range, then presented it as
+    the floor below which the round stops being winnable. Those are different properties,
+    and the second one is false: a dish crosses the whole belt, so it only needs to be
+    catchable *somewhere*, and a coverage gap costs opportunities rather than
+    reachability. The real hard floor was elsewhere entirely and far lower — 145, where a
+    station stops touching the belt at all. Stating the bound with its property attached
+    (*"the floor for 100% instantaneous coverage"*) would have made the gap visible
+    immediately. **A number defended as a limit should carry the sentence saying what it
+    limits; without it, the wrong constraint gets enforced with real confidence.**
+61. **A visualisation's rendering options are part of its correctness, not its styling.**
+    The reach overlay existed for exactly one reason: it must never disagree with the code
+    that accepts a tap. It was stroked with `cap: 'round'`, and a round cap extends a
+    stroke by half its width beyond each endpoint — so at width 86 it drew 43 units of
+    band past both ends of every station, +23% on the short ones, inviting taps just
+    outside the window that would not register. The predicate was exact; the paint lied.
+    **When a drawing is a claim about behaviour, review its caps, joins and widths as
+    logic — they change what the claim says.**
+62. **A run of small fixes builds momentum straight past a boundary.** Three self-contained
+    changes in a row — a HUD anchor, a stroke cap, one config constant — were fine to make
+    and deploy directly. The fourth altered `tapSlot`'s acceptance rule, and I carried
+    straight on into it before the user stopped me: *"You are supposed to write a handover
+    for the implementation agent to do this, not execute it yourself."* Nothing about the
+    fourth change announced itself as different; it was the momentum of the first three
+    that made it feel continuous. **The line is not size, it is kind: a visual or
+    single-constant fix verified by measurement can be done here; anything that changes a
+    RULE belongs to the agent thread that owns it. When a change starts touching `sim/`,
+    stop and write the handover.**
