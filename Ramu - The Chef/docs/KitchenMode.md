@@ -756,6 +756,98 @@ trap into a visible choice. The ranges must be **derived at runtime** from `belt
 
 ---
 
+### 6.12 ✈️ Round 11 in flight — what to check its return against, Sep 8 2026
+
+Issued as chat text, so it exists nowhere else. Target private **v1.18.0**. Two
+independent parts; a regression in either is attributable on sight.
+
+#### Part A — the recovery floor
+
+Replaces the one-way `hasEverPlacedProp` (§6.11) with a floor read from current state,
+values taken from `KITCHEN_CONFIG` and never hardcoded:
+
+| State | Floor |
+|---|---|
+| A prop currently placed (`filledSlotCount > 0`) | **0** — income exists, the charge is fair |
+| No prop, a slot unlocked | **`propTierCost[0]`** = 40 |
+| No prop, nothing unlocked | **`coins.startingFloat`** = 100 |
+
+Applied in **two** places — the walkout branch and the end of `sellProp`. The sell case
+matters: someone at 0 who sells their last prop lands on 30, below the 40 they need, and
+without it there they would wait for a walkout to become solvent.
+
+⚠️ **Deliberate, will look like a regression in a diff:** unlocking a slot and placing
+nothing now floors at **40** where it floored at 100. Intended — 50 remains after the
+unlock and 40 buys the utensil.
+
+#### Part B — the bake
+
+| Source (gitignored) | Destination (tracked) | Alias / SampleId |
+|---|---|---|
+| `Art\_gen\ui-final\chef-hat.png` | `public/images/ui-chef-hat.png` | `ui-chef-hat` |
+| `Art\_gen\ui-final\coin.png` | `public/images/ui-coin.png` | `ui-coin` |
+| `Audio\_gen\sfx-final\kettle-boil.mp3` | `public/audio/kettle-boil.mp3` | `kettle-boil` |
+| `Audio\_gen\sfx-final\water-pour.mp3` | `public/audio/water-pour.mp3` | `water-pour` |
+
+Manifest is `jam-entry/src/assets/manifest.ts` — **not** `src/game/` — and both icons go
+in the **`deferred`** bundle beside the other `ui-*` entries. Aliases resolve through
+`art(alias, fallback)` in `src/game/textures.ts`.
+
+**Icon normalisation:** trim to the alpha bounding box, pad to a square so content height
+is **80% of canvas**, then downscale to **256×256**. Both sources are 1024×1024 and ~935 KB;
+without this the coin renders ~29% taller than the hat (§6.11).
+
+🔓 **Narrow exemption to the lock on `src/audio/audio.ts`** — exactly two changes and
+nothing else: add the two ids to the `SampleId` union, and their two rows to `SAMPLES`.
+Starting `gain` **0.65** for both, explicitly a **human retune by ear**, one line each,
+exactly as `lose` / `upgrade` / `wave-clear` were tuned. Measured peaks are −6.78 dBFS
+(kettle) and −5.53 dBFS (water), already quieter than the existing samples.
+
+**Where the SFX fire:** a grab currently plays `sfx.shot('kitchen')` from the `'served'`
+event, which does not know which slot acted. The per-grab sound moves into
+`attemptUseOrSell`, in the branch where `served > before` — the slot index and the
+cooldown both live there — selecting `prop-kettle-l1` → `kettle-boil` and
+`prop-water-dispenser-l1` → `water-pour`. Only those two props exist, so no fallback is
+needed. **Exactly one sound per grab**; the old `sfx.shot('kitchen')` must stop firing.
+`sfx.upgrade()` on completion stays where it is.
+
+#### ✅ Acceptance
+
+**Floor** — (1) unlock → place → sell → Ready → one walkout: `wallet === 40`, then a
+tier-1 prop places successfully. (2) Ready with nothing unlocked, three walkouts:
+`wallet === 100`. (3) Prop placed, wallet 200, one walkout: `wallet === 175`, full charge.
+(4) Two props, sell one: a later walkout still charges 25. (5) `coinsEarned` unaffected
+by the floor in every case.
+
+**Bake** — (6) `Assets.cache.has('ui-coin')` and `'ui-chef-hat'` true after the deferred
+bundle resolves, so the manifest art wins over the procedural fallback. (7) The two baked
+PNGs have equal content height within 2%. (8) HUD banner: icon + number centred on design
+x **512.25**, inside `HUD_MAX_W`, no overlap with the walkouts readout at x 208.75.
+(9) End screen on a clear shows the coin icon with `earned = 348` on a flawless run, and
+the hat icon beside 465. (10) Kettle grab plays `kettle-boil`, dispenser plays
+`water-pour`, exactly one sound per grab. (11) No `.json` sidecar anywhere under
+`public/` — they carry the UserId and live game id.
+
+**Regression** — (12) flawless = 12 chai / 36 grabs / 0 walkouts / **348 coins / ⭐⭐⭐ /
+465 hats**. (13) A 2-walkout run scores ⭐⭐ at both **298** and **310**; a 3-walkout run
+at **291** does not. (14) Run Again returns to setup — wallet 100, slots locked, Ready
+shown. (15) Ten runs, zero console exceptions.
+
+🔎 **Already confirmed in passing** while the agent was still working: both icons
+baked to 256×256 at **80.5% content height each** (items 7 and part of 6), 52 KB and
+55 KB against 935 KB sources, and **no sidecars** under `public/` (item 11).
+
+#### Still open, not in round 11
+
+- ⚠️ **The kettle SFX fatigue test needs a human ear.** No agent in this pipeline can
+  listen. 56% of its energy sits in a narrow band at ~518 Hz — essentially C5, which is
+  consonant with the score's A minor, but whether it reads as *boiling* rather than a hum,
+  and whether it nags by the 30th play of a round, is unanswered.
+- ✈️ **Round 12, the reach overlay** — on hold pending a look at round 11. Spec and the
+  measured windows are in §6.11.
+
+---
+
 ## 7. 🛑 Scope read against Sep 19 — Sep 6 2026, 00:47 IST
 
 Written the moment the last node was picked, so it costs nothing to act on. Deadline is
