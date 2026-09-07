@@ -55,6 +55,22 @@ for (let i = 0; i < PATH.length - 1; i++) {
 }
 export const BELT_LENGTH = cumLengths[cumLengths.length - 1];
 
+/**
+ * Round 6, task 2: props may only interact with a dish on the belt's three
+ * "working" segments — run 1, the drop, run 2 — never on the two fridge
+ * connector stubs (segment 0, out of the fridge; the last segment, into it),
+ * where a dish is in transit and untouchable however close a slot sits.
+ * Derived from beltPath's own cumulative lengths at runtime (segment 1's
+ * start through the second-to-last segment's start) rather than pasted, so
+ * this stays correct if the path ever changes again. With the current
+ * 6-point path that resolves to dist ∈ [176, 1776) of 1952.
+ */
+const ELIGIBLE_DIST_MIN = cumLengths[1];
+const ELIGIBLE_DIST_MAX = cumLengths[cumLengths.length - 2];
+export function isEligibleDist(dist: number): boolean {
+    return dist >= ELIGIBLE_DIST_MIN && dist < ELIGIBLE_DIST_MAX;
+}
+
 function posAt(dist: number): { x: number; y: number } {
     if (dist <= 0) return { ...PATH[0] };
     if (dist >= BELT_LENGTH) return { ...PATH[PATH.length - 1] };
@@ -132,6 +148,10 @@ export function createKitchenSim(): KitchenSim {
             let bestDist: number = KITCHEN_CONFIG.slotReach;
             for (let i = 0; i < state.dishes.length; i++) {
                 const d = state.dishes[i];
+                // Round 6, task 2: ineligible-segment dishes (the fridge
+                // connector stubs) are never a valid tap target, however
+                // close — gate on segment, not distance.
+                if (!isEligibleDist(d.dist)) continue;
                 const dist = Math.hypot(d.x - slot.x, d.y - slot.y);
                 if (dist <= bestDist) {
                     bestDist = dist;

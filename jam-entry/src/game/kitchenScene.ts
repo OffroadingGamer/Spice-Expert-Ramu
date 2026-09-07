@@ -29,6 +29,13 @@
  * larger recipe-name heading (task 6), an end-screen driven off the sim's
  * own won/lost event rather than polled phase (task 7), and a larger single
  * final dish (task 8).
+ *
+ * Round 6: prop labels now measure clearance from ItemSlot1.png's inner well
+ * (kitchenConfig.ts's slotWell/labelGap), not the slot box's outer edge
+ * (task 1); syncSlots' filled-highlight and sim/kitchen.ts's tapSlot both
+ * gate on isEligibleDist so a dish on a fridge connector stub is never
+ * tappable (task 2); the belt's ingredient set corrected to milk/ginger/
+ * tea-leaf (task 3).
  */
 import {
     Assets,
@@ -44,7 +51,7 @@ import {
 } from 'pixi.js';
 import { CONFIG } from './config.ts';
 import { KITCHEN_CONFIG } from './kitchenConfig.ts';
-import { createKitchenSim, type KitchenState } from './sim/kitchen.ts';
+import { createKitchenSim, isEligibleDist, type KitchenState } from './sim/kitchen.ts';
 import type { KitchenStage } from './kitchenStage.ts';
 
 export interface Scene {
@@ -83,9 +90,8 @@ const KIND_INFO = new Map<string, IngredientKind>(KITCHEN_CONFIG.ingredientKinds
 const UI_ALIASES = ['ui-slot-empty', 'ui-slot-filled', 'ui-hotbar', 'ui-container', 'ui-billboard'];
 // Baked art across rounds 3-4: real where it exists (manifest-listed),
 // fallback everywhere else via `Assets.cache.has()` checks below — the
-// fallback aliases (ing-tea-leaf/ing-sugar/ing-chai-masala) are never
-// requested from Assets, only used as map keys, so no 404s from unlisted
-// manifest entries.
+// fallback alias (ing-tea-leaf) is never requested from Assets, only used
+// as a map key, so no 404s from an unlisted manifest entry.
 const BAKED_ALIASES = [
     ...KITCHEN_CONFIG.levelProps.map((p) => p.alias),
     'ing-milk',
@@ -344,14 +350,18 @@ export async function createKitchenScene(
         p.position.set(slot.x, slot.y);
         boardRoot.addChild(p);
 
-        const pad = KITCHEN_CONFIG.propLabelPad;
-        const labelMaxWidth = KITCHEN_CONFIG.slotBox.w - pad * 2;
+        // Round 6, task 1: contain against ItemSlot1.png's inner well, not
+        // the slotBox's outer edge — the well is well inside the sprite's
+        // raised border. See kitchenConfig.ts's `slotWell`/`labelGap` comment.
+        const well = KITCHEN_CONFIG.slotWell;
+        const gap = KITCHEN_CONFIG.labelGap;
+        const labelMaxWidth = KITCHEN_CONFIG.slotBox.w - 2 * (well.left + gap);
         const label = new Text({
             text: formatPropLabel(propInfo.name, propInfo.level, labelMaxWidth),
             style: PROP_LABEL_STYLE,
         });
         label.anchor.set(0.5, 1);
-        label.position.set(slot.x, slot.y + KITCHEN_CONFIG.slotBox.h / 2 - pad);
+        label.position.set(slot.x, slot.y + KITCHEN_CONFIG.slotBox.h / 2 - well.bottom - gap);
         boardRoot.addChild(label);
 
         filledSlotCount++;
@@ -479,8 +489,11 @@ export async function createKitchenScene(
 
     function syncSlots(): void {
         KITCHEN_CONFIG.slots.forEach((slot, i) => {
+            // Round 6, task 2: a dish on a fridge connector stub never lights
+            // a slot up, however close — matches tapSlot's own gate in
+            // sim/kitchen.ts, so the highlight never lies about tappability.
             const filled = sim.state.dishes.some(
-                (d) => Math.hypot(d.x - slot.x, d.y - slot.y) <= KITCHEN_CONFIG.slotReach
+                (d) => isEligibleDist(d.dist) && Math.hypot(d.x - slot.x, d.y - slot.y) <= KITCHEN_CONFIG.slotReach
             );
             slotSprites[i].texture = filled ? tex.slotFilled : tex.slotEmpty;
         });

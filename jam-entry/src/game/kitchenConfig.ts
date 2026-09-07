@@ -24,6 +24,17 @@
  * moves beltSpeed to 122 — same 16.0s traverse, recomputed for the new
  * 1952-unit path (was 1780). Station slots start empty and are filled by a
  * tap-to-place picker instead of a fixed round-robin assignment.
+ *
+ * Round 6: prop labels measure clearance from ItemSlot1.png's inner well
+ * (`slotWell`/`labelGap` below), not from the slot box's outer edge; props
+ * only interact with ingredients on the belt's three working runs, never on
+ * the two fridge connector stubs (kitchenScene.ts derives this from beltPath
+ * at runtime, sim/kitchen.ts's `isEligibleDist`); and the chai recipe drops
+ * to its real three ingredients (milk, ginger, tea-leaf) — sugar and chai
+ * masala never belonged in this FTUE node (§6.3: chai masala is a grinding
+ * output Node 0 has none of). beltPath/beltSpeed/spawnInterval/slotReach/
+ * the fridge box/the band boundaries are untouched — round 5's 16.0s
+ * traverse stands.
  */
 export const KITCHEN_CONFIG = {
     boardWidth: 720,
@@ -164,12 +175,19 @@ export const KITCHEN_CONFIG = {
     /**
      * Round 5, tasks 4-5: reverses round 4's top-anchored icon/label stack —
      * icon centre-centre in the slotBox (aspect-fit within propSize,
-     * unchanged), label centre-bottom. `propLabelPad` design units of inner
-     * padding on every side of the label keep glyphs off the slotBox's inner
-     * edge (~4 CSS px at the 476x743 test viewport); the name truncates
-     * harder before the padding ever gives, per the handover.
+     * unchanged), label centre-bottom.
+     *
+     * Round 6, task 1: ItemSlot1.png has a raised border, so the box's own
+     * outer edge is NOT the containment boundary — its inner well is, well
+     * inside that border. `slotWell` is that inset, measured from the
+     * slotBox's edge in design units; `labelGap` is extra clear space inside
+     * it. Any text drawn inside a station slot (present or future) must stay
+     * clear of the well by at least `labelGap` on every side — the name
+     * truncates harder before this padding ever gives (formatPropLabel,
+     * below, is unchanged: the level suffix still never truncates).
      */
-    propLabelPad: 8,
+    slotWell: { left: 15, right: 15, top: 19, bottom: 21 },
+    labelGap: 6,
 
     /**
      * Round 4, task 3: placeholder fridge anchoring both belt ends — see
@@ -206,13 +224,19 @@ export const KITCHEN_CONFIG = {
      * otherwise kitchenScene.ts draws a flat procedural tile keyed by the
      * same string (§2.6's pattern, replicated locally — not an import of
      * textures.ts, see kitchenScene.ts's file header on isolation).
+     *
+     * Round 6, task 3: down to the real 3-ingredient chai — sugar and chai
+     * masala removed. Chai masala especially never belonged here: §6.3 lists
+     * it as the output of a grinding level, and this FTUE node (Node 0) has
+     * none, so it couldn't legitimately exist on this belt. Real sprites
+     * exist for milk and ginger; tea-leaf stays the procedural placeholder
+     * until §6.3's container art lands. At n=3 the bag's longest drought is
+     * 2n-2=4 spawns (was 8 at n=5) — tighter cycle, no code change needed.
      */
     ingredientKinds: [
-        { key: 'tea-leaf', alias: 'ing-tea-leaf', label: 'Tea Leaf', color: 0x3a5f3a },
         { key: 'milk', alias: 'ing-milk', label: 'Milk', color: 0xe8e2d0 },
-        { key: 'sugar', alias: 'ing-sugar', label: 'Sugar', color: 0xf1f1e8 },
         { key: 'ginger', alias: 'ing-ginger', label: 'Ginger', color: 0xd9a441 },
-        { key: 'chai-masala', alias: 'ing-chai-masala', label: 'Chai Masala', color: 0x8a5a33 },
+        { key: 'tea-leaf', alias: 'ing-tea-leaf', label: 'Tea Leaf', color: 0x3a5f3a },
     ],
 
     /**
@@ -260,9 +284,13 @@ export const KITCHEN_CONFIG = {
      * not gameplay data. Round 3: aligned to the belt's actual ingredient
      * test set (was a placeholder list including "cardamom", never carried
      * by the belt) so the billboard row and the belt agree.
+     *
+     * Round 6, task 3: matches the belt's corrected 3-ingredient set. §8b at
+     * n=3 gives slot ~162 -> scale 1.00 (comfortably above the formula's
+     * n=5 "working target" row) — the row draws at full size, no shrink.
      */
     recipe: {
         name: 'Masala Chai',
-        ingredients: ['tea-leaf', 'milk', 'sugar', 'ginger', 'chai-masala'],
+        ingredients: ['milk', 'ginger', 'tea-leaf'],
     },
 } as const;
