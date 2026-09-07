@@ -55,6 +55,15 @@ export const MANIFEST: Manifest = {
                 { alias: 'ui-hotbar', src: 'images/ui-hotbar.png' },
                 { alias: 'ui-container', src: 'images/ui-container.png' },
                 { alias: 'ui-billboard', src: 'images/ui-billboard.png' },
+                // Round 3: station props + belt ingredients + final dishes.
+                // ing-tea-leaf / ing-sugar / ing-chai-masala have no manifest
+                // line yet (§2.6 — procedural placeholder until art exists).
+                { alias: 'prop-kettle-l1', src: 'images/prop-kettle-l1.png' },
+                { alias: 'prop-water-dispenser-l1', src: 'images/prop-water-dispenser-l1.png' },
+                { alias: 'ing-milk', src: 'images/ing-milk.png' },
+                { alias: 'ing-ginger', src: 'images/ing-ginger.png' },
+                { alias: 'dish-chai', src: 'images/dish-chai.png' },
+                { alias: 'dish-coffee', src: 'images/dish-coffee.png' },
             ],
         },
     ],

@@ -15,6 +15,8 @@ export interface DishInst {
     dist: number;
     x: number;
     y: number;
+    /** Which KITCHEN_CONFIG.ingredientKinds[].key this belt item carries. */
+    kind: string;
 }
 
 export interface KitchenState {
@@ -65,6 +67,28 @@ function posAt(dist: number): { x: number; y: number } {
     };
 }
 
+/**
+ * Bag shuffle (Fisher-Yates), refilled only when empty: every kind is dealt
+ * exactly once per lap, so the longest possible drought between two spawns
+ * of the same kind is 2n-2, and a repeat can only land across a bag
+ * boundary. Plain Math.random() per spawn would allow both long droughts
+ * and back-to-back triples — the property the handover asked for.
+ */
+function makeBag(): () => string {
+    const kinds = KITCHEN_CONFIG.ingredientKinds.map((k) => k.key);
+    let bag: string[] = [];
+    return () => {
+        if (bag.length === 0) {
+            bag = [...kinds];
+            for (let i = bag.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [bag[i], bag[j]] = [bag[j], bag[i]];
+            }
+        }
+        return bag.pop()!;
+    };
+}
+
 export function createKitchenSim(): KitchenSim {
     const state: KitchenState = {
         phase: 'running',
@@ -78,6 +102,7 @@ export function createKitchenSim(): KitchenSim {
     let nextUid = 1;
     let spawnTimer = 0;
     const events: KitchenEvent[] = [];
+    const drawKind = makeBag();
 
     function spawnIfDue(dt: number): void {
         if (state.spawned >= KITCHEN_CONFIG.shiftDishCount) return;
@@ -85,7 +110,7 @@ export function createKitchenSim(): KitchenSim {
         if (spawnTimer > 0) return;
         spawnTimer = KITCHEN_CONFIG.spawnInterval;
         const pos = posAt(0);
-        state.dishes.push({ uid: nextUid++, dist: 0, x: pos.x, y: pos.y });
+        state.dishes.push({ uid: nextUid++, dist: 0, x: pos.x, y: pos.y, kind: drawKind() });
         state.spawned++;
     }
 
