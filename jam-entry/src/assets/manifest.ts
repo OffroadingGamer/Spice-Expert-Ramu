@@ -48,7 +48,13 @@ export const MANIFEST: Manifest = {
         {
             name: 'deferred',
             assets: [
-                // sub-screen backgrounds, late-game content...
+                // TEST MODE ONLY (src/ui/TestBelt.tsx) — demo tier of a
+                // commercial pack, private-build only; see KitchenMode.md §2.6.
+                { alias: 'ui-slot-empty', src: 'images/ui-slot-empty.png' },
+                { alias: 'ui-slot-filled', src: 'images/ui-slot-filled.png' },
+                { alias: 'ui-hotbar', src: 'images/ui-hotbar.png' },
+                { alias: 'ui-container', src: 'images/ui-container.png' },
+                { alias: 'ui-billboard', src: 'images/ui-billboard.png' },
             ],
         },
     ],
