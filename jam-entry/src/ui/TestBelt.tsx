@@ -42,6 +42,18 @@
  * `message` and `sellSlot` — duplicate PropPicker.tsx's bg-black/60-backdrop
  * pattern a third time (KitchenMode.md §2.5) for the unlock guard /
  * insufficient-funds text and the sell confirmation.
+ *
+ * Round 10: the setup phase. The Ready overlay is no longer a full-screen
+ * scrim — round 9's version swallowed all input, which was wrong: the
+ * kitchen should stay live under it so a player can unlock a slot and place
+ * a prop before starting the belt. It's now just a button, bottom-centre
+ * above the hamburger, that disappears once pressed. The first-entry nudge
+ * and the hamburger are no longer gated on `ready` either, for the same
+ * reason. A new `unlockedSlots` count (mirrors `filledSlots`, off
+ * kitchenScene's new onSlotsUnlockedChange) lets the nudge tell "nothing
+ * unlocked yet" (name unlocking as the first step) apart from "unlocked but
+ * empty" (round 5's original "tap an empty station" text, still correct —
+ * just no longer correct as the FIRST thing a player reads).
  */
 import { useEffect, useRef, useState } from 'react';
 import type { Application } from 'pixi.js';
@@ -99,6 +111,10 @@ export default function TestBelt() {
     // Round 5, task 3: which empty slot opened the picker, if any.
     const [pendingSlot, setPendingSlot] = useState<number | null>(null);
     const [filledSlots, setFilledSlots] = useState(0);
+    // Round 10: mirrors filledSlots — how many slots are unlocked, so the
+    // setup nudge can tell "nothing unlocked yet" apart from "unlocked but
+    // empty".
+    const [unlockedSlots, setUnlockedSlots] = useState(0);
     // Round 9, task 4: the Ready gate — false until Scene.start() is called.
     const [ready, setReady] = useState(false);
     // Round 9, task 5: a short message (unlock guard, insufficient funds).
@@ -122,6 +138,7 @@ export default function TestBelt() {
         setShiftEconomy(null);
         setPendingSlot(null);
         setFilledSlots(0);
+        setUnlockedSlots(0);
         setReady(false);
         setMessage(null);
         setSellSlot(null);
@@ -139,6 +156,7 @@ export default function TestBelt() {
                 onSlotTapEmpty: (i) => setPendingSlot(i),
                 onSlotTapFilled: (i, info) => setSellSlot({ index: i, ...info }),
                 onSlotsFilledChange: (n) => setFilledSlots(n),
+                onSlotsUnlockedChange: (n) => setUnlockedSlots(n),
                 onMessage: (text) => setMessage(text),
             });
             sceneRef.current = scene;
@@ -205,9 +223,11 @@ export default function TestBelt() {
     const chaiShort = shiftResult
         ? Math.max(0, KITCHEN_CONFIG.shiftChaiTarget - shiftResult.completed)
         : 0;
-    // Round 8, task 4: diagnostic only, not scoring — held ingredients are
-    // discarded silently at shift end (parked for a future currency system,
-    // kitchenConfig.ts). Also off the frozen snapshot, per round 5's fix.
+    // Round 8, task 4 (superseded by round 9): a diagnostic count of held
+    // ingredients at shift end — round 9 also scores these via
+    // kitchenConfig.ts's `hats.perLeftover`, so "not scored" no longer holds,
+    // but they still convert to no currency (parked for a future system).
+    // Also off the frozen snapshot, per round 5's fix.
     const shiftLeftover = shiftResult
         ? Object.values(shiftResult.held).reduce((sum, v) => sum + v, 0)
         : 0;
@@ -226,16 +246,21 @@ export default function TestBelt() {
         <div className="absolute inset-0 bg-surface">
             <div key={runId} ref={hostRef} className="absolute inset-0" />
 
-            {/* Round 9, task 4: the Ready gate — nothing spawns and no slot
-                responds until this is pressed. A "Run Again" remount lands
-                back here instead of auto-starting, since `ready` resets to
+            {/* Round 10: no more full-screen scrim — the board is live under
+                this button, so setup (unlock, place) works before it's
+                pressed. Bottom-centre, clear of the slot cluster
+                (design-space x 170-550, y 540-860) and stacked above the
+                hamburger rather than overlapping it. Hidden once pressed;
+                a "Run Again" remount shows it again since `ready` resets to
                 false on every fresh scene. */}
             {!ready && !shiftResult && (
-                <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-6 bg-black/70">
-                    <p className="text-3xl font-bold text-white">Shift ready</p>
+                <div
+                    className="pointer-events-none absolute inset-x-0 flex justify-center"
+                    style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}
+                >
                     <button
                         type="button"
-                        className="rounded-2xl bg-primary px-10 py-4 text-2xl font-bold text-black transition-transform active:scale-95"
+                        className="pointer-events-auto rounded-2xl bg-primary px-10 py-4 text-2xl font-bold text-black shadow-lg transition-transform active:scale-95"
                         onClick={() => { sfx.click(); sceneRef.current?.start(); setReady(true); }}
                     >
                         Ready
@@ -243,21 +268,28 @@ export default function TestBelt() {
                 </div>
             )}
 
-            {/* Round 5, task 3: first-entry nudge — an empty board otherwise
-                gives no affordance. Gone once the first station is set up. */}
-            {ready && !menuOpen && !shiftResult && filledSlots === 0 && (
+            {/* Round 5, task 3 (rewritten round 10): the setup nudge. Slots
+                start locked, so "tap an empty station" is wrong as the first
+                message — name the actual first step (unlock costs coins)
+                until one is unlocked, then fall back to round 5's original
+                text once there's an empty station to point at. No longer
+                gated on `ready` — setup happens before the Ready press. */}
+            {!menuOpen && !shiftResult && filledSlots === 0 && (
                 <div
                     className="pointer-events-none absolute inset-x-0 flex justify-center px-6"
                     style={{ top: 'calc(1rem + env(safe-area-inset-top, 0px))' }}
                 >
                     <p className="rounded-full bg-black/70 px-4 py-2 text-center text-[1.1rem] font-semibold text-white/90">
-                        Tap an empty station to set it up
+                        {unlockedSlots === 0
+                            ? `Tap a locked station to unlock it — ${KITCHEN_CONFIG.slotUnlockCost} coins`
+                            : 'Tap an empty station to set it up'}
                     </p>
                 </div>
             )}
 
-            {/* Hamburger: centre bottom, replaces the old Exit button. */}
-            {ready && !menuOpen && (
+            {/* Hamburger: centre bottom, replaces the old Exit button. No
+                longer gated on `ready` — it's needed most during setup. */}
+            {!menuOpen && (
                 <button
                     type="button"
                     aria-label="Shift menu"

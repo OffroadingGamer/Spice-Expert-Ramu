@@ -75,6 +75,18 @@
  * state, and a new `onMessage` callback drives the same DOM-overlay pattern
  * PropPicker.tsx uses, for the unlock guard and insufficient-funds text
  * (KitchenMode.md §2.5 — noted here as the third copy of that pattern).
+ *
+ * Round 10: the setup phase. Round 9's `ready` gate was "pause everything";
+ * it should have been "freeze the belt, leave the kitchen live" — so `onTap`
+ * no longer checks `ready` at all. Unlock, picker, place and sell all work
+ * before the Ready press, and the second-unlock guard now correctly fires
+ * during setup, which is where it belongs. `tick()`'s own `ready` guard is
+ * untouched — that is the only thing that should freeze the sim, and it
+ * still does: `sim.step` never runs, so spawned/elapsed/walkouts all stay at
+ * 0 through the whole setup phase. A new `onSlotsUnlockedChange` callback
+ * (mirroring the existing `onSlotsFilledChange`) lets TestBelt.tsx tell the
+ * setup nudge apart from the "place a prop" nudge — locked-board vs
+ * unlocked-but-empty are different first steps.
  */
 import {
     Assets,
@@ -138,6 +150,11 @@ export interface KitchenSceneCallbacks {
     /** Round 5, task 3: fires after a prop is placed, with the new total
      *  filled count — drives the "tap a station" first-entry hint. */
     onSlotsFilledChange(filledCount: number): void;
+    /** Round 10: fires after a slot unlocks, with the new total unlocked
+     *  count — mirrors onSlotsFilledChange, and exists for the same reason:
+     *  TestBelt.tsx's setup nudge needs to tell "nothing unlocked yet" apart
+     *  from "unlocked but empty", which are different first steps. */
+    onSlotsUnlockedChange(unlockedCount: number): void;
     /** Round 9, task 5: a short user-facing message (the unlock guard, an
      *  insufficient-funds notice) — shown via PropPicker's DOM-overlay
      *  pattern, not drawn on the Pixi canvas. */
@@ -177,7 +194,7 @@ export async function createKitchenScene(
     stage: KitchenStage,
     callbacks: KitchenSceneCallbacks
 ): Promise<Scene> {
-    const { onChange, onShiftEnd, onSlotTapEmpty, onSlotTapFilled, onSlotsFilledChange, onMessage } = callbacks;
+    const { onChange, onShiftEnd, onSlotTapEmpty, onSlotTapFilled, onSlotsFilledChange, onSlotsUnlockedChange, onMessage } = callbacks;
     // Manifest-listed (deferred bundle) — load on demand rather than trust
     // background-load timing, so Test Mode never races its own art.
     await Assets.load([...UI_ALIASES, ...BAKED_ALIASES]);
@@ -589,6 +606,7 @@ export async function createKitchenScene(
 
         filledSlotCount++;
         onSlotsFilledChange(filledSlotCount);
+        refreshHud();
     }
 
     // Round 9, task 6: refund floor(cost * propSellRefund); the slot itself
@@ -609,6 +627,7 @@ export async function createKitchenScene(
         filledSlotCount--;
         onSlotsFilledChange(filledSlotCount);
         sfx.sell();
+        refreshHud();
     }
 
     // Round 3, task 4 / Round 4, task 4: real sprite where manifest art
@@ -695,11 +714,26 @@ export async function createKitchenScene(
 
     const sim = createKitchenSim();
 
-    // Round 9, task 4: the round no longer starts at scene creation — it
-    // waits for TestBelt.tsx's Ready button to call Scene.start(). Until
-    // then `ready` stays false and tick() below does nothing at all: no
-    // spawning, no timer, no slot interaction.
+    // Round 9, task 4 (narrowed by round 10): the round no longer starts at
+    // scene creation — it waits for TestBelt.tsx's Ready button to call
+    // Scene.start(). Until then `ready` stays false and tick() below does
+    // nothing at all: no spawning, no timer, no HUD update. Round 10: slot
+    // interaction is NOT gated on this any more — onTap works pre-Ready, so
+    // a player can unlock and place props during setup while the belt itself
+    // stays frozen (sim.step is never called, so spawned/elapsed/walkouts
+    // all hold at 0 the whole time).
     let ready = false;
+    // Round 10: the billboard's Walkouts/Coins readout must stay live during
+    // setup too — the kitchen is no longer paused, so a player unlocking or
+    // placing props needs to see their wallet move, not just infer it. Called
+    // once below for the initial render, then again after every wallet
+    // change (attemptUnlock, placeProp, sellProp) and every tick.
+    function refreshHud(): void {
+        const remaining = Math.max(0, KITCHEN_CONFIG.walkoutsAllowed - sim.state.walkouts);
+        setFitText(walkoutsText, `Walkouts Left : ${remaining}`, HUD_MAX_W, 26, 14);
+        setFitText(coinsText, `Coins : ${wallet}`, HUD_MAX_W, 26, 14);
+    }
+    refreshHud();
     function start(): void {
         if (ready) return;
         ready = true;
@@ -749,6 +783,8 @@ export async function createKitchenScene(
         slotLocked[i] = false;
         setSlotLockVisual(i, false);
         sfx.upgrade();
+        onSlotsUnlockedChange(slotLocked.filter((l) => !l).length);
+        refreshHud();
     }
 
     // Round 9, tasks 6-7: a filled slot's tap either serves (if a dish is in
@@ -771,7 +807,9 @@ export async function createKitchenScene(
     }
 
     const onTap = (e: FederatedPointerEvent) => {
-        if (!ready) return;
+        // Round 10: no `ready` gate here — unlock, picker, place and sell
+        // all work before the Ready press. tick()'s own `ready` guard is
+        // what freezes the sim; this handler was never that guard's job.
         const local = boardRoot.toLocal(e.global);
         const { w, h } = KITCHEN_CONFIG.slotBox;
         for (let i = 0; i < KITCHEN_CONFIG.slots.length; i++) {
@@ -892,8 +930,7 @@ export async function createKitchenScene(
             highTensionLatched = true;
             switchCue('service_high');
         }
-        setFitText(walkoutsText, `Walkouts Left : ${remaining}`, HUD_MAX_W, 26, 14);
-        setFitText(coinsText, `Coins : ${wallet}`, HUD_MAX_W, 26, 14);
+        refreshHud();
         onChange(sim.state);
     };
     app.ticker.add(tick);

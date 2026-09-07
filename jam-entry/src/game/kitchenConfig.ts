@@ -73,6 +73,13 @@
  * this round's Chef Hat formula. That comment is updated alongside this one
  * so the two files don't contradict each other; leftovers still convert to
  * no currency, since that system still doesn't exist.
+ *
+ * Round 10: the setup phase. Round 9's Ready gate froze the whole board, not
+ * just the belt — kitchenScene.ts no longer gates slot interaction on it, so
+ * a player can unlock and place a prop before pressing Ready. No number here
+ * changes for that except `starThresholds.two` (300 → 295, see its comment)
+ * — a fix to a bar that sat inside the live 2-walkout coin range, unrelated
+ * to the setup-phase change itself.
  */
 export const KITCHEN_CONFIG = {
     boardWidth: 720,
@@ -438,8 +445,15 @@ export const KITCHEN_CONFIG = {
     /** Round 9: star bands, on `coinsEarned` (LevelEconomy.md §7.3a.2) — not
      *  a currency, but only meaningful next to `coins` above, so it lives
      *  here rather than beside the unrelated Chef Hat formula. ⭐ needs only
-     *  a clear, no threshold. */
-    starThresholds: { three: 340, two: 300 },
+     *  a clear, no threshold.
+     *
+     *  🔒 Round 10: `two` moved 300 → 295. A walkout nets between −25 and
+     *  −19 depending on bag order (LevelEconomy.md §7.3a.2's spread), so a
+     *  2-walkout run earns 298–310 — the old 300 bar sat inside that live
+     *  range, so identical play could score ⭐⭐ or ⭐ purely on shuffle luck.
+     *  295 sits in the 292–297 gap between a 2-walkout floor (298) and a
+     *  3-walkout ceiling (291), which no run can land in. */
+    starThresholds: { three: 340, two: 295 },
 
     /**
      * Round 9, task 9: the Chef Hat formula (LevelEconomy.md §7.3), awarded
