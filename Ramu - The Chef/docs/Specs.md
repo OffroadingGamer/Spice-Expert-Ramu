@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 7 2026, 20:57 IST (read from the system clock)
+**Last updated:** Sep 7 2026, 22:32 IST (read from the system clock)
 **Implementation status:** ▶ **LIVE — v1.7.0 public + approved** (since Sep 5, 14:10:21 IST, §8a.11). ⚠️ This header read **v1.2.3** until Sep 7 while §8a.11 recorded the truth — a handover quoted the header and shipped the wrong number to an agent.
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
@@ -17,7 +17,7 @@ https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
 | | |
 |---|---|
-| Public version | **v1.7.0** — public Sep 5, 14:10:21 IST (§8a.11). Private is ahead at **v1.8.0**, the Test Mode build (§KitchenMode 6.6), which is private-only — `set-public` was never run. **Re-verify with `rundot game info` before quoting this line in a handover.** |
+| Public version | **v1.7.0** — public Sep 5, 14:10:21 IST (§8a.11). Private is ahead at **v1.15.0**, the Test Mode build (§KitchenMode 6.7), which is private-only — `set-public` was never run. ⚠️ This read **v1.8.0** until Sep 7, seven releases stale. **Re-verify with `rundot game info` before quoting this line in a handover.** |
 | Live audience | **35 summed daily uniques** (Sep 3: 9 · Sep 4: 26). **26 of 35 on mobile-web.** ⚠️ `game_loaded` reports **47 distinct players** over the same window — the two disagree and the daily figure is probably low; Plan §7 item 32 |
 | Repo | `September GameJam/jam-entry` (sibling of the docs folder) |
 | Stack | Vite + Pixi.js v8 + React 19 + Tailwind v4, from `september-jam-tower-defense` |

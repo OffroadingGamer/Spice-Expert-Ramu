@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 7 2026, 20:57 IST (read from the system clock)
+**Last updated:** Sep 7 2026, 22:32 IST (read from the system clock)
 
 ---
 
@@ -1895,3 +1895,20 @@ uniques are the score; the trend matters more than any single day.
     **The failure is that nobody priced a round against the gate before starting it.
     When a deadline has one clause left, every unit of work either serves it or defers it
     — say which, out loud, before beginning.**
+
+53. 🔁 **STANDING ASK — starting coins are declared per level, never inferred.**
+    Coins are the in-round build currency: earned during a round, **not carried forward**,
+    and every level opens with a fixed float `n` that sets what the player can afford
+    before any income arrives. `n` is a **level-design decision, not a formula** — it is
+    how a level says "this one is tight" or "this one is generous", and it is the single
+    number that decides whether a level is even *startable* (see the deadlock note below).
+    **Ask the user for `n` on every new level of every node, and record the answer beside
+    the level.** Do not carry the previous level's number forward, do not derive it from
+    the recipe, and do not ship a placeholder silently.
+
+    🔴 **The deadlock this prevents.** `kitchenScene.ts`'s slot handler routes an
+    **empty** slot to the prop picker and only a **filled** slot to `sim.tapSlot` — so with
+    no prop placed, nothing can be collected, and if income is earned by collecting, nothing
+    can be earned. A level whose `n` is below `slot unlock + cheapest prop` is not merely
+    hard, it is **unplayable and cannot report why**. `n` has a hard floor and it is
+    arithmetic, not taste.

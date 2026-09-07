@@ -1,8 +1,8 @@
 # KitchenMode — the belt game view as a second mode
 
-**Last updated:** Sep 7 2026, 20:57 IST (read from the system clock)
+**Last updated:** Sep 7 2026, 22:32 IST (read from the system clock)
 **Status:** 🟢 **Architecture settled.** Eight decisions taken Sep 4, 23:10 IST — all
-eight went to the recommended option. ⬜ Nothing built yet.
+eight went to the recommended option. ✅ **Built and running privately** — eight Test Mode rounds, `c043804`, **v1.15.0 private-only**; §6.7. This line read *"Nothing built yet"* until Sep 7 while §6.7 below recorded the opposite.
 **🛑 Hard gate: playable end to end by Sep 10, or it is cut.** §5.
 
 The belt-and-props game view ([PropList.md](PropList.md), [RecipeList.md](RecipeList.md))
@@ -188,6 +188,8 @@ Everything else in that handover is mode-agnostic.
 
 ## 5. 🛑 The stop rule
 
+> 🔄 **SUPERSEDED Sep 7 2026 — read §6.8 first.** The Sep 10 date below was replaced by a **delivery gate**: all four cuisine nodes shipped, or the live build carries the jam. §5's *definition* of playable still stands and its four clauses were all met by round 8; only the date and the consequence changed.
+
 **Playable end to end by Sep 10, or the belt is cut** and the remaining days go to the
 return loop (S2), which is what the scoring metric — Total Unique Daily Plays — actually
 rewards. D1 retention currently reads 0.0%.
@@ -228,7 +230,7 @@ answers** — flagged below and mirrored in [PropList.md](PropList.md) §7.
 | 11 | What does the boss escalate? | **Speed.** Same node recipes, faster each wave |
 | 12 | Do boosts cross between modes? | **Fully separate.** Belt currency is the **chef hat** (generated later); belt boosts never touch `MetaLevels` |
 | 13 | Where do no-cook dishes resolve? | **Dough Making Counter is the assembly station.** VFX: a generated cloud scale-tweening above it. SFX: chopping knife |
-| 14 | Does the Sep 10 gate hold? | 🔄 **Narrowed to the FTUE node** — §6.3 |
+| 14 | Does the Sep 10 gate hold? | 🔄 **Narrowed to the FTUE node** (§6.3), then **replaced Sep 7 by a delivery gate** — §6.8 |
 | 15 | Which way does the belt run? | ✅ **Left to right, serpentine — two runs with the station row between them.** Tested on device Sep 7 and confirmed as runway, §6.6 |
 
 ### 6.1 Node structure
@@ -238,7 +240,7 @@ tutorial level. Then four cuisine nodes in this order:
 
 | Order | Node | Opens with |
 |---|---|---|
-| 0 | **Beverages** — Chai → High-Tea | The FTUE. Teaches placement, then unlocking, then placing the unlocked tier |
+| 0 | **Beverages** — Chai → Coffee → both → boss | The FTUE, **four levels**. Teaches placement, then unlocking, then placing the unlocked tier. ⚠️ This cell read *"Chai → High-Tea"* until Sep 7; High-Tea was dropped Sep 6 — [RecipeList.md](RecipeList.md) §9.1, §7.0 |
 | 1 | **North Indian** | 1–2 spice-grinding levels producing its masala |
 | 2 | **South Indian** | ditto |
 | 3 | **Italian** | ditto |
@@ -291,7 +293,7 @@ acceptable, art is explicitly not part of this gate."*
 
 | Gate needs | Gate does **not** need |
 |---|---|
-| `sim/kitchen.ts`, belt, 4 slots, one recipe, walkouts, end screen, menu branch | The chai glass · the 24 containers · the chef hat · any node past Beverages |
+| `sim/kitchen.ts`, belt, 4 slots, one recipe, walkouts, end screen, menu branch | The chai glass · the 23 containers · the chef hat · any node past Beverages |
 
 ➡️ **So the Aseprite queue and the Sep 10 gate run in parallel and neither blocks
 the other.** That is the useful consequence of narrowing it rather than dropping it.
@@ -430,11 +432,14 @@ edit; **do not inline them.**
    4, `dist` outside 176–1776) are untouchable — an ingredient there is in transit,
    neither servable nor shown as tappable. Gated on **segment**, not distance: `slotReach`
    reaches the left stub geometrically, and shrinking it would break finding 1.
-4. ⚠️ **Chai masala does not belong in Node 0, and §6.3 still says it does.**
+4. ✅ **RESOLVED Sep 7 — chai masala is gone from the project entirely.**
    [RecipeList.md](RecipeList.md) §6.3 lists Chai Masala under *"Masalas — one per node,
    the output of its grinding levels"*, but §7.0 gives Node 0 four levels — Chai, Coffee,
    both, boss — and **no grinding level**. It has no production step in the FTUE. Chai is
-   **milk · ginger · tea leaf**, decided Sep 7. §6.3's masala row needs reconciling.
+   **milk · ginger · tea leaf**, decided Sep 7. The user's ruling, same day: *"Chai Masala
+   needs to be completely omitted — we are using tea leaves and ginger instead, chai masala
+   is redundant."* §6.3's masala row is now **five** entries, and the ingredient total
+   drops 24 → **23**.
 5. 🔴 **A greedy bot cannot produce a walkout, so a bot run says nothing about
    difficulty.** Round 8's verification drove a bot that taps any slot with an eligible
    dish in reach, every tick, across four slots covering both runs — it *structurally*
@@ -478,13 +483,21 @@ final-dish ×N and the speed ramp.
 2. **`served` was deliberately NOT repurposed.** It still means *ingredients picked up*,
    which is the only reason `TestBelt.tsx`'s `shiftPending`
    (`shiftDishCount − served − walkouts − dishes.length`) still computes correctly.
+   🔴 **That expression dies with the 12-chai target.** It works only while
+   `shiftDishCount` bounds spawning; once spawning is open-ended the four buckets stop
+   summing to a known total and it prints a **negative number on every run** — including
+   wins (`20 − 36 − 0 − 0 = −16`). It must become *"N chai short"*,
+   `max(0, target − completed)`, in the same round that changes the win condition.
    Chai made is `completed`, a separate number. Collapsing the two would silently break
    the pending count.
 
-**The shift arithmetic does not divide, on purpose.** 20 spawns ÷ 3 kinds = **6 complete
-sets + 2 orphans**, so a perfect run is **6 chai with 2 left over** — raising
-`shiftDishCount` to 21 for a clean 7 was proposed and **rejected**: leftovers are a parked
-currency hook, not an untidiness.
+🔄 **SUPERSEDED Sep 7, 21:0x IST — the round is capped by dishes, not spawns.**
+As built, `shiftDishCount: 20` caps *spawns* and a perfect run makes 6 chai with 2
+orphans (20 ÷ 3 kinds = 6 complete sets + 2). The user reversed this: **the round ends
+at 12 completed chai**, spawning runs open-ended until then, and `shiftDishCount` stops
+being a spawn budget at all. Leftovers stay a parked currency hook either way. Full
+per-level values now live in **[LevelEconomy.md](LevelEconomy.md)**, which is the source
+of truth for every currency number; this section keeps only what the belt itself does.
 
 🔒 **PARKED — leftover ingredients become currency**, via a condition-based
 multiplier, once a scoring system exists. It does not exist yet, so at shift end they are
@@ -498,6 +511,86 @@ dashed form ships; the user decides on review.
 
 ⚠️ **Licences unread** on the UI pack (dobo_ui demo tier), the props, the ingredients
 and the dish sprites. Fine for a private build; **not cleared for any public deploy.**
+
+### 6.8 🛑 The delivery gate — **replaces §5's Sep 10 stop rule**, Sep 7 2026
+
+The user, Sep 7: *"We can upgrade that gate to all 4 nodes delivered. If not, the current
+last stable live version sustains for the rest of jam duration."*
+
+| | §5's rule (Sep 4) | §6.8's rule (Sep 7) |
+|---|---|---|
+| Test | Playable end to end | **All four cuisine nodes delivered** |
+| Date | Sep 10 | **Sep 19, 00:30 IST** — the jam deadline |
+| If it fails | Menu button removed, belt cut | **Nothing is removed.** Public stays on the last stable build for the rest of the jam |
+
+✅ **§6.3's narrowed gate was met.** *"Chai runs spawn-to-tray, walkouts count, the shift
+ends — ten times, no crash."* Spawn, walkouts and shift-end have worked since round 1;
+spawn-to-tray landed in round 8 (`c043804`), and ten clean runs were reported. ⚠️ Those ten
+runs were driven by a **bot**, not played on a device — structurally they could not fail
+(§6.7 finding 5), so the gate is met on construction, not on feel.
+
+⚠️ **The scope this commits to, stated plainly.** Four cuisine nodes is **33 levels** on
+top of node 0's four — 37 total — against **12 days**. Exactly **one** level has settled
+economy values ([LevelEconomy.md](LevelEconomy.md)), and FTUE level 1 alone took eight Test
+Mode rounds to reach its current state. That is roughly three levels a day, every day,
+including the art, the recipes and the tuning.
+
+✅ **But the downside is bounded, and that is what makes it a reasonable bet.** The belt
+has never been public — `set-public` has never been run on it — so failure costs the
+entry **nothing**: v1.7.0 keeps scoring at rank #3 exactly as it does today. This is an
+all-or-nothing wager on a protected base, not a gamble with the entry.
+
+🔴 **What the old rule bought that this one does not.** Sep 10 forced a decision while
+nine days remained to redirect. A gate that resolves on the deadline cannot be acted on —
+if the four nodes are not there on Sep 19, there is no time left to do anything about it.
+
+⬜ **A mid-flight checkpoint around Sep 13–14 was proposed and DECLINED**, Sep 7: *"keep
+it 10 only. No other checkpoint for now."* So **Sep 10 stands as the only checkpoint**, and
+it has already been met (above). The delivery gate resolves on the deadline with nothing
+between. Recorded here because the risk it leaves open was raised and answered, not missed.
+
+🔥 One mitigation survives regardless: **the return loop is no longer deferred behind the
+nodes.** §6.9's daily boss leaderboard *is* [Plan.md](Plan.md) item 12, so the work that
+Total Unique Daily Plays actually rewards now sits inside the belt rather than after it.
+
+### 6.9 🔒 Three leaderboard modes — and the return loop, Sep 7 2026
+
+Decision 1 (§6) reserved *"two new board modes for the belt"*. This is what they are, and
+the naming settled Sep 7:
+
+| Mode | Board | Status |
+|---|---|---|
+| **Challenge mode** | The **existing live board** — the tower defence | ✅ Live, rank #3, **untouched** |
+| **Play Game** | The belt's ordinary levels | ⬜ Named now, promoted to primary only before going public |
+| *(boss board)* | **Coins earned in boss rounds** | ⬜ New. Bosses award no stars — [LevelEconomy.md](LevelEconomy.md) §2.1 — their score goes here instead |
+
+🔒 **The live board and the live gameplay are not touched, and that is the point.**
+The user's reason, verbatim: *"We don't want to discourage current user base."* The belt's
+boards run **parallel** to the shipped one; nobody's rank moves, nothing is reset, and the
+tower defence keeps its own board under a name that describes it rather than demoting it.
+
+🔥 **This is the return loop, and it is the first concrete version of it.**
+[Plan.md](Plan.md) item 12 has sat open as *"daily rewards, quests, notifications"* — the
+thing the jam metric (**Total Unique Daily Plays**) actually rewards, and the reason §5's
+original stop rule existed at all. The mechanic, as set Sep 7:
+
+> **Placing top 3 on the daily boss leaderboard pays Chef Hats, collected on the next
+> daily login.**
+
+Three properties worth naming, because they are what make it a *return* loop rather than a
+score display:
+
+1. **The reward is claimed tomorrow, not today.** A player who ranks has a reason to open
+   the game again, which is exactly the behaviour the metric counts.
+2. **It is daily, so it resets.** Yesterday's rank does not protect today's.
+3. **It pays the meta currency**, so it feeds §7.4's shop rather than being a vanity badge.
+
+⚠️ **Rank-gated rewards create a farming incentive — the one line that must not be
+crossed.** Competing for a daily top 3 is legitimate; manufacturing plays to reach it is
+not, and RUN audits for it. Nothing about this mechanic may reward *number of plays*, only
+*best score*, and no reward may ever depend on a player's own alt accounts or repeated
+sessions. This is the standing no-faked-plays rule applied to a feature that is unusually
+close to it.
 
 ---
 

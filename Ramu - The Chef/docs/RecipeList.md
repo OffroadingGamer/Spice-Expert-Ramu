@@ -1,6 +1,6 @@
 # RecipeList — dishes, and the ingredients they call for
 
-**Last updated:** Sep 7 2026, 20:57 IST (read from the system clock)
+**Last updated:** Sep 7 2026, 22:32 IST (read from the system clock)
 **Status:** 🟢 **Node selections locked** (§7, Sep 6) · FTUE fixed (§7.0) · asset inventory typed (§8.5). §3's early proposal is superseded by §7.
 
 Companion to [PropList.md](PropList.md). A recipe drives two things on screen at once:
@@ -254,12 +254,12 @@ Everything needing a labelled vessel drawn off `S3-50`, at 2–5 min each. Rough
 
 | Group | Items | # |
 |---|---|---|
-| **Masalas** — one per node, the output of its grinding levels | Chai Masala · Garam Masala · Sambar Podi · Rasam Podi · North-Eastern blend · Italian herb blend | 6 |
+| **Masalas** — one per node, the output of its grinding levels | Garam Masala · Sambar Podi · Rasam Podi · North-Eastern blend · Italian herb blend | 5 |
 | **Oils** — mustard `S3-19` and sunflower `S3-20` already exist | Ghee · Sesame · Coconut · Olive | 4 |
 | **Grains and pulses** | Flour · Rice · Arborio rice · Toor dal · Chickpeas · Kidney beans · Semolina · Spaghetti · Noodles | 9 |
 | **Beverage dry goods** | Tea leaf · Sugar · Coffee extract | 3 |
 | **Wet** — milk `S3-03` and cream `S3-04` already exist | Mozzarella · Tamarind | 2 |
-| | **Total** | **24** |
+| | **Total** | **23** |
 
 Fresh produce — pumpkin, potato, aubergine, tomato, onion, cabbage, bamboo shoot,
 coconut, green beans, peanut — are **loose sprites, not containers**, and most are
@@ -426,6 +426,15 @@ becomes a late-run or boss dish the ladder has earned. Same bread, right place.
 unlocks the Tandoor, so the player meets Cooktop L4 *before* node 1 begins. The ladder is
 not encountered backwards by accident — the top tier is handed over on purpose, as a
 hook. Naan is then a dish the player already owns the station for.
+
+🔒 **RE-CONFIRMED Sep 7 2026, and given a stronger mechanism than the one above.**
+The user: *"Make it naan as we already have an asset for it, but that round will have an
+irreplaceable prop from the launch of the round on the top right prop slot, `09-Cooktop
+only tandoor`."* So the Naan level does **not** rely on the player having unlocked
+Cooktop L4 at all — the Tandoor is **pre-placed, locked to its slot, and cannot be sold
+or replaced**. That closes §7.5's ladder objection outright rather than routing around
+it, and it is also the general answer to [KitchenMode.md](KitchenMode.md) §6 decision 6's
+*loaner for the round* — see [LevelEconomy.md](LevelEconomy.md) §7.2a.
 
 ### 7.6 🔥 Build node 3 before node 4
 
