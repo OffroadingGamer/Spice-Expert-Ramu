@@ -64,6 +64,10 @@ export const MANIFEST: Manifest = {
                 { alias: 'ing-ginger', src: 'images/ing-ginger.png' },
                 { alias: 'dish-chai', src: 'images/dish-chai.png' },
                 { alias: 'dish-coffee', src: 'images/dish-coffee.png' },
+                // Round 4: fridge anchoring both belt ends. Kitchen Props
+                // furniture sprite (kp1, NOT kp2 — see kitchenConfig.ts),
+                // knowingly upscaled ~5.8x as a temporary placeholder.
+                { alias: 'prop-fridge', src: 'images/prop-fridge.png' },
             ],
         },
     ],

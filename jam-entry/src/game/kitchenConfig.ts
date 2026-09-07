@@ -9,10 +9,14 @@
  * apply here, this composition is a fixed 720x1280 whole).
  *
  * 🔒 VALIDATED ON DEVICE (KitchenMode.md §6.6, 2026-09-07) — do not change
- * beltPath, beltSpeed, spawnInterval, slotReach, or the beltRun1/beltRun2/
- * finalDishArea bands (renamed from propTray in round 3; geometry untouched).
- * The belt reads as runway; that verdict is measured against these exact
- * numbers.
+ * spawnInterval, slotReach, or the beltRun1/beltRun2/finalDishArea bands
+ * (renamed from propTray in round 3; geometry untouched). The belt reads as
+ * runway; that verdict is measured against these exact band numbers.
+ *
+ * Round 4: beltPath grew two segments (fridge in/out) and beltSpeed moved
+ * 100 -> 111 to hold the *traverse time* constant at 16.0s — the number
+ * that's actually validated, not the raw speed constant. See beltPath below
+ * before touching either one.
  */
 export const KITCHEN_CONFIG = {
     boardWidth: 720,
@@ -59,28 +63,51 @@ export const KITCHEN_CONFIG = {
         lowerPanel: { y: 132, height: 248 },
         nineSliceBorder: 40,
         /**
+         * Round 4, task 5: ONE constant for both the recipe name's top inset
+         * and the ingredient row's bottom inset, so the round-3 "gaps read
+         * equal" claim holds by construction, not by two separately-typed
+         * 40s drifting apart later. Used at kitchenScene.ts's recipeNameText
+         * position AND the ingredient row's baseline.
+         */
+        contentInset: 40,
+
+        /**
          * Ingredient row layout (Specs.md §8b's formula, numbers re-derived
          * against this lower panel's own inner width):
          *   slot = (innerWidth - (n-1)*plusWidth - pad) / n
          * n=5 -> slot ~86, comfortably above the 5-ingredient working target.
          *
          * Round 3: tiles anchor bottom-center (0.5, 1) and grow upward from
-         * `rowInset` above the panel's bottom edge — the same 40 units the
-         * recipe name insets from the top, so the two gaps read as equal.
+         * `contentInset` above the panel's bottom edge (the row's baseline).
+         * Round 4, task 4: the tile is now [sprite above][name below] instead
+         * of a flat color+2-letter tile — sprite real where manifest art
+         * exists (ing-milk, ing-ginger), else the round-3 procedural
+         * fallback; name text sized down to fit `slotSize`, never clipped
+         * (checked against "Chai Masala", the longest label at n=5).
          */
-        ingredientRow: { innerWidth: 559, plusWidth: 28, pad: 16, rowInset: 40 },
+        ingredientRow: { innerWidth: 559, plusWidth: 28, pad: 16, labelHeight: 16, labelGap: 4 },
     },
 
     /**
-     * Serpentine belt: IN -> run 1 (L->R) -> drop -> run 2 (R->L) -> PASS.
-     * Segment lengths noted alongside; total 1600 design units.
+     * Round 4: fridge anchoring both ends. OUT of the fridge -> run 1
+     * (L->R) -> drop -> run 2 (R->L) -> INTO the fridge. Runs stay at
+     * x=75 — the x validated in §6.6 — so only the two fridge-connector
+     * segments (90 units each) are new. Total 1780 design units (was 1600).
+     *
+     * 🛑 Both this path and beltSpeed below are load-bearing together, not
+     * separately. beltSpeed=111 holds the traverse time at 1780/111=16.0s,
+     * identical to the validated run — it is not a tuning choice. If the
+     * path changes for any reason, recompute the speed from
+     * BELT_LENGTH / 16.0 and say so; do not move the runs off x=75.
      */
     beltPath: [
-        { x: 75, y: 470 },   // IN
-        { x: 645, y: 470 },  // run 1   570
-        { x: 645, y: 930 },  // drop    460
-        { x: 75, y: 930 },   // run 2   570  -> PASS
-    ],
+        { x: 75, y: 560 },   // OUT of the fridge      90
+        { x: 75, y: 470 },
+        { x: 645, y: 470 },  // run 1                 570
+        { x: 645, y: 930 },  // drop                  460
+        { x: 75, y: 930 },   // run 2                 570
+        { x: 75, y: 840 },   // INTO the fridge        90
+    ],                       //                total 1780
 
     /**
      * Station slots, 2 rows x 2 columns (was one row of four). Row centres
@@ -104,12 +131,36 @@ export const KITCHEN_CONFIG = {
      * Round 3: which prop each of the 4 slots (in `slots` order) shows,
      * assigned round-robin by index (i % levelProps.length) — a level-design
      * choice, not a global catalogue. Multiple slots may share a prop type;
-     * nothing here is unique per slot. Drawn on top of the ui-slot-empty/
-     * ui-slot-filled background, centre-anchored, at all times (the prop
-     * identifies the station; empty/filled is the separate occupancy read).
+     * nothing here is unique per slot. Drawn top-anchored (0.5, 0) at the
+     * box's top inner edge, centred on x, aspect-fit within propSize.
+     *
+     * Round 4, task 2: `name` and `level` are separate fields so the label
+     * format ("Name… - Level N") lives in one place (kitchenScene.ts's
+     * formatPropLabel) — the level suffix is measured first and never
+     * truncates; the name gets whatever width remains and may ellipsis.
      */
-    levelProps: ['prop-kettle-l1', 'prop-water-dispenser-l1'],
+    levelProps: [
+        { alias: 'prop-kettle-l1', name: 'Kettle', level: 1 },
+        { alias: 'prop-water-dispenser-l1', name: 'Water Dispenser', level: 1 },
+    ],
     propSize: { w: 84, h: 90 },
+    propLabelTopPad: 10,
+    propLabelGap: 6,
+
+    /**
+     * Round 4, task 3: placeholder fridge anchoring both belt ends — see
+     * beltPath above. Centre (75, 700), same x as the belt's own runs.
+     * Drawn stretched to fill this box (squashing the sprite's native 2:3
+     * to 1:2) and ABOVE the belt in z-order, so the belt visibly runs into
+     * and out of it.
+     *
+     * 🛑 Knowing, temporary exception to PropSpriteIndex.md §5, not a
+     * reversal of it: prop-fridge (kp1/087.png, 32x48 isometric pixel art)
+     * upscaled ~5.8x beside painterly Essentials art will look wrong,
+     * exactly as §5 predicts. It unblocks round 4 without new art; it is
+     * not licence to use Kitchen Props sprites anywhere else on the line.
+     */
+    fridge: { x: 5, y: 560, w: 140, h: 280 },
 
     /** How far a slot reaches to tap a passing dish. VALIDATED — do not
      *  raise; narrow the station band instead if it ever reads as generous. */
@@ -137,13 +188,22 @@ export const KITCHEN_CONFIG = {
 
     /**
      * Round 3: finished-dish sprites for the final-dish area (bands.
-     * finalDishContent), served dishes shown round-robin. Native 212x141,
-     * drawn at dishSize (106x70) — same footprint as belt ingredients.
+     * finalDishContent). Native 212x141, drawn at dishSize (106x70) — same
+     * footprint as belt ingredients. Served dishes shown round-robin by
+     * servedCount parity (the sim has no recipe-outcome concept; this is
+     * grey-box dressing, same as billboard.recipe below).
+     *
+     * Round 4, task 1: one entry per type now, not one sprite per served
+     * dish — [sprite] x[count], hidden while count is 0. `finalDishSlotX`
+     * is the fixed centre-x per type, in `finalDishes` order.
      */
     finalDishes: ['dish-chai', 'dish-coffee'],
+    finalDishSlotX: [260, 460],
 
-    /** Design-unit travel speed along the belt. VALIDATED (§6.6: runway). */
-    beltSpeed: 100,
+    /** Design-unit travel speed along the belt. VALIDATED (§6.6: runway,
+     *  measured at the old 1600-unit path). Round 4: 100 -> 111 to hold the
+     *  traverse time at 16.0s over the new 1780-unit path — see beltPath. */
+    beltSpeed: 111,
 
     /** Seconds between dish spawns. VALIDATED. */
     spawnInterval: 2.2,
