@@ -329,13 +329,25 @@ export async function createKitchenScene(
 
     // Round 11: the word "Coins" is replaced by the baked ui-coin icon —
     // icon height matched to the text's own base size (26), then a small
-    // gap, then the number. The (icon+gap+number) group is re-centred on the
-    // same x every refreshHud() call since the number's width changes with
-    // the wallet; the number's own max width shrinks by the icon+gap first,
-    // so the group's total width still can't exceed HUD_MAX_W and collide
-    // with walkoutsText, same bound the bare text used to respect.
+    // gap, then the number. The number's own max width shrinks by the
+    // icon+gap first, so the group's total width still can't exceed
+    // HUD_MAX_W and collide with walkoutsText, same bound the bare text used
+    // to respect.
+    //
+    // Round 12a: the group is RIGHT-ANCHORED, not centred on the panel's
+    // right quarter-point. Centring suited the old fixed-width "Coins : N"
+    // string but not an icon plus a 1-3 digit number: a narrow group left a
+    // visible gap to the panel's right edge while sitting far from
+    // walkoutsText. Anchoring the right edge also keeps the readout still as
+    // the digit count changes — a centred group shifts BOTH of its ends on
+    // every coin gained. The collision bound holds by construction: the
+    // group is at most HUD_MAX_W wide, so its left edge cannot reach the
+    // panel's midpoint.
     const COIN_ICON_H = 26;
     const COIN_ICON_GAP = 6;
+    // The same 24 HUD_MAX_W reserves off the half-width — one inset for this
+    // block, so the right margin and the collision slack can't drift apart.
+    const HUD_RIGHT_INSET = 24;
     const coinIcon = new Sprite(tex.coin);
     coinIcon.anchor.set(0.5);
     coinIcon.height = COIN_ICON_H;
@@ -873,8 +885,9 @@ export async function createKitchenScene(
         // shrink its budget by the icon+gap so (icon+gap+number) still fits
         // HUD_MAX_W as a group.
         setFitText(coinsText, `${wallet}`, HUD_MAX_W - coinIcon.width - COIN_ICON_GAP, 26, 14);
-        const groupCx = BB.panelInner.x + (3 * BB.panelInner.width) / 4;
-        const groupLeft = groupCx - (coinIcon.width + COIN_ICON_GAP + coinsText.width) / 2;
+        // Round 12a: right-anchored — see the coinIcon block above.
+        const groupRight = BB.panelInner.x + BB.panelInner.width - HUD_RIGHT_INSET;
+        const groupLeft = groupRight - (coinIcon.width + COIN_ICON_GAP + coinsText.width);
         coinIcon.position.set(groupLeft + coinIcon.width / 2, hudY);
         coinsText.position.set(groupLeft + coinIcon.width + COIN_ICON_GAP, hudY);
     }
