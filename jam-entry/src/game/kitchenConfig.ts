@@ -298,9 +298,42 @@ export const KITCHEN_CONFIG = {
      */
     fridge: { x: 39, y: 646, w: 72, h: 108 },
 
-    /** How far a slot reaches to tap a passing dish. VALIDATED — do not
-     *  raise; narrow the station band instead if it ever reads as generous. */
-    slotReach: 260,
+    /**
+     * How far a slot reaches to tap a passing dish. VALIDATED — do not
+     * raise; narrow the station band instead if it ever reads as generous.
+     *
+     * Round 12b: narrowed 260 -> 180, which is that sanctioned direction,
+     * not a lift of the header's lock. Round 12's overlay made the accepted
+     * stretch visible for the first time and it read as far too generous.
+     * Measured against beltPath, at 180 each station's band is about half
+     * what it was (top-left 381 -> 213 units, top-right 726 -> 356) and
+     * station bands NO LONGER OVERLAP AT ALL — overlap vanishes below ~186,
+     * where at 260 it was 38.5% of the eligible belt.
+     *
+     * ⚠️ Two floors, and they are not the same number:
+     *   - 145 is HARD. It is the perpendicular distance from a slot row to
+     *     its own belt run (y615 -> y470, y785 -> y930). Below it a station
+     *     reaches no belt at all and is inert. Nothing may go under this.
+     *   - 219.66 is the tightest reach that keeps 100% of the eligible belt
+     *     inside some station's reach at every instant. It is the distance
+     *     from the nearest slot to each of four points — the belt entry, the
+     *     belt exit, and BOTH right-hand corners (645,470)/(645,930), all
+     *     four identical by the layout's symmetry. Below it those points sit
+     *     in no band.
+     * Going under 219.66 is deliberate. A coverage gap does NOT make a dish
+     * uncatchable: a dish travels the whole eligible run, so it only needs
+     * to be in SOME band at SOME moment, and it still crosses several. The
+     * gaps cost opportunities, not reachability — which is the difficulty
+     * this change was asked for.
+     *
+     * 🛑 Consequence to re-validate by playing, not by arithmetic: a station
+     * band at 180 is ~1.09s wide at full belt speed against a 2.0s prop
+     * cooldown, so a station can no longer take two dishes in a row late in
+     * a round. The flawless 348 coins / 465 hats baseline and the ⭐ 340/295
+     * thresholds in LevelEconomy.md §8 were derived at 260 and are NOT
+     * carried over by this edit.
+     */
+    slotReach: 180,
 
     /**
      * Round 9, task 7: seconds a prop is busy after taking an ingredient. ON
