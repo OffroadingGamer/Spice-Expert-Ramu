@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 6 2026, 22:54 IST (read from the system clock)
+**Last updated:** Sep 7 2026, 20:57 IST (read from the system clock)
 
 ---
 
@@ -1863,3 +1863,35 @@ uniques are the score; the trend matters more than any single day.
     baseline out loud before trusting the number — and when a tool offers a default one
     (`getbbox`, a folder default, a script's `repeats`), that is exactly where to look
     first.**
+
+49. **A scaling rule written for one direction of mismatch fails silently in the other.**
+    `config.ts` says the board is *"drawn for a 9:16 screen; on taller screens the whole
+    board is vertically centered in the extra space, so the PATH NEVER STRETCHES."* The
+    test device was **shorter** than 9:16 relative to its width — the case the sentence
+    does not cover — so the board fit to width and 150 design units fell off the bottom,
+    taking half the prop tray with them. Nothing errored and the screenshot looked fine.
+    **When a rule handles "too much" of something, write down what happens on "too little"
+    in the same breath, or it will be discovered by a screenshot.**
+50. **A pass/fail counter can be structurally incapable of failing.** The Test Mode end
+    screen read *"20 served, 0 walked out"*, which looks like a difficulty result and is
+    not one: a dish is served by a single tap, so the only reachable outcome was 20/0. The
+    build measured what it was built to measure — whether the belt *reads* as runway —
+    and that came from watching it, not from the numbers. **Before quoting a metric as
+    evidence, check whether the system could have produced a different value.**
+
+51. **Padding measured from a sprite's bounds is not padding when the art has a border.**
+    The prop label was placed 8 units above the slot sprite's bottom edge and still read as
+    overflowing, because `ItemSlot1.png` carries a raised border ~20 units deep — the label
+    was sitting *on* the frame, inside the sprite but outside the well. Two rounds went to
+    "move it up a bit" before anyone measured the art: well at x 14–122, y 18–127 of
+    137×148. **When art supplies its own frame, the layout box is the well, not the file.
+    Measure it once and put it in config.**
+52. **Seven rounds of polish while the one gate clause went unbuilt.** Test Mode ran from
+    v1.8.0 to v1.14.0 across six rounds after the belt was validated — billboard, slot
+    grid, fridge, labels, sizing, audio — every one of them delivered and verified. In the
+    same stretch `sim/kitchen.ts` changed once, to add a distance check. §6.3's gate has
+    four clauses and three have worked since round 1; the fourth, *spawn-to-tray*, was
+    never started. Each round was individually reasonable and the user asked for each one.
+    **The failure is that nobody priced a round against the gate before starting it.
+    When a deadline has one clause left, every unit of work either serves it or defers it
+    — say which, out loud, before beginning.**

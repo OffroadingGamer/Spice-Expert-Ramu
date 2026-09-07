@@ -9,15 +9,15 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 6 2026, 22:54 IST (read from the system clock)
-**Implementation status:** ▶ **LIVE — v1.2.3 public + approved.**
+**Last updated:** Sep 7 2026, 20:57 IST (read from the system clock)
+**Implementation status:** ▶ **LIVE — v1.7.0 public + approved** (since Sep 5, 14:10:21 IST, §8a.11). ⚠️ This header read **v1.2.3** until Sep 7 while §8a.11 recorded the truth — a handover quoted the header and shipped the wrong number to an agent.
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
 ### Live state snapshot
 
 | | |
 |---|---|
-| Public version | **v1.2.3** (verified on Private/Review/Public via `rundot game info`) |
+| Public version | **v1.7.0** — public Sep 5, 14:10:21 IST (§8a.11). Private is ahead at **v1.8.0**, the Test Mode build (§KitchenMode 6.6), which is private-only — `set-public` was never run. **Re-verify with `rundot game info` before quoting this line in a handover.** |
 | Live audience | **35 summed daily uniques** (Sep 3: 9 · Sep 4: 26). **26 of 35 on mobile-web.** ⚠️ `game_loaded` reports **47 distinct players** over the same window — the two disagree and the daily figure is probably low; Plan §7 item 32 |
 | Repo | `September GameJam/jam-entry` (sibling of the docs folder) |
 | Stack | Vite + Pixi.js v8 + React 19 + Tailwind v4, from `september-jam-tower-defense` |
@@ -737,7 +737,25 @@ cost nothing.
 
 ---
 
-## 8b. 🔒 Billboard ingredient row — the overflow rule and its ceiling
+## 8b. 🔓 Billboard ingredient row — **amended twice, Sep 7 2026**
+
+> ⚠️ **Two clauses below are superseded by the shipped build** ([KitchenMode.md](KitchenMode.md) §6.7).
+> The overflow rule and the ceiling still stand; these two do not.
+>
+> 1. **"images only, no dish name" — reversed.** The billboard now carries the recipe
+>    name above the row. The clause entered Sep 4 from the user's own layout proposal
+>    (Plan item 48) and was never argued here; the user changed the design Sep 7. The
+>    reasoning in this section is unaffected, being horizontal while a name is vertical.
+> 2. **Shrink-to-fit — now the fallback, not the rule.** Sprite size must **not** change
+>    with recipe length. The cell is computed once at the cap **n=5** (`ingredientRow.capN`)
+>    and a shorter recipe draws a shorter, **centred** row at that same size. §8b's formula
+>    is retained unchanged for **n=6**, the hard maximum, so the never-overflow invariant
+>    holds. The tween on recipe change applies only in that fallback.
+>
+> 🔴 **`innerWidth ≈ 520` below is stale.** Nesting the row inside `WoodenContainer1`
+> inside a 640-wide billboard makes it **559**, which *improves* every count: 4 → 0.90,
+> 5 → 0.67, 6 → 0.52 (above the floor it used to sit on), 7 → 0.42, still rejected.
+> The table below is kept as authored.
 
 Added Sep 4 2026, 19:49 IST, from the new game-view proposal (Plan item 48). The lower
 billboard panel renders a recipe as `[img 01] + [img 02] + …`, **images only, no dish

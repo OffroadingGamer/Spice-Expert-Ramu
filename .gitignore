@@ -61,3 +61,17 @@ Ramu - The Chef/Audio/
 # ship as baked atlases under jam-entry/public/images/ instead. Licence
 # terms still need reading per pack — Plan §7.
 Ramu - The Chef/Art/
+
+# ── Third-party UI pack: must NOT be redistributed ────────
+# "Cozy UI Pack" by dobo_ui (itch.io), arrived Sep 7. Its own
+# developerNote calls it the DEMO version, which is the tier least
+# likely to permit redistribution. Same reasoning as Art/ and Audio/
+# above: this repo is PUBLIC. Sprites cut from it ship baked under
+# jam-entry/public/images/. Licence terms still need reading.
+Ramu - The Chef/UI/
+
+# ── Credentials: NEVER commit ──────────────────────────────────
+# Share URLs carry their access key in ?k=. This repo is PUBLIC, so a
+# key in a tracked doc is a published key. Created Sep 7 2026 at the
+# user's request, deliberately outside version control.
+Ramu - The Chef/docs/private build keys.md

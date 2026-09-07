@@ -1,13 +1,13 @@
 # KitchenMode — the belt game view as a second mode
 
-**Last updated:** Sep 6 2026, 22:54 IST (read from the system clock)
+**Last updated:** Sep 7 2026, 20:57 IST (read from the system clock)
 **Status:** 🟢 **Architecture settled.** Eight decisions taken Sep 4, 23:10 IST — all
 eight went to the recommended option. ⬜ Nothing built yet.
 **🛑 Hard gate: playable end to end by Sep 10, or it is cut.** §5.
 
 The belt-and-props game view ([PropList.md](PropList.md), [RecipeList.md](RecipeList.md))
 ships as a **second mode beside the live tower defence**, not in place of it. The live
-v1.2.3 is scoring at rank #3 and is not touched. On the user's approval the belt is
+v1.7.0 is scoring at rank #3 and is not touched (public since Sep 5, 14:10:21 IST — [Specs.md](Specs.md) §8a.11; this line read v1.2.3 until Sep 7 and was two releases stale). On the user's approval the belt is
 promoted to primary; until then it is a clearly-labelled beta.
 
 ---
@@ -229,6 +229,7 @@ answers** — flagged below and mirrored in [PropList.md](PropList.md) §7.
 | 12 | Do boosts cross between modes? | **Fully separate.** Belt currency is the **chef hat** (generated later); belt boosts never touch `MetaLevels` |
 | 13 | Where do no-cook dishes resolve? | **Dough Making Counter is the assembly station.** VFX: a generated cloud scale-tweening above it. SFX: chopping knife |
 | 14 | Does the Sep 10 gate hold? | 🔄 **Narrowed to the FTUE node** — §6.3 |
+| 15 | Which way does the belt run? | ✅ **Left to right, serpentine — two runs with the station row between them.** Tested on device Sep 7 and confirmed as runway, §6.6 |
 
 ### 6.1 Node structure
 
@@ -311,6 +312,192 @@ entry untouched.
 - **The boost list** beyond Fast Hands, Reach and per-prop traits.
 - **The live tower defence's upgrade-does-not-change-sprite behaviour** — fix, or leave
   as superseded by the belt.
+
+### 6.6 ✅ The belt reads as runway — measured on device, Sep 7 2026
+
+🔒 **Verdict: `runway`.** The user's one-word call after playing private
+**v1.8.0** on a phone. That closes the only question the Test Mode build existed to
+answer, and decision 15 above is settled on it.
+
+**Why the question existed.** GDD Sep 3, 13:05 PT chose a *vertical* lane deliberately:
+*"Lane direction agrees with the phone's long axis."* A left-to-right belt in portrait
+gives a dish **720 units of travel instead of 1280** — 56% of the runway, so 56% of the
+reaction time at the same speed. Folding the path into a serpentine recovers it:
+
+| Path | Travel | vs the rail's 1280 |
+|---|---|---|
+| Straight left→right | 720 | 0.56 |
+| **Serpentine, 2 runs + the drop** | **1,600** | **1.25** |
+
+**The station row sits between the two runs**, so each dish passes it twice — once from
+below on run 1, once from above on run 2. That is what the serpentine is *for*; it is not
+a way to buy travel distance. One row of four slots covers the whole path.
+
+**Numbers under test** (`jam-entry/src/game/kitchenConfig.ts`): belt speed **100 u/s**,
+spawn interval **2.2 s**, slot reach **260**, dishes per shift **20**, walkouts **5**.
+Travel is 570 + 460 + 570 = **1,600 units**, so a dish crosses in **16 s** and about
+**7 are in flight** at once.
+
+⚠️ **The end-screen counters are not a difficulty signal.** `sim/kitchen.ts` serves
+the nearest in-reach dish on a single tap — no recipe steps, no cook time — so the
+observed *"20 served, 0 walked out"* could not have gone otherwise. The verdict above is a
+judgement from watching the belt, which is the only thing this build could measure.
+
+🔴 **Open — 150 design units are cropped off the bottom.** Measured from the
+v1.8.0 screenshot: the RUN host header takes 114 px, leaving a **952×1486** viewport at
+aspect **0.641** against the design's 0.563. The board scales to fit *width* (×1.312),
+needs 1,692 px of height, has 1,486, and is anchored to the top — so design y
+**1130–1280 is off-screen**, which is **54% of the prop tray band**. The belt is
+unaffected: run 2 at y=930 and the PASS point are both comfortably visible, which is why
+the test still stands. `stage.ts`'s rule centres the board when a screen is *taller* than
+9:16; **this device was shorter, and that case is unhandled.**
+
+✅ **Everything else rendered to spec**, measured from the same screenshot rather than
+eyeballed: slot centres at design x **150.9 / 291.5 / 432.9 / 573.9** against 150/290/430/570,
+slot y **701** against 700, dish **106×70** exactly, band edges at **400 / 540 / 860**.
+
+### 6.7 🔒 Test Mode rounds 2–8 — the built state, Sep 7 2026
+
+§6.6 describes **v1.8.0**. Seven rounds followed it; this is where the build actually is.
+All private-only, `set-public` never run, public untouched at **v1.7.0** throughout —
+re-verified independently at round 8 via `rundot game list-tags`: private **1.15.0**,
+review **1.7.0**, public **1.7.0**.
+
+| Round | Commit | Version | What it settled |
+|---|---|---|---|
+| 2 | `3517e91` | v1.9.0 | Billboard becomes the whole HUD · 2×2 slot grid · fit-to-height stage |
+| 3 | `577e4c7` | v1.10.0 | Belt drawn as a path · props in slots · ingredients on the belt · final-dish area |
+| 4 | `bc78d05` | v1.11.0 | One sprite + ×N per dish type · prop labels · fridge anchoring both belt ends |
+| 5 | `fdc03ee` | v1.12.0 | Chai only · fridge to a true 2.25× · empty slots + `PropPicker` · end-screen fix |
+| 6 | `2907f0e` | v1.13.0 | Label containment against the slot's inner well · belt-segment interaction rules · chai to 3 ingredients |
+| 7 | `e6fd8ab` | v1.14.0 | Ingredient cell fixed at the n=5 cap · music and SFX |
+| **8** | **`c043804`** | **v1.15.0** | 🔒 **The recipe gate** · badge counters · belt speed ramp · `Level` → `Lv` |
+
+**Geometry as built** — `jam-entry/src/game/kitchenConfig.ts` is the source of truth:
+
+| | |
+|---|---|
+| Bands | billboard **0–400** · run 1 400–540 · stations 540–860 · run 2 860–1000 · finalDishContent 1000–1160 · **hamburgerReserve 1160–1280** |
+| Billboard | 640×400 at x40 · panels inner x57 w**607** · upper 20–100, gap 100–132, lower **132–380** |
+| Slots | 2×2 at x **240/480**, y **615/785** · box 139×150 |
+| Fridge | **72×108** at x39 y646 — 2.25× native, aspect preserved |
+| Belt | **1952** units: 176 / 570 / 460 / 570 / 176 · `beltSpeed` **122** · traverse **16.0000s** |
+| Ingredients | milk · ginger · tea-leaf · bag shuffle, longest drought **2n−2 = 4** |
+| Badges (r8) | **36×37.7** at each cell's top-right, `(cx+39.1, 257.8)` · digit `#FDFAE7` fitted to **19.7** units · measured clearances: **132** from the panel edge, **30** from the recipe name, **20** from the `+`, **14** into the 28-unit gap |
+| Prop label (r8) | budget **97** units unchanged · suffix `" - Lv 1"` **40.6px** (was `" - Level 1"`, 58.6px) → name gets **56.4** units, was 38.4 (**+47%**) |
+
+🔒 **`beltPath` and `beltSpeed` are load-bearing together.** 122 is not a tuning
+value — it is `1952 ÷ 16.0`, chosen to hold the traverse identical to the run §6.6
+validated. Change the path and recompute the speed, or the "runway" verdict no longer
+describes what ships.
+
+🔓 **Round 8 amends that, and the lock survives the amendment.** The belt now
+*accelerates* — `beltRamp { baseTraverse 16.0, perCompletion 0.5, minTraverse 10.0 }`,
+in **traverse seconds, never u/s**. Speed is `BELT_LENGTH ÷ target`, recomputed every
+tick, so what the lock actually protects still holds: **nobody types a speed without
+knowing its traverse.** 16.0s became where a shift *starts* rather than where it stays,
+and `beltSpeed: 122` is now the opening value, guarded by a dev-time check that warns if
+it ever stops equalling `BELT_LENGTH / baseTraverse`.
+
+| chai | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|---|
+| traverse (s) | **16.0** | 15.5 | 15.0 | 14.5 | 14.0 | 13.5 | **13.0** |
+| speed (u/s) | **122** | 126 | 130 | 135 | 139 | 145 | **150** |
+| reaction window (s) | **3.54** | 3.43 | 3.32 | 3.21 | 3.10 | 2.99 | **2.88** |
+
+Linear in *traverse*, deliberately: a linear speed increase would give a decelerating
+loss of reaction time, so the ramp would feel strong early and fade. This way each cup
+costs the same half-second of thinking time. Dishes already in flight accelerate too —
+that is what "the belt got faster" physically means.
+
+⬜ **The curve itself is UNSETTLED.** The user deferred it to a play review rather than
+answer it up front. All three numbers live in `beltRamp` so a retune is a one-number
+edit; **do not inline them.**
+
+✅ **Five findings worth keeping:**
+
+1. **The 2×2 grid changed the reach mapping and kept the property.** At `slotReach` 260
+   each row is 145 from its own run and 315 from the other, so the **top row serves run 1
+   and the bottom row run 2** — where one row served both. A dish still meets **all four**
+   slots, two per pass, so the serpentine's purpose survives. **Do not raise `slotReach` to
+   restore both-runs-from-either-row.**
+2. **Padding must be measured from the slot art's inner well, not its bounds.**
+   `ItemSlot1.png` is 137×148 with the well at x 14–122, y 18–127 — a border ~20 units
+   deep at the bottom on a 139×150 box. Round 5 padded 8 units from the sprite edge and
+   the label landed *on the border*. Now `slotWell` + `labelGap`, giving a 97-unit text
+   budget and aggressive ellipsis.
+3. **Props reach only the three working runs.** The two fridge connectors (segments 0 and
+   4, `dist` outside 176–1776) are untouchable — an ingredient there is in transit,
+   neither servable nor shown as tappable. Gated on **segment**, not distance: `slotReach`
+   reaches the left stub geometrically, and shrinking it would break finding 1.
+4. ⚠️ **Chai masala does not belong in Node 0, and §6.3 still says it does.**
+   [RecipeList.md](RecipeList.md) §6.3 lists Chai Masala under *"Masalas — one per node,
+   the output of its grinding levels"*, but §7.0 gives Node 0 four levels — Chai, Coffee,
+   both, boss — and **no grinding level**. It has no production step in the FTUE. Chai is
+   **milk · ginger · tea leaf**, decided Sep 7. §6.3's masala row needs reconciling.
+5. 🔴 **A greedy bot cannot produce a walkout, so a bot run says nothing about
+   difficulty.** Round 8's verification drove a bot that taps any slot with an eligible
+   dish in reach, every tick, across four slots covering both runs — it *structurally*
+   cannot miss, so "6 chai, 0 walked out" was the only reachable outcome. That is
+   [Retro.md](Retro.md) lesson 50 recurring one round later on a different harness, and
+   it matters more now than it did then: **the ramp has never met a player who drops
+   ingredients**, which is the exact interaction it was tuned against. Everything
+   structural about round 8 is verified; nothing about how it *plays* is.
+
+**Audio** mirrors the live game and adds nothing to `audio.ts`: `service_low` +
+`prefetchCue('service_high')` on entry; `service_high` latched once when
+`remaining > 0 && remaining < walkoutsAllowed * 0.3` — the belt's **own 5**, per §4's
+amendment, firing with one left; `menu` on exit. SFX are procedural, so the pass cost no
+assets. `sfx.shot('kitchen')` was a **deliberate stand-in** — an unknown id gets the
+documented default thud — *"and wants its own cue once serving means completing a
+recipe"*. ✅ **Round 8 resolved it:** serving now means completing a recipe, so pickup
+keeps the thud and completion calls `sfx.upgrade()` (a rising 660→880→1320 square
+arpeggio) — two moments, two sounds. `audio.ts` is still untouched, verified absent from
+`c043804`'s file list. A bespoke completion cue stays a follow-up for the audio thread.
+
+✅ **The gate is built — round 8, `c043804`.** For seven rounds serving was round 3's:
+tap a slot, the nearest in-reach ingredient resolves, `served++`. **One ingredient in,
+one chai out** — milk, ginger and tea leaf were three interchangeable tokens that each
+independently became a full cup, and the recipe printed on the billboard was dressing the
+sim did not enforce. §6.3's gate is *"Chai runs **spawn-to-tray**, walkouts count, the
+shift ends"*; spawn, walkouts and shift-end worked from round 1, and **spawn-to-tray is
+now the fourth.**
+
+`sim/kitchen.ts` carries `held` (one count per `ingredientKinds` key, every key
+initialised to 0, never undefined) and `completed`. A tap increments `held[kind]` and
+`served`; **only** when every key in `recipe.ingredients` is > 0 does it consume one of
+each, increment `completed`, and emit `'completed'` — which is what now drives the
+final-dish ×N and the speed ramp.
+
+🔒 **Two invariants to preserve if this is ever touched again:**
+
+1. **One tap can never complete two dishes — a single `if`, never a `while`.** A tap adds
+   exactly 1 to exactly one counter, and completion is checked-and-consumed on every tap,
+   so no second set can ever be sitting there waiting. A `while` that iterated twice
+   would be hiding corrupt state, not handling a case.
+2. **`served` was deliberately NOT repurposed.** It still means *ingredients picked up*,
+   which is the only reason `TestBelt.tsx`'s `shiftPending`
+   (`shiftDishCount − served − walkouts − dishes.length`) still computes correctly.
+   Chai made is `completed`, a separate number. Collapsing the two would silently break
+   the pending count.
+
+**The shift arithmetic does not divide, on purpose.** 20 spawns ÷ 3 kinds = **6 complete
+sets + 2 orphans**, so a perfect run is **6 chai with 2 left over** — raising
+`shiftDishCount` to 21 for a clean 7 was proposed and **rejected**: leftovers are a parked
+currency hook, not an untidiness.
+
+🔒 **PARKED — leftover ingredients become currency**, via a condition-based
+multiplier, once a scoring system exists. It does not exist yet, so at shift end they are
+**discarded silently**: not scored, not converted. The end screen's *"N ingredients
+discarded"* line is a **diagnostic only**, there so the size of the remainder can be read
+from real play before the currency design is written. **Do not invent a score for them.**
+
+⬜ **Open, measured, not shipped:** dropping the `" - "` before `Lv` would give the prop
+name **64.4** units instead of 56.4. `"Water … - Lv 1"` still truncates today. The
+dashed form ships; the user decides on review.
+
+⚠️ **Licences unread** on the UI pack (dobo_ui demo tier), the props, the ingredients
+and the dish sprites. Fine for a private build; **not cleared for any public deploy.**
 
 ---
 
