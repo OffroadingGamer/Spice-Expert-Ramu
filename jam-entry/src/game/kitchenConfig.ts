@@ -85,6 +85,14 @@
  * a one-way lift — see that comment for the deadlock it fixes. No numbers
  * changed here; `propTierCost[0]` (40) is read by the new floor, not edited
  * for it.
+ *
+ * Round 13: `slotReach`'s radial acceptance test is superseded outright —
+ * each station now owns an assigned, non-overlapping stretch of belt
+ * (sim/kitchen.ts's `SLOT_ZONES`), derived at runtime from `beltPath`'s own
+ * cumulative lengths and the new `slotBandSeam` below. `slotReach`'s comment
+ * and numeric value are left exactly as they were; only its readers are
+ * gone. See `SLOT_ZONES` in sim/kitchen.ts for the boundary math and the
+ * slot-assignment rule (nearest slot to each zone's own midpoint).
  */
 export const KITCHEN_CONFIG = {
     boardWidth: 720,
@@ -334,6 +342,15 @@ export const KITCHEN_CONFIG = {
      * carried over by this edit.
      */
     slotReach: 180,
+
+    /**
+     * Round 13: the gap between two neighbouring belt zones (sim/kitchen.ts's
+     * SLOT_ZONES), applied as ±half either side of each zone boundary so
+     * adjacent stations' accepted stretches never touch. This — not
+     * `slotReach` above, which no longer has any readers — is what now
+     * governs station acceptance width.
+     */
+    slotBandSeam: 40,
 
     /**
      * Round 9, task 7: seconds a prop is busy after taking an ingredient. ON

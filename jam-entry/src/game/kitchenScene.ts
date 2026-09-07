@@ -111,6 +111,15 @@
  * LevelEconomy's double-unlock trap without the previous rule's stricter
  * side effect of blocking a well-funded player from unlocking two slots
  * before placing anything in either.
+ *
+ * Round 13: round 12's radial reach overlay (and the radial acceptance rule
+ * it illustrated) is gone — replaced by sim/kitchen.ts's `SLOT_ZONES`, one
+ * assigned, non-overlapping stretch of belt per station. This file no longer
+ * derives any of that geometry; it reads `SLOT_ZONES` straight from
+ * sim/kitchen.ts and only traces it (via `posAt`) for drawing. `syncSlots`'s
+ * filled-highlight is updated the same way, for the same reason round 6
+ * first gated it on `isEligibleDist` — it must never light up "filled" for a
+ * dish `tapSlot` would actually refuse.
  */
 import {
     Assets,
@@ -128,7 +137,7 @@ import {
 import { playSample, prefetchCue, sfx, switchCue } from '../audio/audio.ts';
 import { CONFIG } from './config.ts';
 import { KITCHEN_CONFIG } from './kitchenConfig.ts';
-import { BELT_LENGTH, createKitchenSim, isEligibleDist, posAt, type KitchenState } from './sim/kitchen.ts';
+import { createKitchenSim, isEligibleDist, posAt, SLOT_ZONES, type KitchenState } from './sim/kitchen.ts';
 import type { KitchenStage } from './kitchenStage.ts';
 
 /** Round 9: a frozen snapshot of the economy at shift end, passed alongside
@@ -743,69 +752,45 @@ export async function createKitchenScene(
     const world = new Container();
     boardRoot.addChild(world);
 
-    // ---- Round 12, task 1: the reach overlay --------------------------------
-    // A translucent band along the belt showing exactly which stretch a
-    // placed station can serve from. Added to `world` right here — before
-    // any dish view exists — so every dish, present or future, draws on top
-    // of it with no z-order fuss.
+    // ---- Round 13, task: the reach overlay traces sim/kitchen.ts's SLOT_ZONES
+    // A translucent band along the belt showing exactly the stretch a placed
+    // station can serve from. Added to `world` right here — before any dish
+    // view exists — so every dish, present or future, draws on top of it with
+    // no z-order fuss.
     //
-    // The predicate is copied exactly from sim/kitchen.ts's tapSlot: a point
-    // at distance `d` is in reach of `slot` iff isEligibleDist(d) AND
-    // hypot(posAt(d) - slot) <= slotReach. Sampling posAt() at a fine step
-    // (not recomputing beltPath's polyline here) is what keeps this overlay
-    // from ever drifting out of agreement with the sim — corners fall out of
-    // posAt's own segment walk for free, so tracing sampled points already
-    // "follows the corners" without this file needing to know where they are.
+    // Round 12's version discovered its own accepted range by sampling the
+    // (now-gone) radial rule. Round 13's station acceptance is instead a
+    // pre-computed, non-overlapping zone per slot (SLOT_ZONES), and this file
+    // does not re-derive that boundary math — it only traces each zone's own
+    // [start, end) via posAt() to get a polyline. Sampling posAt() (rather
+    // than walking beltPath's segments here) is what makes that trace follow
+    // the belt's corners for free, exactly as round 12 relied on.
     //
-    // Geometry (beltPath/slots/slotReach) is static, so every slot's bands
-    // are computed exactly once, right here at scene creation — never in the
-    // tick loop.
+    // Geometry is static, so every slot's band is computed exactly once,
+    // right here at scene creation — never in the tick loop.
     const REACH_STEP = 0.25;
     const REACH_COLOR = 0x39d1ff;
     const REACH_ALPHA = 0.32;
-    interface ReachBand {
-        start: number;
-        end: number;
-        points: { x: number; y: number }[];
+    function zonePoints(zone: { start: number; end: number }): { x: number; y: number }[] {
+        const points: { x: number; y: number }[] = [];
+        for (let d = zone.start; d < zone.end; d += REACH_STEP) points.push(posAt(d));
+        points.push(posAt(zone.end));
+        return points;
     }
-    function computeReachBands(slot: { x: number; y: number }): ReachBand[] {
-        const bands: ReachBand[] = [];
-        let current: ReachBand | null = null;
-        for (let d = 0; d <= BELT_LENGTH; d += REACH_STEP) {
-            const p = posAt(d);
-            const inReach = isEligibleDist(d) && Math.hypot(p.x - slot.x, p.y - slot.y) <= KITCHEN_CONFIG.slotReach;
-            if (inReach) {
-                if (!current) {
-                    current = { start: d, end: d, points: [] };
-                    bands.push(current);
-                }
-                current.end = d;
-                current.points.push(p);
-            } else {
-                current = null;
-            }
-        }
-        return bands;
-    }
-    const reachBands: ReachBand[][] = KITCHEN_CONFIG.slots.map(computeReachBands);
 
     const reachOverlays = KITCHEN_CONFIG.slots.map((_, i) => {
         const g = new Graphics();
-        for (const band of reachBands[i]) {
-            if (band.points.length < 2) continue;
-            g.moveTo(band.points[0].x, band.points[0].y);
-            for (let k = 1; k < band.points.length; k++) g.lineTo(band.points[k].x, band.points[k].y);
-            // Round 12a: `butt` cap and exactly pathWidth, not `round` and
-            // pathWidth+14. A round cap extends a stroke by half its width
-            // BEYOND each endpoint — at width 86 that drew 43 units of band
-            // past both ends, so every band rendered 86 units longer than the
-            // stretch it actually accepts (+23% on the left slots) and the
-            // drawn right-hand overlap read 318 units against a true 232.
-            // The overlay's whole justification is that it cannot disagree
-            // with tapSlot, and a decorative cap was doing exactly that, in
-            // the worst direction: it invited taps just outside the window.
-            // `join` stays round — that shapes the belt's own corners, which
-            // are mid-band, not band ends.
+        const points = zonePoints(SLOT_ZONES[i]);
+        if (points.length >= 2) {
+            g.moveTo(points[0].x, points[0].y);
+            for (let k = 1; k < points.length; k++) g.lineTo(points[k].x, points[k].y);
+            // Round 12a (unchanged in round 13): `butt` cap and exactly
+            // pathWidth, not `round` and pathWidth+14. A round cap extends a
+            // stroke by half its width BEYOND each endpoint, which would draw
+            // band past a zone's own boundary straight into the seam next to
+            // it — exactly the disagreement-with-the-accepting-rule this
+            // overlay exists to avoid. `join` stays round — that shapes the
+            // belt's own corners, which fall mid-band, not at band ends.
             g.stroke({
                 width: CONFIG.sizes.pathWidth,
                 color: REACH_COLOR,
@@ -1035,7 +1020,7 @@ export async function createKitchenScene(
     }
 
     function syncSlots(): void {
-        KITCHEN_CONFIG.slots.forEach((slot, i) => {
+        KITCHEN_CONFIG.slots.forEach((_, i) => {
             // Round 9, task 5: a locked slot never lights up as "filled" —
             // there's no prop there to receive anything, however close a
             // dish passes.
@@ -1044,10 +1029,14 @@ export async function createKitchenScene(
                 return;
             }
             // Round 6, task 2: a dish on a fridge connector stub never lights
-            // a slot up, however close — matches tapSlot's own gate in
-            // sim/kitchen.ts, so the highlight never lies about tappability.
+            // a slot up, however close. Round 13: "in reach" is zone
+            // membership, not radius — matches tapSlot's own SLOT_ZONES test
+            // in sim/kitchen.ts exactly, so the highlight never lies about
+            // tappability (a dish spatially close but in a neighbour's zone
+            // must not light this slot up).
+            const zone = SLOT_ZONES[i];
             const filled = sim.state.dishes.some(
-                (d) => isEligibleDist(d.dist) && Math.hypot(d.x - slot.x, d.y - slot.y) <= KITCHEN_CONFIG.slotReach
+                (d) => isEligibleDist(d.dist) && d.dist >= zone.start && d.dist < zone.end
             );
             slotSprites[i].texture = filled ? tex.slotFilled : tex.slotEmpty;
         });

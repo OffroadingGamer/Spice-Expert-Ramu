@@ -28,6 +28,16 @@
  * so kitchenScene.ts's reach overlay can derive its bands from this module's
  * own geometry instead of recomputing beltPath's polyline itself — the two
  * must never be able to disagree about where distance `d` sits on the belt.
+ *
+ * Round 13: `tapSlot`'s radial "any dish within slotReach" test is replaced
+ * outright by `SLOT_ZONES` — each station now owns one assigned, non-
+ * overlapping stretch of belt, so a dish spatially close to a station but
+ * sitting in a neighbour's zone is no longer servable there however near it
+ * passes. `Math.hypot` survives only as the tie-break between multiple
+ * dishes inside the same zone. `SLOT_ZONES` is exported as the one place this
+ * geometry is computed; kitchenScene.ts's overlay reads it directly rather
+ * than re-deriving the boundaries, for the same anti-drift reason round 12
+ * exported `posAt`.
  */
 import { KITCHEN_CONFIG } from '../kitchenConfig.ts';
 
@@ -155,6 +165,64 @@ export function posAt(dist: number): { x: number; y: number } {
 }
 
 /**
+ * Round 13: one assigned, non-overlapping belt zone per station — replaces
+ * the old radial `slotReach` test entirely (kitchenConfig.ts's `slotReach`
+ * comment). Boundaries sit at the midpoint of each of the three working runs
+ * (top run: cumLengths[1]->cumLengths[2]; right drop: cumLengths[2]->
+ * cumLengths[3]; bottom run: cumLengths[3]->cumLengths[4]), each opening a
+ * `slotBandSeam`-wide gap (±half either side) so neighbours never touch. The
+ * outer ends of the first and last zone are the eligible bounds themselves
+ * (ELIGIBLE_DIST_MIN/MAX) — nothing extends onto a fridge stub.
+ *
+ * Which KITCHEN_CONFIG.slots index owns which zone is derived, not pasted:
+ * each zone's slot is whichever slot sits nearest posAt(that zone's own
+ * midpoint). With the current layout this resolves to slots[0], slots[1],
+ * slots[3], slots[2] in belt order — the two bottom stations are NOT in
+ * slots order (slots is TL, TR, BL, BR; the belt visits bottom-right before
+ * bottom-left) — but the nearest-slot rule gets this right on its own and
+ * keeps being right if `slots` is ever reordered.
+ *
+ * `SLOT_ZONES[i]` corresponds to `KITCHEN_CONFIG.slots[i]` — this is the
+ * ONLY place this geometry is computed. kitchenScene.ts's overlay reads this
+ * export directly rather than re-deriving the boundaries; two derivations of
+ * the same boundary is exactly how the overlay could end up disagreeing with
+ * `tapSlot`.
+ */
+export interface SlotZone {
+    start: number;
+    end: number;
+}
+const rawZoneBoundaries = [
+    ELIGIBLE_DIST_MIN,
+    (cumLengths[1] + cumLengths[2]) / 2,
+    (cumLengths[2] + cumLengths[3]) / 2,
+    (cumLengths[3] + cumLengths[4]) / 2,
+    ELIGIBLE_DIST_MAX,
+];
+export const SLOT_ZONES: SlotZone[] = (() => {
+    const bySlot: SlotZone[] = new Array(KITCHEN_CONFIG.slots.length);
+    for (let i = 0; i < rawZoneBoundaries.length - 1; i++) {
+        const seamHalf = KITCHEN_CONFIG.slotBandSeam / 2;
+        const zone: SlotZone = {
+            start: i === 0 ? rawZoneBoundaries[i] : rawZoneBoundaries[i] + seamHalf,
+            end: i === rawZoneBoundaries.length - 2 ? rawZoneBoundaries[i + 1] : rawZoneBoundaries[i + 1] - seamHalf,
+        };
+        const mid = posAt((zone.start + zone.end) / 2);
+        let bestSlot = -1;
+        let bestDist = Infinity;
+        KITCHEN_CONFIG.slots.forEach((slot, slotIndex) => {
+            const d = Math.hypot(mid.x - slot.x, mid.y - slot.y);
+            if (d < bestDist) {
+                bestDist = d;
+                bestSlot = slotIndex;
+            }
+        });
+        bySlot[bestSlot] = zone;
+    }
+    return bySlot;
+})();
+
+/**
  * Bag shuffle (Fisher-Yates), refilled only when empty: every kind is dealt
  * exactly once per lap, so the longest possible drought between two spawns
  * of the same kind is 2n-2, and a repeat can only land across a bag
@@ -226,14 +294,23 @@ export function createKitchenSim(): KitchenSim {
             if (state.phase !== 'running') return;
             const slot = KITCHEN_CONFIG.slots[slotIndex];
             if (!slot) return;
+            // Round 13: acceptance is zone membership, not radius — see
+            // SLOT_ZONES above. Math.hypot survives only as the tie-break
+            // among several dishes inside the same zone; nearest-to-the-
+            // station, unchanged from the old radial rule.
+            const zone = SLOT_ZONES[slotIndex];
             let bestIdx = -1;
-            let bestDist: number = KITCHEN_CONFIG.slotReach;
+            let bestDist = Infinity;
             for (let i = 0; i < state.dishes.length; i++) {
                 const d = state.dishes[i];
                 // Round 6, task 2: ineligible-segment dishes (the fridge
                 // connector stubs) are never a valid tap target, however
-                // close — gate on segment, not distance.
+                // close — gate on segment, not distance. Redundant with the
+                // zones (which sit inside [ELIGIBLE_DIST_MIN, MAX) by
+                // construction) but cheap insurance against a future seam
+                // change quietly reopening a fridge stub.
                 if (!isEligibleDist(d.dist)) continue;
+                if (!(d.dist >= zone.start && d.dist < zone.end)) continue;
                 const dist = Math.hypot(d.x - slot.x, d.y - slot.y);
                 if (dist <= bestDist) {
                     bestDist = dist;
