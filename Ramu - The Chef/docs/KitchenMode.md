@@ -1,6 +1,6 @@
 # KitchenMode — the belt game view as a second mode
 
-**Last updated:** Sep 7 2026, 22:32 IST (read from the system clock)
+**Last updated:** Sep 7 2026, 22:41 IST (read from the system clock)
 **Status:** 🟢 **Architecture settled.** Eight decisions taken Sep 4, 23:10 IST — all
 eight went to the recommended option. ✅ **Built and running privately** — eight Test Mode rounds, `c043804`, **v1.15.0 private-only**; §6.7. This line read *"Nothing built yet"* until Sep 7 while §6.7 below recorded the opposite.
 **🛑 Hard gate: playable end to end by Sep 10, or it is cut.** §5.
@@ -591,6 +591,71 @@ not, and RUN audits for it. Nothing about this mechanic may reward *number of pl
 *best score*, and no reward may ever depend on a player's own alt accounts or repeated
 sessions. This is the standing no-faked-plays rule applied to a feature that is unusually
 close to it.
+
+### 6.10 ✈️ In flight — two handovers issued Sep 7, ~22:40 IST
+
+Both were **delivered as chat text for the user to relay**, never executed here. Neither
+has returned. This section exists so their returns can be checked against what was
+actually asked for rather than against memory.
+
+#### Round 9 — implementation agent · *"a level, economically complete"*
+
+Target **v1.16.0**, private. Nine tasks, in this order:
+
+| # | Task | The number that matters |
+|---|---|---|
+| 1 | Round ends at **12 completed chai**, spawning open-ended | `shiftChaiTarget: 12`, `maxSpawns: 200` safety cap |
+| 2 | `shiftPending` → **"N chai short"** | the old expression prints **−16 on a clean win** |
+| 3 | Coin wallet + `coinsEarned` tally | 100 float · +3/grab · +20/dish · −25/walkout |
+| 4 | **Ready gate** — nothing spawns until pressed | cues move off scene creation |
+| 5 | Slots start **locked**; 50 to unlock; the guard | *"You must place an Utensil to unlock!"* |
+| 6 | Tier costs + 0.75 sell refund | `[40, 70, 120, 200, 320]` |
+| 7 | **Prop cooldown 2.0s on USE** | 0.500/s against a 0.455/s spawn rate |
+| 8 | Coins on the billboard's upper panel | centres x **208.75** / **512.25**, y 60 |
+| 9 | End screen: coins, stars **with thresholds printed**, hats | ⭐ 340 / 300 / clear · flawless = 469 hats |
+
+✅ **Acceptance figures to check the report against** — all derived in
+[LevelEconomy.md](LevelEconomy.md) §8:
+
+| Run | Coins earned | Stars | Hats |
+|---|---|---|---|
+| Flawless — 12 chai, 36 grabs, 0 walkouts | **348** | ⭐⭐⭐ | **469** |
+| 2 walkouts | **310** | ⭐⭐ | 419 |
+| 4 walkouts | **272** | ⭐ | 365 |
+
+⚠️ **This round is materially larger than rounds 2–8**, each of which changed one or two
+files. A mid-way check-in from the agent is reasonable and was offered.
+
+🔴 **Not in round 9, deliberately:** the boss. Endless mode, the two-phase ramp,
+wave hats and the leaderboard are **round 10** — §6.9 and [LevelEconomy.md](LevelEconomy.md)
+§7.3b.
+
+#### Chef Hat icon — art agent · `rundot generate image`
+
+**Prompt-only, no `--reference-image`.** 🔒 The dobo_ui UI pack and Kitchen Props both
+have **unread licences**, and feeding a licensed asset into a generator is exactly the use
+an unread licence might prohibit. The icon has no counterpart in any pack, so a reference
+buys nothing. Style is described in words instead: chunky flat-colour toque, thick
+`#70243A` outline, cream `#FDFAE7` body, two or three bold pleats.
+
+Operational facts, measured Sep 7 22:38 IST rather than assumed:
+
+| | |
+|---|---|
+| Cost | **147 credits** per image with `--remove-background` — `rundot generate estimate image --remove-background`, *"exact at current pricing"* |
+| Balance | **134,370** credits. September so far: imagegen 17 calls / 2,325, audiogen 8 / 791 |
+| Cap given | **3 generations**, because [Retro.md](Retro.md) records a per-creator rate limit after ~4–5 calls — the cap is about the limit, not affordability |
+| ⚠️ `--game-id` | Auto-detect **fails** from `Ramu - The Chef\` because `jam-entry/` is a *sibling*, not a child. **Verified working** by running from `jam-entry/` with no flag; `--out` takes an absolute path back into `Art\` |
+
+Deliverables: takes at `Art\_gen\ui\chef-hat-take<N>.png` with their `.png.json`
+sidecars, the pick copied to `Art\_gen\ui-final\chef-hat.png`. **The agent does not bake
+into `jam-entry/public/images/` and does not touch `manifest.ts`** — that is a later
+implementation round, per the art boundary (`Art\` only, no git, no `docs\`).
+
+✅ **Acceptance:** dimensions measured not eyeballed · corner pixels at **alpha 0** · a
+clean alpha edge · and **the 32 px test** — downscaled to 32×32 the toque must still be
+recognisable. A fail there is a reject, not a nitpick: the end screen shows this icon at
+roughly that size.
 
 ---
 

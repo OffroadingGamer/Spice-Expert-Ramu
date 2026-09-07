@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 7 2026, 22:32 IST (read from the system clock)
+**Last updated:** Sep 7 2026, 22:41 IST (read from the system clock)
 
 ---
 
@@ -1912,3 +1912,27 @@ uniques are the score; the trend matters more than any single day.
     can be earned. A level whose `n` is below `slot unlock + cheapest prop` is not merely
     hard, it is **unplayable and cannot report why**. `n` has a hard floor and it is
     arithmetic, not taste.
+
+54. **Before scoring a quantity, check whether the best possible play maximises it.**
+    Three scoring drafts died to this in one evening, and each failed differently.
+    *(a)* `(n×10) + remainder + (dishes×20)` — a capped dish target means every winner
+    delivers exactly the target, so two of three terms are **constants** and the spread
+    across every possible winning run was **1.5%**. *(b)* Stars on coins **remaining**
+    — every coin spent on a station is a coin not remaining, so the full kitchen scored
+    **below** the minimum build. *(c)* Stars on coins **earned** — worse than flat, it
+    **inverts**: missing an ingredient does not remove it from the requirement, so the
+    belt spawns more laps and hands you more grabs of the other kinds. Earned came to
+    `348 + 6 × (misses of the most-missed kind)`, and the flawless run was **tied for the
+    lowest any winner could post**. The fix was one term — a walkout charge — and it was
+    only findable by writing the outcome table out. **A metric is not validated by being
+    sensible. Compute it for the best run, the worst surviving run, and one in between,
+    and confirm the order comes out the way you intended.**
+55. **When every option is bad, suspect the question.** Pricing a *loaner* prop — a tool
+    a level lends because the player has not unlocked it — had three candidate answers and
+    all three broke: **free** and **discounted** both make *not unlocking* the better play,
+    since tiers are priced per placement rather than per unlock; **full price** is
+    unaffordable against a float sized for tier 1, which is the hard block the loaner rule
+    exists to prevent. The real answer arrived from the user in a different sentence
+    entirely — the prop is **pre-placed, locked and unsellable**, so it is never purchased
+    and therefore never priced. **Three broken options is evidence the frame is wrong, not
+    that the least-bad one should be picked.** Say so and stop, rather than ranking them.
