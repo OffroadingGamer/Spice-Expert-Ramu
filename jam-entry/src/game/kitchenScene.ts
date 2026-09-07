@@ -120,6 +120,13 @@
  * filled-highlight is updated the same way, for the same reason round 6
  * first gated it on `isEligibleDist` — it must never light up "filled" for a
  * dish `tapSlot` would actually refuse.
+ *
+ * Round 14: a locked slot now shows its price — padlock raised, "Unlock for"
+ * / "<n>[coin]" stacked beneath it (LOCK_CONTENT below), instead of a bare
+ * centred padlock with the cost only in TestBelt.tsx's banner. The stack is
+ * contained the same way round 6 contained prop labels — against
+ * ItemSlot1.png's inner well, not the slot box's outer edge — so the two
+ * containment rules can't drift apart from each other.
  */
 import {
     Assets,
@@ -600,16 +607,98 @@ export async function createKitchenScene(
         boardRoot.addChild(s);
         return s;
     });
-    const lockIcons = KITCHEN_CONFIG.slots.map((slot) => {
-        const t = new Text({ text: '\u{1F512}', style: { fontSize: 40 } });
-        t.anchor.set(0.5);
-        t.position.set(slot.x, slot.y);
-        boardRoot.addChild(t);
-        return t;
+    // Round 14: the containment rect a locked slot's padlock+price stack must
+    // stay inside — the SAME well/labelGap round 6 defined for prop labels
+    // (kitchenConfig.ts's `slotWell`/`labelGap` comment), rederived here
+    // rather than duplicated as numbers so a future slotBox/slotWell change
+    // keeps both containment rules in sync automatically. Note `centerY` is
+    // -1, not 0 — the well is asymmetric top-to-bottom, so the safe stack is
+    // centred on this rect, not on the slot itself.
+    const LOCK_CONTENT = (() => {
+        const { w, h } = KITCHEN_CONFIG.slotBox;
+        const well = KITCHEN_CONFIG.slotWell;
+        const gap = KITCHEN_CONFIG.labelGap;
+        const left = -w / 2 + well.left + gap;
+        const right = w / 2 - well.right - gap;
+        const top = -h / 2 + well.top + gap;
+        const bottom = h / 2 - well.bottom - gap;
+        return { width: right - left, height: bottom - top, centerY: (top + bottom) / 2 };
+    })();
+    // A function of slot index, not a bare inline read, so a future move to
+    // a per-slot cost array is a one-line change here rather than four.
+    function unlockCostFor(_slotIndex: number): number {
+        return KITCHEN_CONFIG.slotUnlockCost;
+    }
+    const LOCK_ROW_GAP = 4;
+    const LOCK_LINE2_GAP = 4;
+    const LOCK_ICON_SIZE = 22;
+    const lockIcons: Text[] = [];
+    const lockLine1Texts: Text[] = [];
+    const lockCostTexts: Text[] = [];
+    const lockCoinIcons: Sprite[] = [];
+    KITCHEN_CONFIG.slots.forEach((slot, i) => {
+        const lock = new Text({ text: '\u{1F512}', style: { fontSize: LOCK_ICON_SIZE } });
+        lock.anchor.set(0.5);
+        boardRoot.addChild(lock);
+
+        // Line 1: "Unlock for" — fit by measurement (setFitText), same
+        // family as PROP_LABEL_STYLE so this reads as the same UI as the
+        // prop name labels.
+        const line1 = new Text({ text: '', style: PROP_LABEL_STYLE });
+        line1.anchor.set(0.5);
+        setFitText(line1, 'Unlock for', LOCK_CONTENT.width, 13, 8);
+        boardRoot.addChild(line1);
+
+        // Line 2: "<n>" + coin icon, a horizontal group centred on x=0 —
+        // mirrors the HUD's coin+number layout (coinIcon/coinsText above)
+        // rather than extracting a shared helper (accepted duplication,
+        // KitchenMode.md §2.5). The icon is sized off the number's own
+        // resolved font size, not COIN_ICON_H — that constant is sized for
+        // the HUD banner and is too large for this box.
+        const costText = new Text({ text: '', style: PROP_LABEL_STYLE });
+        costText.anchor.set(0, 0.5);
+        boardRoot.addChild(costText);
+        const coinIconSmall = new Sprite(tex.coin);
+        coinIconSmall.anchor.set(0, 0.5);
+        boardRoot.addChild(coinIconSmall);
+
+        const cost = unlockCostFor(i);
+        let costSize = 13;
+        const sizeLine2 = () => {
+            costText.style.fontSize = costSize;
+            costText.text = `${cost}`;
+            coinIconSmall.height = costSize;
+            coinIconSmall.width = tex.coin.width * (costSize / tex.coin.height);
+        };
+        sizeLine2();
+        while (costText.width + LOCK_LINE2_GAP + coinIconSmall.width > LOCK_CONTENT.width && costSize > 8) {
+            costSize -= 1;
+            sizeLine2();
+        }
+        const line2Width = costText.width + LOCK_LINE2_GAP + coinIconSmall.width;
+        const line2Height = Math.max(costText.height, coinIconSmall.height);
+
+        // Vertical stack — padlock, line 1, line 2 — centred on the content
+        // rect's own centre, not the slot centre (see LOCK_CONTENT above).
+        const totalHeight = lock.height + LOCK_ROW_GAP + line1.height + LOCK_ROW_GAP + line2Height;
+        const stackTop = slot.y + LOCK_CONTENT.centerY - totalHeight / 2;
+        lock.position.set(slot.x, stackTop + lock.height / 2);
+        line1.position.set(slot.x, stackTop + lock.height + LOCK_ROW_GAP + line1.height / 2);
+        const line2Y = stackTop + lock.height + LOCK_ROW_GAP + line1.height + LOCK_ROW_GAP + line2Height / 2;
+        costText.position.set(slot.x - line2Width / 2, line2Y);
+        coinIconSmall.position.set(slot.x - line2Width / 2 + costText.width + LOCK_LINE2_GAP, line2Y);
+
+        lockIcons.push(lock);
+        lockLine1Texts.push(line1);
+        lockCostTexts.push(costText);
+        lockCoinIcons.push(coinIconSmall);
     });
     function setSlotLockVisual(i: number, locked: boolean): void {
         slotSprites[i].tint = locked ? 0x555566 : 0xffffff;
         lockIcons[i].visible = locked;
+        lockLine1Texts[i].visible = locked;
+        lockCostTexts[i].visible = locked;
+        lockCoinIcons[i].visible = locked;
     }
     KITCHEN_CONFIG.slots.forEach((_, i) => setSlotLockVisual(i, slotLocked[i]));
 
