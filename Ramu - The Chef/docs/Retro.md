@@ -1936,3 +1936,27 @@ uniques are the score; the trend matters more than any single day.
     entirely — the prop is **pre-placed, locked and unsellable**, so it is never purchased
     and therefore never priced. **Three broken options is evidence the frame is wrong, not
     that the least-bad one should be picked.** Say so and stop, rather than ranking them.
+
+56. **Run the cost estimate with the exact flags of the command you are instructing.**
+    A brief priced SFX generation at **90 credits** and wrote that figure into a hard stop
+    rule. The estimate had been run bare — and a bare `generate estimate sfx` silently
+    defaults to the tool's **30-second maximum**. The command the brief actually specified
+    was `--duration 1.0`, which costs **3**. Thirty times out. The agent stopped and
+    reported rather than proceeding, which was correct, but it cost a full round-trip.
+    **An estimate taken with different options than the instruction is not an estimate of
+    the instruction.**
+57. **A stop rule written as exact equality tests your own arithmetic, not the risk.**
+    The same brief said *"if it ever returns anything other than 90, stop"*. That fires on
+    a cheaper price, on a rounding difference, on any pricing change in either direction
+    — and here it fired on the author's own mistake rather than on anything dangerous.
+    Rewritten as a **ceiling** (*proceed if ≤10*), it guards the direction that actually
+    matters and lets a correct agent proceed alone. **Bound the risk, don't pin the
+    value.**
+58. **The wrong instrument can invert the answer, and it looks like a real result.**
+    Checking the Chef Hat takes for holes, the first test measured *transparency inside
+    the dome region* — and ranked the good take **worst** (33.8% against 24.1% and 28.5%),
+    because region transparency measures silhouette shape, not holes: take 1 simply had a
+    narrower dome. A flood fill from the image border, counting transparent pixels *not
+    reachable* from outside, gave the true answer at once — 0 px against 14,213 and
+    24,117. **Before trusting a measurement that contradicts someone else's, check that it
+    measures the thing it is named after.** This one nearly overturned a correct rejection.

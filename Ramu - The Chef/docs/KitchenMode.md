@@ -612,14 +612,14 @@ Target **v1.16.0**, private. Nine tasks, in this order:
 | 6 | Tier costs + 0.75 sell refund | `[40, 70, 120, 200, 320]` |
 | 7 | **Prop cooldown 2.0s on USE** | 0.500/s against a 0.455/s spawn rate |
 | 8 | Coins on the billboard's upper panel | centres x **208.75** / **512.25**, y 60 |
-| 9 | End screen: coins, stars **with thresholds printed**, hats | ⭐ 340 / 300 / clear · flawless = 469 hats |
+| 9 | End screen: coins, stars **with thresholds printed**, hats | ⭐ 340 / 300 / clear · flawless = 469 hats 🔴 wrong, see §6.11 |
 
 ✅ **Acceptance figures to check the report against** — all derived in
 [LevelEconomy.md](LevelEconomy.md) §8:
 
 | Run | Coins earned | Stars | Hats |
 |---|---|---|---|
-| Flawless — 12 chai, 36 grabs, 0 walkouts | **348** | ⭐⭐⭐ | **469** |
+| Flawless — 12 chai, 36 grabs, 0 walkouts | **348** | ⭐⭐⭐ | **469** 🔴 → 465 |
 | 2 walkouts | **310** | ⭐⭐ | 419 |
 | 4 walkouts | **272** | ⭐ | 365 |
 
@@ -656,6 +656,103 @@ implementation round, per the art boundary (`Art\` only, no git, no `docs\`).
 clean alpha edge · and **the 32 px test** — downscaled to 32×32 the toque must still be
 recognisable. A fail there is a reject, not a nitpick: the end screen shows this icon at
 roughly that size.
+
+---
+
+### 6.11 ✅ Rounds 9–11 landed — a level became economically complete, Sep 8 2026
+
+§6.10 recorded two handovers in flight. Both returned, plus two more asset rounds. This
+section is what actually shipped, and the numbers that were wrong in the asking.
+
+#### What is deployed
+
+| Round | Commit | Private | What it made true |
+|---|---|---|---|
+| 9 | `ed8501d` | v1.16.0 | 12-chai win condition, coin wallet, locked slots, tier costs, cooldown, Ready gate, end screen |
+| 10 | `c8aeade` | v1.17.0 | The **setup phase** — the board is live before Ready · ⭐⭐ 300 → **295** |
+| 11 | ✈️ issued | v1.18.0 | The recovery floor + baking four generated assets |
+
+Review and public stayed at **v1.7.0** throughout. `set-public` has never run.
+
+#### 🔴 Three numbers were wrong in the asking, not in the building
+
+**469 hats was never reachable.** §6.10's acceptance table paired *348 coins* with *469
+hats*, which cannot both be true — 348 implies 36 grabs and zero leftover, 469 implies
+two. The round 9 agent computed the formula instead of trusting it and reported **465**.
+Corrected in [LevelEconomy.md](LevelEconomy.md) §8.3.
+
+**The ⭐⭐ bar at 300 sat inside a live range.** A walkout nets between −25 and −19
+depending on bag order, so a 2-walkout run earns **298–310**. Identical play scored ⭐⭐
+or ⭐ on shuffle luck. Moved to **295**, which sits in the 292–297 gap between the
+2-walkout floor (298) and the 3-walkout ceiling (291) — a gap no run can land in.
+
+**The Ready gate froze the whole board, not just the belt.** Built as a full-screen scrim,
+so setup was impossible: an FTUE player spent the 16.0s first traverse unlocking and
+reading the picker, dropped a dish, and put ⭐⭐⭐ out of reach before their first grab.
+Round 10 made the board live and left `tick()`'s guard as the only freeze. That guard is
+now load-bearing alone — verified safe because `tapSlot` returns at `bestIdx < 0` on an
+empty belt, mutating nothing and emitting no event.
+
+#### 🔴 The trap round 10 made easier to reach — fixed in round 11
+
+`hasEverPlacedProp` is one-way: it records that a prop was *ever* placed and permanently
+lifts the 100-coin floor. Unlock (100→50), place (50→10), **sell** (10→**40**), press
+Ready with an empty board — the floor is gone, one walkout takes you to **15**, a utensil
+costs 40, and with no station there is no way to grab and therefore no way to earn. The
+round runs out to five walkouts and loses, silently.
+
+It existed in round 9 too. Round 10 changed the odds: the setup phase is exactly where
+players are invited to experiment with buying and placing. **The flag records history; the
+deadlock is a property of the present.** Round 11 replaces it with a floor derived from
+current state — 0 with a prop placed, `propTierCost[0]` with a slot unlocked and nothing
+in it, `startingFloat` before any unlock.
+
+#### 🎨 Assets generated — all four still unbaked at time of writing
+
+| Asset | Round | Takes | Credits | Note |
+|---|---|---|---|---|
+| `chef-hat.png` | A2 | 3 | 441 | Takes 2–3 rejected on **enclosed holes** |
+| `coin.png` | A4 | 1 of 3, seed 2201 | 147 | Passed first time; 294 credits unspent |
+| `kettle-boil.mp3` | A3 | 3 | 15 | ⚠️ fatigue test still needs a human ear |
+| `water-pour.mp3` | A3 | 3 | 15 | |
+
+Session spend **618 credits**, balance **133,752**.
+
+⚠️ **The two icons do not fill their canvases equally** — coin content is 83.7% of its
+canvas, the hat 64.7%. Drawn at one size the coin looks ~29% taller. Round 11 normalises
+on the alpha bounding box at bake, not on texture size; both files are 1024×1024, so
+nothing looks wrong until they sit side by side.
+
+🔒 The `.png.json` / `.mp3.json` sidecars embed the **RUN UserId and the live game id**.
+Their source folders are gitignored; `public/` is not. They must never be copied in.
+
+#### 📏 Station reach, measured — and the imbalance it exposes
+
+Derived from `beltPath`, `slotReach: 260` and `isEligibleDist` (eligible = dist
+[176, 1776) of 1952). Each station can take a dish only from the stretch of belt that
+falls inside its reach:
+
+| Station | Belt stretch | Share of belt | Tap window, round start → full speed |
+|---|---|---|---|
+| Top-left | 176–557 | 23.8% | 3.12s → **1.95s** |
+| **Top-right** | 365–1092 | **45.4%** | 5.96s → **3.72s** |
+| **Bottom-right** | 860–1587 | **45.4%** | 5.96s → **3.72s** |
+| Bottom-left | 1395–1776 | 23.8% | 3.12s → **1.95s** |
+
+🔴 **The right-hand slots are worth 1.91× the left-hand ones and cost the same 50.**
+They reach the vertical drop as well as their own run. It is worse late: the prop cooldown
+is **2.0s** and a left station's window at full speed is **1.95s** — shorter than its own
+cooldown, so it cannot take two dishes in a row by the end of a round.
+
+The four zones chain together and their union is the whole eligible belt, with the left
+slots covering exactly the entry and exit stretches the right ones miss — so a full
+four-station build genuinely needs all four. The imbalance only bites when you can afford
+one, which is precisely the FTUE case, and nothing currently communicates it.
+
+✈️ **Round 12 (proposed, on hold):** a translucent band along the belt showing each
+placed prop's reach. It teaches the tap timing and, more importantly, converts this hidden
+trap into a visible choice. The ranges must be **derived at runtime** from `beltPath` /
+`slotReach` / `isEligibleDist`, never hardcoded from the table above.
 
 ---
 

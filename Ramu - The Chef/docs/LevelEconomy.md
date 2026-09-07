@@ -58,11 +58,11 @@ Tandoor `09–10`.
 | 🪙 Full build cost | **360** | ⬜ | ⬜ | ⬜ |
 | 🪙 Spare at full build | **88** | ⬜ | ⬜ | ⬜ |
 | 🪙 Hard floor (unplayable below) | **90** | ⬜ | ⬜ | ⬜ |
-| 👨‍🍳 Flawless run | **469** | ⬜ | ⬜ | ⬜ |
-| 👨‍🍳 Cleared, 4 walkouts | **365** | ⬜ | ⬜ | ⬜ |
+| 👨‍🍳 Flawless run | **465** | ⬜ | ⬜ | ⬜ |
+| 👨‍🍳 Cleared, 4 walkouts | **365–381** | ⬜ | ⬜ | ⬜ |
 | 👨‍🍳 Loss floor (2 dishes) | **40** | ⬜ | ⬜ | ⬜ |
 | ⭐⭐⭐ at coins earned ≥ | **340** | ⬜ | ⬜ | — **no stars** |
-| ⭐⭐ at coins earned ≥ | **300** | ⬜ | ⬜ | — **no stars** |
+| ⭐⭐ at coins earned ≥ | **295** | ⬜ | ⬜ | — **no stars** |
 
 ✅ **The boss awards no stars at all** — settled Sep 7. It never "clears", so no threshold
 could apply. Its coins earned go to a **leaderboard** instead ([KitchenMode.md](KitchenMode.md)
@@ -494,7 +494,7 @@ Boss Chef Hat = Σ (wave number × 30) for every wave cleared
 |---|---|---|---|---|---|---|
 | Cumulative hats | 30 | 180 | **450** | 1,080 | 1,650 | 2,340 |
 
-**Calibration:** surviving **5 waves ≈ 450 hats ≈ one flawless ordinary level** (469).
+**Calibration:** surviving **5 waves ≈ 450 hats ≈ one flawless ordinary level** (465).
 Reaching wave 8 (~1,080) is worth about a whole meta track (§7.4). At ~2.2s per grab the
 hat *rate* is close to an ordinary level's up to wave 5 and pulls ahead after — so the
 boss is not a farm exploit, it is the same rate with far higher variance and a much
@@ -581,11 +581,11 @@ and rewarding, in the ratio the brief asked for.
 
 | Live game (gems) | Belt (hats) |
 |---|---|
-| 1 gem/wave · **55 per full run** | **~469 per flawless run** |
+| 1 gem/wave · **55 per full run** | **~465 per flawless run** |
 | Meta track to L10 = **130 gems ≈ 2.36 runs** | **~1,100 hats** to hold the same pacing |
 
 Individual meta levels price around **35 → 190** on the same `costBase + costStep`
-curve, scaled ~8.5×. If hats pay ~469 and the shop keeps gem-era prices (4, 6, 8…), a
+curve, scaled ~8.5×. If hats pay ~465 and the shop keeps gem-era prices (4, 6, 8…), a
 single round buys the entire meta tree.
 
 ### 7.5 Belt constants the economy depends on
@@ -671,17 +671,30 @@ belt hits its speed floor.
 
 | Run | Dishes | Walkouts | Leftover | **Hats** |
 |---|---|---|---|---|
-| Flawless | 12 | 0 | 2 | **469** |
-| Strong | 12 | 1 | 2 | **444** |
-| Good | 12 | 2 | 2 | **419** |
-| Shaky | 12 | 3 | 1 | **392** |
-| Scraped home | 12 | 4 | 0 | **365** |
+| Flawless | 12 | 0 | **0** | **465** |
+| Strong | 12 | 1 | 0–2 | 440–444 |
+| Good | 12 | 2 | 0–4 | 415–423 |
+| Shaky | 12 | 3 | 0–6 | 390–402 |
+| Scraped home | 12 | 4 | 0–8 | 365–381 |
 | Lost late | 9 | 5 | 1 | **182** |
 | Lost mid | 6 | 5 | 1 | **122** |
 | Lost early | 2 | 5 | 0 | **40** |
 
-Spread across all winning runs **1.285×** · flawless vs scraped **+28.5%** ·
-best win vs worst loss **11.7×**.
+🔴 **Corrected Sep 8 2026.** This table previously gave the flawless run
+**leftover 2 → 469 hats** — a stale row left behind when §7.3a.1's grab count was
+corrected from 38 to 36. A flawless run grabs every spawn, and the bag deals one of each
+kind per lap, so 36 grabs make exactly 12 sets with **nothing left over**:
+`12×20 + 0×2 + 5×25 + 100` = **465**. The round 9 agent found this by computing the
+formula instead of trusting the handover — see [Retro.md](Retro.md) 54.
+
+⚠️ **Leftover is a range, not a value.** The bag in `sim/kitchen.ts` deals one of each
+kind per lap, so a walkout of kind K forces the belt round again for another K — and the
+other two kinds spawn alongside it, to be grabbed or walk out in turn. Each walkout
+therefore adds **0 to 2** leftovers depending where K falls in the replacement lap, so
+`leftover ≤ 2 × walkouts` and every winning row above is a band, not a point. The same
+fact drives the coin bands in §7.3a.2 and is why ⭐⭐ had to move off 300.
+
+Spread flawless to worst win **465 → 365 = 1.27×** · best win vs worst loss **11.6×**.
 
 🔴 **`walkoutsAllowed` is load-bearing in two systems.** At 5 it sets a 12.5% difficulty
 tolerance **and** it is the denominator of 27% of a flawless Chef Hat score. If 5 proves
