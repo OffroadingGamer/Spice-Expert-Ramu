@@ -13,6 +13,16 @@
  * up) and is not repurposed. The belt also gained a speed ramp tied to
  * `completed` (see `currentSpeed`/`beltRamp` below) — dishes already in
  * flight accelerate too, since `state.beltSpeed` is recomputed every tick.
+ *
+ * Round 9: the round now ends at `shiftChaiTarget` COMPLETIONS, not at a
+ * spawn count — `checkShiftEnd` no longer waits for the belt to empty, so
+ * dishes still in flight when the target lands are simply abandoned.
+ * Spawning itself is now open-ended, capped only by `maxSpawns` as a safety
+ * net. The coin economy (wallet, coinsEarned, slot locks, prop cooldown) is
+ * NOT tracked here — this sim knows nothing about props or slots being
+ * placed/locked, so kitchenScene.ts owns all of that state and derives it
+ * from this module's events ('served'/'completed'/'walkout') exactly as it
+ * already derives SFX cues from them.
  */
 import { KITCHEN_CONFIG } from '../kitchenConfig.ts';
 
@@ -31,15 +41,20 @@ export interface DishInst {
 export interface KitchenState {
     phase: KitchenPhase;
     dishes: DishInst[];
-    /** Dishes spawned so far this session (of KITCHEN_CONFIG.shiftDishCount). */
+    /** Dishes spawned so far this session (of KITCHEN_CONFIG.maxSpawns — a
+     *  safety cap, not the win condition; see `completed`/shiftChaiTarget). */
     spawned: number;
     served: number;
     walkouts: number;
     elapsed: number;
     /** Round 8: ingredients picked up and not yet spent, keyed by
      *  ingredientKinds[].key. Every key initialised to 0 at sim creation —
-     *  never undefined. Surplus carries over during the shift; discarded
-     *  silently at shift end (task 4 — not scored, not converted). */
+     *  never undefined. Surplus carries over during the shift. Round 9:
+     *  whatever remains here at shift end is scored (kitchenConfig.ts's
+     *  `hats.perLeftover`) but converts to no currency — that system still
+     *  doesn't exist. Not consumed or reset by this module; the frozen
+     *  final `held` is what the caller sums for both the hats formula and
+     *  the end screen's diagnostic count. */
     held: Record<string, number>;
     /** Round 8: completed dishes this shift. NOT the same as `served`. */
     completed: number;
@@ -178,7 +193,10 @@ export function createKitchenSim(): KitchenSim {
     const drawKind = makeBag();
 
     function spawnIfDue(dt: number): void {
-        if (state.spawned >= KITCHEN_CONFIG.shiftDishCount) return;
+        // Round 9, task 1: gates on the safety cap only — the win condition
+        // is `completed`, not spawn count, so spawning runs open-ended
+        // until checkShiftEnd fires.
+        if (state.spawned >= KITCHEN_CONFIG.maxSpawns) return;
         spawnTimer -= dt;
         if (spawnTimer > 0) return;
         spawnTimer = KITCHEN_CONFIG.spawnInterval;
@@ -189,7 +207,9 @@ export function createKitchenSim(): KitchenSim {
 
     function checkShiftEnd(): void {
         if (state.phase !== 'running') return;
-        if (state.spawned >= KITCHEN_CONFIG.shiftDishCount && state.dishes.length === 0) {
+        // Round 9, task 1: the round ends the instant the target is hit —
+        // dishes still on the belt are simply abandoned, not waited out.
+        if (state.completed >= KITCHEN_CONFIG.shiftChaiTarget) {
             state.phase = 'won';
             events.push({ type: 'won' });
         }

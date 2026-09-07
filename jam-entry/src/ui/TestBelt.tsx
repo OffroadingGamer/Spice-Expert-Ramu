@@ -32,13 +32,23 @@
  * leftover count (task 4 — discarded held ingredients, not scored) rounds
  * it out. All five figures are still driven off the frozen `shiftResult`
  * snapshot, per round 5's fix — never live state.
+ *
+ * Round 9: a Ready overlay gates the whole shift (task 4) — nothing spawns
+ * and no slot responds until Scene.start() fires, and "Run Again" (a full
+ * remount) returns here rather than auto-starting. `shiftPending` is gone;
+ * "N chai short" (task 2) takes its place on a loss. The end screen also
+ * carries the frozen `shiftEconomy` snapshot (coins earned, wallet, Chef
+ * Hats) from kitchenScene.ts's onShiftEnd, and two new DOM overlays —
+ * `message` and `sellSlot` — duplicate PropPicker.tsx's bg-black/60-backdrop
+ * pattern a third time (KitchenMode.md §2.5) for the unlock guard /
+ * insufficient-funds text and the sell confirmation.
  */
 import { useEffect, useRef, useState } from 'react';
 import type { Application } from 'pixi.js';
 import { setMusicVolume, setSfxVolume, sfx, switchCue } from '../audio/audio.ts';
 import { createPixiApp } from '../game/pixiApp.ts';
 import { createKitchenStage, type KitchenStage } from '../game/kitchenStage.ts';
-import { createKitchenScene, type Scene } from '../game/kitchenScene.ts';
+import { createKitchenScene, type EconomySnapshot, type Scene } from '../game/kitchenScene.ts';
 import { KITCHEN_CONFIG } from '../game/kitchenConfig.ts';
 import type { KitchenState } from '../game/sim/kitchen.ts';
 import { setAudioVolumes } from '../state/save.ts';
@@ -84,9 +94,17 @@ export default function TestBelt() {
     // by kitchenScene's onShiftEnd callback — not derived from `state` on
     // every tick — so it fires exactly once, off the sim's own event.
     const [shiftResult, setShiftResult] = useState<KitchenState | null>(null);
+    // Round 9: the economy snapshot frozen at the same instant as shiftResult.
+    const [shiftEconomy, setShiftEconomy] = useState<EconomySnapshot | null>(null);
     // Round 5, task 3: which empty slot opened the picker, if any.
     const [pendingSlot, setPendingSlot] = useState<number | null>(null);
     const [filledSlots, setFilledSlots] = useState(0);
+    // Round 9, task 4: the Ready gate — false until Scene.start() is called.
+    const [ready, setReady] = useState(false);
+    // Round 9, task 5: a short message (unlock guard, insufficient funds).
+    const [message, setMessage] = useState<string | null>(null);
+    // Round 9, task 6: which filled slot offered a sell, and what it pays.
+    const [sellSlot, setSellSlot] = useState<{ index: number; name: string; refund: number } | null>(null);
     const paused = useStore((s) => s.paused);
     const musicVol = useStore((s) => s.musicVol);
     const sfxVol = useStore((s) => s.sfxVol);
@@ -98,10 +116,15 @@ export default function TestBelt() {
         let scene: Scene | null = null;
         let stage: KitchenStage | null = null;
         // A fresh run starts every round-5 piece of state over: no shift
-        // result to show, no picker open, no stations filled yet.
+        // result to show, no picker open, no stations filled yet. Round 9:
+        // also back to the Ready state, no message/sell dialog open.
         setShiftResult(null);
+        setShiftEconomy(null);
         setPendingSlot(null);
         setFilledSlots(0);
+        setReady(false);
+        setMessage(null);
+        setSellSlot(null);
         (async () => {
             const app = await createPixiApp(hostRef.current!);
             if (disposed) {
@@ -112,9 +135,11 @@ export default function TestBelt() {
             stage = createKitchenStage(app);
             scene = await createKitchenScene(app, stage, {
                 onChange: (s) => setState(s),
-                onShiftEnd: (s) => setShiftResult(s),
+                onShiftEnd: (s, economy) => { setShiftResult(s); setShiftEconomy(economy); },
                 onSlotTapEmpty: (i) => setPendingSlot(i),
+                onSlotTapFilled: (i, info) => setSellSlot({ index: i, ...info }),
                 onSlotsFilledChange: (n) => setFilledSlots(n),
+                onMessage: (text) => setMessage(text),
             });
             sceneRef.current = scene;
             if (disposed) {
@@ -172,11 +197,13 @@ export default function TestBelt() {
         store.patch({ paused: false, phase: 'menu' });
     };
 
-    // Round 5, task 7: computed off the frozen shiftResult snapshot, not the
-    // continuously-updating `state` — the end screen's own numbers, not a
-    // live readout.
-    const shiftPending = shiftResult
-        ? KITCHEN_CONFIG.shiftDishCount - shiftResult.served - shiftResult.walkouts - shiftResult.dishes.length
+    // Round 9, task 2: shiftPending is gone — once spawning is open-ended
+    // (kitchenConfig.ts's maxSpawns replacing shiftDishCount), the four
+    // buckets it used to sum no longer add up to a known total. "N chai
+    // short" replaces it: zero on a win (hides itself), the real gap on a
+    // loss. Off the frozen shiftResult snapshot, per round 5's fix.
+    const chaiShort = shiftResult
+        ? Math.max(0, KITCHEN_CONFIG.shiftChaiTarget - shiftResult.completed)
         : 0;
     // Round 8, task 4: diagnostic only, not scoring — held ingredients are
     // discarded silently at shift end (parked for a future currency system,
@@ -184,14 +211,41 @@ export default function TestBelt() {
     const shiftLeftover = shiftResult
         ? Object.values(shiftResult.held).reduce((sum, v) => sum + v, 0)
         : 0;
+    // Round 9, task 9: stars are on coinsEarned, and only on a clear — a
+    // loss shows none at all, regardless of coins earned.
+    const stars =
+        shiftEconomy && shiftResult?.phase === 'won'
+            ? shiftEconomy.coinsEarned >= KITCHEN_CONFIG.starThresholds.three
+                ? 3
+                : shiftEconomy.coinsEarned >= KITCHEN_CONFIG.starThresholds.two
+                    ? 2
+                    : 1
+            : 0;
 
     return (
         <div className="absolute inset-0 bg-surface">
             <div key={runId} ref={hostRef} className="absolute inset-0" />
 
+            {/* Round 9, task 4: the Ready gate — nothing spawns and no slot
+                responds until this is pressed. A "Run Again" remount lands
+                back here instead of auto-starting, since `ready` resets to
+                false on every fresh scene. */}
+            {!ready && !shiftResult && (
+                <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-6 bg-black/70">
+                    <p className="text-3xl font-bold text-white">Shift ready</p>
+                    <button
+                        type="button"
+                        className="rounded-2xl bg-primary px-10 py-4 text-2xl font-bold text-black transition-transform active:scale-95"
+                        onClick={() => { sfx.click(); sceneRef.current?.start(); setReady(true); }}
+                    >
+                        Ready
+                    </button>
+                </div>
+            )}
+
             {/* Round 5, task 3: first-entry nudge — an empty board otherwise
                 gives no affordance. Gone once the first station is set up. */}
-            {!menuOpen && !shiftResult && filledSlots === 0 && (
+            {ready && !menuOpen && !shiftResult && filledSlots === 0 && (
                 <div
                     className="pointer-events-none absolute inset-x-0 flex justify-center px-6"
                     style={{ top: 'calc(1rem + env(safe-area-inset-top, 0px))' }}
@@ -203,7 +257,7 @@ export default function TestBelt() {
             )}
 
             {/* Hamburger: centre bottom, replaces the old Exit button. */}
-            {!menuOpen && (
+            {ready && !menuOpen && (
                 <button
                     type="button"
                     aria-label="Shift menu"
@@ -233,9 +287,37 @@ export default function TestBelt() {
                         <p>{shiftResult.completed} chai completed</p>
                         <p>{shiftResult.served} ingredients collected</p>
                         <p>{shiftResult.walkouts} walked out</p>
-                        <p>{shiftPending} pending</p>
                         <p>{shiftLeftover} ingredients discarded</p>
+                        {/* Round 9, task 2: replaces shiftPending — zero on a
+                            win hides the line entirely (rendered only on a
+                            loss); the real gap on a loss. */}
+                        {shiftResult.phase === 'lost' && <p>{chaiShort} chai short</p>}
                     </div>
+                    {/* Round 9, task 9: Chef Hats on any completed run (win or
+                        loss); coins earned + stars + thresholds only on a
+                        clear — a loss shows no stars at all. */}
+                    {shiftEconomy && (
+                        <div className="flex flex-col items-center gap-3">
+                            {shiftResult.phase === 'won' && (
+                                <>
+                                    <p className="text-xl font-bold text-white">
+                                        Coins earned&nbsp;&nbsp;{shiftEconomy.coinsEarned}
+                                    </p>
+                                    <div className="flex gap-6 text-3xl">
+                                        <span>{stars >= 1 ? '★' : '☆'}</span>
+                                        <span>{stars >= 2 ? '★' : '☆'}</span>
+                                        <span>{stars >= 3 ? '★' : '☆'}</span>
+                                    </div>
+                                    <div className="flex gap-6 text-sm text-white/50">
+                                        <span>{KITCHEN_CONFIG.starThresholds.three}</span>
+                                        <span>{KITCHEN_CONFIG.starThresholds.two}</span>
+                                        <span>clear</span>
+                                    </div>
+                                </>
+                            )}
+                            <p className="text-lg text-white/70">{shiftEconomy.hats} Chef Hats</p>
+                        </div>
+                    )}
                     <div className="flex gap-4">
                         <button
                             type="button"
@@ -264,6 +346,57 @@ export default function TestBelt() {
                     }}
                     onClose={() => setPendingSlot(null)}
                 />
+            )}
+
+            {/* Round 9, task 5: the unlock guard / insufficient-funds message
+                — a third copy of PropPicker's DOM-overlay pattern
+                (KitchenMode.md §2.5). */}
+            {message && (
+                <div
+                    className="pointer-events-auto absolute inset-0 z-20 flex items-end justify-center bg-black/60"
+                    onClick={() => setMessage(null)}
+                >
+                    <div className="mx-3 mb-3 w-full max-w-md rounded-2xl bg-black/85 p-4" onClick={(e) => e.stopPropagation()}>
+                        <p className="text-center text-lg font-bold text-white">{message}</p>
+                        <button
+                            type="button"
+                            className="mt-3 w-full rounded-xl bg-white/10 py-2 text-[1.1rem] font-semibold text-white/70 transition-transform active:scale-95"
+                            onClick={() => { sfx.click(); setMessage(null); }}
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Round 9, task 6: sell confirmation for a filled slot with
+                nothing to serve — same DOM-overlay pattern again. */}
+            {sellSlot && (
+                <div
+                    className="pointer-events-auto absolute inset-0 z-20 flex items-end justify-center bg-black/60"
+                    onClick={() => setSellSlot(null)}
+                >
+                    <div className="mx-3 mb-3 w-full max-w-md rounded-2xl bg-black/85 p-4" onClick={(e) => e.stopPropagation()}>
+                        <p className="mb-1 text-center text-xl font-bold text-white">Sell {sellSlot.name}?</p>
+                        <p className="mb-3 text-center text-[1.1rem] text-white/60">Refund: {sellSlot.refund} coins</p>
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                className="flex-1 rounded-xl bg-primary py-2 text-lg font-bold text-black transition-transform active:scale-95"
+                                onClick={() => { sceneRef.current?.sellProp(sellSlot.index); setSellSlot(null); }}
+                            >
+                                Sell
+                            </button>
+                            <button
+                                type="button"
+                                className="flex-1 rounded-xl bg-white/10 py-2 text-lg font-semibold text-white/70 transition-transform active:scale-95"
+                                onClick={() => { sfx.click(); setSellSlot(null); }}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
 
             {/* Shift menu — duplicated from Hud.tsx, see file header. */}

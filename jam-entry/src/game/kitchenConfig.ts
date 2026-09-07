@@ -56,6 +56,23 @@
  * comment and the 🛑 lock on `beltPath` for how the two stay consistent.
  * Prop labels abbreviate "Level" to "Lv" (kitchenScene.ts's
  * formatPropLabel) — independent of the recipe gate, more label room only.
+ *
+ * Round 9: a level is now economically complete (LevelEconomy.md is the
+ * source of truth for every number below). The round ends at
+ * `shiftChaiTarget` COMPLETIONS, not at a spawn count (`shiftDishCount` is
+ * gone, split into `shiftChaiTarget` + the safety-cap-only `maxSpawns`).
+ * Two coin accumulators exist — the spendable `wallet` and the
+ * star/hat-driving `coinsEarned` — both computed in kitchenScene.ts from
+ * the `coins` rates below, not stored here. Station slots start LOCKED
+ * (`slotUnlockCost`) and props cost coins by tier (`propTierCost`,
+ * `propSellRefund`); a placed prop is busy for `propCooldown` seconds after
+ * every grab. Chef Hats (`hats` below) are awarded on any completed run;
+ * stars (`starThresholds`) only on a clear. Leftover ingredients are no
+ * longer merely "discarded silently, not scored" as round 8's comment on
+ * `held` said (sim/kitchen.ts) — they now pay `hats.perLeftover` each, per
+ * this round's Chef Hat formula. That comment is updated alongside this one
+ * so the two files don't contradict each other; leftovers still convert to
+ * no currency, since that system still doesn't exist.
  */
 export const KITCHEN_CONFIG = {
     boardWidth: 720,
@@ -193,6 +210,11 @@ export const KITCHEN_CONFIG = {
     ],
     slotBox: { w: 139, h: 150 },
 
+    /** Round 9, task 5: coins to unlock a LOCKED slot. Flat, all four
+     *  (LevelEconomy.md §7.1). See kitchenScene.ts for the guard that stops
+     *  a second slot unlocking before any prop is placed in the first. */
+    slotUnlockCost: 50,
+
     /**
      * Round 3: which prop each of the 4 slots (in `slots` order) can show —
      * a level-design catalogue, not a per-slot assignment.
@@ -211,6 +233,22 @@ export const KITCHEN_CONFIG = {
         { alias: 'prop-water-dispenser-l1', name: 'Water Dispenser', level: 1 },
     ],
     propSize: { w: 84, h: 90 },
+
+    /**
+     * Round 9, task 6: cost to PLACE a prop of tier N (1-indexed, from the
+     * prop's existing `level` field — no new field needed). ~1.7x per step,
+     * so one Level 3 (120) costs exactly three Level 1s (120) and one
+     * Level 2 (70) sits just under two Level 1s (80) — PropList.md §7.1's
+     * "one strong station, or two weak ones", true at the till. Node 0 ships
+     * only tier-1 props (`levelProps` above) — tiers 2-5 are config for when
+     * higher-tier sprites land; do not go looking for that art now.
+     */
+    propTierCost: [40, 70, 120, 200, 320],
+
+    /** Refund on selling a PLACED PROP. The slot stays unlocked and is not
+     *  refunded. 0.75 makes swapping an L1 for an L2 cost 80 against 70 for
+     *  committing up front — a 10-coin premium for changing your mind. */
+    propSellRefund: 0.75,
     /**
      * Round 5, tasks 4-5: reverses round 4's top-anchored icon/label stack —
      * icon centre-centre in the slotBox (aspect-fit within propSize,
@@ -251,6 +289,19 @@ export const KITCHEN_CONFIG = {
     /** How far a slot reaches to tap a passing dish. VALIDATED — do not
      *  raise; narrow the station band instead if it ever reads as generous. */
     slotReach: 260,
+
+    /**
+     * Round 9, task 7: seconds a prop is busy after taking an ingredient. ON
+     * USE, not on placement (LevelEconomy.md §7.3a.3).
+     *
+     * Why 2.0 and not 3.0. Spawn rate is 1/2.2 = 0.455 dishes/s; one prop's
+     * rate is 1/N. At 3.0s one prop yields 0.333/s and falls 27% short,
+     * burning ~2 of the 5 walkouts before a second station is affordable at
+     * ~18s — that punishes the float, not the player. At 2.0s one prop
+     * yields 0.500/s, a 10% margin: tight but survivable, two comfortable,
+     * four insurance at speed.
+     */
+    propCooldown: 2.0,
 
     dishSize: { w: 106, h: 70 },
 
@@ -318,6 +369,13 @@ export const KITCHEN_CONFIG = {
      * ⬜ UNSETTLED — the user is reviewing this curve after playing round 8 and
      * will retune it. Keep all three numbers here, in seconds, so a retune is a
      * one-number edit. Do not inline them.
+     *
+     * 🔒 Round 9: this ramp needs no change at a 12-dish target — it and
+     * `shiftChaiTarget` below are exactly matched, 16.0 − 0.5 × 12 = 10.0,
+     * so the belt reaches `minTraverse` precisely on the final dish. Full
+     * range used, no plateau. A level that changes its dish target must
+     * re-derive `perCompletion` (LevelEconomy.md §7.5), or the ramp either
+     * plateaus early (target > 12) or never reaches its floor (target < 12).
      */
     beltRamp: {
         baseTraverse: 16.0,
@@ -339,12 +397,68 @@ export const KITCHEN_CONFIG = {
     /** Seconds between dish spawns. VALIDATED. */
     spawnInterval: 2.2,
 
-    /** Total dishes in one test session (a WIN once they're all resolved). */
-    shiftDishCount: 20,
+    /** Round 9: the win condition. The round ends when this many dishes are
+     *  COMPLETED. Spawning runs open-ended until then. LevelEconomy.md §2. */
+    shiftChaiTarget: 12,
+
+    /** Safety cap only — a runaway spawn loop must not hang the tab. A clean
+     *  run needs 36 spawns; a bad one ~48. 200 is unreachable in play. */
+    maxSpawns: 200,
 
     /** Walkouts (unserved dishes reaching PASS) allowed before a LOSS.
      *  Not 10 — the belt sim carries its own count, per KitchenMode §2.7. */
     walkoutsAllowed: 5,
+
+    /**
+     * Round 9, task 3: the coin wallet's per-event rates (LevelEconomy.md
+     * §7.1/§7.3a.2). `wallet` (spendable) and `coinsEarned` (the round's
+     * score, excludes `startingFloat` and ignores spending) are two separate
+     * accumulators computed in kitchenScene.ts from these rates — kept
+     * separate because they answer different questions.
+     *
+     * 🔒 The 100 floor, and when it lifts. While zero props are EVER placed,
+     * wallet is floored at `startingFloat`. The moment the first prop is
+     * placed the floor drops to 0, permanently, even if that prop is later
+     * sold. Dishes walk out whether or not the player has placed anything,
+     * so walkouts can accrue before the first prop exists — during the
+     * opening seconds, or while someone reads the picker. With no prop there
+     * is no way to grab, therefore no way to earn back what those walkouts
+     * take. Unfloored, a slow start could drop the wallet under the 90
+     * needed to open a station and leave the round unwinnable with no way to
+     * report why — Retro.md item 53's exact failure. Once one prop is down,
+     * income exists and the charge is fair.
+     */
+    coins: {
+        startingFloat: 100, // a grant, never counted as earned
+        perGrab: 3,
+        perDish: 20,
+        walkoutCharge: 25, // same 25 the Chef Hat uses — one number, both currencies
+    },
+
+    /** Round 9: star bands, on `coinsEarned` (LevelEconomy.md §7.3a.2) — not
+     *  a currency, but only meaningful next to `coins` above, so it lives
+     *  here rather than beside the unrelated Chef Hat formula. ⭐ needs only
+     *  a clear, no threshold. */
+    starThresholds: { three: 340, two: 300 },
+
+    /**
+     * Round 9, task 9: the Chef Hat formula (LevelEconomy.md §7.3), awarded
+     * on any completed run (win OR loss). `perDish` and `perWalkoutAvoided`
+     * intentionally mirror `coins.perDish`/`coins.walkoutCharge` — the same
+     * two numbers score both currencies, not a coincidence.
+     *
+     * ⚠️ Round 8's comment on `held` (sim/kitchen.ts) called leftovers
+     * "discarded silently, not scored" — that was about currency conversion,
+     * which still doesn't exist. `perLeftover` below is the additive hats
+     * bonus originally asked for and supersedes that note; it does not
+     * reintroduce a currency.
+     */
+    hats: {
+        perDish: 20,
+        perLeftover: 2,
+        perWalkoutAvoided: 25,
+        clearBonus: 100,
+    },
 
     /**
      * Display-only placeholder recipe for the billboard's lower panel.

@@ -59,6 +59,22 @@
  * (kitchenConfig.ts's beltRamp) is read from sim.state.beltSpeed wherever
  * this file would otherwise reference KITCHEN_CONFIG.beltSpeed directly —
  * it doesn't, so no rendering code changed for the ramp itself.
+ *
+ * Round 9: this file now owns the entire coin economy — `wallet` and
+ * `coinsEarned`, both derived from sim events, since sim/kitchen.ts knows
+ * nothing about props, slots, or coins (see that file's header). Slots
+ * start LOCKED and unlock for coins, guarded against a second unlock before
+ * any prop is placed (task 5); a placed prop costs coins by tier and can be
+ * sold back (task 6); a filled slot goes on cooldown after every grab, shown
+ * as a dark sweep over the slot (task 7); the billboard's upper panel now
+ * shows Coins alongside Walkouts Left, split left/right (task 8). The round
+ * no longer starts at scene creation — `start()` (called from TestBelt.tsx's
+ * Ready button) is what begins spawning and the service_low cue; before
+ * that, `tick()` does nothing at all (task 4). `onShiftEnd` now also passes
+ * a frozen EconomySnapshot (wallet/coinsEarned/hats) alongside the sim
+ * state, and a new `onMessage` callback drives the same DOM-overlay pattern
+ * PropPicker.tsx uses, for the unlock guard and insufficient-funds text
+ * (KitchenMode.md §2.5 — noted here as the third copy of that pattern).
  */
 import {
     Assets,
@@ -79,10 +95,27 @@ import { KITCHEN_CONFIG } from './kitchenConfig.ts';
 import { createKitchenSim, isEligibleDist, type KitchenState } from './sim/kitchen.ts';
 import type { KitchenStage } from './kitchenStage.ts';
 
+/** Round 9: a frozen snapshot of the economy at shift end, passed alongside
+ *  KitchenState to onShiftEnd — sim/kitchen.ts has no notion of coins. */
+export interface EconomySnapshot {
+    wallet: number;
+    /** Floored at 100 for display/scoring — see kitchenConfig.ts's `coins`. */
+    coinsEarned: number;
+    hats: number;
+}
+
 export interface Scene {
+    /** Round 9, task 4: begin the shift — spawning, service_low, and
+     *  sfx.startWave() all wait for this instead of firing at creation.
+     *  No-op if already started (a fresh scene per run needs no guard from
+     *  the caller). */
+    start(): void;
     /** Round 5, task 3: place `levelProps[propIndex]` into station slot
      *  `slotIndex`. No-op if that slot already holds a prop. */
     placeProp(slotIndex: number, propIndex: number): void;
+    /** Round 9, task 6: sell the prop in `slotIndex` for its tier's refund;
+     *  the slot itself stays unlocked, not refunded. No-op if empty. */
+    sellProp(slotIndex: number): void;
     destroy(): void;
 }
 
@@ -93,13 +126,22 @@ export interface KitchenSceneCallbacks {
      * Round 5, task 7: fires exactly once, off the sim's own 'won'/'lost'
      * event — not off polling `state.phase` on a tick that might not run
      * again once the last dish resolves. Drives the end-screen overlay.
+     * Round 9: also carries the frozen EconomySnapshot for that same
+     * instant — coins earned, wallet, and Chef Hats.
      */
-    onShiftEnd(s: KitchenState): void;
+    onShiftEnd(s: KitchenState, economy: EconomySnapshot): void;
     /** Round 5, task 3: an empty slot was tapped — show the prop picker. */
     onSlotTapEmpty(slotIndex: number): void;
+    /** Round 9, task 6: a filled slot was tapped with nothing to serve —
+     *  offer to sell it. `info` is the placed prop's name and its refund. */
+    onSlotTapFilled(slotIndex: number, info: { name: string; refund: number }): void;
     /** Round 5, task 3: fires after a prop is placed, with the new total
      *  filled count — drives the "tap a station" first-entry hint. */
     onSlotsFilledChange(filledCount: number): void;
+    /** Round 9, task 5: a short user-facing message (the unlock guard, an
+     *  insufficient-funds notice) — shown via PropPicker's DOM-overlay
+     *  pattern, not drawn on the Pixi canvas. */
+    onMessage(text: string): void;
 }
 
 const BAND_TINTS = {
@@ -135,7 +177,7 @@ export async function createKitchenScene(
     stage: KitchenStage,
     callbacks: KitchenSceneCallbacks
 ): Promise<Scene> {
-    const { onChange, onShiftEnd, onSlotTapEmpty, onSlotsFilledChange } = callbacks;
+    const { onChange, onShiftEnd, onSlotTapEmpty, onSlotTapFilled, onSlotsFilledChange, onMessage } = callbacks;
     // Manifest-listed (deferred bundle) — load on demand rather than trust
     // background-load timing, so Test Mode never races its own art.
     await Assets.load([...UI_ALIASES, ...BAKED_ALIASES]);
@@ -217,16 +259,40 @@ export async function createKitchenScene(
     upperPanel.position.set(BB.panelInner.x, BB.upperPanel.y);
     boardRoot.addChild(upperPanel);
 
+    // Round 9, task 8: the upper panel splits left/right — Walkouts Left on
+    // the left quarter-centre, Coins on the right, both at the panel's
+    // vertical centre. `HUD_MAX_W` keeps a four-digit wallet from
+    // overflowing into the other half, via `setFitText` below (same
+    // shrink-to-fit discipline as the ingredient row's `fitText`, but
+    // mutating an existing Text in place rather than recreating one every
+    // tick — these two update every frame, badges only on an event).
+    const HUD_MAX_W = BB.panelInner.width / 2 - 24;
+    const hudY = BB.upperPanel.y + BB.upperPanel.height / 2;
     const walkoutsText = new Text({
         text: '',
         style: { fill: 0x1b1b2b, fontSize: 26, fontWeight: '800' },
     });
     walkoutsText.anchor.set(0.5);
-    walkoutsText.position.set(
-        BB.panelInner.x + BB.panelInner.width / 2,
-        BB.upperPanel.y + BB.upperPanel.height / 2
-    );
+    walkoutsText.position.set(BB.panelInner.x + BB.panelInner.width / 4, hudY);
     boardRoot.addChild(walkoutsText);
+
+    const coinsText = new Text({
+        text: '',
+        style: { fill: 0x1b1b2b, fontSize: 26, fontWeight: '800' },
+    });
+    coinsText.anchor.set(0.5);
+    coinsText.position.set(BB.panelInner.x + (3 * BB.panelInner.width) / 4, hudY);
+    boardRoot.addChild(coinsText);
+
+    function setFitText(t: Text, text: string, maxWidth: number, baseSize: number, minSize: number): void {
+        t.text = text;
+        let size = baseSize;
+        t.style.fontSize = size;
+        while (t.width > maxWidth && size > minSize) {
+            size -= 1;
+            t.style.fontSize = size;
+        }
+    }
 
     const lowerPanel = new NineSliceSprite({
         texture: tex.container,
@@ -405,6 +471,16 @@ export async function createKitchenScene(
         return t;
     }
 
+    // ---- Round 9: the coin economy (wallet/coinsEarned/locks/cooldown) ----
+    // Lives entirely in this closure — sim/kitchen.ts has no notion of any
+    // of it (see the file header). `hasEverPlacedProp` is one-way: once the
+    // 100 floor lifts it never re-applies, even if that prop is later sold.
+    let wallet: number = KITCHEN_CONFIG.coins.startingFloat;
+    let coinsEarned = 0;
+    let hasEverPlacedProp = false;
+    const slotLocked: boolean[] = KITCHEN_CONFIG.slots.map(() => true);
+    const cooldownRemaining: number[] = KITCHEN_CONFIG.slots.map(() => 0);
+
     // ---- station slots, 2x2 -------------------------------------------------
     // Round 5, task 3: slots start EMPTY — no prop assigned until the player
     // taps an empty slot and picks one from KITCHEN_CONFIG.levelProps via
@@ -412,6 +488,11 @@ export async function createKitchenScene(
     // BuildSheet-pattern duplication note, KitchenMode.md §2.5). The empty/
     // filled background sprite below still tracks dish-reach occupancy
     // (syncSlots) — a separate concept from whether a prop has been placed.
+    //
+    // Round 9, task 5: slots now start LOCKED, a third state ahead of empty
+    // (locked -> unlocked+empty -> filled). Reuses ui-slot-empty (no new art)
+    // tinted dark plus a lock glyph — a distinct affordance from the
+    // unlocked-empty state, which already reads as "tap me".
     const slotSprites = KITCHEN_CONFIG.slots.map((slot) => {
         const s = new Sprite(tex.slotEmpty);
         s.anchor.set(0.5);
@@ -421,6 +502,41 @@ export async function createKitchenScene(
         boardRoot.addChild(s);
         return s;
     });
+    const lockIcons = KITCHEN_CONFIG.slots.map((slot) => {
+        const t = new Text({ text: '\u{1F512}', style: { fontSize: 40 } });
+        t.anchor.set(0.5);
+        t.position.set(slot.x, slot.y);
+        boardRoot.addChild(t);
+        return t;
+    });
+    function setSlotLockVisual(i: number, locked: boolean): void {
+        slotSprites[i].tint = locked ? 0x555566 : 0xffffff;
+        lockIcons[i].visible = locked;
+    }
+    KITCHEN_CONFIG.slots.forEach((_, i) => setSlotLockVisual(i, slotLocked[i]));
+
+    // Round 9, task 7: a dark sweep over a slot on cooldown, from full cover
+    // down to nothing as `cooldownRemaining` counts down — "the kettle is
+    // busy" has to be readable, not just true.
+    const cooldownOverlays = KITCHEN_CONFIG.slots.map(() => {
+        const g = new Graphics();
+        g.visible = false;
+        boardRoot.addChild(g);
+        return g;
+    });
+    function drawCooldownOverlay(i: number): void {
+        const g = cooldownOverlays[i];
+        g.clear();
+        const frac = cooldownRemaining[i] / KITCHEN_CONFIG.propCooldown;
+        if (frac <= 0) {
+            g.visible = false;
+            return;
+        }
+        g.visible = true;
+        const { w, h } = KITCHEN_CONFIG.slotBox;
+        const slot = KITCHEN_CONFIG.slots[i];
+        g.rect(slot.x - w / 2, slot.y - h / 2, w, h * frac).fill({ color: 0x000000, alpha: 0.5 });
+    }
     // Round 5, tasks 4-5: reverses round 4's top-anchored icon+label stack —
     // icon centre-centre in the slotBox (aspect-fit, unchanged), label
     // centre-bottom with propLabelPad design units of padding on every side
@@ -428,12 +544,23 @@ export async function createKitchenScene(
     // test viewport. formatPropLabel (unchanged from round 4) still measures
     // the level suffix first and only ever ellipsizes the name.
     const slotProp: (number | null)[] = KITCHEN_CONFIG.slots.map(() => null);
+    // Round 9, task 6: kept so sellProp can tear the right sprite/label back
+    // down again — placeProp never stored these before this round because
+    // nothing ever removed a placed prop.
+    const propViews: ({ sprite: Sprite; label: Text } | null)[] = KITCHEN_CONFIG.slots.map(() => null);
     let filledSlotCount = 0;
     function placeProp(slotIndex: number, propIndex: number): void {
         if (slotProp[slotIndex] !== null) return;
+        const propInfo = KITCHEN_CONFIG.levelProps[propIndex];
+        const cost = KITCHEN_CONFIG.propTierCost[propInfo.level - 1];
+        if (wallet < cost) {
+            onMessage(`Not enough coins to place ${propInfo.name} (${cost} needed).`);
+            return;
+        }
+        wallet -= cost;
+        hasEverPlacedProp = true;
         slotProp[slotIndex] = propIndex;
         const slot = KITCHEN_CONFIG.slots[slotIndex];
-        const propInfo = KITCHEN_CONFIG.levelProps[propIndex];
         const propTex = Assets.get<Texture>(propInfo.alias);
 
         const p = new Sprite(propTex);
@@ -458,9 +585,30 @@ export async function createKitchenScene(
         label.anchor.set(0.5, 1);
         label.position.set(slot.x, slot.y + KITCHEN_CONFIG.slotBox.h / 2 - well.bottom - gap);
         boardRoot.addChild(label);
+        propViews[slotIndex] = { sprite: p, label };
 
         filledSlotCount++;
         onSlotsFilledChange(filledSlotCount);
+    }
+
+    // Round 9, task 6: refund floor(cost * propSellRefund); the slot itself
+    // stays unlocked, per LevelEconomy.md §7.1 ("the slot stays unlocked and
+    // is not refunded").
+    function sellProp(slotIndex: number): void {
+        const propIndex = slotProp[slotIndex];
+        if (propIndex === null) return;
+        const propInfo = KITCHEN_CONFIG.levelProps[propIndex];
+        const cost = KITCHEN_CONFIG.propTierCost[propInfo.level - 1];
+        const refund = Math.floor(cost * KITCHEN_CONFIG.propSellRefund);
+        wallet += refund;
+        propViews[slotIndex]?.sprite.destroy();
+        propViews[slotIndex]?.label.destroy();
+        propViews[slotIndex] = null;
+        slotProp[slotIndex] = null;
+        cooldownRemaining[slotIndex] = 0;
+        filledSlotCount--;
+        onSlotsFilledChange(filledSlotCount);
+        sfx.sell();
     }
 
     // Round 3, task 4 / Round 4, task 4: real sprite where manifest art
@@ -547,29 +695,95 @@ export async function createKitchenScene(
 
     const sim = createKitchenSim();
 
-    // Round 7, task 2: "shift starts" == this scene's creation — the belt has
-    // no separate start-wave button, dishes begin spawning immediately.
-    // Mirrors actions.ts's registerEngine, which fires the same pair once
-    // per fresh engine (== once per run); a "Run Again" remount recreates
-    // this scene from scratch, so it fires again for free, no separate
-    // reset needed.
-    switchCue('service_low');
-    prefetchCue('service_high');
-    sfx.startWave();
+    // Round 9, task 4: the round no longer starts at scene creation — it
+    // waits for TestBelt.tsx's Ready button to call Scene.start(). Until
+    // then `ready` stays false and tick() below does nothing at all: no
+    // spawning, no timer, no slot interaction.
+    let ready = false;
+    function start(): void {
+        if (ready) return;
+        ready = true;
+        // Round 7, task 2 (superseded): this used to fire at scene creation
+        // ("shift starts == this scene's creation"). Round 9 moves it here —
+        // the shift now starts on the Ready press, not on mount. A "Run
+        // Again" remount recreates this scene from scratch with `ready`
+        // false again, so it returns to the Ready state rather than
+        // auto-starting.
+        switchCue('service_low');
+        prefetchCue('service_high');
+        sfx.startWave();
+    }
     // Per-run latch (KitchenMode §4's amendment) — see the tick loop below.
     // Scoped to this scene's closure, so a fresh scene each run resets it.
     let highTensionLatched = false;
 
+    // Round 9, task 9: hats formula (LevelEconomy.md §7.3), frozen at the
+    // exact instant of 'won'/'lost' alongside sim.state — see onShiftEnd.
+    function computeEconomySnapshot(): EconomySnapshot {
+        const leftover = Object.values(sim.state.held).reduce((a, b) => a + b, 0);
+        const H = KITCHEN_CONFIG.hats;
+        const hats =
+            sim.state.completed * H.perDish +
+            leftover * H.perLeftover +
+            (KITCHEN_CONFIG.walkoutsAllowed - sim.state.walkouts) * H.perWalkoutAvoided +
+            (sim.state.phase === 'won' ? H.clearBonus : 0);
+        // Round 9, task 3: coinsEarned is floored at 100 for display/scoring
+        // only — the underlying accumulator can dip lower, this just keeps a
+        // heavy loss from ever showing (or scoring against) a negative.
+        return { wallet, coinsEarned: Math.max(100, coinsEarned), hats };
+    }
+
+    // Round 9, task 5: unlock a LOCKED slot for coins, guarded against a
+    // second unlock before any prop exists yet (LevelEconomy.md §7.2).
+    function attemptUnlock(i: number): void {
+        const unlockedCount = slotLocked.filter((l) => !l).length;
+        if (unlockedCount >= 1 && filledSlotCount === 0) {
+            onMessage('You must place an Utensil to unlock!');
+            return;
+        }
+        if (wallet < KITCHEN_CONFIG.slotUnlockCost) {
+            onMessage(`Not enough coins to unlock (${KITCHEN_CONFIG.slotUnlockCost} needed).`);
+            return;
+        }
+        wallet -= KITCHEN_CONFIG.slotUnlockCost;
+        slotLocked[i] = false;
+        setSlotLockVisual(i, false);
+        sfx.upgrade();
+    }
+
+    // Round 9, tasks 6-7: a filled slot's tap either serves (if a dish is in
+    // reach and the prop isn't on cooldown) or, when there's nothing to
+    // serve, offers to sell instead — reusing the tap rather than adding a
+    // second gesture. A tap while on cooldown does nothing either way; the
+    // dark sweep (drawCooldownOverlay) is what tells the player that.
+    function attemptUseOrSell(i: number): void {
+        if (cooldownRemaining[i] > 0) return;
+        const before = sim.state.served;
+        sim.tapSlot(i);
+        if (sim.state.served > before) {
+            cooldownRemaining[i] = KITCHEN_CONFIG.propCooldown;
+            return;
+        }
+        const propInfo = KITCHEN_CONFIG.levelProps[slotProp[i]!];
+        const cost = KITCHEN_CONFIG.propTierCost[propInfo.level - 1];
+        const refund = Math.floor(cost * KITCHEN_CONFIG.propSellRefund);
+        onSlotTapFilled(i, { name: propInfo.name, refund });
+    }
+
     const onTap = (e: FederatedPointerEvent) => {
+        if (!ready) return;
         const local = boardRoot.toLocal(e.global);
         const { w, h } = KITCHEN_CONFIG.slotBox;
         for (let i = 0; i < KITCHEN_CONFIG.slots.length; i++) {
             const slot = KITCHEN_CONFIG.slots[i];
             if (Math.abs(local.x - slot.x) <= w / 2 && Math.abs(local.y - slot.y) <= h / 2) {
+                // Round 9, task 5: locked comes before empty/filled — a
+                // locked slot is neither.
+                if (slotLocked[i]) attemptUnlock(i);
                 // Round 5, task 3: an empty slot opens the picker instead of
                 // serving — a station has to be set up before it can work.
-                if (slotProp[i] === null) onSlotTapEmpty(i);
-                else sim.tapSlot(i);
+                else if (slotProp[i] === null) onSlotTapEmpty(i);
+                else attemptUseOrSell(i);
                 break;
             }
         }
@@ -600,6 +814,13 @@ export async function createKitchenScene(
 
     function syncSlots(): void {
         KITCHEN_CONFIG.slots.forEach((slot, i) => {
+            // Round 9, task 5: a locked slot never lights up as "filled" —
+            // there's no prop there to receive anything, however close a
+            // dish passes.
+            if (slotLocked[i]) {
+                slotSprites[i].texture = tex.slotEmpty;
+                return;
+            }
             // Round 6, task 2: a dish on a fridge connector stub never lights
             // a slot up, however close — matches tapSlot's own gate in
             // sim/kitchen.ts, so the highlight never lies about tappability.
@@ -611,23 +832,50 @@ export async function createKitchenScene(
     }
 
     const tick = (ticker: Ticker) => {
+        // Round 9, task 4: nothing runs before the Ready press — no
+        // spawning, no timer, no HUD update.
+        if (!ready) return;
         const dt = Math.min(ticker.deltaMS, 50) / 1000;
         sim.step(dt);
+        // Round 9, task 7: cooldowns count down every tick regardless of
+        // events, and their sweep overlay redraws to match.
+        for (let i = 0; i < cooldownRemaining.length; i++) {
+            if (cooldownRemaining[i] > 0) cooldownRemaining[i] = Math.max(0, cooldownRemaining[i] - dt);
+            drawCooldownOverlay(i);
+        }
         for (const e of sim.drainEvents()) {
             // Round 7, task 3 / Round 8, task 7: sfx.shot() is a deliberate
             // loose-fit stand-in for a pickup (see file header) — resolved
             // for completion, which now has its own cue (sfx.upgrade()).
             // Both routed through the shared sfx object, never the synth
             // directly. Round 8, task 5: badges redraw on both events since
-            // both change `held`.
-            if (e.type === 'served') { sfx.shot('kitchen'); syncBadges(); }
-            else if (e.type === 'completed') { onCompletedDish(); sfx.upgrade(); syncBadges(); }
-            else if (e.type === 'walkout') sfx.leak();
+            // both change `held`. Round 9, task 3: both events also feed the
+            // wallet/coinsEarned pair (kitchenConfig.ts's `coins` rates).
+            if (e.type === 'served') {
+                wallet += KITCHEN_CONFIG.coins.perGrab;
+                coinsEarned += KITCHEN_CONFIG.coins.perGrab;
+                sfx.shot('kitchen'); syncBadges();
+            } else if (e.type === 'completed') {
+                wallet += KITCHEN_CONFIG.coins.perDish;
+                coinsEarned += KITCHEN_CONFIG.coins.perDish;
+                onCompletedDish(); sfx.upgrade(); syncBadges();
+            } else if (e.type === 'walkout') {
+                wallet -= KITCHEN_CONFIG.coins.walkoutCharge;
+                coinsEarned -= KITCHEN_CONFIG.coins.walkoutCharge;
+                // Round 9, task 3: the 100 floor holds only until the first
+                // prop is EVER placed, then it lifts for good (kitchenConfig
+                // .ts's `coins` comment) — walkouts are the only thing that
+                // can push wallet down before any prop exists to earn it
+                // back with.
+                wallet = Math.max(hasEverPlacedProp ? 0 : KITCHEN_CONFIG.coins.startingFloat, wallet);
+                sfx.leak();
+            }
             // Round 5, task 7: the end-screen fires off this event, not off
             // polling `state.phase` on a tick that may not run once the last
-            // dish resolves.
-            else if (e.type === 'won') { onShiftEnd(sim.state); sfx.win(); }
-            else if (e.type === 'lost') { onShiftEnd(sim.state); sfx.lose(); }
+            // dish resolves. Round 9: also freezes the economy snapshot at
+            // the same instant.
+            else if (e.type === 'won') { onShiftEnd(sim.state, computeEconomySnapshot()); sfx.win(); }
+            else if (e.type === 'lost') { onShiftEnd(sim.state, computeEconomySnapshot()); sfx.lose(); }
         }
         syncDishes();
         syncSlots();
@@ -644,13 +892,16 @@ export async function createKitchenScene(
             highTensionLatched = true;
             switchCue('service_high');
         }
-        walkoutsText.text = `Walkouts Left : ${remaining}`;
+        setFitText(walkoutsText, `Walkouts Left : ${remaining}`, HUD_MAX_W, 26, 14);
+        setFitText(coinsText, `Coins : ${wallet}`, HUD_MAX_W, 26, 14);
         onChange(sim.state);
     };
     app.ticker.add(tick);
 
     return {
+        start,
         placeProp,
+        sellProp,
         destroy() {
             app.ticker.remove(tick);
             app.stage.off('pointertap', onTap);
