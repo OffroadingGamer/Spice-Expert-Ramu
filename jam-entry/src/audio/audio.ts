@@ -94,7 +94,7 @@ export function initAudio(volumes: { music: number; sfx: number }): void {
 // as before.
 // ---------------------------------------------------------------------------
 
-type SampleId = 'lose' | 'upgrade' | 'wave-clear';
+type SampleId = 'lose' | 'upgrade' | 'wave-clear' | 'kettle-boil' | 'water-pour';
 
 /** Playback gain per sample — peak-matched to the synth cues they replace
  * (MP3s normalise to -3dBFS ~= 0.708 peak; the synth peaks at 0.30-0.35),
@@ -104,6 +104,13 @@ const SAMPLES: Record<SampleId, { url: string; gain: number }> = {
     lose: { url: 'audio/ah.mp3', gain: 0.5 },
     upgrade: { url: 'audio/level-up.mp3', gain: 0.35 },
     'wave-clear': { url: 'audio/level-complete.mp3', gain: 0.72 },
+    // Round 11 (TEST MODE): a Kettle/Water Dispenser grab, kitchenScene.ts's
+    // attemptUseOrSell. Measured peaks -6.78dBFS (kettle) / -5.53dBFS
+    // (water), already quieter than the -3dBFS the rest of this table
+    // normalises to — 0.65 is a human retune by ear, not derived from that
+    // measurement, same as every other gain here.
+    'kettle-boil': { url: 'audio/kettle-boil.mp3', gain: 0.65 },
+    'water-pour': { url: 'audio/water-pour.mp3', gain: 0.65 },
 };
 
 /** The CDN-streamed music cues (see switchCue near the sequencer, below).
@@ -148,8 +155,11 @@ function loadSamples(): void {
 }
 
 /** Returns false (and plays nothing) if the sample isn't ready — the
- * caller is expected to fall through to its synth in that case. */
-function playSample(id: SampleId): boolean {
+ * caller is expected to fall through to its synth in that case.
+ * Round 11 (TEST MODE): exported so kitchenScene.ts's attemptUseOrSell can
+ * play 'kettle-boil'/'water-pour' directly — those two have no sfx.*
+ * wrapper of their own, unlike lose/upgrade/wave-clear above. */
+export function playSample(id: SampleId): boolean {
     const c = ctx;
     const buffer = sampleBuffers.get(id);
     if (!c || !sfxBus || !buffer) return false;

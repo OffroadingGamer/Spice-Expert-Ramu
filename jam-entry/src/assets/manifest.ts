@@ -59,6 +59,14 @@ export const MANIFEST: Manifest = {
                 // recipe row — derived from UI/Icons (gitignored source), the
                 // plus glyph filled solid so a digit can be drawn over it.
                 { alias: 'ui-badge-count', src: 'images/ui-badge-count.png' },
+                // Round 11: Chef Hat + Coin icons — our own generated assets
+                // (Art/_gen/ui-final/), not the demo pack above, so no
+                // licence comment applies. Baked from 1024x1024 sources:
+                // alpha-trimmed, padded to a square canvas (content height
+                // 80%), downscaled to 256x256 — see kitchenScene.ts's HUD
+                // coin readout and TestBelt.tsx's end screen.
+                { alias: 'ui-chef-hat', src: 'images/ui-chef-hat.png' },
+                { alias: 'ui-coin', src: 'images/ui-coin.png' },
                 // Round 3: station props + belt ingredients + final dishes.
                 // ing-tea-leaf / ing-sugar / ing-chai-masala have no manifest
                 // line yet (§2.6 — procedural placeholder until art exists).

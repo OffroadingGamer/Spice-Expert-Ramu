@@ -80,6 +80,11 @@
  * changes for that except `starThresholds.two` (300 → 295, see its comment)
  * — a fix to a bar that sat inside the live 2-walkout coin range, unrelated
  * to the setup-phase change itself.
+ *
+ * Round 11: the wallet floor (`coins` below) is now state-derived instead of
+ * a one-way lift — see that comment for the deadlock it fixes. No numbers
+ * changed here; `propTierCost[0]` (40) is read by the new floor, not edited
+ * for it.
  */
 export const KITCHEN_CONFIG = {
     boardWidth: 720,
@@ -423,17 +428,28 @@ export const KITCHEN_CONFIG = {
      * accumulators computed in kitchenScene.ts from these rates — kept
      * separate because they answer different questions.
      *
-     * 🔒 The 100 floor, and when it lifts. While zero props are EVER placed,
-     * wallet is floored at `startingFloat`. The moment the first prop is
-     * placed the floor drops to 0, permanently, even if that prop is later
-     * sold. Dishes walk out whether or not the player has placed anything,
-     * so walkouts can accrue before the first prop exists — during the
-     * opening seconds, or while someone reads the picker. With no prop there
-     * is no way to grab, therefore no way to earn back what those walkouts
-     * take. Unfloored, a slow start could drop the wallet under the 90
-     * needed to open a station and leave the round unwinnable with no way to
-     * report why — Retro.md item 53's exact failure. Once one prop is down,
-     * income exists and the charge is fair.
+     * 🔒 Round 11: the wallet floor is STATE-DERIVED, not a one-way lift.
+     * kitchenScene.ts's `walletFloor()` re-reads live state every time it's
+     * applied (on a walkout, and again after a sell):
+     *   - a prop currently placed             -> floor 0 (income exists)
+     *   - no prop, at least one slot unlocked  -> floor propTierCost[0]
+     *     (enough to place the cheapest utensil and start earning)
+     *   - nothing unlocked yet                 -> floor startingFloat
+     * Round 9's version floored at `startingFloat` only until the FIRST prop
+     * was EVER placed, then dropped to 0 forever, even once that prop was
+     * sold — a deadlock: unlock (100->50), place (50->10), sell (10->40),
+     * Ready with an empty board, one walkout (40->15, unfloored) leaves 15
+     * coins with no prop on the board and a 40-coin utensil to buy —
+     * unwinnable, and the round said nothing about why (Retro.md item 53's
+     * failure, recurring). The state-derived floor reopens the full
+     * `startingFloat` whenever the board is genuinely empty and locked
+     * again, and narrows it to `propTierCost[0]` the moment a slot is
+     * unlocked, rather than leaving the full 100 available to someone who
+     * already spent down to set up.
+     *
+     * ⚠️ Deliberate behaviour change from round 9, not a regression: an
+     * unlock-then-strand now floors at 40 (propTierCost[0]), not 100 — 50
+     * remains after unlocking and 40 buys the utensil.
      */
     coins: {
         startingFloat: 100, // a grant, never counted as earned

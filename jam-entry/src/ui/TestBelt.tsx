@@ -54,6 +54,10 @@
  * unlocked yet" (name unlocking as the first step) apart from "unlocked but
  * empty" (round 5's original "tap an empty station" text, still correct —
  * just no longer correct as the FIRST thing a player reads).
+ *
+ * Round 11: the end screen now shows the baked ui-coin/ui-chef-hat icons
+ * beside their figures (`ASSET_SRC`, the same manifest-lookup pattern
+ * PropPicker.tsx uses) instead of bare text. Star row/thresholds unchanged.
  */
 import { useEffect, useRef, useState } from 'react';
 import type { Application } from 'pixi.js';
@@ -65,7 +69,14 @@ import { KITCHEN_CONFIG } from '../game/kitchenConfig.ts';
 import type { KitchenState } from '../game/sim/kitchen.ts';
 import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
+import { MANIFEST } from '../assets/manifest.ts';
 import PropPicker from './PropPicker.tsx';
+
+// Round 11: same manifest-lookup pattern as PropPicker.tsx's ASSET_SRC — one
+// place (the manifest) lists what an alias's image file actually is.
+const ASSET_SRC = new Map(
+    MANIFEST.bundles.flatMap((b) => b.assets).map((a) => [a.alias as string, a.src as string])
+);
 
 function IconMusic({ muted }: { muted: boolean }) {
     return (
@@ -332,8 +343,9 @@ export default function TestBelt() {
                         <div className="flex flex-col items-center gap-3">
                             {shiftResult.phase === 'won' && (
                                 <>
-                                    <p className="text-xl font-bold text-white">
-                                        Coins earned&nbsp;&nbsp;{shiftEconomy.coinsEarned}
+                                    <p className="flex items-center gap-2 text-xl font-bold text-white">
+                                        <img src={ASSET_SRC.get('ui-coin')} alt="" className="h-6 w-6 object-contain" />
+                                        earned = {shiftEconomy.coinsEarned}
                                     </p>
                                     <div className="flex gap-6 text-3xl">
                                         <span>{stars >= 1 ? '★' : '☆'}</span>
@@ -347,7 +359,10 @@ export default function TestBelt() {
                                     </div>
                                 </>
                             )}
-                            <p className="text-lg text-white/70">{shiftEconomy.hats} Chef Hats</p>
+                            <p className="flex items-center gap-2 text-lg text-white/70">
+                                <img src={ASSET_SRC.get('ui-chef-hat')} alt="" className="h-6 w-6 object-contain" />
+                                {shiftEconomy.hats} Chef Hats
+                            </p>
                         </div>
                     )}
                     <div className="flex gap-4">

@@ -87,6 +87,18 @@
  * (mirroring the existing `onSlotsFilledChange`) lets TestBelt.tsx tell the
  * setup nudge apart from the "place a prop" nudge — locked-board vs
  * unlocked-but-empty are different first steps.
+ *
+ * Round 11: two independent fixes. `walletFloor()` replaces the one-way
+ * `hasEverPlacedProp` lift — the floor is now read fresh off live state
+ * (placed / unlocked-but-empty / nothing-unlocked) every time it's applied,
+ * so selling a station or emptying the board reopens the right floor instead
+ * of leaving the wallet able to strand below what a station costs
+ * (kitchenConfig.ts's `coins` comment has the failure case). Separately, the
+ * baked ui-coin icon replaces the word "Coins" in the HUD banner, and the
+ * per-grab cue moves from tick()'s 'served' branch (a round-7 loose-fit
+ * sfx.shot('kitchen') stand-in) into attemptUseOrSell, where the slot index
+ * is known — a Kettle grab plays kettle-boil, a Water Dispenser grab plays
+ * water-pour, exactly one sound per grab.
  */
 import {
     Assets,
@@ -101,7 +113,7 @@ import {
     type TextStyleFontWeight,
     type Ticker,
 } from 'pixi.js';
-import { prefetchCue, sfx, switchCue } from '../audio/audio.ts';
+import { playSample, prefetchCue, sfx, switchCue } from '../audio/audio.ts';
 import { CONFIG } from './config.ts';
 import { KITCHEN_CONFIG } from './kitchenConfig.ts';
 import { createKitchenSim, isEligibleDist, type KitchenState } from './sim/kitchen.ts';
@@ -171,7 +183,14 @@ const BAND_TINTS = {
 type IngredientKind = (typeof KITCHEN_CONFIG.ingredientKinds)[number];
 const KIND_INFO = new Map<string, IngredientKind>(KITCHEN_CONFIG.ingredientKinds.map((k) => [k.key, k]));
 
-const UI_ALIASES = ['ui-slot-empty', 'ui-slot-filled', 'ui-hotbar', 'ui-container', 'ui-billboard', 'ui-badge-count'];
+// Round 11: 'ui-chef-hat' is drawn only by TestBelt.tsx's DOM end screen, not
+// on this canvas — it's listed here anyway, purely to force-load it, for the
+// same reason as every other alias in this array (see the comment below):
+// Assets.backgroundLoadBundle() is idle-priority and, left alone, may not
+// resolve before the end screen needs it (it's the first deferred asset
+// nothing here explicitly awaited — every other deferred-bundle sprite this
+// scene draws was already forcing its own load).
+const UI_ALIASES = ['ui-slot-empty', 'ui-slot-filled', 'ui-hotbar', 'ui-container', 'ui-billboard', 'ui-badge-count', 'ui-coin', 'ui-chef-hat'];
 // Baked art across rounds 3-4: real where it exists (manifest-listed),
 // fallback everywhere else via `Assets.cache.has()` checks below — the
 // fallback alias (ing-tea-leaf) is never requested from Assets, only used
@@ -205,6 +224,7 @@ export async function createKitchenScene(
         container: Assets.get<Texture>('ui-container'),
         billboard: Assets.get<Texture>('ui-billboard'),
         badgeCount: Assets.get<Texture>('ui-badge-count'),
+        coin: Assets.get<Texture>('ui-coin'),
     };
 
     // A child of stage.root, not stage.root itself — kitchenStage.ts's
@@ -293,12 +313,26 @@ export async function createKitchenScene(
     walkoutsText.position.set(BB.panelInner.x + BB.panelInner.width / 4, hudY);
     boardRoot.addChild(walkoutsText);
 
+    // Round 11: the word "Coins" is replaced by the baked ui-coin icon —
+    // icon height matched to the text's own base size (26), then a small
+    // gap, then the number. The (icon+gap+number) group is re-centred on the
+    // same x every refreshHud() call since the number's width changes with
+    // the wallet; the number's own max width shrinks by the icon+gap first,
+    // so the group's total width still can't exceed HUD_MAX_W and collide
+    // with walkoutsText, same bound the bare text used to respect.
+    const COIN_ICON_H = 26;
+    const COIN_ICON_GAP = 6;
+    const coinIcon = new Sprite(tex.coin);
+    coinIcon.anchor.set(0.5);
+    coinIcon.height = COIN_ICON_H;
+    coinIcon.width = tex.coin.width * (COIN_ICON_H / tex.coin.height);
+    boardRoot.addChild(coinIcon);
+
     const coinsText = new Text({
         text: '',
         style: { fill: 0x1b1b2b, fontSize: 26, fontWeight: '800' },
     });
-    coinsText.anchor.set(0.5);
-    coinsText.position.set(BB.panelInner.x + (3 * BB.panelInner.width) / 4, hudY);
+    coinsText.anchor.set(0, 0.5);
     boardRoot.addChild(coinsText);
 
     function setFitText(t: Text, text: string, maxWidth: number, baseSize: number, minSize: number): void {
@@ -494,9 +528,20 @@ export async function createKitchenScene(
     // 100 floor lifts it never re-applies, even if that prop is later sold.
     let wallet: number = KITCHEN_CONFIG.coins.startingFloat;
     let coinsEarned = 0;
-    let hasEverPlacedProp = false;
     const slotLocked: boolean[] = KITCHEN_CONFIG.slots.map(() => true);
     const cooldownRemaining: number[] = KITCHEN_CONFIG.slots.map(() => 0);
+
+    // Round 11: the wallet floor, read fresh off live state every time it's
+    // applied (on a walkout, and again after a sell) — replaces the one-way
+    // `hasEverPlacedProp` lift. See kitchenConfig.ts's `coins` comment for
+    // the deadlock this fixes. Declared here (a `function`, hoisted) even
+    // though `filledSlotCount` below isn't assigned yet — nothing calls this
+    // until after that assignment runs.
+    function walletFloor(): number {
+        if (filledSlotCount > 0) return 0;
+        if (slotLocked.some((l) => !l)) return KITCHEN_CONFIG.propTierCost[0];
+        return KITCHEN_CONFIG.coins.startingFloat;
+    }
 
     // ---- station slots, 2x2 -------------------------------------------------
     // Round 5, task 3: slots start EMPTY — no prop assigned until the player
@@ -575,7 +620,6 @@ export async function createKitchenScene(
             return;
         }
         wallet -= cost;
-        hasEverPlacedProp = true;
         slotProp[slotIndex] = propIndex;
         const slot = KITCHEN_CONFIG.slots[slotIndex];
         const propTex = Assets.get<Texture>(propInfo.alias);
@@ -625,6 +669,11 @@ export async function createKitchenScene(
         slotProp[slotIndex] = null;
         cooldownRemaining[slotIndex] = 0;
         filledSlotCount--;
+        // Round 11: selling the last station can strand the wallet below the
+        // price of a new one (LevelEconomy's deadlock, see kitchenConfig.ts)
+        // — apply the floor here too, after filledSlotCount has dropped so
+        // an empty board re-floors at the right tier.
+        wallet = Math.max(walletFloor(), wallet);
         onSlotsFilledChange(filledSlotCount);
         sfx.sell();
         refreshHud();
@@ -731,7 +780,14 @@ export async function createKitchenScene(
     function refreshHud(): void {
         const remaining = Math.max(0, KITCHEN_CONFIG.walkoutsAllowed - sim.state.walkouts);
         setFitText(walkoutsText, `Walkouts Left : ${remaining}`, HUD_MAX_W, 26, 14);
-        setFitText(coinsText, `Coins : ${wallet}`, HUD_MAX_W, 26, 14);
+        // Round 11: the icon consumes width setFitText previously had —
+        // shrink its budget by the icon+gap so (icon+gap+number) still fits
+        // HUD_MAX_W as a group.
+        setFitText(coinsText, `${wallet}`, HUD_MAX_W - coinIcon.width - COIN_ICON_GAP, 26, 14);
+        const groupCx = BB.panelInner.x + (3 * BB.panelInner.width) / 4;
+        const groupLeft = groupCx - (coinIcon.width + COIN_ICON_GAP + coinsText.width) / 2;
+        coinIcon.position.set(groupLeft + coinIcon.width / 2, hudY);
+        coinsText.position.set(groupLeft + coinIcon.width + COIN_ICON_GAP, hudY);
     }
     refreshHud();
     function start(): void {
@@ -798,6 +854,14 @@ export async function createKitchenScene(
         sim.tapSlot(i);
         if (sim.state.served > before) {
             cooldownRemaining[i] = KITCHEN_CONFIG.propCooldown;
+            // Round 11: the per-grab cue, picked by the prop actually in
+            // this slot — moved here from tick()'s 'served' branch (a
+            // round-7 loose-fit sfx.shot('kitchen') stand-in) because this
+            // is where the slot index is known. Only two props exist, so no
+            // fallback case is needed.
+            const propAlias = KITCHEN_CONFIG.levelProps[slotProp[i]!].alias;
+            if (propAlias === 'prop-kettle-l1') playSample('kettle-boil');
+            else if (propAlias === 'prop-water-dispenser-l1') playSample('water-pour');
             return;
         }
         const propInfo = KITCHEN_CONFIG.levelProps[slotProp[i]!];
@@ -892,7 +956,10 @@ export async function createKitchenScene(
             if (e.type === 'served') {
                 wallet += KITCHEN_CONFIG.coins.perGrab;
                 coinsEarned += KITCHEN_CONFIG.coins.perGrab;
-                sfx.shot('kitchen'); syncBadges();
+                // Round 11: the pickup cue moved to attemptUseOrSell, where
+                // the slot (and so which prop fired) is known — resolves
+                // round 7's flagged sfx.shot('kitchen') stand-in.
+                syncBadges();
             } else if (e.type === 'completed') {
                 wallet += KITCHEN_CONFIG.coins.perDish;
                 coinsEarned += KITCHEN_CONFIG.coins.perDish;
@@ -900,12 +967,9 @@ export async function createKitchenScene(
             } else if (e.type === 'walkout') {
                 wallet -= KITCHEN_CONFIG.coins.walkoutCharge;
                 coinsEarned -= KITCHEN_CONFIG.coins.walkoutCharge;
-                // Round 9, task 3: the 100 floor holds only until the first
-                // prop is EVER placed, then it lifts for good (kitchenConfig
-                // .ts's `coins` comment) — walkouts are the only thing that
-                // can push wallet down before any prop exists to earn it
-                // back with.
-                wallet = Math.max(hasEverPlacedProp ? 0 : KITCHEN_CONFIG.coins.startingFloat, wallet);
+                // Round 11: floor is state-derived — see walletFloor() and
+                // kitchenConfig.ts's `coins` comment.
+                wallet = Math.max(walletFloor(), wallet);
                 sfx.leak();
             }
             // Round 5, task 7: the end-screen fires off this event, not off
