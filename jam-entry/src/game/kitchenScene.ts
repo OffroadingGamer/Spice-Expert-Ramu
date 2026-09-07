@@ -36,6 +36,18 @@
  * gate on isEligibleDist so a dish on a fridge connector stub is never
  * tappable (task 2); the belt's ingredient set corrected to milk/ginger/
  * tea-leaf (task 3).
+ *
+ * Round 7: the billboard ingredient row's sprite size is fixed at
+ * kitchenConfig.ts's ingredientRow.capN (5) instead of recomputing larger
+ * for a shorter recipe (task 1); the belt now switches music cues and plays
+ * SFX exactly as the live game does — service_low on shift start, service_high
+ * once past KITCHEN_CONFIG.walkoutsAllowed * 0.3 remaining lives (KitchenMode
+ * §4's amendment, guarded at remaining > 0 per §4), served/walkout/won/lost
+ * routed to sfx.shot/leak/win/lose (task 2-3). sfx.shot() here is a
+ * deliberate loose-fit stand-in, not a settled choice — serving a cooked dish
+ * will want its own cue once cooking exists; it borrows the tower-firing cue
+ * only because nothing closer exists yet. src/audio/audio.ts itself is
+ * untouched — this only calls its existing switchCue/prefetchCue/sfx surface.
  */
 import {
     Assets,
@@ -49,6 +61,7 @@ import {
     type Texture,
     type Ticker,
 } from 'pixi.js';
+import { prefetchCue, sfx, switchCue } from '../audio/audio.ts';
 import { CONFIG } from './config.ts';
 import { KITCHEN_CONFIG } from './kitchenConfig.ts';
 import { createKitchenSim, isEligibleDist, type KitchenState } from './sim/kitchen.ts';
@@ -237,9 +250,16 @@ export async function createKitchenScene(
     // which this reuses. Name text shrinks to fit `slotSize` rather than
     // clipping (checked against "Chai Masala", the longest label at n=5).
     const { ingredients } = KITCHEN_CONFIG.recipe;
-    const { innerWidth, plusWidth, pad, labelHeight, labelGap } = BB.ingredientRow;
+    const { innerWidth, plusWidth, pad, labelHeight, labelGap, capN } = BB.ingredientRow;
     const n = ingredients.length;
-    const slotSize = (innerWidth - (n - 1) * plusWidth - pad) / n;
+    // Round 7, task 1: fixed sprite size, computed at the capN cap — a
+    // shorter recipe (n=3 today) is a shorter, centred row at the SAME tile
+    // size a capN-length row would use, not a bigger one. §8b's own
+    // shrink-to-fit formula (divided by the actual n) is kept as the
+    // fallback past the cap, so a 6-ingredient recipe still can't overflow.
+    const slotSize = n <= capN
+        ? (innerWidth - (capN - 1) * plusWidth - pad) / capN
+        : (innerWidth - (n - 1) * plusWidth - pad) / n;
     const rowWidth = n * slotSize + (n - 1) * plusWidth;
     const baseline = BB.lowerPanel.y + BB.lowerPanel.height - BB.contentInset;
     const rowCenterX = BB.panelInner.x + BB.panelInner.width / 2;
@@ -449,6 +469,19 @@ export async function createKitchenScene(
 
     const sim = createKitchenSim();
 
+    // Round 7, task 2: "shift starts" == this scene's creation — the belt has
+    // no separate start-wave button, dishes begin spawning immediately.
+    // Mirrors actions.ts's registerEngine, which fires the same pair once
+    // per fresh engine (== once per run); a "Run Again" remount recreates
+    // this scene from scratch, so it fires again for free, no separate
+    // reset needed.
+    switchCue('service_low');
+    prefetchCue('service_high');
+    sfx.startWave();
+    // Per-run latch (KitchenMode §4's amendment) — see the tick loop below.
+    // Scoped to this scene's closure, so a fresh scene each run resets it.
+    let highTensionLatched = false;
+
     const onTap = (e: FederatedPointerEvent) => {
         const local = boardRoot.toLocal(e.global);
         const { w, h } = KITCHEN_CONFIG.slotBox;
@@ -503,15 +536,32 @@ export async function createKitchenScene(
         const dt = Math.min(ticker.deltaMS, 50) / 1000;
         sim.step(dt);
         for (const e of sim.drainEvents()) {
-            if (e.type === 'served') onServed();
+            // Round 7, task 3: sfx.shot() here is a deliberate loose-fit
+            // stand-in (see file header) — routed through the shared sfx
+            // object like every other call, never the synth directly.
+            if (e.type === 'served') { onServed(); sfx.shot('kitchen'); }
+            else if (e.type === 'walkout') sfx.leak();
             // Round 5, task 7: the end-screen fires off this event, not off
             // polling `state.phase` on a tick that may not run once the last
             // dish resolves.
-            if (e.type === 'won' || e.type === 'lost') onShiftEnd(sim.state);
+            else if (e.type === 'won') { onShiftEnd(sim.state); sfx.win(); }
+            else if (e.type === 'lost') { onShiftEnd(sim.state); sfx.lose(); }
         }
         syncDishes();
         syncSlots();
         const remaining = Math.max(0, KITCHEN_CONFIG.walkoutsAllowed - sim.state.walkouts);
+        // Round 7, task 2: KitchenMode §4's amendment — proportional to the
+        // belt's OWN walkoutsAllowed (5), not the tower defence's literal 3
+        // (which reads there as CONFIG.economy.startLives * 0.3 = 3 of 10;
+        // here it's walkoutsAllowed * 0.3 = 1.5, so it fires with 1 left).
+        // `remaining > 0` guard, per §4: nothing costs more than one walkout
+        // today so this can't yet land on the game-over screen, but the
+        // guard costs nothing and stops that from becoming a silent landmine
+        // later.
+        if (!highTensionLatched && remaining > 0 && remaining < KITCHEN_CONFIG.walkoutsAllowed * 0.3) {
+            highTensionLatched = true;
+            switchCue('service_high');
+        }
         walkoutsText.text = `Walkouts Left : ${remaining}`;
         onChange(sim.state);
     };

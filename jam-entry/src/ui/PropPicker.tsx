@@ -7,6 +7,10 @@
  * not an extraction of it — BuildSheet is tower-defence, this is the belt.
  * KitchenMode.md §2.5 accepts this cost and asks it be noted wherever the
  * pattern is copied (see TestBelt.tsx's shift-menu note for the other copy).
+ *
+ * Round 7: the pick button now plays sfx.place() instead of sfx.click(),
+ * mirroring BuildSheet.tsx's own pick button exactly — placing a station is
+ * the same kind of moment as placing a tower. Cancel keeps sfx.click().
  */
 import { sfx } from '../audio/audio.ts';
 import { KITCHEN_CONFIG } from '../game/kitchenConfig.ts';
@@ -42,7 +46,7 @@ export default function PropPicker({
                             type="button"
                             className="flex flex-col items-center gap-1 rounded-xl bg-white/10 p-3 transition-transform active:scale-95"
                             onClick={() => {
-                                sfx.click();
+                                sfx.place();
                                 onPick(i);
                             }}
                         >

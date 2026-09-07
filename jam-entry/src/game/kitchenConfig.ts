@@ -35,6 +35,17 @@
  * output Node 0 has none of). beltPath/beltSpeed/spawnInterval/slotReach/
  * the fridge box/the band boundaries are untouched — round 5's 16.0s
  * traverse stands.
+ *
+ * Round 7: the billboard ingredient row's sprite size is now fixed at the
+ * n=5 cap (`ingredientRow.capN` below) instead of §8b's shrink-to-fit
+ * recomputing a larger tile whenever the actual recipe is shorter than the
+ * cap — a 3-ingredient recipe is a shorter, centred row at the SAME sprite
+ * size a 5-ingredient row would use, not a bigger one (kitchenScene.ts).
+ * §8b's shrink-to-fit formula still applies, unchanged, for n > capN (6, the
+ * documented hard maximum) so the row can never overflow. The belt also
+ * gained the live game's music/SFX this round (kitchenScene.ts, TestBelt.tsx,
+ * PropPicker.tsx) — src/audio/audio.ts itself is untouched, shared with the
+ * live game.
  */
 export const KITCHEN_CONFIG = {
     boardWidth: 720,
@@ -107,8 +118,17 @@ export const KITCHEN_CONFIG = {
          * exists (ing-milk, ing-ginger), else the round-3 procedural
          * fallback; name text sized down to fit `slotSize`, never clipped
          * (checked against "Chai Masala", the longest label at n=5).
+         *
+         * Round 7, task 1: `capN` is the recipe-length cap the sprite size is
+         * fixed against — the formula above evaluated at n=capN, not at the
+         * actual recipe's ingredient count, so a shorter recipe (n=3 today)
+         * draws a shorter, centred row at the SAME tile size a capN-length
+         * row would use, never a bigger one. §8b's own shrink-to-fit formula
+         * (n in the divisor) is kept, unchanged, as the fallback for n >
+         * capN — 6, §8b's documented hard maximum — so the row still can
+         * never overflow. See kitchenScene.ts's ingredient-row block.
          */
-        ingredientRow: { innerWidth: 559, plusWidth: 28, pad: 16, labelHeight: 16, labelGap: 4 },
+        ingredientRow: { innerWidth: 559, plusWidth: 28, pad: 16, labelHeight: 16, labelGap: 4, capN: 5 },
     },
 
     /**
