@@ -12,6 +12,13 @@
  * The TEST MODE entry button (MainMenu.tsx) is unconditional for now, by
  * instruction — remove or flag it before the next public deploy.
  *
+ * Round 5: slots start empty and are filled via PropPicker.tsx (itself a
+ * duplicate of BuildSheet.tsx's pattern, see its own header); the end
+ * screen is now driven by kitchenScene's onShiftEnd event rather than by
+ * polling sim phase, and its stats are restacked one-per-line; a
+ * first-entry hint nudges the player toward the empty stations until the
+ * first one is filled.
+ *
  * The shift menu below is a DUPLICATE of Hud.tsx's — extracting it would
  * violate "move nothing that already exists" (Hud.tsx's menu is inline
  * markup, not a component). A fix to one does not automatically reach the
@@ -28,6 +35,7 @@ import { KITCHEN_CONFIG } from '../game/kitchenConfig.ts';
 import type { KitchenState } from '../game/sim/kitchen.ts';
 import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
+import PropPicker from './PropPicker.tsx';
 
 function IconMusic({ muted }: { muted: boolean }) {
     return (
@@ -57,9 +65,20 @@ let lastSfx = 0.8;
 export default function TestBelt() {
     const hostRef = useRef<HTMLDivElement | null>(null);
     const appRef = useRef<Application | null>(null);
+    const sceneRef = useRef<Scene | null>(null);
     const [runId, setRunId] = useState(0);
-    const [state, setState] = useState<KitchenState | null>(null);
+    // Only setState is used — the live per-tick state has no React reader
+    // now that the walkouts counter is drawn on the Pixi canvas itself and
+    // the end screen reads the frozen `shiftResult` snapshot instead.
+    const [, setState] = useState<KitchenState | null>(null);
     const [menuOpen, setMenuOpen] = useState(false);
+    // Round 5, task 7: the end screen is a distinct piece of state, set only
+    // by kitchenScene's onShiftEnd callback — not derived from `state` on
+    // every tick — so it fires exactly once, off the sim's own event.
+    const [shiftResult, setShiftResult] = useState<KitchenState | null>(null);
+    // Round 5, task 3: which empty slot opened the picker, if any.
+    const [pendingSlot, setPendingSlot] = useState<number | null>(null);
+    const [filledSlots, setFilledSlots] = useState(0);
     const paused = useStore((s) => s.paused);
     const musicVol = useStore((s) => s.musicVol);
     const sfxVol = useStore((s) => s.sfxVol);
@@ -70,6 +89,11 @@ export default function TestBelt() {
         let disposed = false;
         let scene: Scene | null = null;
         let stage: KitchenStage | null = null;
+        // A fresh run starts every round-5 piece of state over: no shift
+        // result to show, no picker open, no stations filled yet.
+        setShiftResult(null);
+        setPendingSlot(null);
+        setFilledSlots(0);
         (async () => {
             const app = await createPixiApp(hostRef.current!);
             if (disposed) {
@@ -78,7 +102,13 @@ export default function TestBelt() {
             }
             appRef.current = app;
             stage = createKitchenStage(app);
-            scene = await createKitchenScene(app, stage, (s) => setState(s));
+            scene = await createKitchenScene(app, stage, {
+                onChange: (s) => setState(s),
+                onShiftEnd: (s) => setShiftResult(s),
+                onSlotTapEmpty: (i) => setPendingSlot(i),
+                onSlotsFilledChange: (n) => setFilledSlots(n),
+            });
+            sceneRef.current = scene;
             if (disposed) {
                 scene.destroy();
                 stage.destroy();
@@ -91,6 +121,7 @@ export default function TestBelt() {
         })();
         return () => {
             disposed = true;
+            sceneRef.current = null;
             try { scene?.destroy(); } catch { /* scene already torn down */ }
             try { stage?.destroy(); } catch { /* stage already torn down */ }
             if (appRef.current) {
@@ -133,13 +164,29 @@ export default function TestBelt() {
         store.patch({ paused: false, phase: 'menu' });
     };
 
-    const remaining = state
-        ? KITCHEN_CONFIG.shiftDishCount - state.served - state.walkouts - state.dishes.length
+    // Round 5, task 7: computed off the frozen shiftResult snapshot, not the
+    // continuously-updating `state` — the end screen's own numbers, not a
+    // live readout.
+    const shiftPending = shiftResult
+        ? KITCHEN_CONFIG.shiftDishCount - shiftResult.served - shiftResult.walkouts - shiftResult.dishes.length
         : 0;
 
     return (
         <div className="absolute inset-0 bg-surface">
             <div key={runId} ref={hostRef} className="absolute inset-0" />
+
+            {/* Round 5, task 3: first-entry nudge — an empty board otherwise
+                gives no affordance. Gone once the first station is set up. */}
+            {!menuOpen && !shiftResult && filledSlots === 0 && (
+                <div
+                    className="pointer-events-none absolute inset-x-0 flex justify-center px-6"
+                    style={{ top: 'calc(1rem + env(safe-area-inset-top, 0px))' }}
+                >
+                    <p className="rounded-full bg-black/70 px-4 py-2 text-center text-[1.1rem] font-semibold text-white/90">
+                        Tap an empty station to set it up
+                    </p>
+                </div>
+            )}
 
             {/* Hamburger: centre bottom, replaces the old Exit button. */}
             {!menuOpen && (
@@ -159,14 +206,20 @@ export default function TestBelt() {
                 </button>
             )}
 
-            {state && state.phase !== 'running' && (
+            {/* Round 5, task 7: driven by shiftResult (set once, off
+                kitchenScene's onShiftEnd event) — not by polling state.phase
+                on a tick that may not run once the last dish resolves.
+                Round 5, task 7: figures restacked one per line. */}
+            {shiftResult && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-black/70">
                     <p className="text-3xl font-bold">
-                        {state.phase === 'won' ? 'Shift cleared' : 'Too many walkouts'}
+                        {shiftResult.phase === 'won' ? 'Shift cleared' : 'Too many walkouts'}
                     </p>
-                    <p className="text-lg text-white/70">
-                        {remaining} pending · {state.served} served · {state.walkouts} walked out
-                    </p>
+                    <div className="flex flex-col items-center gap-1 text-lg text-white/70">
+                        <p>{shiftPending} pending</p>
+                        <p>{shiftResult.served} served</p>
+                        <p>{shiftResult.walkouts} walked out</p>
+                    </div>
                     <div className="flex gap-4">
                         <button
                             type="button"
@@ -184,6 +237,17 @@ export default function TestBelt() {
                         </button>
                     </div>
                 </div>
+            )}
+
+            {/* Round 5, task 3: the prop picker for an empty slot. */}
+            {pendingSlot !== null && (
+                <PropPicker
+                    onPick={(propIndex) => {
+                        sceneRef.current?.placeProp(pendingSlot, propIndex);
+                        setPendingSlot(null);
+                    }}
+                    onClose={() => setPendingSlot(null)}
+                />
             )}
 
             {/* Shift menu — duplicated from Hud.tsx, see file header. */}

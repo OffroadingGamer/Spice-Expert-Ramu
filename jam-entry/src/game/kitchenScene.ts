@@ -21,6 +21,14 @@
  * PropSpriteIndex.md §5 — see kitchenConfig.ts's `fridge` comment), sprite-
  * over-name billboard ingredients (task 4), and one shared `contentInset`
  * constant so the round-3 inset symmetry holds by construction (task 5).
+ *
+ * Round 5: chai-only dish tray (task 1), an aspect-correct fridge over a
+ * recomputed belt path/speed (task 2), station slots that start empty and
+ * fill via a tap-to-place picker driven by the new onSlotTapEmpty/placeProp
+ * callbacks (task 3), icon-centre/label-bottom prop slots (tasks 4-5), a
+ * larger recipe-name heading (task 6), an end-screen driven off the sim's
+ * own won/lost event rather than polled phase (task 7), and a larger single
+ * final dish (task 8).
  */
 import {
     Assets,
@@ -40,7 +48,26 @@ import { createKitchenSim, type KitchenState } from './sim/kitchen.ts';
 import type { KitchenStage } from './kitchenStage.ts';
 
 export interface Scene {
+    /** Round 5, task 3: place `levelProps[propIndex]` into station slot
+     *  `slotIndex`. No-op if that slot already holds a prop. */
+    placeProp(slotIndex: number, propIndex: number): void;
     destroy(): void;
+}
+
+export interface KitchenSceneCallbacks {
+    /** Fires once per tick with the latest sim state — drives the live HUD. */
+    onChange(s: KitchenState): void;
+    /**
+     * Round 5, task 7: fires exactly once, off the sim's own 'won'/'lost'
+     * event — not off polling `state.phase` on a tick that might not run
+     * again once the last dish resolves. Drives the end-screen overlay.
+     */
+    onShiftEnd(s: KitchenState): void;
+    /** Round 5, task 3: an empty slot was tapped — show the prop picker. */
+    onSlotTapEmpty(slotIndex: number): void;
+    /** Round 5, task 3: fires after a prop is placed, with the new total
+     *  filled count — drives the "tap a station" first-entry hint. */
+    onSlotsFilledChange(filledCount: number): void;
 }
 
 const BAND_TINTS = {
@@ -68,15 +95,16 @@ const BAKED_ALIASES = [
 ];
 
 /**
- * @param onChange fires once per tick with the latest sim state, so a React
- *                 overlay (ui/TestBelt.tsx) can show the win/lose banner
- *                 without this scene touching the shared app store.
+ * `callbacks` lets a React overlay (ui/TestBelt.tsx) show the live HUD and
+ * the win/lose banner, and drive the prop picker, without this scene
+ * touching the shared app store. See KitchenSceneCallbacks above.
  */
 export async function createKitchenScene(
     app: Application,
     stage: KitchenStage,
-    onChange: (s: KitchenState) => void
+    callbacks: KitchenSceneCallbacks
 ): Promise<Scene> {
+    const { onChange, onShiftEnd, onSlotTapEmpty, onSlotsFilledChange } = callbacks;
     // Manifest-listed (deferred bundle) — load on demand rather than trust
     // background-load timing, so Test Mode never races its own art.
     await Assets.load([...UI_ALIASES, ...BAKED_ALIASES]);
@@ -123,13 +151,19 @@ export async function createKitchenScene(
     // so it draws on top — the belt's rounded end-caps poke slightly past
     // the fridge box's edge (half the stroke width), and this sprite
     // covers that poke, reading as "the belt runs into/out of the fridge"
-    // rather than just stopping beside it. Stretched to fill (not
-    // aspect-fit) per the handover's accepted squash.
+    // rather than just stopping beside it.
+    //
+    // Round 5, task 2: aspect-fit, not stretch-to-fill — the box (72x108)
+    // was sized to the native sprite's own 32x48 aspect x2.25, so this
+    // computes the same result as a literal x2.25 scale but stays correct
+    // if the box or the source art ever changes independently.
     const fridgeBox = KITCHEN_CONFIG.fridge;
-    const fridgeSprite = new Sprite(Assets.get<Texture>('prop-fridge'));
+    const fridgeTex = Assets.get<Texture>('prop-fridge');
+    const fridgeSprite = new Sprite(fridgeTex);
     fridgeSprite.anchor.set(0.5);
-    fridgeSprite.width = fridgeBox.w;
-    fridgeSprite.height = fridgeBox.h;
+    const fridgeFit = Math.min(fridgeBox.w / fridgeTex.width, fridgeBox.h / fridgeTex.height);
+    fridgeSprite.width = fridgeTex.width * fridgeFit;
+    fridgeSprite.height = fridgeTex.height * fridgeFit;
     fridgeSprite.position.set(fridgeBox.x + fridgeBox.w / 2, fridgeBox.y + fridgeBox.h / 2);
     boardRoot.addChild(fridgeSprite);
 
@@ -173,7 +207,9 @@ export async function createKitchenScene(
 
     const recipeNameText = new Text({
         text: KITCHEN_CONFIG.recipe.name,
-        style: { fill: 0xffffff, fontSize: 24, fontWeight: '700' },
+        // Round 5, task 6: reads as the panel's heading now — size only,
+        // alignment/position unchanged.
+        style: { fill: 0xffffff, fontSize: BB.recipeNameSize, fontWeight: '700' },
     });
     recipeNameText.anchor.set(0.5, 0);
     // Round 4, task 5: shares `contentInset` with the ingredient row's
@@ -269,9 +305,12 @@ export async function createKitchenScene(
     }
 
     // ---- station slots, 2x2 -------------------------------------------------
-    // Round 3, task 3: each slot also carries a fixed station prop, assigned
-    // round-robin from levelProps — always visible (it identifies the
-    // station), on top of the empty/filled background that tracks occupancy.
+    // Round 5, task 3: slots start EMPTY — no prop assigned until the player
+    // taps an empty slot and picks one from KITCHEN_CONFIG.levelProps via
+    // PropPicker.tsx (a DOM overlay; see its file header for the
+    // BuildSheet-pattern duplication note, KitchenMode.md §2.5). The empty/
+    // filled background sprite below still tracks dish-reach occupancy
+    // (syncSlots) — a separate concept from whether a prop has been placed.
     const slotSprites = KITCHEN_CONFIG.slots.map((slot) => {
         const s = new Sprite(tex.slotEmpty);
         s.anchor.set(0.5);
@@ -281,31 +320,43 @@ export async function createKitchenScene(
         boardRoot.addChild(s);
         return s;
     });
-    // Round 4, task 2: prop anchored (0.5, 0) at the box's top inner edge
-    // (aspect-fit, unchanged), with a one-line "Name… - Level N" label
-    // beneath it, both inside the 139x150 slotBox.
-    KITCHEN_CONFIG.slots.forEach((slot, i) => {
-        const propInfo = KITCHEN_CONFIG.levelProps[i % KITCHEN_CONFIG.levelProps.length];
+    // Round 5, tasks 4-5: reverses round 4's top-anchored icon+label stack —
+    // icon centre-centre in the slotBox (aspect-fit, unchanged), label
+    // centre-bottom with propLabelPad design units of padding on every side
+    // so no glyph lands within ~4 CSS px of the slotBox's inner edge at the
+    // test viewport. formatPropLabel (unchanged from round 4) still measures
+    // the level suffix first and only ever ellipsizes the name.
+    const slotProp: (number | null)[] = KITCHEN_CONFIG.slots.map(() => null);
+    let filledSlotCount = 0;
+    function placeProp(slotIndex: number, propIndex: number): void {
+        if (slotProp[slotIndex] !== null) return;
+        slotProp[slotIndex] = propIndex;
+        const slot = KITCHEN_CONFIG.slots[slotIndex];
+        const propInfo = KITCHEN_CONFIG.levelProps[propIndex];
         const propTex = Assets.get<Texture>(propInfo.alias);
+
         const p = new Sprite(propTex);
-        p.anchor.set(0.5, 0);
+        p.anchor.set(0.5);
         const { w: pw, h: ph } = KITCHEN_CONFIG.propSize;
         const fit = Math.min(pw / propTex.width, ph / propTex.height);
         p.width = propTex.width * fit;
         p.height = propTex.height * fit;
-        const topY = slot.y - KITCHEN_CONFIG.slotBox.h / 2 + KITCHEN_CONFIG.propLabelTopPad;
-        p.position.set(slot.x, topY);
+        p.position.set(slot.x, slot.y);
         boardRoot.addChild(p);
 
-        const labelMaxWidth = KITCHEN_CONFIG.slotBox.w - 10;
+        const pad = KITCHEN_CONFIG.propLabelPad;
+        const labelMaxWidth = KITCHEN_CONFIG.slotBox.w - pad * 2;
         const label = new Text({
             text: formatPropLabel(propInfo.name, propInfo.level, labelMaxWidth),
             style: PROP_LABEL_STYLE,
         });
-        label.anchor.set(0.5, 0);
-        label.position.set(slot.x, topY + p.height + KITCHEN_CONFIG.propLabelGap);
+        label.anchor.set(0.5, 1);
+        label.position.set(slot.x, slot.y + KITCHEN_CONFIG.slotBox.h / 2 - pad);
         boardRoot.addChild(label);
-    });
+
+        filledSlotCount++;
+        onSlotsFilledChange(filledSlotCount);
+    }
 
     // Round 3, task 4 / Round 4, task 4: real sprite where manifest art
     // exists (ing-milk, ing-ginger), else a flat procedural tile keyed by
@@ -345,50 +396,45 @@ export async function createKitchenScene(
 
     // Round 4, task 1: one entry per dish type — [sprite] x[count] — instead
     // of round 3's accumulating 12-slot pool. A type with zero served stays
-    // hidden entirely (not shown as x0). Both entries stay inside
-    // finalDishContent (y 1000-1160); hamburgerReserve (1160-1280) is never
-    // touched. Which type a given served dish counts as still round-robins
-    // by servedCount parity — the sim has no recipe-outcome concept (see
-    // finalDishes' own comment in kitchenConfig.ts).
+    // hidden entirely (not shown as x0). Stays inside finalDishContent
+    // (y 1000-1160); hamburgerReserve (1160-1280) is never touched.
+    //
+    // Round 5, task 1: chai only — finalDishes has exactly one entry, so
+    // there's no round-robin left to do (dropped rather than kept as dead
+    // `% 1` arithmetic, per the handover).
+    // Round 5, task 8: drawn at finalDishSize (205x136, native aspect
+    // preserved) — the room a two-dish grid used to split, now given whole
+    // to the one dish this FTUE level actually serves. Count text sized to
+    // match.
     const FD = KITCHEN_CONFIG.bands.finalDishContent;
-    const { w: fdw, h: fdh } = KITCHEN_CONFIG.dishSize;
+    const { w: fdw, h: fdh } = KITCHEN_CONFIG.finalDishSize;
     const entryY = FD.y + FD.height / 2;
-    const dishCounts = KITCHEN_CONFIG.finalDishes.map(() => 0);
-    const dishEntrySprites = KITCHEN_CONFIG.finalDishes.map((alias) => {
-        const s = new Sprite(Assets.get<Texture>(alias));
-        s.anchor.set(0.5);
-        s.width = fdw;
-        s.height = fdh;
-        s.visible = false;
-        boardRoot.addChild(s);
-        return s;
-    });
-    const dishCountTexts = KITCHEN_CONFIG.finalDishes.map(() => {
-        const t = new Text({ text: '', style: { fill: 0xffffff, fontSize: 24, fontWeight: '800' } });
-        t.anchor.set(0, 0.5);
-        t.visible = false;
-        boardRoot.addChild(t);
-        return t;
-    });
-    function layoutDishEntry(i: number): void {
-        const count = dishCounts[i];
-        dishEntrySprites[i].visible = count > 0;
-        dishCountTexts[i].visible = count > 0;
-        if (count === 0) return;
-        dishCountTexts[i].text = `×${count}`;
-        const centerX = KITCHEN_CONFIG.finalDishSlotX[i];
-        const gap = 10;
-        const totalW = fdw + gap + dishCountTexts[i].width;
+    let dishCount = 0;
+    const dishEntrySprite = new Sprite(Assets.get<Texture>(KITCHEN_CONFIG.finalDishes[0]));
+    dishEntrySprite.anchor.set(0.5);
+    dishEntrySprite.width = fdw;
+    dishEntrySprite.height = fdh;
+    dishEntrySprite.visible = false;
+    boardRoot.addChild(dishEntrySprite);
+    const dishCountText = new Text({ text: '', style: { fill: 0xffffff, fontSize: 44, fontWeight: '800' } });
+    dishCountText.anchor.set(0, 0.5);
+    dishCountText.visible = false;
+    boardRoot.addChild(dishCountText);
+    function layoutDishEntry(): void {
+        dishEntrySprite.visible = dishCount > 0;
+        dishCountText.visible = dishCount > 0;
+        if (dishCount === 0) return;
+        dishCountText.text = `×${dishCount}`;
+        const centerX = KITCHEN_CONFIG.finalDishSlotX[0];
+        const gap = 16;
+        const totalW = fdw + gap + dishCountText.width;
         const spriteX = centerX - totalW / 2 + fdw / 2;
-        dishEntrySprites[i].position.set(spriteX, entryY);
-        dishCountTexts[i].position.set(spriteX + fdw / 2 + gap, entryY);
+        dishEntrySprite.position.set(spriteX, entryY);
+        dishCountText.position.set(spriteX + fdw / 2 + gap, entryY);
     }
-    let servedCount = 0;
     function onServed(): void {
-        const i = servedCount % KITCHEN_CONFIG.finalDishes.length;
-        dishCounts[i]++;
-        layoutDishEntry(i);
-        servedCount++;
+        dishCount++;
+        layoutDishEntry();
     }
 
     const sim = createKitchenSim();
@@ -399,7 +445,10 @@ export async function createKitchenScene(
         for (let i = 0; i < KITCHEN_CONFIG.slots.length; i++) {
             const slot = KITCHEN_CONFIG.slots[i];
             if (Math.abs(local.x - slot.x) <= w / 2 && Math.abs(local.y - slot.y) <= h / 2) {
-                sim.tapSlot(i);
+                // Round 5, task 3: an empty slot opens the picker instead of
+                // serving — a station has to be set up before it can work.
+                if (slotProp[i] === null) onSlotTapEmpty(i);
+                else sim.tapSlot(i);
                 break;
             }
         }
@@ -442,6 +491,10 @@ export async function createKitchenScene(
         sim.step(dt);
         for (const e of sim.drainEvents()) {
             if (e.type === 'served') onServed();
+            // Round 5, task 7: the end-screen fires off this event, not off
+            // polling `state.phase` on a tick that may not run once the last
+            // dish resolves.
+            if (e.type === 'won' || e.type === 'lost') onShiftEnd(sim.state);
         }
         syncDishes();
         syncSlots();
@@ -452,6 +505,7 @@ export async function createKitchenScene(
     app.ticker.add(tick);
 
     return {
+        placeProp,
         destroy() {
             app.ticker.remove(tick);
             app.stage.off('pointertap', onTap);
