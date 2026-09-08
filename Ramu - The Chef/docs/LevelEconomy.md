@@ -1,6 +1,6 @@
 # LevelEconomy — the source of truth for every currency value, per level
 
-**Last updated:** Sep 8 2026, 19:40 IST
+**Last updated:** Sep 8 2026, 21:15 IST
 **Status:** 🟡 **FTUE level 1 finalised. Every other level is deliberately empty.**
 **Tracked in git** — this file is *not* gitignored and must never be. It carries no
 credentials; it is design data, and it is meant to be read alongside the code.
@@ -893,3 +893,72 @@ than the locking is.
 ⚠️ **Blocked on a naming pass that does not exist.** Levels have no names anywhere in
 these docs — only dish names. An unlock condition reading *"Clear Node 2 Level 3"* is much
 weaker than one naming the level. **Naming 34 levels is a prerequisite for this screen.**
+
+## 11. 🔒 Node structure and the first five levels — settled Sep 8 2026
+
+### 11.1 Node 1 is **8 levels**, and the order is fixed
+
+The user's call: **8**, with the dish order **Jeera Rice → Baingan Bharta → Naan → Rajma
+→ Gobhi Masala → Palak Aloo**.
+
+⚠️ **The order needed one reconciliation.** [RecipeList.md](RecipeList.md) §7.1 writes
+the masala once per node because Garam Masala occupies a cell in **all six** dishes — so
+the grinding level must precede every dish that uses it, yet Jeera Rice is first.
+Resolved without disturbing the stated order:
+
+| Level | Content | Station |
+|---|---|---|
+| 1 | **Jeera Rice** — authored **without** the masala cell | Rice Cooker `26–28` |
+| 2 | **Grinding — Garam Masala** | Spice Grinder `35–38` |
+| 3 | Baingan Bharta | Brazier `03` |
+| 4 | Naan | Tandoor `09–10` 🔒 pre-placed, irreplaceable (§7.2a) |
+| 5 | Rajma | Pressure Cooker `23–25` |
+| 6 | Gobhi Masala | Cast Iron Skillet `04–05` |
+| 7 | Palak Aloo | Fry Pan `14–18` |
+| 8 | **Boss** | all node-1 props across the 4 slots |
+
+🔥 **Jeera Rice masala-free is what makes level 1 an on-ramp**: one primary, one oil,
+no secondary, one station, and its plated sprite already exists. It is the simplest level
+the node can open with, arriving straight after a beverage node.
+
+⚠️ **Node 1 introduces the Spice Grinder, which none of its six dishes use.** It exists
+for level 2 only. Nodes 2 and 3 then reuse it as a dish station, so the family is not
+wasted — but node 1 pays 240 hats for a tool it needs exactly once.
+
+✅ **The prop ladder checks out across the node boundary.** Node 0's boss grants Brazier
+`03` + Tandoor `09–10` (§7.0), so Baingan Bharta (L3) and Naan (L4) both arrive with their
+station already owned. Entering node 1 the player holds ~800+ hats against a 240 family
+unlock, so Rice Cooker at L1 is affordable. **No level in this sequence hard-blocks.**
+
+### 11.2 ⭐ The first five levels — derived, not invented
+
+Using §7.3a.4's generalised formula with `perGrab` 3, `perDish` 20, `walkoutCharge` 25:
+
+```
+F = perGrab x target x ingredients + perDish x target
+threshold at boundary k = midpoint( F - (k+1)C + 2G(k+1) ,  F - kC )
+3 stars -> k = 0        2 stars -> k = floor(walkoutsAllowed / 2)
+```
+
+| Level | Target | Ingredients | Walkouts | Float | **F** | ⭐⭐⭐ | ⭐⭐ |
+|---|---|---|---|---|---|---|---|
+| **N0 L1** Chai | 12 | 3 | 5 | 100 | **348** | **339** | **295** |
+| **N0 L2** Coffee | 14 | 3 | 5 | 100 | **406** | **397** | **353** |
+| **N0 L3** Chai & Coffee | 16 | 3 | 5 | 100 | **464** | **455** | **411** |
+| **N0 L4** Boss | — endless | — | 5 | 100 | — | — **no stars** (§7.3b) | — |
+| **N1 L1** Jeera Rice | 12 | **2** | 5 | 100 | **312** | **303** | **259** |
+
+✅ **The formula validates against the one level that already ships.** N0 L1 recomputes to
+**338.5 / 294.5**, against the **340 / 295** in `kitchenConfig.ts`. The derivation reproduces
+a known-good level before being trusted on four unknown ones.
+
+✅ **The separation constraint holds on all five.** `walkoutCharge > 2 x perGrab x (k+1)`:
+at k=0, 25 > 6; at k=2, 25 > 18. Comfortable — unlike the 3/4 boundary in §7.3a.4, which
+holds by a single coin.
+
+⚠️ **N0 L1's shipped 340 is kept, not corrected to 339.** The one-coin difference cannot
+change a band (earned moves in steps of 3 and 20), and changing a live tuned number to
+match a formula it already agrees with buys nothing.
+
+⬜ **Level names do not exist.** These five carry their dish name as a placeholder. The
+34-level naming pass is still outstanding and still blocks §10.5's Utensils screen.
