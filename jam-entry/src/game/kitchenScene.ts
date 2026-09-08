@@ -127,6 +127,14 @@
  * contained the same way round 6 contained prop labels — against
  * ItemSlot1.png's inner well, not the slot box's outer edge — so the two
  * containment rules can't drift apart from each other.
+ *
+ * Round 16: the per-level tuning values this file owns (starting float,
+ * walkouts allowed) are now read off the active level record
+ * (src/game/data/levels.ts), not KITCHEN_CONFIG — see `level` below and its
+ * call sites. kitchenConfig.ts's own copies are superseded fallbacks, see
+ * that file's comments. Belt/slot/prop geometry and the recipe are untouched
+ * — this file still runs the same board regardless of which level is
+ * active.
  */
 import {
     Assets,
@@ -144,6 +152,7 @@ import {
 import { playSample, prefetchCue, sfx, switchCue } from '../audio/audio.ts';
 import { CONFIG } from './config.ts';
 import { KITCHEN_CONFIG } from './kitchenConfig.ts';
+import { getActiveLevel } from './data/levels.ts';
 import { createKitchenSim, isEligibleDist, posAt, SLOT_ZONES, type KitchenState } from './sim/kitchen.ts';
 import type { KitchenStage } from './kitchenStage.ts';
 
@@ -564,12 +573,15 @@ export async function createKitchenScene(
         return t;
     }
 
+    // Round 16: the active level's own tuning values — see the file header.
+    const level = getActiveLevel();
+
     // ---- Round 9: the coin economy (wallet/coinsEarned/locks/cooldown) ----
     // Lives entirely in this closure — sim/kitchen.ts has no notion of any
     // of it (see the file header). Round 11 replaced the one-way
     // `hasEverPlacedProp` lift with the state-derived `walletFloor()` below,
     // which re-reads live state every time it's applied.
-    let wallet: number = KITCHEN_CONFIG.coins.startingFloat;
+    let wallet: number = level.startingFloat;
     let coinsEarned = 0;
     const slotLocked: boolean[] = KITCHEN_CONFIG.slots.map(() => true);
     const cooldownRemaining: number[] = KITCHEN_CONFIG.slots.map(() => 0);
@@ -583,7 +595,7 @@ export async function createKitchenScene(
     function walletFloor(): number {
         if (filledSlotCount > 0) return 0;
         if (slotLocked.some((l) => !l)) return KITCHEN_CONFIG.propTierCost[0];
-        return KITCHEN_CONFIG.coins.startingFloat;
+        return level.startingFloat;
     }
 
     // ---- station slots, 2x2 -------------------------------------------------
@@ -991,7 +1003,7 @@ export async function createKitchenScene(
     // once below for the initial render, then again after every wallet
     // change (attemptUnlock, placeProp, sellProp) and every tick.
     function refreshHud(): void {
-        const remaining = Math.max(0, KITCHEN_CONFIG.walkoutsAllowed - sim.state.walkouts);
+        const remaining = Math.max(0, level.walkoutsAllowed - sim.state.walkouts);
         setFitText(walkoutsText, `Walkouts Left : ${remaining}`, HUD_MAX_W, 26, 14);
         // Round 11: the icon consumes width setFitText previously had —
         // shrink its budget by the icon+gap so (icon+gap+number) still fits
@@ -1029,7 +1041,7 @@ export async function createKitchenScene(
         const hats =
             sim.state.completed * H.perDish +
             leftover * H.perLeftover +
-            (KITCHEN_CONFIG.walkoutsAllowed - sim.state.walkouts) * H.perWalkoutAvoided +
+            (level.walkoutsAllowed - sim.state.walkouts) * H.perWalkoutAvoided +
             (sim.state.phase === 'won' ? H.clearBonus : 0);
         // Round 9, task 3: coinsEarned is floored at 100 for display/scoring
         // only — the underlying accumulator can dip lower, this just keeps a
@@ -1206,7 +1218,7 @@ export async function createKitchenScene(
         }
         syncDishes();
         syncSlots();
-        const remaining = Math.max(0, KITCHEN_CONFIG.walkoutsAllowed - sim.state.walkouts);
+        const remaining = Math.max(0, level.walkoutsAllowed - sim.state.walkouts);
         // Round 7, task 2: KitchenMode §4's amendment — proportional to the
         // belt's OWN walkoutsAllowed (5), not the tower defence's literal 3
         // (which reads there as CONFIG.economy.startLives * 0.3 = 3 of 10;
@@ -1214,8 +1226,8 @@ export async function createKitchenScene(
         // `remaining > 0` guard, per §4: nothing costs more than one walkout
         // today so this can't yet land on the game-over screen, but the
         // guard costs nothing and stops that from becoming a silent landmine
-        // later.
-        if (!highTensionLatched && remaining > 0 && remaining < KITCHEN_CONFIG.walkoutsAllowed * 0.3) {
+        // later. Round 16: reads the active level's own walkoutsAllowed.
+        if (!highTensionLatched && remaining > 0 && remaining < level.walkoutsAllowed * 0.3) {
             highTensionLatched = true;
             switchCue('service_high');
         }

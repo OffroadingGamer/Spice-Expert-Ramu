@@ -462,7 +462,13 @@ export const KITCHEN_CONFIG = {
     spawnInterval: 2.2,
 
     /** Round 9: the win condition. The round ends when this many dishes are
-     *  COMPLETED. Spawning runs open-ended until then. LevelEconomy.md §2. */
+     *  COMPLETED. Spawning runs open-ended until then. LevelEconomy.md §2.
+     *
+     *  🔒 Round 16: SUPERSEDED as the live source — sim/kitchen.ts now reads
+     *  the active level's own `target` (src/game/data/levels.ts,
+     *  getActiveLevel()) instead of this constant. Kept here as the
+     *  pre-level-data fallback, not deleted; no game code reads it any
+     *  more. */
     shiftChaiTarget: 12,
 
     /** Safety cap only — a runaway spawn loop must not hang the tab. A clean
@@ -470,7 +476,13 @@ export const KITCHEN_CONFIG = {
     maxSpawns: 200,
 
     /** Walkouts (unserved dishes reaching PASS) allowed before a LOSS.
-     *  Not 10 — the belt sim carries its own count, per KitchenMode §2.7. */
+     *  Not 10 — the belt sim carries its own count, per KitchenMode §2.7.
+     *
+     *  🔒 Round 16: SUPERSEDED as the live source — sim/kitchen.ts and
+     *  kitchenScene.ts now read the active level's own `walkoutsAllowed`
+     *  (src/game/data/levels.ts) instead of this constant. Kept here as the
+     *  pre-level-data fallback, not deleted; no game code reads it any
+     *  more. */
     walkoutsAllowed: 5,
 
     /**
@@ -504,7 +516,14 @@ export const KITCHEN_CONFIG = {
      * remains after unlocking and 40 buys the utensil.
      */
     coins: {
+        // 🔒 Round 16: SUPERSEDED as the live source — kitchenScene.ts now
+        // reads the active level's own `startingFloat` (src/game/data/
+        // levels.ts) instead of this field. Kept here as the pre-level-data
+        // fallback, not deleted; no game code reads it any more.
         startingFloat: 100, // a grant, never counted as earned
+        // perGrab/perDish/walkoutCharge are NOT superseded — LevelEconomy.md
+        // §7.1 states these are global, the same on every level, unlike
+        // startingFloat above.
         perGrab: 3,
         perDish: 20,
         walkoutCharge: 25, // same 25 the Chef Hat uses — one number, both currencies
@@ -520,7 +539,12 @@ export const KITCHEN_CONFIG = {
      *  2-walkout run earns 298–310 — the old 300 bar sat inside that live
      *  range, so identical play could score ⭐⭐ or ⭐ purely on shuffle luck.
      *  295 sits in the 292–297 gap between a 2-walkout floor (298) and a
-     *  3-walkout ceiling (291), which no run can land in. */
+     *  3-walkout ceiling (291), which no run can land in.
+     *
+     *  🔒 Round 16: SUPERSEDED as the live source — TestBelt.tsx now reads
+     *  the active level's own `stars` (src/game/data/levels.ts) instead of
+     *  this field. Kept here as the pre-level-data fallback, not deleted;
+     *  no game code reads it any more. */
     starThresholds: { three: 340, two: 295 },
 
     /**

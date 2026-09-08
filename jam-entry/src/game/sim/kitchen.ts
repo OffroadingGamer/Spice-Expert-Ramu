@@ -38,8 +38,21 @@
  * geometry is computed; kitchenScene.ts's overlay reads it directly rather
  * than re-deriving the boundaries, for the same anti-drift reason round 12
  * exported `posAt`.
+ *
+ * Round 16: the win/loss thresholds (`shiftChaiTarget`, `walkoutsAllowed`)
+ * are read from the active level record (src/game/data/levels.ts) instead of
+ * KITCHEN_CONFIG — kitchenConfig.ts's own copies are superseded fallbacks,
+ * see its comments. `ACTIVE_LEVEL.target` is `number | null`; null means
+ * endless (a boss level, §7.3b of LevelEconomy.md) — `checkShiftEnd` never
+ * fires 'won' for one, so it can only end on the walkout budget below. No
+ * other per-level field (dishes, ingredients, props) is read here this round
+ * — the belt still runs KITCHEN_CONFIG's one hard-coded recipe regardless of
+ * which level is active.
  */
 import { KITCHEN_CONFIG } from '../kitchenConfig.ts';
+import { getActiveLevel } from '../data/levels.ts';
+
+const ACTIVE_LEVEL = getActiveLevel();
 
 export type KitchenPhase = 'running' | 'won' | 'lost';
 
@@ -294,7 +307,9 @@ export function createKitchenSim(): KitchenSim {
         if (state.phase !== 'running') return;
         // Round 9, task 1: the round ends the instant the target is hit —
         // dishes still on the belt are simply abandoned, not waited out.
-        if (state.completed >= KITCHEN_CONFIG.shiftChaiTarget) {
+        // Round 16: a null target (a boss, ACTIVE_LEVEL.isBoss) is endless —
+        // this never fires 'won' for one; see the file header.
+        if (ACTIVE_LEVEL.target !== null && state.completed >= ACTIVE_LEVEL.target) {
             state.phase = 'won';
             events.push({ type: 'won' });
         }
@@ -371,7 +386,7 @@ export function createKitchenSim(): KitchenSim {
                 d.x = pos.x;
                 d.y = pos.y;
             }
-            if (state.walkouts >= KITCHEN_CONFIG.walkoutsAllowed) {
+            if (state.walkouts >= ACTIVE_LEVEL.walkoutsAllowed) {
                 state.phase = 'lost';
                 events.push({ type: 'lost' });
                 return;

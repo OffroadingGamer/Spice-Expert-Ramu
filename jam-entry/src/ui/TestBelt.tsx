@@ -58,6 +58,13 @@
  * Round 11: the end screen now shows the baked ui-coin/ui-chef-hat icons
  * beside their figures (`ASSET_SRC`, the same manifest-lookup pattern
  * PropPicker.tsx uses) instead of bare text. Star row/thresholds unchanged.
+ *
+ * Round 16: `chaiShort` and the star thresholds/row now read the active
+ * level record (`LEVEL`, src/game/data/levels.ts) instead of KITCHEN_CONFIG.
+ * A boss (`LEVEL.isBoss`, `LEVEL.target === null`) never falls short of a
+ * dish target and awards no stars at all — both are handled by null checks
+ * below rather than a boss-specific branch, since a boss's own `stars`
+ * field is already null and its sim (sim/kitchen.ts) never reaches 'won'.
  */
 import { useEffect, useRef, useState } from 'react';
 import type { Application } from 'pixi.js';
@@ -66,11 +73,14 @@ import { createPixiApp } from '../game/pixiApp.ts';
 import { createKitchenStage, type KitchenStage } from '../game/kitchenStage.ts';
 import { createKitchenScene, type EconomySnapshot, type Scene } from '../game/kitchenScene.ts';
 import { KITCHEN_CONFIG } from '../game/kitchenConfig.ts';
+import { getActiveLevel } from '../game/data/levels.ts';
 import type { KitchenState } from '../game/sim/kitchen.ts';
 import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import { MANIFEST } from '../assets/manifest.ts';
 import PropPicker from './PropPicker.tsx';
+
+const LEVEL = getActiveLevel();
 
 // Round 11: same manifest-lookup pattern as PropPicker.tsx's ASSET_SRC — one
 // place (the manifest) lists what an alias's image file actually is.
@@ -231,8 +241,12 @@ export default function TestBelt() {
     // buckets it used to sum no longer add up to a known total. "N chai
     // short" replaces it: zero on a win (hides itself), the real gap on a
     // loss. Off the frozen shiftResult snapshot, per round 5's fix.
-    const chaiShort = shiftResult
-        ? Math.max(0, KITCHEN_CONFIG.shiftChaiTarget - shiftResult.completed)
+    // Round 16: LEVEL.target is null on a boss (endless, §7.3b) — there is
+    // no target to fall short of, so this stays 0 and the "N chai short"
+    // line below is hidden entirely for one rather than showing a bogus
+    // negative-target number.
+    const chaiShort = shiftResult && LEVEL.target !== null
+        ? Math.max(0, LEVEL.target - shiftResult.completed)
         : 0;
     // Round 8, task 4 (superseded by round 9): a diagnostic count of held
     // ingredients at shift end — round 9 also scores these via
@@ -244,11 +258,16 @@ export default function TestBelt() {
         : 0;
     // Round 9, task 9: stars are on coinsEarned, and only on a clear — a
     // loss shows none at all, regardless of coins earned.
+    // Round 16: LEVEL.stars is null on a boss — it awards no stars at all
+    // (§7.3b). In practice a boss's sim never reaches 'won' either (no
+    // target to hit), so this check is redundant with that today, but it's
+    // the actual rule and it's cheap to state directly rather than lean on
+    // the sim's shape to enforce it by accident.
     const stars =
-        shiftEconomy && shiftResult?.phase === 'won'
-            ? shiftEconomy.coinsEarned >= KITCHEN_CONFIG.starThresholds.three
+        shiftEconomy && shiftResult?.phase === 'won' && LEVEL.stars !== null
+            ? shiftEconomy.coinsEarned >= LEVEL.stars.three
                 ? 3
-                : shiftEconomy.coinsEarned >= KITCHEN_CONFIG.starThresholds.two
+                : shiftEconomy.coinsEarned >= LEVEL.stars.two
                     ? 2
                     : 1
             : 0;
@@ -333,15 +352,20 @@ export default function TestBelt() {
                         <p>{shiftLeftover} ingredients discarded</p>
                         {/* Round 9, task 2: replaces shiftPending — zero on a
                             win hides the line entirely (rendered only on a
-                            loss); the real gap on a loss. */}
-                        {shiftResult.phase === 'lost' && <p>{chaiShort} chai short</p>}
+                            loss); the real gap on a loss. Round 16: also
+                            hidden on a boss (LEVEL.target null) — there is
+                            no target to have fallen short of. */}
+                        {shiftResult.phase === 'lost' && LEVEL.target !== null && <p>{chaiShort} chai short</p>}
                     </div>
                     {/* Round 9, task 9: Chef Hats on any completed run (win or
                         loss); coins earned + stars + thresholds only on a
                         clear — a loss shows no stars at all. */}
                     {shiftEconomy && (
                         <div className="flex flex-col items-center gap-3">
-                            {shiftResult.phase === 'won' && (
+                            {/* Round 16: also gated on LEVEL.stars !== null —
+                                a boss shows coins/hats but no star row at
+                                all, per §7.3b. */}
+                            {shiftResult.phase === 'won' && LEVEL.stars !== null && (
                                 <>
                                     <p className="flex items-center gap-2 text-xl font-bold text-white">
                                         <img src={ASSET_SRC.get('ui-coin')} alt="" className="h-6 w-6 object-contain" />
@@ -353,8 +377,8 @@ export default function TestBelt() {
                                         <span>{stars >= 3 ? '★' : '☆'}</span>
                                     </div>
                                     <div className="flex gap-6 text-sm text-white/50">
-                                        <span>{KITCHEN_CONFIG.starThresholds.three}</span>
-                                        <span>{KITCHEN_CONFIG.starThresholds.two}</span>
+                                        <span>{LEVEL.stars.three}</span>
+                                        <span>{LEVEL.stars.two}</span>
                                         <span>clear</span>
                                     </div>
                                 </>
