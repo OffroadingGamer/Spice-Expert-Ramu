@@ -174,6 +174,21 @@
  * overlay's corner brightening (task 6) is fixed by drawing each zone
  * opaque and compositing the group's alpha once via `cacheAsTexture`, rather
  * than blending four (or one self-overlapping) translucent shapes.
+ *
+ * Round 20: the coin group (task 2) is left-anchored on a fixed inset
+ * (`COIN_GROUP_LEFT_X`) instead of centred — round 19's centring re-centred
+ * the icon itself every time the wallet's digit count changed, which a HUD
+ * anchor shouldn't do. The inset mirrors the dish board's own measured
+ * right margin; the icon grows to the hamburger's approximate on-screen
+ * size (same DOM/Pixi seam as round 19's Ready slot); the wallet number
+ * takes the dish board's own fixed one-recipe size (44) instead of scaling
+ * off the icon, which deliberately breaks round 11's icon-height/text-size
+ * link now that the coin is a HUD anchor rather than an inline banner
+ * glyph. The dish board's scroll affordance (task 3) is a small chevron,
+ * shown only while scrollable and only above the floor — round 19's
+ * assumption that the mask itself would clip a partial row and read as
+ * "more below" was never true, since ROW_MIN is exactly AVAIL/3 and a
+ * scrollable board always shows exactly three whole rows at rest.
  */
 import {
     Assets,
@@ -464,25 +479,63 @@ export async function createKitchenScene(
     // against finalDishArea's dark band tint, so this switches to white —
     // the same fill the dish-count text already uses successfully on this
     // same band.
-    const COIN_ICON_H = 26;
+    //
+    // Round 20, task 2: left-anchored, not centred. Centring on boardWidth/4
+    // (round 19) re-centred the whole group — and moved the icon — every
+    // time the wallet gained or lost a digit. A HUD anchor should hold
+    // still; only the number's own width should grow. Hoisted here (ahead
+    // of its round-19 declaration site below) so the coin group's own width
+    // budget can be checked against the dish board's real left edge instead
+    // of a re-typed copy of the same literal.
+    const DISH_BOARD_INSET = 8;
+    // Mirrors the dish board's own right margin, measured rather than
+    // guessed: at N0 L1, count 12, the ×12 text's right edge sat 25.63
+    // units short of the board's right edge (720) — see kitchenScene.ts's
+    // dish row layout, task 2b (rounded to 26; the handover's own from-the-
+    // row-math estimate was ~34-38, notably off — the actual glyph metrics
+    // of "×12" at fontSize 44 render narrower than that estimate assumed).
+    // Using the same inset on this side means the two HUD anchors read as a
+    // matched pair rather than two unrelated numbers.
+    const COIN_GROUP_LEFT_X = 26;
     const COIN_ICON_GAP = 6;
-    // Centred on boardWidth/4 (180) — the left half's own centre. The cap
-    // (half the board, less a margin on each side) keeps the group clear of
-    // dishBoardViewport's left edge (x=368, task 5) even at its natural,
-    // unshrunk width; setFitText below only ever needs to bite into that
-    // margin for an implausibly large wallet.
-    const COIN_GROUP_CENTER_X = KITCHEN_CONFIG.boardWidth / 4;
+    // Round 20, task 2c: the icon grows to the hamburger's on-screen size —
+    // DOM h-11 is 44 CSS px, which at this project's validated 420×900 test
+    // aspect (stage scale 0.5833) is ~75.4 design units. This is an
+    // approximate visual match, not a computed one: it drifts on any other
+    // viewport aspect, the same DOM/Pixi seam round 19 hit at the Ready
+    // slot (kitchenScene.ts vs TestBelt.tsx both approximate a cross-
+    // renderer size or position rather than truly sharing one; a real fix
+    // would content-fit the DOM overlay the way kitchenStage.ts fits the
+    // canvas, which stays out of scope this round too.
+    const COIN_ICON_H = 75;
     const COIN_GROUP_CENTER_Y = FD.y + FD.height / 2;
-    const COIN_GROUP_MAX_W = KITCHEN_CONFIG.boardWidth / 2 - 40;
+    // The cap keeps the group's right edge clear of dishBoardViewport's
+    // left edge (x = boardWidth/2 + DISH_BOARD_INSET = 368) even at an
+    // implausibly wide wallet string; setFitText below only ever needs to
+    // bite into this margin, never the left inset itself, so the icon never
+    // moves.
+    const COIN_TO_DISHBOARD_MARGIN = 24;
+    const COIN_GROUP_MAX_W =
+        KITCHEN_CONFIG.boardWidth / 2 + DISH_BOARD_INSET - COIN_GROUP_LEFT_X - COIN_TO_DISHBOARD_MARGIN;
     const coinIcon = new Sprite(tex.coin);
-    coinIcon.anchor.set(0.5);
+    coinIcon.anchor.set(0, 0.5);
     coinIcon.height = COIN_ICON_H;
     coinIcon.width = tex.coin.width * (COIN_ICON_H / tex.coin.height);
+    // Fixed once, never touched again — task 2a's whole point is that this
+    // icon does not move as the wallet gains or loses digits.
+    coinIcon.position.set(COIN_GROUP_LEFT_X, COIN_GROUP_CENTER_Y);
     boardRoot.addChild(coinIcon);
 
     const coinsText = new Text({
         text: '',
-        style: { fill: 0xffffff, fontSize: 26, fontWeight: '800' },
+        // Round 20, task 2c: fixed at the dish board's own one-recipe ×N
+        // size (44) rather than scaling off the icon's own height — this
+        // deliberately breaks round 11's 1:1 icon-height-to-text-size
+        // relation, which was load-bearing when the coin was an inline
+        // banner glyph and isn't now that it's a left-anchored HUD stack:
+        // the wallet number and the dish ×N are meant to read as a pair
+        // across the band, not the icon and its own number.
+        style: { fill: 0xffffff, fontSize: 44, fontWeight: '800' },
     });
     coinsText.anchor.set(0, 0.5);
     boardRoot.addChild(coinsText);
@@ -1128,7 +1181,9 @@ export async function createKitchenScene(
     // FA's own bottom edge — hamburgerReserve (1160-1280) is no longer a
     // right-half concern at all, only a left-half one (kitchenScene.ts no
     // longer draws anything there; TestBelt.tsx's DOM hamburger occupies it).
-    const DISH_BOARD_INSET = 8;
+    // DISH_BOARD_INSET itself is declared earlier (task 2's coin group needs
+    // it too, to check its own width budget against this viewport's real
+    // left edge) — reused here, not redeclared.
     const dishBoardViewport = {
         x: KITCHEN_CONFIG.boardWidth / 2 + DISH_BOARD_INSET,
         y: FA.y + DISH_BOARD_INSET,
@@ -1300,10 +1355,16 @@ export async function createKitchenScene(
     // this viewport (y 1008+), so the two can never contend for the same
     // gesture — confirmed, not just assumed, before writing this.
     //
-    // Affordance that more exists below: none added beyond the mask itself
-    // clipping a partial row at the viewport's bottom edge when scrollable —
-    // a truncated dish reads as "there's more" on its own, and a fourth
-    // decoration risked cluttering a board whose whole point is legibility.
+    // Round 20, task 3: round 19's "the mask clips a partial row" affordance
+    // never actually existed — ROW_MIN is exactly AVAIL/3, so every
+    // scrollable board (which only ever uses ROW_MIN, by definition of
+    // being scrollable) shows exactly three WHOLE rows at rest. Nothing is
+    // ever clipped, so there was no visual cue that a six-recipe board was
+    // anything but a complete three-row list. A real affordance is added
+    // below instead: a small down-chevron, drawn on
+    // boardRoot (so the mask doesn't clip it and it costs no row-layout
+    // room), visible only while scrollable and only while there is more
+    // content below the fold.
     if (scrollable) {
         const minOffset = dishBoardViewport.h - contentHeight;
         const maxOffset = 0;
@@ -1323,6 +1384,33 @@ export async function createKitchenScene(
             .fill({ color: 0xffffff, alpha: 0 });
         dishBoardHitZone.eventMode = 'static';
         boardRoot.addChild(dishBoardHitZone);
+
+        // The scroll hint itself: a down-chevron centred on the viewport,
+        // its bottom edge sitting just inside the viewport's own bottom
+        // edge. Added to boardRoot (a sibling of dishBoardScroll, not a
+        // child of it), so the mask never clips it and it draws on top of
+        // whatever row happens to be underneath — a deliberate small
+        // overlap with the last visible row's bottom, not a layout
+        // reservation, so it costs no row height. Text rather than a hand-
+        // drawn Graphics shape for the same reason nameLabel above uses
+        // Text: one glyph, trivially centred, no path math to get wrong.
+        const dishScrollHint = new Text({
+            text: '▼',
+            style: { fill: 0xffffff, fontSize: 26, fontWeight: '900', stroke: { color: 0x1b1b2b, width: 3 } },
+        });
+        dishScrollHint.anchor.set(0.5, 1);
+        dishScrollHint.alpha = 0.85;
+        dishScrollHint.position.set(dishRowCenterX, dishBoardViewport.y + dishBoardViewport.h - 4);
+        boardRoot.addChild(dishScrollHint);
+        // Present at rest (offset 0, > minOffset since minOffset is
+        // negative) and gone once a drag/wheel reaches the floor exactly —
+        // called once here for the initial state, then again after every
+        // clamp below.
+        function updateScrollHint(): void {
+            dishScrollHint.visible = dishBoardScroll.y > minOffset;
+        }
+        updateScrollHint();
+
         let dragging = false;
         let dragStartY = 0;
         let scrollStartY = 0;
@@ -1344,6 +1432,7 @@ export async function createKitchenScene(
             if (!dragging) return;
             const dy = boardRoot.toLocal(e.global).y - dragStartY;
             dishBoardScroll.y = Math.min(maxOffset, Math.max(minOffset, scrollStartY + dy));
+            updateScrollHint();
         };
         const endDrag = () => { dragging = false; };
         dishBoardHitZone.on('pointerdown', onDown);
@@ -1355,6 +1444,7 @@ export async function createKitchenScene(
             // CSS-px-ish DOM value, not a design-space one.
             const dyDesign = e.deltaY / stage.root.scale.y;
             dishBoardScroll.y = Math.min(maxOffset, Math.max(minOffset, dishBoardScroll.y - dyDesign));
+            updateScrollHint();
             e.preventDefault();
         };
         app.canvas.addEventListener('wheel', onWheel, { passive: false });
@@ -1389,14 +1479,11 @@ export async function createKitchenScene(
         setFitText(walkoutsText, `Walkouts Left : ${remaining}`, walkoutsMaxW, 26, 14);
         layoutWalkouts();
 
-        // Round 19: centred on COIN_GROUP_CENTER_X/Y (finalDishArea's left
-        // half), not right-anchored on the upper panel — see the coinIcon
-        // block above.
-        setFitText(coinsText, `${wallet}`, COIN_GROUP_MAX_W - coinIcon.width - COIN_ICON_GAP, 26, 14);
-        const coinGroupW = coinIcon.width + COIN_ICON_GAP + coinsText.width;
-        const coinGroupLeft = COIN_GROUP_CENTER_X - coinGroupW / 2;
-        coinIcon.position.set(coinGroupLeft + coinIcon.width / 2, COIN_GROUP_CENTER_Y);
-        coinsText.position.set(coinGroupLeft + coinIcon.width + COIN_ICON_GAP, COIN_GROUP_CENTER_Y);
+        // Round 20, task 2a: the icon's position is set once, outside this
+        // function (it never moves); only the number's own width changes
+        // here, growing the group rightward instead of re-centring it.
+        setFitText(coinsText, `${wallet}`, COIN_GROUP_MAX_W - coinIcon.width - COIN_ICON_GAP, 44, 14);
+        coinsText.position.set(COIN_GROUP_LEFT_X + coinIcon.width + COIN_ICON_GAP, COIN_GROUP_CENTER_Y);
     }
     refreshHud();
     function start(): void {

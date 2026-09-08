@@ -79,9 +79,11 @@
  * setup text on N0 L2+ too: teaching is FTUE-only now, and every other level
  * always showed a plain Ready button anyway, so there was nothing left for
  * the top nudge to say there that the bottom slot didn't already cover. The
- * Ready slot itself moves up to `bottom: 22%` (task 2) so it clears
+ * Ready slot itself moves up to `bottom: 30%` (task 2) so it clears
  * finalDishArea (design y 1000+) ahead of tasks 3-5 moving content into that
- * band. The hamburger moves from centred to `left: 25%` (task 4) — the same
+ * band — 22% was tried first and measured landing at design y 1072, inside
+ * the band it was meant to clear (see the comment at the style prop below).
+ * The hamburger moves from centred to `left: 25%` (task 4) — the same
  * horizontal fraction kitchenScene.ts's coin group now centres on, so the
  * two agree on where "the left quarter" is without sharing a literal pixel
  * value across a DOM/Pixi boundary.
@@ -383,19 +385,23 @@ export default function TestBelt() {
                 — it's needed most during setup.
 
                 Round 19, task 4: moved from centred (`left-1/2`) to
-                `left: 25%` — the same horizontal quarter-fraction
-                kitchenScene.ts's coin group (x = boardWidth/4) now centres
-                on, so the two agree on where "left quarter" is without
-                sharing a literal pixel value across the DOM/Pixi boundary.
-                Still `-translate-x-1/2`'d off that point, and still stacked
-                in the 1160-1280 reserve below the coins group — see
+                `left: 25%`, `-translate-x-1/2`'d off that point.
+
+                Round 20, task 2d: left-anchored instead — the translate is
+                dropped and `left` now expresses the SAME fraction of board
+                width as the coin group's own left inset
+                (COIN_GROUP_LEFT_X / boardWidth = 26/720 ≈ 3.61%), so the
+                hamburger's left edge, not its centre, lines up with the
+                coin icon's left edge — the two now read as one left-aligned
+                vertical stack rather than sharing a centre point. Still
+                stacked in the 1160-1280 reserve below the coins group — see
                 kitchenScene.ts's dishBoardViewport comment for why that
                 reserve is now a LEFT-half-only concern. */}
             {!menuOpen && (
                 <button
                     type="button"
                     aria-label="Shift menu"
-                    className="pointer-events-auto absolute left-[25%] flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-xl bg-black/55 transition-transform active:scale-95"
+                    className="pointer-events-auto absolute left-[3.61%] flex h-11 w-11 items-center justify-center rounded-xl bg-black/55 transition-transform active:scale-95"
                     style={{ bottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))' }}
                     onClick={openMenu}
                 >
@@ -443,10 +449,17 @@ export default function TestBelt() {
                                         <img src={ASSET_SRC.get('ui-coin')} alt="" className="h-6 w-6 object-contain" />
                                         earned = {shiftEconomy.coinsEarned}
                                     </p>
+                                    {/* Round 20, task 1: fills right-to-left — star i (0-indexed,
+                                        left to right) lights when stars >= 3-i, so the star that
+                                        goes dark first on a lower grade is the leftmost one. This
+                                        row is positionally paired with the threshold row directly
+                                        below (three / two / clear, left to right); reordering one
+                                        without the other breaks the pairing a player reads between
+                                        them. */}
                                     <div className="flex gap-6 text-3xl">
-                                        <span>{stars >= 1 ? '★' : '☆'}</span>
-                                        <span>{stars >= 2 ? '★' : '☆'}</span>
                                         <span>{stars >= 3 ? '★' : '☆'}</span>
+                                        <span>{stars >= 2 ? '★' : '☆'}</span>
+                                        <span>{stars >= 1 ? '★' : '☆'}</span>
                                     </div>
                                     <div className="flex gap-6 text-sm text-white/50">
                                         <span>{LEVEL.stars.three}</span>
