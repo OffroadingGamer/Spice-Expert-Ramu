@@ -206,8 +206,13 @@ export const LEVELS: LevelRecord[] = [
         index: 3,
         name: 'Two Tickets',
         dishes: ['chai', 'coffee'],
-        // Declaration order matters (Task 3): chai checked before coffee on
-        // every tap, so a shared-ingredient tie always resolves to chai.
+        // Round 24: declaration order here no longer decides a
+        // shared-ingredient tie (milk, between chai and coffee) — that
+        // used to make chai win every time, starving coffee outright.
+        // sim/kitchen.ts's completion walk now rotates its start index off
+        // whichever recipe last completed, so this array's order is
+        // presentational only (billboard/dish-tray row order), not a
+        // priority list.
         recipes: [CHAI_RECIPE, COFFEE_RECIPE],
         target: 16,
         ingredients: 3,

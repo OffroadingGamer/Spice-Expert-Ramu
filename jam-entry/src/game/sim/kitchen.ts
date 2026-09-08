@@ -52,8 +52,9 @@
  * KITCHEN_CONFIG.ingredientKinds, now a superseded fallback) — and
  * `tapSlot`'s completion check walks `ACTIVE_LEVEL.recipes` instead of one
  * hard-coded KITCHEN_CONFIG.recipe. See tapSlot's own comment for the
- * multi-recipe completion rule (at most one completion per tap, by
- * declaration order) this makes necessary.
+ * multi-recipe completion rule (at most one completion per tap — Round 24:
+ * no longer by declaration order, see that round's own paragraph below)
+ * this makes necessary.
  *
  * Round 23: `createKitchenSim` now takes the level as a parameter instead of
  * reading a frozen module-scope global — `ACTIVE_LEVEL`/
@@ -65,6 +66,34 @@
  * moving it into the factory would recompute it per run and turn Guard A
  * from a load-time assertion into a per-run one, so it could fail mid-shift
  * instead of failing the build.
+ *
+ * Round 24: two-recipe levels were starving one recipe outright (N0 L4 ran
+ * to 31 chai / 1 coffee with coffee-extract and cream stranded at 30 each).
+ * Two independent causes, two independent fixes:
+ *
+ * Task 1 — supply. `makeBag` used to draw from `ACTIVE_INGREDIENT_KINDS`,
+ * the *set* of a level's ingredient kinds — every kind spawning equally
+ * regardless of how many recipes actually want it. Milk is in both
+ * CHAI_RECIPE and COFFEE_RECIPE, so one of each dish needs milk twice for
+ * everything-else-once, but a 5-kind set only supplies it at the same 20%
+ * as ginger or cream. The bag now draws from the *multiset*
+ * `level.recipes.flatMap(r => r.ingredients)` — milk simply appears twice —
+ * derived from recipes already declared, no new data field.
+ * `getIngredientKinds` (the set) is untouched: `held` initialisation and
+ * the billboard still want unique kinds, not weighted ones.
+ *
+ * Task 2 — priority. The completion walk always started at recipe index 0,
+ * so a shared ingredient was always banked by the earlier-declared recipe
+ * (chai before coffee) — a deterministic tie-break that, run over enough
+ * taps, starves the later recipe rather than merely losing individual ties.
+ * The walk now starts just after whichever recipe last completed
+ * (`lastCompletedIndex`, a closure variable private to this factory — not
+ * added to KitchenState, which is public and read elsewhere) and wraps
+ * around. Task 1 is the fix (it makes both ingredients arrive at the rate
+ * their recipes actually need); task 2 is insurance against the same
+ * degeneracy re-emerging once a future level's two recipes overlap on two
+ * of three ingredients, at which point the exclusive ingredients stop being
+ * the limiter and a fixed start index goes degenerate again on its own.
  */
 import { KITCHEN_CONFIG } from '../kitchenConfig.ts';
 import { getIngredientKinds, type LevelRecord } from '../data/levels.ts';
@@ -296,6 +325,11 @@ export const SLOT_ZONES: SlotZone[] = (() => {
  * Round 23: takes `kinds` as a parameter rather than closing over a
  * module-scope global — the caller (createKitchenSim) now derives it from
  * its own `level` argument.
+ *
+ * Round 24: `kinds` is now a multiset (a key may repeat), not the set of
+ * unique kinds — see the file header's Task 1. Nothing else about the bag
+ * changes: `n` below is just `kinds.length`, and refill/shuffle/pop are
+ * unaware whether their input had duplicates.
  */
 function makeBag(kinds: string[]): () => string {
     let bag: string[] = [];
@@ -335,8 +369,17 @@ export function createKitchenSim(level: LevelRecord): KitchenSim {
 
     let nextUid = 1;
     let spawnTimer = 0;
+    // Round 24, task 2: private to this factory, never added to
+    // KitchenState (that shape is public and read elsewhere) — the
+    // completion walk's own rotating start index. -1 means "walk from 0",
+    // i.e. no recipe has completed yet this shift.
+    let lastCompletedIndex = -1;
     const events: KitchenEvent[] = [];
-    const drawKind = makeBag(ACTIVE_INGREDIENT_KINDS.map((k) => k.key));
+    // Round 24, task 1: the multiset of every recipe's ingredients, not the
+    // set of unique kinds — a kind used by two recipes (milk, here) appears
+    // twice, so it spawns at the rate its recipes actually consume it. See
+    // the file header.
+    const drawKind = makeBag(ACTIVE_LEVEL.recipes.flatMap((r) => r.ingredients));
 
     function spawnIfDue(dt: number): void {
         // Round 9, task 1: gates on the safety cap only — the win condition
@@ -406,24 +449,32 @@ export function createKitchenSim(level: LevelRecord): KitchenSim {
             // that use THAT ingredient can newly become fully held this
             // tap — and if two of them share it, BOTH can be fully held at
             // once (e.g. chai and coffee each one ingredient short, and the
-            // shared milk arrives). Declaration order in
-            // ACTIVE_LEVEL.recipes breaks that tie deterministically: walk
-            // the list in order and take the FIRST fully-held recipe, never
-            // a second one on the same tap — a single for-loop with an
-            // immediate break on match, not a while, so it is structurally
-            // impossible to complete two recipes off one tap. Consuming the
-            // winner's ingredients is what keeps a second, still-fully-held
-            // recipe from silently completing on some LATER unrelated tap
-            // too: subtracting the shared ingredient (milk, here) drops
-            // that second recipe's count back below what it needs, so it
-            // waits for its own next matching ingredient exactly as if the
-            // two recipes had never shared anything. If this ever needed to
-            // become a while loop to catch a second completion in the same
-            // tap, the state has already gone wrong and the loop would hide
-            // it.
+            // shared milk arrives). A single for-loop with an immediate
+            // break on the first match — never a while — is what makes it
+            // structurally impossible to complete two recipes off one tap.
+            // Consuming the winner's ingredients is what keeps a second,
+            // still-fully-held recipe from silently completing on some
+            // LATER unrelated tap too: subtracting the shared ingredient
+            // (milk, here) drops that second recipe's count back below what
+            // it needs, so it waits for its own next matching ingredient
+            // exactly as if the two recipes had never shared anything. If
+            // this ever needed to become a while loop to catch a second
+            // completion in the same tap, the state has already gone wrong
+            // and the loop would hide it.
+            //
+            // Round 24, task 2: which recipe wins a tie no longer follows
+            // fixed declaration order (see this file's header, Task 2 for
+            // why that was starving whichever recipe declared second). The
+            // walk now starts just after whichever recipe last completed
+            // and wraps around, so the SAME tap-count outcome (chai and
+            // coffee both one ingredient short, shared milk arrives) no
+            // longer always resolves the same way twice in a row — the
+            // "first fully-held recipe wins, immediate break" rule itself
+            // is unchanged, only where the walk starts.
             const recipes = ACTIVE_LEVEL.recipes;
             let completedIndex = -1;
-            for (let ri = 0; ri < recipes.length; ri++) {
+            for (let n = 0; n < recipes.length; n++) {
+                const ri = (lastCompletedIndex + 1 + n) % recipes.length;
                 if (recipes[ri].ingredients.every((k) => state.held[k] > 0)) {
                     completedIndex = ri;
                     break;
@@ -432,6 +483,7 @@ export function createKitchenSim(level: LevelRecord): KitchenSim {
             if (completedIndex >= 0) {
                 for (const k of recipes[completedIndex].ingredients) state.held[k]--;
                 state.completed++;
+                lastCompletedIndex = completedIndex;
                 events.push({ type: 'completed', recipeIndex: completedIndex });
                 state.beltSpeed = currentSpeed(state.completed);
             }
