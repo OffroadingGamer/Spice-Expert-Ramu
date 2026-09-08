@@ -78,3 +78,11 @@ Update Marketing Strategy.md §2 with today's figures if they've moved from the 
 Log this handover in Social Media Handover Record.md.
 Report back: what you'd post first and where, what's genuinely newsworthy on the public build, and anything in the docs you couldn't tell public from private on. Draft no copy this round.
 ⚠️ One thing worth knowing before you form a plan: LinkedIn produces one spike then decays (Sep 4's post drove 117 uniques in a day, the largest single event in the project). Discord reciprocity is the only repeatable source of new players. And the second LinkedIn spike is best spent on the Kitchen Mode public launch, which hasn't happened. Don't recommend spending it early.
+
+### 2026-09-09 01:30 IST — Corrections to the baseline report's open questions
+**From:** User — direct reply to this agent's Sep 8 baseline report
+**Status:** ✅ complete
+
+1) Discord post did that inside the server of RUNGAMESTUDIO Discord.
+2) LinkedIn post happened on 5th.
+3) Private version mismatch is to be expected as the game is under building process, other agents are working on it, so no need to fire up a warning over this unnecessarily right now.

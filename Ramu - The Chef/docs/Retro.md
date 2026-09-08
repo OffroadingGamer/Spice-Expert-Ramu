@@ -2059,3 +2059,29 @@ uniques are the score; the trend matters more than any single day.
     present everywhere. The fix clamped **83% of onion's edge pixels to pure black** where
     the originals were a natural (71,64,61). **Before accepting a remedy, check the
     diagnosis against a control** — here, any sprite nobody thought was broken.
+
+71. **"Not in the manifest" is not "does not exist."** I told the user nodes 2–4 needed
+    ~18 new dish sprites and that blocked image generation was a hard stop on the
+    four-node gate. Both false. I had inferred the gap from the **manifest** — 7 kitchen
+    assets baked — when `Art/_gen/dishes-final/` held **30 of the 26 dishes needed**, the
+    sliced pack held **44 station sprites with full tier ladders**, and every masala and
+    oil existed. The real gap was ~70 unbaked files: a copy and a manifest line each.
+    **Inventory is a filesystem question. Answer it with `ls`, never by reading what the
+    build currently loads** — and note this is the same shape as the earlier RecipeList
+    §8.3 error, which is why it deserves its own number rather than a footnote.
+72. **Compute geometry against the real containing block, and never trust a table that
+    only half-reproduces.** I put a "measured" table in a handover claiming a DOM overlay
+    diverged from the canvas by 406 px on desktop. The overlay's containing block was not
+    the viewport — `#app-frame` already constrains the whole app to the board's aspect in
+    landscape, so the divergence never existed. It survived my own check because the
+    table's **vertical** figures reproduced the agent's to the decimal: in portrait that
+    frame equals the viewport, so half the derivation was accidentally right. **A table
+    half of which reproduces reads as verified and is not.** The answer was one line of
+    prose in `App.tsx`'s header, which I derived past instead of reading.
+73. **An agent's account of its own environment can be confidently wrong — verify it
+    before propagating it.** A hand-back reported that `jam-entry/` "lives in a separate
+    repo I don't have access to." It is a **sibling folder inside the same repository**.
+    The agent's *conclusion* was right (its boundary forbids reading `jam-entry/`, so it
+    could not verify the spec) but its *reason* was wrong, and it wrote that reason into a
+    routing note for the next session. **Findings and environment claims travel together
+    in a hand-back; check the second before acting on the first.**

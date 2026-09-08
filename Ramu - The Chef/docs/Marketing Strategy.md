@@ -1,6 +1,6 @@
 # Marketing Strategy
 
-**Last updated:** Sep 9 2026, 01:30 IST
+**Last updated:** Sep 9 2026, 01:45 IST
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)
 
@@ -83,3 +83,15 @@ Total plays 417→421, rank #2 unchanged. Sep 8 closed the partial 9 up to 21 so
 (day still open at pull time). Rank #1's figures could not be refreshed — the jam
 board page renders client-side and isn't fetchable from here; still the Sep 8 morning
 read, next manual check due per Plan §5.7 on Sep 10.
+
+### 2026-09-09 — attribution correction — no draft
+**Drafted:** nothing — correction only, per user reply logged in the companion record.
+**Posted by user:** —
+**Outcome:** Sep 4's 117-unique spike is attributable to the **Discord post inside the
+RUNGAMESTUDIO Discord server**, not LinkedIn — LinkedIn's own post landed **Sep 5**.
+Plan §5.7 labels the Sep 4 number "the LinkedIn spike"; that line is now known to be
+inaccurate, but Plan.md is read-only to this agent, so it isn't corrected here — flagged
+back verbally for whoever maintains Plan.md. Strategic read is unchanged either way:
+Discord is still the repeatable engine, LinkedIn still gets saved for the Kitchen Mode
+public launch. Private-version-number mismatch (v1.24.0 vs v1.26.0 across docs) noted
+as expected churn during active build — not treated as a discrepancy to chase.

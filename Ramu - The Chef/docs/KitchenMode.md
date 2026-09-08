@@ -345,7 +345,9 @@ the nearest in-reach dish on a single tap — no recipe steps, no cook time — 
 observed *"20 served, 0 walked out"* could not have gone otherwise. The verdict above is a
 judgement from watching the belt, which is the only thing this build could measure.
 
-🔴 **Open — 150 design units are cropped off the bottom.** Measured from the
+✅ **RESOLVED — 150 design units were cropped off the bottom.** Fixed by `jam-entry/src/game/kitchenStage.ts`, whose contain-fit replaces `stage.ts`'s width-fit for Test Mode and handles the shorter-than-9:16 case this describes — its own header names this bug. Re-verified Sep 9 2026 after an art session cited this line as an open blocker on the backdrop brief. **The finding below is history, not a live constraint.** Original text follows.
+
+🔴 **Was open —** Measured from the
 v1.8.0 screenshot: the RUN host header takes 114 px, leaving a **952×1486** viewport at
 aspect **0.641** against the design's 0.563. The board scales to fit *width* (×1.312),
 needs 1,692 px of height, has 1,486, and is anchored to the top — so design y
@@ -379,7 +381,8 @@ review **1.7.0**, public **1.7.0**.
 
 | | |
 |---|---|
-| Bands | billboard **0–400** · run 1 400–540 · stations 540–860 · run 2 860–1000 · finalDishContent 1000–1160 · **hamburgerReserve 1160–1280** |
+| Bands (layout) | billboard **0–400** · run 1 400–540 · stations 540–860 · run 2 860–1000 · finalDishContent 1000–1160 · **hamburgerReserve 1160–1280** |
+| Bands (painted) | 🔑 `band()` fills **four** rects, and `finalDishArea` **{y:1000, height:280}** covers 1000–1280 as ONE opaque fill. `finalDishContent`/`hamburgerReserve` above are layout subdivisions of that same span, not separate fills — a distinction that has now misled one art session. Round 21 made `hamburgerReserve` a LEFT-half-only concern. |
 | Billboard | 640×400 at x40 · panels inner x57 w**607** · upper 20–100, gap 100–132, lower **132–380** |
 | Slots | 2×2 at x **240/480**, y **615/785** · box 139×150 |
 | Fridge | **72×108** at x39 y646 — 2.25× native, aspect preserved |
@@ -1620,3 +1623,136 @@ not 288/416.
 > start boundary and last flush to the end boundary; when a whole number does not fit
 > exactly, **spread them evenly and let them overlap in the middle rather than overhang at
 > either end** — safe because it is one uniform texture. Corners drawn after straights.
+
+
+### 6.19 ✅ Rounds 19–22 landed — the HUD, the dish board, and the modals, Sep 9 2026
+
+| Round | Commit | Private | What landed |
+|---|---|---|---|
+| 19 | `0db7182` | v1.29.0 | HUD restructure · vertical scrollable dish board · reach-overlay fix |
+| 20 | `99305b2` | v1.30.0 | Star order · left-anchored coin HUD · scroll affordance |
+| 21 | `36a108b` | v1.31.0 | `ui-exit-sign` baked · DOM overlay content-fitted |
+| 22 | `4bc537b` | v1.32.0 | One prop scale · prices in the picker · modals that pause |
+
+**Round 19.** Coins moved out of the upper panel into `finalDishArea`'s left half; the
+dish board became a **vertical list** in the right half, `rowHeight = clamp(AVAIL/count,
+88, 170)` against a 344×264 viewport — so 1→170, 2→132, 3→88 and **scroll only from four
+recipes up**. Unserved dishes draw **dimmed at 0.35** rather than hidden, so the board
+reads as *here is what you are cooking* before the first serve.
+
+🔑 **The reach overlay's corner artefact was self-overlap, not a zone bug.** A translucent
+stroke composites its own join geometry twice at a 90° turn. Fixed by stroking **opaque**
+and applying `REACH_ALPHA` once over the group via `cacheAsTexture` — with
+`updateCacheTexture()` on every visibility change, or the flattened cache goes stale.
+Only the two **right-hand** vertices ever showed it: zone 2 contains 746, zone 3 contains
+1206, and round 18's end insets leave 176/1776 uncovered.
+
+🔴 **Two bugs the agent found that the handover never anticipated**, both worth keeping:
+drag deltas were applied in **screen space** to a design-space offset (fixed via
+`boardRoot.toLocal`, the idiom `onTap` already used); and `hitArea` is tested in an
+object's **local** space, so a hit rectangle on the scrolling container drifted by its own
+scroll offset — fixed with a separate, never-moved zone.
+
+**Round 20.** 🔑 **The star row was contradicting its own labels.** It filled
+left-to-right (`stars >= 1, 2, 3`) while the thresholds beneath read `three · two · clear`
+— so a 2-star clear at `earned 323` lit the **340** star. Now star *i* lights at
+`stars >= 3 - i`: 3★ `★★★`, 2★ `☆★★`, 1★ `☆☆★`. **The two rows are positionally paired;
+reordering one requires reordering the other.**
+
+Coin group left-anchored at **x = 26**, measured from the `×N` group's own right margin
+(25.63 at count 12) — **my row-math estimate of 34–38 was wrong**, because `×12` at
+fontSize 44 renders ~88 wide, not ~70. `COIN_ICON_H` 26 → **75** to match the hamburger's
+44 CSS px at the validated 420×900 aspect.
+
+⚠️ **Round 19's scroll affordance did not exist.** "The mask clips a partial row" was
+sound reasoning on a false premise: `ROW_MIN = AVAIL/3` makes the viewport an **exact**
+multiple of the row height, and every scrollable board uses `ROW_MIN` by definition — so
+three whole rows show and nothing is ever clipped. Round 20 added an explicit chevron,
+`visible = scrollY > minOffset`, parented to `boardRoot` so it does not ride the content.
+
+**Round 21.** `ui-exit-sign` baked (256×256 RGBA, drawn as geometry to the palette
+sampled off `ui-coin`/`ui-chef-hat` — outline `#500C23`, stroke 8 px at 256, bbox inset
+25). `kitchenStage.ts` gained an **`onLayout`** callback publishing the content rect it
+already computes, and `TestBelt.tsx` positions a fitted wrapper from it — so the Ready
+slot and hamburger live in board space instead of viewport space.
+
+🔴 **My "406 px hamburger gap on desktop" table was wrong, and the agent disproved it.**
+`TestBelt`'s `inset-0` resolves against **`#app-frame`**, not the viewport, and
+`--game-w: min(100vw, calc(100dvh * 9/16))` already letterboxes the whole app to 9:16 in
+landscape. Board and frame are both 9:16, so contain-fit produces **zero** letterbox and
+every percentage already meant what it said. **Only the portrait y-axis was ever wrong.**
+The error hid because the vertical figures (1072.0, 948.6) reproduced exactly — in
+portrait the frame *is* the viewport. See §5 lesson 72.
+
+The fix stands anyway: `bottom: 25%` now lands at design y **960 at every aspect**
+(measured 959.98–960.00 across four), where round 19's `30%` was tuned against one. It
+also removes a load-bearing coincidence — board aspect equalling frame aspect.
+
+**Round 22.** One `PROP_FIT_SCALE = 0.7826` shared by every prop, replacing a per-prop
+aspect-fit that let the **box** set apparent size: kettle 84.0×59.1 → **76.7×54.0**,
+dispenser unchanged. The picker computes the same shared minimum off real
+`naturalWidth/Height`; height ratios agree at **0.600** in both places, which is just
+69/115 — the art's own ratio, finally preserved. Costs now show before the tap.
+
+🔑 **Both slot modals pause the shift.** Neither the picker nor the sell confirmation set
+`paused`, so the belt ran behind a full-screen modal and `walkout` charged 25 coins **with
+no player input** — the player was billed for reading a menu. All six exit paths resume
+(pick / Cancel / backdrop, ×2 modals), ordered mutation → clear state → resume. The pause
+is also what makes the picker's wallet **snapshot** exact, so no `onWalletChange`
+subscription was needed. Unaffordable entries dim to 0.45 and **stay tappable** — the
+existing message is what explains the refusal.
+
+⬜ **Still absent after all four rounds: persistence and progression.** `ACTIVE_LEVEL_ID`
+is a module constant read at module scope in three files; a reload returns to `n0l1`.
+
+### 8.11 🔑 The art inventory audit — nothing is missing, Sep 9 2026
+
+**Run because the user challenged my claim that nodes 2–4 needed ~18 new dish sprites.
+They were right and I was wrong.** Counted by listing folders, not by reading docs.
+
+| Category | Needed for 37 levels | Exists | Baked | Missing |
+|---|---|---|---|---|
+| Final dishes | 26 | **30** — `Art/_gen/dishes-final/` | 2 | **0** |
+| Stations | 12 families | **44** with L1–L5 ladders — `_sliced/01/props/` | 3 | **0** |
+| Grinding outputs | 5 masalas | **6** — `_sliced/01/Container/` | 0 | **0** |
+| Cooking oils | 5 | **5** — ghee, mustard, coconut, sesame, olive | 0 | **0** |
+| Ingredients | ~35 | **51** — 24 generated + 27 sliced | 2 | **0** |
+
+Every dish across all four nodes has a tray sprite. Every station named in §11.3 exists
+**including its tier ladder** — Fry Pan L1–L5 for node 4's headline tier, Cooktop L1 for
+node 3's opener, both Tandoor variants, Steam Cooktop, Brazier. The only art item with a
+known defect is **`green-chilli.png`**, which exists and was flagged for a quality regen;
+one recipe uses it.
+
+🔑 **The constraint is assembly, not creation.** Roughly **70 sprites need a file copy and
+a manifest line each** — already scoped in Tasks.md as *"one PNG + one manifest line at a
+time, no code change per sprite"*, and `_asset_map.csv` / `_props_map.csv` may already
+carry the alias mapping. This needs **no image generation**, which means it is available
+to a session that has none.
+
+🔴 **How I got it wrong:** I inferred the gap from the manifest — 7 kitchen assets baked —
+and treated *not in the game* as *does not exist*. See §5 lesson 71.
+
+### 8.12 🔴 Backdrops cannot come from the pack — the projection is wrong
+
+Round 1 of the backdrop brief (audit + one node) **handed back at task 2, correctly.**
+
+**`Art/02 - Kitchen Props/` is entirely isometric 3/4 perspective** — every asset shows a
+top face plus two shaded side faces. Tables, prep counters, base cabinets, modular stall
+shells, counter-edge kits, chairs. **There is no flat floor texture, no wall material and
+no top-down surface anywhere in the pack.** Verified independently by opening
+`pack props.png` (632×330).
+
+The belt board is **top-down**. This is not the "own scale" mismatch `kitchenScene.ts:7`
+and Tasks.md:157 flagged — it is a **camera-projection mismatch**, and no crop, recolour
+or filter fixes a projection. **Backdrops require generation.** They are now blocked on
+the same routing as `green-chilli`.
+
+⚠️ **One correction for whoever picks this up.** The hand-back reported that `jam-entry/`
+"lives in a separate repo I don't have access to." **It does not.** `jam-entry/` is a
+**sibling of `Ramu - The Chef/` inside the same repository** — `git rev-parse
+--show-toplevel` returns `September GameJam`, and `jam-entry/src/game/kitchenScene.ts` is
+tracked in it. The art agent was right not to read it, because its boundary forbids
+touching `jam-entry/` — but the reason recorded was wrong, and it would misroute the next
+session. Same family as the `--game-id` gotcha: tooling and paths resolve from
+`jam-entry/`, not from `Ramu - The Chef/`.

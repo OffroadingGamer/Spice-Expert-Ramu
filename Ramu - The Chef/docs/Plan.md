@@ -904,8 +904,17 @@ and at most one follow-up if something genuinely notable ships.
 Sep 7 **60** · Sep 8 **9** (partial).
 
 🟢 **The encouraging finding: three flat days at 54–60 with no new post.** Sep 4's 117
-was the LinkedIn spike and it decayed to a **plateau, not to zero** — board discovery plus
-Discord reciprocity are producing a stable floor.
+decayed to a **plateau, not to zero** — board discovery plus Discord reciprocity are
+producing a stable floor.
+
+🔴 **Correction, Sep 9 2026: Sep 4's spike was NOT LinkedIn.** It came from a post in the
+**RUNGAMESTUDIO Discord server**; the LinkedIn post did not land until **Sep 5**. This
+paragraph said "the LinkedIn spike" and was wrong — §5.7's own line above ("Sep 4's 117
+came from one Discord post") was right, and the two contradicted each other for four days.
+Raised by the social-media agent, which could not edit this file. **The strategic
+consequence is real: Discord is the demonstrated repeatable engine, and LinkedIn is
+still unspent** — so it remains available for the Kitchen Mode public launch rather than
+already burned.
 
 🔴 **The discouraging one.** Over six days they average **~107/day** against our
 **~51** (**~58** over the last three). Straight-lining ten more scoring days:
