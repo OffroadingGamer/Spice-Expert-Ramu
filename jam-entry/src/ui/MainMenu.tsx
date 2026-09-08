@@ -98,11 +98,9 @@ export default function MainMenu() {
                 Ranks
             </button>
             <div className="text-center text-[1.1rem] leading-7 text-white/50">
-                Tap a counter to set up a station
+                Tap a station to place a utensil
                 <br />
-                Hit Ready when the line is set
-                <br />
-                Do not let a ticket reach the pass
+                Don&apos;t let any walk-outs happen!
             </div>
             {(likeAvailable || commentsAvailable) && (
                 <div className="absolute inset-x-0 bottom-6 flex justify-center gap-3 pb-safe-bottom">
