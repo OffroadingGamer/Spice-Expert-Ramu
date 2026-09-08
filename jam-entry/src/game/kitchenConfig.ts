@@ -360,8 +360,24 @@ export const KITCHEN_CONFIG = {
      * adjacent stations' accepted stretches never touch. This — not
      * `slotReach` above, which no longer has any readers — is what now
      * governs station acceptance width.
+     *
+     * Round 18: widened 40 -> 70 to trim the reach overlay per the user's
+     * marked boundaries (see `slotBandEndInset` below for the other half of
+     * that trim). Coverage falls from 92.5% to 81.9% (1,310 of 1,600 eligible
+     * units) — intended, not a regression to chase.
      */
-    slotBandSeam: 40,
+    slotBandSeam: 70,
+
+    /**
+     * Round 18: pulls zones 1 and 4 back off the two ELIGIBLE_DIST bounds
+     * (sim/kitchen.ts) by this much — `slotBandSeam` above only opens the
+     * three INTERIOR gaps (between zones 1-2, 2-3, 3-4), so without this the
+     * end zones still ran all the way out to the fridge stubs regardless of
+     * how wide the seam got. Applied once at each outer end, not ±half like
+     * the interior seam, since there's only one neighbour (open belt) to
+     * pull back from, not two.
+     */
+    slotBandEndInset: 40,
 
     /**
      * Round 9, task 7: seconds a prop is busy after taking an ingredient. ON

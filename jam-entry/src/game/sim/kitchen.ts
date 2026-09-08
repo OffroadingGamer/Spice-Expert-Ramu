@@ -213,6 +213,12 @@ export function posAt(dist: number): { x: number; y: number } {
  * export directly rather than re-deriving the boundaries; two derivations of
  * the same boundary is exactly how the overlay could end up disagreeing with
  * `tapSlot`.
+ *
+ * Round 18: zones 1 and 4 (the two outer ones) are also pulled back off
+ * ELIGIBLE_DIST_MIN/MAX by `slotBandEndInset` — the reach overlay used to run
+ * those two zones all the way out to the fridge stubs, which overshot the
+ * boundary the user actually marked. `slotBandSeam` (widened 40 -> 70 the
+ * same round) still governs only the three interior gaps.
  */
 export interface SlotZone {
     start: number;
@@ -229,9 +235,15 @@ export const SLOT_ZONES: SlotZone[] = (() => {
     const bySlot: SlotZone[] = new Array(KITCHEN_CONFIG.slots.length);
     for (let i = 0; i < rawZoneBoundaries.length - 1; i++) {
         const seamHalf = KITCHEN_CONFIG.slotBandSeam / 2;
+        // Round 18: the first and last zone no longer run all the way out to
+        // ELIGIBLE_DIST_MIN/MAX — they're pulled back by `slotBandEndInset`,
+        // a separate constant from the interior `slotBandSeam` gap because
+        // an end zone only has one neighbour (the open belt) to pull back
+        // from, not two to split a gap with.
+        const endInset = KITCHEN_CONFIG.slotBandEndInset;
         const zone: SlotZone = {
-            start: i === 0 ? rawZoneBoundaries[i] : rawZoneBoundaries[i] + seamHalf,
-            end: i === rawZoneBoundaries.length - 2 ? rawZoneBoundaries[i + 1] : rawZoneBoundaries[i + 1] - seamHalf,
+            start: i === 0 ? rawZoneBoundaries[i] + endInset : rawZoneBoundaries[i] + seamHalf,
+            end: i === rawZoneBoundaries.length - 2 ? rawZoneBoundaries[i + 1] - endInset : rawZoneBoundaries[i + 1] - seamHalf,
         };
         const mid = posAt((zone.start + zone.end) / 2);
         let bestSlot = -1;

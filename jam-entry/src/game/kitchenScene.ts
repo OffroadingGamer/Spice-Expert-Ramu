@@ -152,6 +152,17 @@
  * §7.3b/§10.3's Σ(wave×30) = 15n(n+1), FIRST CLEAR ONLY; the flat-50 repeat
  * rule needs SaveData.kitchen, which doesn't exist yet (out of scope this
  * round, see that function's comment).
+ *
+ * Round 18: a permanent recipe-name label is drawn under every final-dish
+ * entry, centred on the group's own slot (finalDishSlotX[i], not the sprite
+ * alone) and visible even at count 0 — see the block right after
+ * `dishEntryViews`. The station-zone reach overlay is trimmed by two
+ * kitchenConfig.ts constants (`slotBandSeam` widened, the new
+ * `slotBandEndInset`), both consumed inside sim/kitchen.ts's `SLOT_ZONES` —
+ * this file makes no separate change for that, since it already reads
+ * `SLOT_ZONES` rather than deriving its own copy (round 12/13's anti-drift
+ * reasoning). Round 9's old unlock guard is retired in its own comment below,
+ * not restored — TestBelt.tsx's new FTUE Ready gate (n0l1 only) replaces it.
  */
 import {
     Assets,
@@ -1090,6 +1101,32 @@ export async function createKitchenScene(
         boardRoot.addChild(countText);
         return { view, countText };
     });
+
+    // Round 18, task 4: the recipe's name, centred under the WHOLE group
+    // (sprite + ×N — finalDishSlotX[i] is the group's own centre, not the
+    // sprite's), permanently visible — a first-timer never gets told what
+    // they're cooking otherwise, and count 0 is exactly when they need that
+    // most, unlike the sprite/×N above which only appear on the first serve.
+    // Borrows PROP_LABEL_STYLE's dark stroke so it reads against the
+    // billboard-brown band, at the size/weight the handover asked for rather
+    // than the label's own 13px. `setFitText` against `slotWidth` (not
+    // fdw+76) so a long name shrinks before it could ever spill into the
+    // neighbouring dish's half of the board — the same reasoning `fdScale`
+    // above already applies to the sprite+count group.
+    const RECIPE_NAME_GAP = 8;
+    const RECIPE_NAME_STYLE = {
+        fill: 0xffffff,
+        fontSize: 22,
+        fontWeight: '700',
+        stroke: { color: 0x1b1b2b, width: 3 },
+    } as const;
+    level.recipes.forEach((recipe, i) => {
+        const label = new Text({ text: '', style: RECIPE_NAME_STYLE });
+        label.anchor.set(0.5, 0);
+        setFitText(label, recipe.name, slotWidth, 22, 10);
+        label.position.set(finalDishSlotX[i], entryY + fdh / 2 + RECIPE_NAME_GAP);
+        boardRoot.addChild(label);
+    });
     function layoutDishEntries(): void {
         level.recipes.forEach((_, i) => {
             const count = dishCounts[i];
@@ -1197,16 +1234,25 @@ export async function createKitchenScene(
         return { wallet, coinsEarned: Math.max(100, coinsEarned), hats };
     }
 
-    // Round 9, task 5 (superseded by round 12): unlock a LOCKED slot for
-    // coins. Round 9's guard blocked ANY second unlock until a prop was
-    // placed — safe, but stricter than it needed to be, and it never checked
-    // affordability at all. Round 12: the guard now only refuses an unlock
-    // that would leave the wallet unable to afford even the cheapest utensil
-    // afterward, unless a prop already placed is earning — LevelEconomy.md
-    // §7.2's actual failure mode (unlock, unlock again, land on 0 with two
-    // open slots and no way to earn back the 40 a utensil costs), not a
-    // stand-in for it. A well-funded player can now unlock two slots before
-    // placing anything in either, which the old rule didn't allow.
+    // Round 9, task 5 (superseded by round 12; retired by round 18): unlock a
+    // LOCKED slot for coins. Round 9's guard blocked ANY second unlock until
+    // a prop was placed — safe, but stricter than it needed to be, and it
+    // never checked affordability at all. Round 12: the guard now only
+    // refuses an unlock that would leave the wallet unable to afford even the
+    // cheapest utensil afterward, unless a prop already placed is earning —
+    // LevelEconomy.md §7.2's actual failure mode (unlock, unlock again, land
+    // on 0 with two open slots and no way to earn back the 40 a utensil
+    // costs), not a stand-in for it. A well-funded player can now unlock two
+    // slots before placing anything in either, which the old rule didn't
+    // allow.
+    //
+    // Round 9's ORIGINAL purpose — teaching a first-timer the unlock-then-
+    // place order — is not restored here. Round 18's FTUE Ready gate
+    // (TestBelt.tsx, gated on `level.id === 'n0l1'`) replaces it more
+    // completely: it doesn't just nudge the order, it makes starting a shift
+    // with an empty board impossible in the first place, which is the actual
+    // softlock round 9 was reacting to. Do not reintroduce a placement
+    // precondition here.
     function attemptUnlock(i: number): void {
         if (filledSlotCount === 0 && wallet < KITCHEN_CONFIG.slotUnlockCost + KITCHEN_CONFIG.propTierCost[0]) {
             onMessage('Unlocking now would leave nothing for a utensil — place one first.');

@@ -65,6 +65,13 @@
  * dish target and awards no stars at all — both are handled by null checks
  * below rather than a boss-specific branch, since a boss's own `stars`
  * field is already null and its sim (sim/kitchen.ts) never reaches 'won'.
+ *
+ * Round 18: the Ready button slot is gated on `LEVEL.id === 'n0l1'` — FTUE
+ * level 1 shows a taught, non-interactive sequence (unlock -> place -> Ready)
+ * instead of an always-pressable button, so a first-timer can no longer start
+ * a shift with an empty board and watch it run out. Every other level keeps
+ * the plain button unchanged. Setup interaction itself (slot taps, picker,
+ * hamburger) is untouched — still ungated, exactly as round 10 left it.
  */
 import { useEffect, useRef, useState } from 'react';
 import type { Application } from 'pixi.js';
@@ -282,19 +289,51 @@ export default function TestBelt() {
                 (design-space x 170-550, y 540-860) and stacked above the
                 hamburger rather than overlapping it. Hidden once pressed;
                 a "Run Again" remount shows it again since `ready` resets to
-                false on every fresh scene. */}
+                false on every fresh scene.
+
+                Round 18, task 1: on FTUE level 1 only (LEVEL.id === 'n0l1'),
+                this slot teaches the opening sequence instead of showing an
+                always-pressable button — Ready was reachable with an empty
+                board, so a first-timer could start (and only ever run out) a
+                shift with nothing set up. The two instructional lines are
+                plain text, not buttons: the wrapper stays pointer-events-none
+                throughout, and only the real Ready button (once reachable)
+                opts back into pointer-events-auto. Coin icon reuses the same
+                ui-coin asset the end screen already draws (ASSET_SRC), sized
+                in `em` units so it tracks this paragraph's own resolved font
+                size — the DOM analogue of round 14's lock-label pattern
+                (coin icon sized off its accompanying text, never a fixed
+                constant). Every other level keeps today's behaviour: the
+                button is always shown, exactly as before this round. */}
             {!ready && !shiftResult && (
                 <div
-                    className="pointer-events-none absolute inset-x-0 flex justify-center"
+                    className="pointer-events-none absolute inset-x-0 flex justify-center px-6"
                     style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}
                 >
-                    <button
-                        type="button"
-                        className="pointer-events-auto rounded-2xl bg-primary px-10 py-4 text-2xl font-bold text-black shadow-lg transition-transform active:scale-95"
-                        onClick={() => { sfx.click(); sceneRef.current?.start(); setReady(true); }}
-                    >
-                        Ready
-                    </button>
+                    {LEVEL.id === 'n0l1' && filledSlots === 0 ? (
+                        <p className="rounded-2xl bg-black/70 px-6 py-3 text-center text-xl font-bold text-white">
+                            {unlockedSlots === 0 ? (
+                                <>
+                                    {`Tap a locked station to unlock it — ${KITCHEN_CONFIG.slotUnlockCost} `}
+                                    <img
+                                        src={ASSET_SRC.get('ui-coin')}
+                                        alt=""
+                                        className="inline-block h-[1em] w-[1em] align-[-0.15em] object-contain"
+                                    />
+                                </>
+                            ) : (
+                                'Tap an empty station to set it up.'
+                            )}
+                        </p>
+                    ) : (
+                        <button
+                            type="button"
+                            className="pointer-events-auto rounded-2xl bg-primary px-10 py-4 text-2xl font-bold text-black shadow-lg transition-transform active:scale-95"
+                            onClick={() => { sfx.click(); sceneRef.current?.start(); setReady(true); }}
+                        >
+                            Ready
+                        </button>
+                    )}
                 </div>
             )}
 
