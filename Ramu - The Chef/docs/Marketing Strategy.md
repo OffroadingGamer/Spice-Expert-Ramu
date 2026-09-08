@@ -1,0 +1,69 @@
+# Marketing Strategy
+
+**Last updated:** Sep 8 2026, 22:40 IST
+**Owner:** Social Media Agent · **written to by that agent only**
+**Companion:** [Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)
+
+---
+
+## What this file is
+
+**Every action the Social Media Agent takes, logged with its date and outcome.**
+Handovers received go in the companion file. The reasoning behind the strategy — why
+these surfaces, why this cadence — lives in [Plan.md](Plan.md) §5 and is **read-only** to
+this agent.
+
+## 1. 🔒 The surfaces — decided, not a gap to work around
+
+**The user has LinkedIn and Discord. Nothing else.** No X, no Reddit
+([Plan.md](Plan.md) §5.6).
+
+| Surface | Shape | Cadence |
+|---|---|---|
+| **RUN Discord `#back-to-work`** | Jam-native, highest-intent, reciprocal | **Daily** — the only repeatable source of new players |
+| **LinkedIn** | Professional network, portfolio artefact | One spike, then decay. Save it for something genuinely notable |
+
+**Link policy.** The score is plays, not votes, so the play link wins everywhere *except*
+the RUN Discord, where the audience votes as well as plays:
+
+| Surface | Link |
+|---|---|
+| RUN Discord | `https://run.world/jams/september-2026-jam?game=PpB5gECS0AMU49mGYAKM` |
+| LinkedIn | `https://w.run/puneetmakes/spice-expert-ramu` |
+
+## 2. Where the numbers stand — Sep 8 2026
+
+| | Rank #1 | **Us (rank #2)** |
+|---|---|---|
+| Total plays | 989 | **417** |
+| **Daily Unique Plays** ← *the scored metric* | 645 | **308** |
+
+Daily uniques: Sep 3 **9** · Sep 4 **117** · Sep 5 **54** · Sep 6 **59** · Sep 7 **60**.
+**Three flat days at 54–60 with no post** — a stable floor, not a decaying spike.
+Full analysis in [Plan.md](Plan.md) §5.7.
+
+## 3. 🛑 Standing rules
+
+- ⛔ **Never post.** Draft only. Posts go out under the user's own name.
+- ⛔ **Never bots, click-farms, incentivized clicking, proxies or self-play farming.**
+  RUN audits play counts and it voids **all** entries — including the rank already held.
+- 🔒 **Only describe what is live on the PUBLIC build as done.** Public is **v1.7.0**
+  while private is far ahead; Kitchen Mode is **not** publicly playable. A post about a
+  belt nobody can reach is a false claim.
+- 🔒 **Never write a `?k=` share URL, the RUN UserId, or either unlisted game id into
+  any tracked file.** The repo is public. The live game id `PpB5gECS0AMU49mGYAKM` and the
+  play link above are already public and safe.
+
+## 4. Action log
+
+```
+### YYYY-MM-DD — <surface> — <what>
+**Drafted:** <copy or a pointer to it>
+**Posted by user:** ⬜ not yet | ✅ YYYY-MM-DD
+**Outcome:** <daily uniques before/after, or "not measurable">
+```
+
+### 2026-09-08 — Agent initialised
+**Drafted:** nothing yet.
+**Posted by user:** —
+**Outcome:** — baseline recorded in §2 above.

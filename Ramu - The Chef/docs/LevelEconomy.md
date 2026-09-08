@@ -1,6 +1,6 @@
 # LevelEconomy — the source of truth for every currency value, per level
 
-**Last updated:** Sep 8 2026, 21:15 IST
+**Last updated:** Sep 8 2026, 22:40 IST
 **Status:** 🟡 **FTUE level 1 finalised. Every other level is deliberately empty.**
 **Tracked in git** — this file is *not* gitignored and must never be. It carries no
 credentials; it is design data, and it is meant to be read alongside the code.
@@ -842,7 +842,7 @@ and the loaner carries the whole node, at which point unlocking stops being wort
 Same class of invariant as §7.3a.4's `walkoutCharge > 2 × perGrab × (k+1)`, which
 currently holds by a single coin.
 
-### 10.3 🔴 The boss hat formula is quadratic — unresolved
+### 10.3 ✅ The boss hat formula is quadratic — **resolved Sep 8 2026**
 
 §7.3b pays `Σ(wave × 30)`, which expands to **`15n(n+1)`**:
 
@@ -856,10 +856,25 @@ currently holds by a single coin.
 A boss with no wave ceiling on a replayable node pays **more for one clear than the entire
 34-level campaign**, and every number in §10.2 collapses.
 
-⬜ **Awaiting the user's decision.** ➡️ **Recommended: full hats on first clear, a flat
-token on repeats.** It protects the economy without punishing a player who is genuinely
-good at the boss, and it makes first clears read as events. The alternative is a hard cap
-at roughly one node's income (~2,000).
+✅ **DECIDED — full hats on first clear, a flat token on repeats.** The user's words:
+*"Full hats on first clear, a flat token on repeats. More kind of rewards will also be
+available later but for the purpose of jam let's not overscope."*
+
+| Clear | Payout |
+|---|---|
+| **First** clear of a boss | **`Σ(wave × 30)` in full** — uncapped, §7.3b unchanged |
+| Every **repeat** clear | **50 hats, flat**, regardless of waves reached |
+
+🔥 **Why 50 and not more.** An ordinary level pays ~200 hats. Setting the repeat token
+at **a quarter of that** makes re-clearing a boss strictly worse than replaying any normal
+level — so the optimal play always points *forward*, never back. That is the property the
+cap exists to buy, and it holds without any ceiling on the first clear.
+
+✅ **First clears stay uncapped, so skill is still rewarded.** A player who reaches 15
+waves banks 3,600 hats once. They simply cannot bank it twice.
+
+⬜ **Deliberately out of scope for the jam.** Richer repeat rewards — cosmetics, per-boss
+challenges, tiered repeat payouts — are the user's stated later direction, not jam work.
 
 ### 10.4 🔒 Levels gate on the prop **family**, never the tier
 
