@@ -135,6 +135,23 @@
  * that file's comments. Belt/slot/prop geometry and the recipe are untouched
  * — this file still runs the same board regardless of which level is
  * active.
+ *
+ * Round 17: content goes per-level. `level`/`ACTIVE_INGREDIENT_KINDS`/
+ * `KIND_INFO` move to MODULE scope (read once, like sim/kitchen.ts's own
+ * ACTIVE_LEVEL) since `BAKED_ALIASES` needs them before createKitchenScene
+ * ever runs. The billboard now draws one ingredient row per active recipe
+ * (buildIngredientRow, stacked, §8b's shrink-to-fit reused vertically when
+ * two rows don't fit) and the final-dish tray one entry per recipe
+ * (makeFinalDishView/layoutDishEntries), both replacing the old
+ * single-recipe/single-dish blocks. A missing ingredient or dish sprite
+ * (coffee-extract, cream, rice, ghee, jeera-rice's dish) falls back to a
+ * procedural tile exactly as tea-leaf always has — `BAKED_ALIASES` only
+ * preloads aliases the manifest actually lists (`MANIFEST_ALIASES`), so
+ * requesting one that doesn't exist can never 404 Assets.load. Boss hats
+ * (computeEconomySnapshot) branch on `level.isBoss` — LevelEconomy.md
+ * §7.3b/§10.3's Σ(wave×30) = 15n(n+1), FIRST CLEAR ONLY; the flat-50 repeat
+ * rule needs SaveData.kitchen, which doesn't exist yet (out of scope this
+ * round, see that function's comment).
  */
 import {
     Assets,
@@ -152,9 +169,10 @@ import {
 import { playSample, prefetchCue, sfx, switchCue } from '../audio/audio.ts';
 import { CONFIG } from './config.ts';
 import { KITCHEN_CONFIG } from './kitchenConfig.ts';
-import { getActiveLevel } from './data/levels.ts';
+import { getActiveLevel, getActiveIngredientKinds, type IngredientKind, type RecipeRecord } from './data/levels.ts';
 import { createKitchenSim, isEligibleDist, posAt, SLOT_ZONES, type KitchenState } from './sim/kitchen.ts';
 import type { KitchenStage } from './kitchenStage.ts';
+import { MANIFEST } from '../assets/manifest.ts';
 
 /** Round 9: a frozen snapshot of the economy at shift end, passed alongside
  *  KitchenState to onShiftEnd — sim/kitchen.ts has no notion of coins. */
@@ -217,8 +235,14 @@ const BAND_TINTS = {
     finalDishArea: 0x27241c,
 } as const;
 
-type IngredientKind = (typeof KITCHEN_CONFIG.ingredientKinds)[number];
-const KIND_INFO = new Map<string, IngredientKind>(KITCHEN_CONFIG.ingredientKinds.map((k) => [k.key, k]));
+// Round 17: read once at module scope, like sim/kitchen.ts's own
+// ACTIVE_LEVEL — BAKED_ALIASES below needs it before createKitchenScene
+// ever runs, and every other reference in this file used to declare its own
+// local `level` inside that function; one module-scope binding replaces
+// both so there is only ever one read of getActiveLevel() in this file.
+const level = getActiveLevel();
+const ACTIVE_INGREDIENT_KINDS = getActiveIngredientKinds();
+const KIND_INFO = new Map<string, IngredientKind>(ACTIVE_INGREDIENT_KINDS.map((k) => [k.key, k]));
 
 // Round 11 (corrected round 12): 'ui-chef-hat' is force-loaded here even
 // though it's never drawn on this Pixi canvas — TestBelt.tsx's end screen
@@ -234,11 +258,19 @@ const UI_ALIASES = ['ui-slot-empty', 'ui-slot-filled', 'ui-hotbar', 'ui-containe
 // fallback everywhere else via `Assets.cache.has()` checks below — the
 // fallback alias (ing-tea-leaf) is never requested from Assets, only used
 // as a map key, so no 404s from an unlisted manifest entry.
+// Round 17: which of the active level's ingredient/dish aliases actually
+// have a manifest entry — Assets.load throws on an alias the manifest never
+// registered, so an alias with no art yet (coffee-extract, cream, rice,
+// ghee, jeera-rice's dish — none wired into manifest.ts, see levels.ts's
+// INGREDIENT_CATALOG/RecipeRecord comments) must never reach it. Filtering
+// here, rather than trusting callers to only ask for real ones, is what
+// keeps "no asset work this round" true without every future level author
+// needing to remember this rule too.
+const MANIFEST_ALIASES = new Set(MANIFEST.bundles.flatMap((b) => b.assets).map((a) => a.alias as string));
 const BAKED_ALIASES = [
     ...KITCHEN_CONFIG.levelProps.map((p) => p.alias),
-    'ing-milk',
-    'ing-ginger',
-    ...KITCHEN_CONFIG.finalDishes,
+    ...ACTIVE_INGREDIENT_KINDS.map((k) => k.alias).filter((a) => MANIFEST_ALIASES.has(a)),
+    ...level.recipes.map((r) => r.finalDish).filter((a) => MANIFEST_ALIASES.has(a)),
     'prop-fridge',
 ];
 
@@ -405,8 +437,12 @@ export async function createKitchenScene(
     lowerPanel.position.set(BB.panelInner.x, BB.lowerPanel.y);
     boardRoot.addChild(lowerPanel);
 
+    // Round 17: the heading names the ACTIVE LEVEL (e.g. "Two Tickets" for
+    // two live recipes), not one fixed recipe's name — KITCHEN_CONFIG.recipe
+    // is superseded, and every level already carries a `name` that serves
+    // exactly this heading's purpose.
     const recipeNameText = new Text({
-        text: KITCHEN_CONFIG.recipe.name,
+        text: level.name,
         // Round 5, task 6: reads as the panel's heading now — size only,
         // alignment/position unchanged.
         style: { fill: 0xffffff, fontSize: BB.recipeNameSize, fontWeight: '700' },
@@ -418,7 +454,7 @@ export async function createKitchenScene(
     recipeNameText.position.set(BB.panelInner.x + BB.panelInner.width / 2, BB.lowerPanel.y + BB.contentInset);
     boardRoot.addChild(recipeNameText);
 
-    // Ingredient row — Specs.md §8b's overflow formula: [icon] + [icon] + ...
+    // Ingredient row(s) — Specs.md §8b's overflow formula: [icon] + [icon] + ...
     //
     // Round 3, task 1: bottom-anchored, not centered. Every tile's bottom
     // edge sits exactly `contentInset` above the panel's bottom edge — the
@@ -430,76 +466,125 @@ export async function createKitchenScene(
     // round-3 procedural fallback tile — see makeIngredientView below,
     // which this reuses. Name text shrinks to fit `slotSize` rather than
     // clipping (checked against "Chai Masala", the longest label at n=5).
-    const { ingredients } = KITCHEN_CONFIG.recipe;
+    //
+    // Round 17, task 6: one row PER ACTIVE RECIPE, stacked in declaration
+    // order (top = recipes[0], e.g. chai; bottom = the LAST recipe, which
+    // sits at exactly the old single-row baseline — so a one-recipe level,
+    // N0 L1/L2/N1 L1, is geometrically identical to round 16). No row here
+    // ever overflows horizontally (max n=3, under capN=5), but two stacked
+    // rows can overflow the panel's remaining height — when they would,
+    // §8b's own shrink-to-fit SHAPE (scale = min(1, available / natural))
+    // is reused vertically rather than writing new layout code, per the
+    // handover; every tile dimension below (sprite, label gap, badge, plus
+    // sign) scales by the same factor so a shrunk row stays proportional to
+    // an unshrunk one, not just narrower.
     const { innerWidth, plusWidth, pad, labelHeight, labelGap, capN } = BB.ingredientRow;
-    const n = ingredients.length;
-    // Round 7, task 1: fixed sprite size, computed at the capN cap — a
-    // shorter recipe (n=3 today) is a shorter, centred row at the SAME tile
-    // size a capN-length row would use, not a bigger one. §8b's own
-    // shrink-to-fit formula (divided by the actual n) is kept as the
-    // fallback past the cap, so a 6-ingredient recipe still can't overflow.
-    const slotSize = n <= capN
-        ? (innerWidth - (capN - 1) * plusWidth - pad) / capN
-        : (innerWidth - (n - 1) * plusWidth - pad) / n;
-    const rowWidth = n * slotSize + (n - 1) * plusWidth;
-    const baseline = BB.lowerPanel.y + BB.lowerPanel.height - BB.contentInset;
     const rowCenterX = BB.panelInner.x + BB.panelInner.width / 2;
-    const spriteBoxH = slotSize - labelHeight - labelGap;
-    // Round 8, task 5: top of each ingredient's sprite box — the badge sits
-    // at this row's top-right corner, 4 units in from each edge.
-    const spriteTop = baseline - labelHeight - labelGap - spriteBoxH;
-    // Badge: 36 design units wide, native aspect (291x305) preserved — never
-    // squashed (round 5's fridge mistake, see kitchenConfig.ts's `fridge`
-    // comment). Digit fit against the badge's clear interior (159/291 of its
-    // width, per the source glyph's own bbox).
     const BADGE_W = 36;
-    const badgeH = BADGE_W * (tex.badgeCount.height / tex.badgeCount.width);
-    const badgeDigitMaxW = (159 / 291) * BADGE_W;
-    const badgeDigits: { key: string; cx: number; cy: number; text: Text }[] = [];
-    let cursorX = rowCenterX - rowWidth / 2;
-    ingredients.forEach((key, i) => {
-        const info = KIND_INFO.get(key);
-        const cx = cursorX + slotSize / 2;
+    const ROW_GAP = 12;
+    const NAME_GAP = 8;
+    const naturalRowHeight = (innerWidth - (capN - 1) * plusWidth - pad) / capN;
+    const recipeCount = level.recipes.length;
+    const naturalTotalHeight = recipeCount * naturalRowHeight + (recipeCount - 1) * ROW_GAP;
+    const contentTop = BB.lowerPanel.y + BB.contentInset + recipeNameText.height + NAME_GAP;
+    const contentBottom = BB.lowerPanel.y + BB.lowerPanel.height - BB.contentInset;
+    const availableHeight = contentBottom - contentTop;
+    const rowScale = recipeCount > 1 ? Math.min(1, availableHeight / naturalTotalHeight) : 1;
+    const scaledRowHeight = naturalRowHeight * rowScale;
 
-        const view = makeIngredientView(key, slotSize, spriteBoxH);
-        // makeIngredientView anchors its content around (0,0); position it
-        // so its own bottom edge lands directly above the name text below.
-        view.position.set(cx, baseline - labelHeight - labelGap - spriteBoxH / 2);
-        boardRoot.addChild(view);
+    // Round 17: each badge keeps its own maxW (a shrunk row's badges are
+    // smaller than an unshrunk one's) instead of one shared constant.
+    const badgeDigits: { key: string; cx: number; cy: number; text: Text; maxW: number }[] = [];
 
-        const label = fitText(info?.label ?? key, slotSize, 13, 8);
-        label.anchor.set(0.5, 1);
-        label.position.set(cx, baseline);
-        boardRoot.addChild(label);
+    function buildIngredientRow(recipe: RecipeRecord, baseline: number, scale: number): void {
+        const rowIngredients = recipe.ingredients;
+        const n = rowIngredients.length;
+        const rowLabelHeight = labelHeight * scale;
+        const rowLabelGap = labelGap * scale;
+        const rowPlusWidth = plusWidth * scale;
+        // Round 7, task 1: fixed sprite size, computed at the capN cap — a
+        // shorter recipe (n<=3 here) is a shorter, centred row at the SAME
+        // tile size a capN-length row would use, not a bigger one. §8b's
+        // own shrink-to-fit formula (divided by the actual n) is kept as
+        // the fallback past the cap, so a 6-ingredient recipe still can't
+        // overflow horizontally — independent of the vertical `scale` this
+        // round adds.
+        const baseSlotSize = n <= capN
+            ? (innerWidth - (capN - 1) * plusWidth - pad) / capN
+            : (innerWidth - (n - 1) * plusWidth - pad) / n;
+        const slotSize = baseSlotSize * scale;
+        const rowWidth = n * slotSize + (n - 1) * rowPlusWidth;
+        const spriteBoxH = slotSize - rowLabelHeight - rowLabelGap;
+        // Round 8, task 5: top of each ingredient's sprite box — the badge
+        // sits at this row's top-right corner, 4 (scaled) units in from
+        // each edge.
+        const spriteTop = baseline - rowLabelHeight - rowLabelGap - spriteBoxH;
+        // Badge: 36 design units wide at scale 1, native aspect (291x305)
+        // preserved — never squashed (round 5's fridge mistake, see
+        // kitchenConfig.ts's `fridge` comment). Digit fit against the
+        // badge's clear interior (159/291 of its width, per the source
+        // glyph's own bbox).
+        const badgeW = BADGE_W * scale;
+        const badgeH = badgeW * (tex.badgeCount.height / tex.badgeCount.width);
+        const badgeDigitMaxW = (159 / 291) * badgeW;
 
-        // Round 8, task 5: live badge counter — a checklist, not a score, so
-        // it starts at 0 and stays visible at 0 (confirmed by the user).
-        const badgeCx = cx + slotSize / 2 - 4;
-        const badgeCy = spriteTop + 4;
-        const badge = new Sprite(tex.badgeCount);
-        badge.anchor.set(0.5);
-        badge.width = BADGE_W;
-        badge.height = badgeH;
-        badge.position.set(badgeCx, badgeCy);
-        boardRoot.addChild(badge);
-        const digit = fitText('0', badgeDigitMaxW, 20, 8, { fill: 0xfdfae7, fontWeight: '700' });
-        digit.anchor.set(0.5);
-        // The source sprite carries a bottom drop shadow, so its visual
-        // centre sits slightly above its geometric one — a sub-unit
-        // correction, applied because it's free and correct, not because
-        // it's visible at this size.
-        digit.position.set(badgeCx, badgeCy - badgeH * 0.026);
-        boardRoot.addChild(digit);
-        badgeDigits.push({ key, cx: badgeCx, cy: badgeCy - badgeH * 0.026, text: digit });
+        let cursorX = rowCenterX - rowWidth / 2;
+        rowIngredients.forEach((key, i) => {
+            const info = KIND_INFO.get(key);
+            const cx = cursorX + slotSize / 2;
 
-        cursorX += slotSize;
-        if (i < n - 1) {
-            const plus = new Text({ text: '+', style: { fill: 0xffffff, fontSize: 22, fontWeight: '700' } });
-            plus.anchor.set(0.5);
-            plus.position.set(cursorX + plusWidth / 2, baseline - slotSize / 2);
-            boardRoot.addChild(plus);
-            cursorX += plusWidth;
-        }
+            const view = makeIngredientView(key, slotSize, spriteBoxH);
+            // makeIngredientView anchors its content around (0,0); position
+            // it so its own bottom edge lands directly above the name text
+            // below.
+            view.position.set(cx, baseline - rowLabelHeight - rowLabelGap - spriteBoxH / 2);
+            boardRoot.addChild(view);
+
+            const label = fitText(info?.label ?? key, slotSize, 13, 8);
+            label.anchor.set(0.5, 1);
+            label.position.set(cx, baseline);
+            boardRoot.addChild(label);
+
+            // Round 8, task 5: live badge counter — a checklist, not a
+            // score, so it starts at 0 and stays visible at 0 (confirmed by
+            // the user).
+            const badgeCx = cx + slotSize / 2 - 4 * scale;
+            const badgeCy = spriteTop + 4 * scale;
+            const badge = new Sprite(tex.badgeCount);
+            badge.anchor.set(0.5);
+            badge.width = badgeW;
+            badge.height = badgeH;
+            badge.position.set(badgeCx, badgeCy);
+            boardRoot.addChild(badge);
+            const digit = fitText('0', badgeDigitMaxW, 20, 8, { fill: 0xfdfae7, fontWeight: '700' });
+            digit.anchor.set(0.5);
+            // The source sprite carries a bottom drop shadow, so its visual
+            // centre sits slightly above its geometric one — a sub-unit
+            // correction, applied because it's free and correct, not
+            // because it's visible at this size.
+            digit.position.set(badgeCx, badgeCy - badgeH * 0.026);
+            boardRoot.addChild(digit);
+            badgeDigits.push({ key, cx: badgeCx, cy: badgeCy - badgeH * 0.026, text: digit, maxW: badgeDigitMaxW });
+
+            cursorX += slotSize;
+            if (i < n - 1) {
+                const plus = new Text({ text: '+', style: { fill: 0xffffff, fontSize: 22 * scale, fontWeight: '700' } });
+                plus.anchor.set(0.5);
+                plus.position.set(cursorX + rowPlusWidth / 2, baseline - slotSize / 2);
+                boardRoot.addChild(plus);
+                cursorX += rowPlusWidth;
+            }
+        });
+    }
+
+    level.recipes.forEach((recipe, i) => {
+        // Stack from the bottom up — the LAST recipe always sits at
+        // `contentBottom`, the same y a single-recipe level's only row has
+        // always used (recipeCount===1 resolves rowFromBottom to 0 and
+        // rowScale to 1, so this is byte-identical to round 16 there).
+        const rowFromBottom = recipeCount - 1 - i;
+        const baseline = contentBottom - rowFromBottom * (scaledRowHeight + ROW_GAP);
+        buildIngredientRow(recipe, baseline, rowScale);
     });
 
     // Round 8, task 5: redrawn on 'served' and 'completed' (see the tick
@@ -511,7 +596,7 @@ export async function createKitchenScene(
             const text = String(count);
             if (b.text.text === text) continue;
             b.text.destroy();
-            const t = fitText(text, badgeDigitMaxW, 20, 8, { fill: 0xfdfae7, fontWeight: '700' });
+            const t = fitText(text, b.maxW, 20, 8, { fill: 0xfdfae7, fontWeight: '700' });
             t.anchor.set(0.5);
             t.position.set(b.cx, b.cy);
             boardRoot.addChild(t);
@@ -574,7 +659,8 @@ export async function createKitchenScene(
     }
 
     // Round 16: the active level's own tuning values — see the file header.
-    const level = getActiveLevel();
+    // Round 17: `level` moved to module scope (see there) — no local
+    // re-declaration needed.
 
     // ---- Round 9: the coin economy (wallet/coinsEarned/locks/cooldown) ----
     // Lives entirely in this closure — sim/kitchen.ts has no notion of any
@@ -945,45 +1031,89 @@ export async function createKitchenScene(
     // hidden entirely (not shown as x0). Stays inside finalDishContent
     // (y 1000-1160); hamburgerReserve (1160-1280) is never touched.
     //
-    // Round 5, task 1: chai only — finalDishes has exactly one entry, so
-    // there's no round-robin left to do (dropped rather than kept as dead
-    // `% 1` arithmetic, per the handover).
-    // Round 5, task 8: drawn at finalDishSize (205x136, native aspect
-    // preserved) — the room a two-dish grid used to split, now given whole
-    // to the one dish this FTUE level actually serves. Count text sized to
+    // Round 5, task 8: drawn at up to finalDishSize (205x136, native aspect
+    // preserved) — the room a two-dish grid used to split, round 5 gave
+    // whole to the one dish that FTUE level served. Count text sized to
     // match.
+    //
+    // Round 17, task 5: one entry PER ACTIVE RECIPE, not a single hardcoded
+    // slot — finalDishes/finalDishSlotX/finalDishSize (KITCHEN_CONFIG, now
+    // SUPERSEDED) are all derived from level.recipes.length instead. Each
+    // recipe gets an even boardWidth/count-wide share of finalDishContent;
+    // for count===1 that share is the full board width, so `fdScale` below
+    // resolves to 1 and N0 L1/L2/N1 L1 draw at exactly the round-5 205x136
+    // size, unchanged. A dish with no manifest sprite (jeera-rice) falls
+    // back to a procedural tile, same fallback makeIngredientView already
+    // uses for an unsprited ingredient.
     const FD = KITCHEN_CONFIG.bands.finalDishContent;
-    const { w: fdw, h: fdh } = KITCHEN_CONFIG.finalDishSize;
     const entryY = FD.y + FD.height / 2;
-    let dishCount = 0;
-    const dishEntrySprite = new Sprite(Assets.get<Texture>(KITCHEN_CONFIG.finalDishes[0]));
-    dishEntrySprite.anchor.set(0.5);
-    dishEntrySprite.width = fdw;
-    dishEntrySprite.height = fdh;
-    dishEntrySprite.visible = false;
-    boardRoot.addChild(dishEntrySprite);
-    const dishCountText = new Text({ text: '', style: { fill: 0xffffff, fontSize: 44, fontWeight: '800' } });
-    dishCountText.anchor.set(0, 0.5);
-    dishCountText.visible = false;
-    boardRoot.addChild(dishCountText);
-    function layoutDishEntry(): void {
-        dishEntrySprite.visible = dishCount > 0;
-        dishCountText.visible = dishCount > 0;
-        if (dishCount === 0) return;
-        dishCountText.text = `×${dishCount}`;
-        const centerX = KITCHEN_CONFIG.finalDishSlotX[0];
-        const gap = 16;
-        const totalW = fdw + gap + dishCountText.width;
-        const spriteX = centerX - totalW / 2 + fdw / 2;
-        dishEntrySprite.position.set(spriteX, entryY);
-        dishCountText.position.set(spriteX + fdw / 2 + gap, entryY);
+    const dishRecipeCount = level.recipes.length;
+    const FD_CAP = KITCHEN_CONFIG.finalDishSize; // round 5's 205x136 — the size cap
+    const slotWidth = KITCHEN_CONFIG.boardWidth / dishRecipeCount;
+    // 76 approximates the count-text gap (16) + a 1-2 digit "×N" at fontSize
+    // 44 (~60) each entry also needs beside its sprite, so the shrink check
+    // accounts for the whole group's width, not just the sprite's.
+    const fdScale = Math.min(1, slotWidth / (FD_CAP.w + 76));
+    const fdw = FD_CAP.w * fdScale;
+    const fdh = FD_CAP.h * fdScale;
+    const finalDishSlotX = level.recipes.map((_, i) => slotWidth * (i + 0.5));
+
+    function makeFinalDishView(alias: string, name: string): Container {
+        if (Assets.cache.has(alias)) {
+            const s = new Sprite(Assets.get<Texture>(alias));
+            s.anchor.set(0.5);
+            s.width = fdw;
+            s.height = fdh;
+            return s;
+        }
+        const c = new Container();
+        const g = new Graphics();
+        g.roundRect(-fdw / 2, -fdh / 2, fdw, fdh, 10).fill(0x5a4632);
+        c.addChild(g);
+        const label = new Text({
+            text: name,
+            style: { fill: 0xffffff, fontSize: Math.min(20, fdh * 0.18), fontWeight: '700' },
+        });
+        label.anchor.set(0.5);
+        c.addChild(label);
+        return c;
+    }
+
+    const dishCounts: number[] = level.recipes.map(() => 0);
+    const dishEntryViews: { view: Container; countText: Text }[] = level.recipes.map((recipe) => {
+        const view = makeFinalDishView(recipe.finalDish, recipe.name);
+        view.visible = false;
+        boardRoot.addChild(view);
+        const countText = new Text({ text: '', style: { fill: 0xffffff, fontSize: 44, fontWeight: '800' } });
+        countText.anchor.set(0, 0.5);
+        countText.visible = false;
+        boardRoot.addChild(countText);
+        return { view, countText };
+    });
+    function layoutDishEntries(): void {
+        level.recipes.forEach((_, i) => {
+            const count = dishCounts[i];
+            const { view, countText } = dishEntryViews[i];
+            view.visible = count > 0;
+            countText.visible = count > 0;
+            if (count === 0) return;
+            countText.text = `×${count}`;
+            const centerX = finalDishSlotX[i];
+            const gap = 16;
+            const totalW = fdw + gap + countText.width;
+            const spriteX = centerX - totalW / 2 + fdw / 2;
+            view.position.set(spriteX, entryY);
+            countText.position.set(spriteX + fdw / 2 + gap, entryY);
+        });
     }
     // Round 8, task 6: fires on 'completed' only, not on every pickup — the
-    // ×N under the belt is now the number of chai actually made, which is
-    // what it has always looked like it meant.
-    function onCompletedDish(): void {
-        dishCount++;
-        layoutDishEntry();
+    // ×N under the belt is now the number of that dish actually made, which
+    // is what it has always looked like it meant. Round 17: takes which
+    // recipe completed (sim/kitchen.ts's KitchenEvent now carries it) so a
+    // two-recipe level credits the right counter.
+    function onCompletedDish(recipeIndex: number): void {
+        dishCounts[recipeIndex]++;
+        layoutDishEntries();
     }
 
     const sim = createKitchenSim();
@@ -1036,6 +1166,24 @@ export async function createKitchenScene(
     // Round 9, task 9: hats formula (LevelEconomy.md §7.3), frozen at the
     // exact instant of 'won'/'lost' alongside sim.state — see onShiftEnd.
     function computeEconomySnapshot(): EconomySnapshot {
+        // Round 17, task 7: a boss pays LevelEconomy.md §7.3b/§10.3's
+        // Σ(wave × 30) = 15n(n+1) for n waves (4 completions each) instead
+        // of the ordinary per-dish/leftover/walkout-avoided/clear-bonus
+        // formula below — a boss never "clears" in the win sense (`target`
+        // is null; see sim/kitchen.ts), so its payout is about survival
+        // depth, not completion. §10.3 ALSO settles a flat-50 payout on
+        // every REPEAT clear, specifically so re-farming a boss can never
+        // out-earn replaying an ordinary level — that needs SaveData.kitchen
+        // to know "this is a repeat," which does not exist yet (round 17's
+        // explicit boundary: no SaveData.kitchen/SAVE_KEY change, no
+        // persisting first-clear state). So this always pays the FIRST-clear
+        // formula, uncapped, until that persistence lands — do not add a
+        // repeat branch without it.
+        if (level.isBoss) {
+            const waves = Math.floor(sim.state.completed / 4);
+            const hats = 15 * waves * (waves + 1);
+            return { wallet, coinsEarned: Math.max(100, coinsEarned), hats };
+        }
         const leftover = Object.values(sim.state.held).reduce((a, b) => a + b, 0);
         const H = KITCHEN_CONFIG.hats;
         const hats =
@@ -1200,7 +1348,7 @@ export async function createKitchenScene(
             } else if (e.type === 'completed') {
                 wallet += KITCHEN_CONFIG.coins.perDish;
                 coinsEarned += KITCHEN_CONFIG.coins.perDish;
-                onCompletedDish(); sfx.upgrade(); syncBadges();
+                onCompletedDish(e.recipeIndex); sfx.upgrade(); syncBadges();
             } else if (e.type === 'walkout') {
                 wallet -= KITCHEN_CONFIG.coins.walkoutCharge;
                 coinsEarned -= KITCHEN_CONFIG.coins.walkoutCharge;

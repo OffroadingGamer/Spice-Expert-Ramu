@@ -93,6 +93,15 @@
  * and numeric value are left exactly as they were; only its readers are
  * gone. See `SLOT_ZONES` in sim/kitchen.ts for the boundary math and the
  * slot-assignment rule (nearest slot to each zone's own midpoint).
+ *
+ * Round 17: content goes per-level. `recipe`, `ingredientKinds`,
+ * `finalDishes`, `finalDishSlotX` and `finalDishSize` are all SUPERSEDED
+ * (see each field's own comment below) — sim/kitchen.ts and kitchenScene.ts
+ * now read the ACTIVE level's own `recipes` array (src/game/data/levels.ts)
+ * for what to spawn, gate completion on, and draw on the billboard/final-
+ * dish tray. Every other constant here (belt/slot/prop geometry, the coin
+ * rates, the bag-shuffle mechanism itself) is untouched — only WHICH
+ * ingredients/recipes feed those mechanics is now per-level.
  */
 export const KITCHEN_CONFIG = {
     boardWidth: 720,
@@ -387,6 +396,11 @@ export const KITCHEN_CONFIG = {
      * until §6.3's container art lands. At n=3 the bag's longest drought is
      * 2n-2=4 spawns (was 8 at n=5) — tighter cycle, no code change needed.
      */
+    // 🔒 Round 17: SUPERSEDED as the live source — sim/kitchen.ts and
+    // kitchenScene.ts now read the ACTIVE level's own ingredient union
+    // (src/game/data/levels.ts's getActiveIngredientKinds(), over its own
+    // INGREDIENT_CATALOG) instead of this array. Kept here as the
+    // pre-level-data fallback, not deleted; no game code reads it any more.
     ingredientKinds: [
         { key: 'milk', alias: 'ing-milk', label: 'Milk', color: 0xe8e2d0 },
         { key: 'ginger', alias: 'ing-ginger', label: 'Ginger', color: 0xd9a441 },
@@ -411,6 +425,13 @@ export const KITCHEN_CONFIG = {
      * aspect preserved), vertically centred in finalDishContent (160 tall)
      * with ~12 units of margin top and bottom.
      */
+    // 🔒 Round 17: all three SUPERSEDED as the live source — kitchenScene.ts
+    // now derives finalDishes/finalDishSlotX/finalDishSize from the ACTIVE
+    // level's own `recipes` (src/game/data/levels.ts), one slot per recipe,
+    // instead of these fixed single-dish values. Kept here as the
+    // pre-level-data fallback (and as the size cap a single-recipe level's
+    // derived size still resolves to, unchanged) — no game code reads these
+    // three by name any more.
     finalDishes: ['dish-chai'],
     finalDishSlotX: [360],
     finalDishSize: { w: 205, h: 136 },
@@ -578,6 +599,11 @@ export const KITCHEN_CONFIG = {
      * n=3 gives slot ~162 -> scale 1.00 (comfortably above the formula's
      * n=5 "working target" row) — the row draws at full size, no shrink.
      */
+    // 🔒 Round 17: SUPERSEDED as the live source — kitchenScene.ts now reads
+    // the ACTIVE level's own `recipes` (src/game/data/levels.ts) for the
+    // billboard's name/ingredient rows, and sim/kitchen.ts's completion
+    // check reads the same array. Kept here as the pre-level-data fallback,
+    // not deleted; no game code reads it any more.
     recipe: {
         name: 'Masala Chai',
         ingredients: ['milk', 'ginger', 'tea-leaf'],

@@ -44,15 +44,22 @@
  * KITCHEN_CONFIG — kitchenConfig.ts's own copies are superseded fallbacks,
  * see its comments. `ACTIVE_LEVEL.target` is `number | null`; null means
  * endless (a boss level, §7.3b of LevelEconomy.md) — `checkShiftEnd` never
- * fires 'won' for one, so it can only end on the walkout budget below. No
- * other per-level field (dishes, ingredients, props) is read here this round
- * — the belt still runs KITCHEN_CONFIG's one hard-coded recipe regardless of
- * which level is active.
+ * fires 'won' for one, so it can only end on the walkout budget below.
+ *
+ * Round 17: content goes per-level. The ingredient bag (`makeBag`) draws
+ * from `ACTIVE_INGREDIENT_KINDS` — the active level's own ingredient union
+ * (src/game/data/levels.ts's getActiveIngredientKinds(), never
+ * KITCHEN_CONFIG.ingredientKinds, now a superseded fallback) — and
+ * `tapSlot`'s completion check walks `ACTIVE_LEVEL.recipes` instead of one
+ * hard-coded KITCHEN_CONFIG.recipe. See tapSlot's own comment for the
+ * multi-recipe completion rule (at most one completion per tap, by
+ * declaration order) this makes necessary.
  */
 import { KITCHEN_CONFIG } from '../kitchenConfig.ts';
-import { getActiveLevel } from '../data/levels.ts';
+import { getActiveLevel, getActiveIngredientKinds } from '../data/levels.ts';
 
 const ACTIVE_LEVEL = getActiveLevel();
+const ACTIVE_INGREDIENT_KINDS = getActiveIngredientKinds();
 
 export type KitchenPhase = 'running' | 'won' | 'lost';
 
@@ -62,7 +69,9 @@ export interface DishInst {
     dist: number;
     x: number;
     y: number;
-    /** Which KITCHEN_CONFIG.ingredientKinds[].key this belt item carries. */
+    /** Which ACTIVE_INGREDIENT_KINDS[].key this belt item carries (Round 17
+     *  — was KITCHEN_CONFIG.ingredientKinds[].key before content went
+     *  per-level). */
     kind: string;
 }
 
@@ -94,7 +103,11 @@ export interface KitchenState {
 
 export type KitchenEvent =
     | { type: 'served' }
-    | { type: 'completed' }
+    // Round 17: carries which of ACTIVE_LEVEL.recipes just completed, so
+    // kitchenScene.ts's per-recipe final-dish counter (Task 5) can credit
+    // the right dish — a single level-wide counter no longer identifies
+    // which of two simultaneously-active recipes was actually served.
+    | { type: 'completed'; recipeIndex: number }
     | { type: 'walkout' }
     | { type: 'won' }
     | { type: 'lost' };
@@ -253,9 +266,15 @@ export const SLOT_ZONES: SlotZone[] = (() => {
  * of the same kind is 2n-2, and a repeat can only land across a bag
  * boundary. Plain Math.random() per spawn would allow both long droughts
  * and back-to-back triples — the property the handover asked for.
+ *
+ * Round 17: `n` is now the ACTIVE level's own ingredient union, not a fixed
+ * 3 — a two-recipe level's union can be larger (N0 L3/L4's chai+coffee union
+ * is 5), which raises the drought ceiling to 2(5)-2=8. That is flagged, not
+ * fixed, at this round's call site (see the file header) — do not retune
+ * spawnInterval or the bag mechanism itself to compensate.
  */
 function makeBag(): () => string {
-    const kinds = KITCHEN_CONFIG.ingredientKinds.map((k) => k.key);
+    const kinds = ACTIVE_INGREDIENT_KINDS.map((k) => k.key);
     let bag: string[] = [];
     return () => {
         if (bag.length === 0) {
@@ -271,7 +290,7 @@ function makeBag(): () => string {
 
 export function createKitchenSim(): KitchenSim {
     const held: Record<string, number> = {};
-    for (const k of KITCHEN_CONFIG.ingredientKinds) held[k.key] = 0;
+    for (const k of ACTIVE_INGREDIENT_KINDS) held[k.key] = 0;
 
     const state: KitchenState = {
         phase: 'running',
@@ -350,17 +369,41 @@ export function createKitchenSim(): KitchenSim {
             state.served++;
             events.push({ type: 'served' });
 
-            const recipe = KITCHEN_CONFIG.recipe.ingredients;
-            // Write a single if, never a while, and keep this comment: one
-            // tap adds exactly 1 to exactly one counter, and completion is
-            // checked-and-consumed on every tap, so at most one set can ever
-            // newly complete per tap. If a while loop would ever iterate
-            // twice, the state has already gone wrong and the loop would
-            // hide it.
-            if (recipe.every((k) => state.held[k] > 0)) {
-                for (const k of recipe) state.held[k]--;
+            // Round 17: at most one completion per tap is still the rule,
+            // but with more than one recipe live (N0 L3/L4's chai+coffee)
+            // it needs a sharper argument than round 8's, since two recipes
+            // can share an ingredient (both want milk). One tap adds
+            // exactly 1 to exactly one held counter, so only the recipe(s)
+            // that use THAT ingredient can newly become fully held this
+            // tap — and if two of them share it, BOTH can be fully held at
+            // once (e.g. chai and coffee each one ingredient short, and the
+            // shared milk arrives). Declaration order in
+            // ACTIVE_LEVEL.recipes breaks that tie deterministically: walk
+            // the list in order and take the FIRST fully-held recipe, never
+            // a second one on the same tap — a single for-loop with an
+            // immediate break on match, not a while, so it is structurally
+            // impossible to complete two recipes off one tap. Consuming the
+            // winner's ingredients is what keeps a second, still-fully-held
+            // recipe from silently completing on some LATER unrelated tap
+            // too: subtracting the shared ingredient (milk, here) drops
+            // that second recipe's count back below what it needs, so it
+            // waits for its own next matching ingredient exactly as if the
+            // two recipes had never shared anything. If this ever needed to
+            // become a while loop to catch a second completion in the same
+            // tap, the state has already gone wrong and the loop would hide
+            // it.
+            const recipes = ACTIVE_LEVEL.recipes;
+            let completedIndex = -1;
+            for (let ri = 0; ri < recipes.length; ri++) {
+                if (recipes[ri].ingredients.every((k) => state.held[k] > 0)) {
+                    completedIndex = ri;
+                    break;
+                }
+            }
+            if (completedIndex >= 0) {
+                for (const k of recipes[completedIndex].ingredients) state.held[k]--;
                 state.completed++;
-                events.push({ type: 'completed' });
+                events.push({ type: 'completed', recipeIndex: completedIndex });
                 state.beltSpeed = currentSpeed(state.completed);
             }
             checkShiftEnd();
