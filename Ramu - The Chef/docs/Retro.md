@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 8 2026, 05:10 IST
+**Last updated:** Sep 8 2026, 19:40 IST
 
 ---
 
@@ -2020,3 +2020,18 @@ uniques are the score; the trend matters more than any single day.
     was marked stale, because staleness is invisible from inside a summary. **Before
     repeating a blocker that would change what the user does next, re-read the source
     document. Compaction preserves claims, not their truth.**
+66. **An inventory claim decays the moment the folder changes — list the folder, not the
+    doc.** RecipeList §8.3 recorded *"2 genuinely absent"* loose sprites and named thirteen
+    as confirmed present. Listing `Ingredient/` found **five of those thirteen missing**,
+    including **onion, which six of the twenty-four dishes need**. The claim had been true
+    of an earlier folder state and was never re-checked; three later sections were costed
+    against it. **An asset audit is a measurement with a timestamp, not a fact. Re-run it
+    before it drives a brief — `ls` is cheaper than a wasted art session.**
+67. **Check whether the objection you are about to raise was already solved.** I told the
+    user generate-and-crop would fail because the LoRA "cannot paint white or green",
+    citing a measured 7/7-warm / 0/5-pale result. True, and irrelevant: KitchenMode §8.8
+    had already **moved colour off the generation path** into `recolour.py`'s deterministic
+    HSV pass, which is how 10 of 30 dishes were corrected. The measurement I quoted was
+    real; the conclusion I drew from it was two days out of date. **A limitation recorded
+    in one section is often lifted in the next one — read forward before ruling something
+    out.**

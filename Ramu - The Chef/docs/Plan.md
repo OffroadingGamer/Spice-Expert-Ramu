@@ -8,7 +8,7 @@
 > plan item slips or is cut, do not silently delete it — strike it, move it, and
 > log the reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 8 2026, 05:10 IST
+**Last updated:** Sep 8 2026, 19:40 IST
 **Status:** ▶ **LIVE — v1.1.0** at https://w.run/puneetmakes/spice-expert-ramu since ~15:05 PT Sep 3. Scoring clock running.
 **Scope:** cuisine level run (GDD §10.10) · SFX at P1 (§12) · 3D→sprite art pipeline (§11a).
 
@@ -888,6 +888,48 @@ Discord presence and reciprocity — not broadcast. LinkedIn gets the launch pos
 and at most one follow-up if something genuinely notable ships.
 
 ---
+
+### 5.7 🔒 The board, actually measured — Sep 8 2026
+
+§5.2's *"rank #3 on two plays"* is **six days stale**. Pulled live from
+`rundot jam promo` and `rundot analytics export daily_activity_30d`:
+
+| | Rank #1 | **Us (rank #2)** |
+|---|---|---|
+| Total plays | 989 | **417** |
+| **Daily Unique Plays** ← *the scored metric* | 645 | **308** |
+| Plays per unique-day | 1.53 | 1.35 |
+
+**Our daily uniques:** Sep 3 **9** · Sep 4 **117** · Sep 5 **54** · Sep 6 **59** ·
+Sep 7 **60** · Sep 8 **9** (partial).
+
+🟢 **The encouraging finding: three flat days at 54–60 with no new post.** Sep 4's 117
+was the LinkedIn spike and it decayed to a **plateau, not to zero** — board discovery plus
+Discord reciprocity are producing a stable floor.
+
+🔴 **The discouraging one.** Over six days they average **~107/day** against our
+**~51** (**~58** over the last three). Straight-lining ten more scoring days:
+
+| | Sep 18 finish |
+|---|---|
+| Them at 107/day | **~1,715** |
+| Us at 58/day | **~888** |
+| **Us, to match** | **141/day sustained** |
+
+Decomposed: 58 base + ~15/day of returns at D1 = 20% (+32 at 35%) + a one-off LinkedIn
+spike of ~117 lands realistically at **85–95/day → ~1,200**. **Short of 1,715.**
+➡️ **On current trajectory #1 is not reachable, and #2 is comfortable.**
+
+⚠️ **The one measurement that could overturn this.** 107/day is their *average
+including their launch spike* — exactly as our own 51 hides a 117-day among four ~58s. If
+their 645 is front-loaded and they now run at 40/day they finish near 1,045, and we catch
+them at 90/day. **Read #1's Daily Unique Plays again on Sep 10 — and #3's — and take the
+48-hour delta.** That single number decides whether we are playing to win or to hold.
+`rundot jam` exposes only `init` and `promo`, so this cannot be automated: it is a manual
+read off <https://run.world/jams/september-2026-jam>.
+
+🔥 **Nothing in the plan changes either way.** FTUE → notifications → ship Kitchen
+Mode raises our own ceiling regardless of their rate. Only the word for success changes.
 
 ## 6. Trigger rules — decided in advance, executed without debate
 

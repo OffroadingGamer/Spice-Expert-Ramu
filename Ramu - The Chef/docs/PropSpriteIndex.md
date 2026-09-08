@@ -1,6 +1,6 @@
 # PropSpriteIndex — the Kitchen Props pack, recoloured and numbered
 
-**Last updated:** Sep 8 2026, 05:10 IST
+**Last updated:** Sep 8 2026, 19:40 IST
 **Status:** 🟢 Complete — **284 items sliced, recoloured and named** across four sheets. ⬜ Names are my read of the art; correct any that are wrong before they become ids.
 **✅ Art direction settled Sep 4, 22:05 IST — §5.** Props for the room, Essentials for the line.
 **⚠️ Read §5 before planning any art around this.** The recolour worked; the two packs still do not belong in the same frame, and the reason is resolution, not colour.

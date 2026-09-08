@@ -1,6 +1,6 @@
 # LevelEconomy — the source of truth for every currency value, per level
 
-**Last updated:** Sep 8 2026, 05:10 IST
+**Last updated:** Sep 8 2026, 19:40 IST
 **Status:** 🟡 **FTUE level 1 finalised. Every other level is deliberately empty.**
 **Tracked in git** — this file is *not* gitignored and must never be. It carries no
 credentials; it is design data, and it is meant to be read alongside the code.
@@ -456,7 +456,7 @@ two comfortable and four insurance at speed** — and it stops binding at the bo
 anyway, where dishes arrive every 2.2s and the 1.11s reach window is the real limit. It
 also reads naturally: the kettle is busy.
 
-### 7.3a.3 ✅ The bands survive rounds 12–13 untouched — and they generalise
+### 7.3a.4 ✅ The bands survive rounds 12–13 untouched — and they generalise
 
 Recorded Sep 8 2026, after **three briefs of mine wrongly flagged them as invalidated.**
 
@@ -777,3 +777,119 @@ alone silently moves the other.
 | ⬜ Meta shop prices in hats | §7.4 gives the target (~1,100/track); no price list exists |
 | ⬜ Leftover → currency conversion | The parked reason leftovers are tracked at all |
 | ⬜ Recipe-length multiplier | §7.3 — proposed, not adopted |
+
+## 10. 🔒 The meta economy — settled Sep 8 2026
+
+### 10.1 The currency split: **hats buy, stars gate**
+
+🔴 **This supersedes §7.3a's "stars unlock prop tiers."** Two earned quantities were
+gating the same door; they now do different jobs.
+
+| Currency | Job | Scope |
+|---|---|---|
+| 👨‍🍳 **Chef Hats** | **Buy** a prop tier, permanently | Durable ledger, spent in the Utensils screen |
+| ⭐ **Stars** | **Gate** levels and nodes during play | Spent-in-the-moment progression |
+
+The user's words, Sep 8: *"hats for permanent unlock gated by stars during the gameplay."*
+
+**Why this and not either alone.** A single currency makes the two things a player earns
+per level redundant — one of them becomes a score display. Splitting them means a level
+pays out on two axes at once, and neither is decoration.
+
+### 10.2 💰 The hat ladder — 6× the coin cost
+
+| Tier | Coin cost to *place* (§7.1) | **Hat cost to unlock** |
+|---|---|---|
+| L1 — family unlock | 40 | **240** |
+| L2 | 70 | **420** |
+| L3 | 120 | **720** |
+| L4 | 200 | **1,200** |
+| L5 | 320 | **1,920** |
+
+Cumulative for one family to L4: **2,580**.
+
+**Income.** `Chef Hat = dishes×20 + leftover×2 − walkouts×25`. A flawless 12-dish level
+pays **240**; 1–2 walkouts puts the working average at **~200/level**. Across 34 levels
+plus five bosses, lifetime income is **~7,000–10,000**.
+
+**Why 6× and not 4× — costed, not guessed.** At 4×, all 11 needed families at L1 plus one
+family climbed to L4 costs 3,320 against ~7,000 income, leaving enough spare to max several
+more: **the player buys everything and the choice evaporates.** At 6×:
+
+| | Hats |
+|---|---|
+| All 11 needed families at L1 | 2,640 |
+| Fry Pan climbed to L4 (node 4's Wok) | +2,340 |
+| **Total** | **4,980** against ~7,000 |
+
+That leaves two or three further climbs. **Wide or tall, not both** — the same trade
+§7.1 states for the in-round coin ladder, now mirrored in the meta layer so the two read
+as one economy.
+
+**Per-node pacing:** income ~2,030/node (7 levels × 200 + a 630 boss) against ~1,620 to
+keep pace (≤2 new families + 2 climbs). A ~400 buffer, so a walkout-heavy player falls
+behind — which is the intended pressure, and §7.2a's loaner means falling behind never
+hard-blocks.
+
+🔒 **The constraint to assert, not assume:**
+
+```
+hat income per node  >  that node's mandatory family unlocks
+```
+
+At ≤2 mandatory families (480) against ~2,030 income this holds with 4× margin. Break it
+and the loaner carries the whole node, at which point unlocking stops being worth doing.
+Same class of invariant as §7.3a.4's `walkoutCharge > 2 × perGrab × (k+1)`, which
+currently holds by a single coin.
+
+### 10.3 🔴 The boss hat formula is quadratic — unresolved
+
+§7.3b pays `Σ(wave × 30)`, which expands to **`15n(n+1)`**:
+
+| Waves cleared | Hats |
+|---|---|
+| 6 | 630 |
+| 10 | 1,650 |
+| 15 | 3,600 |
+| 20 | **6,300** |
+
+A boss with no wave ceiling on a replayable node pays **more for one clear than the entire
+34-level campaign**, and every number in §10.2 collapses.
+
+⬜ **Awaiting the user's decision.** ➡️ **Recommended: full hats on first clear, a flat
+token on repeats.** It protects the economy without punishing a player who is genuinely
+good at the boss, and it makes first clears read as events. The alternative is a hard cap
+at roughly one node's income (~2,000).
+
+### 10.4 🔒 Levels gate on the prop **family**, never the tier
+
+Settled Sep 8. The user asked for levels locked behind props; taken literally that
+contradicts **GDD §10.10 ("no hard block, ever")** and **§7.2a's loaner rule**, which
+exists precisely so a level needing an unearned tier pre-places it rather than blocking.
+
+The resolution keeps both:
+
+| Situation | Behaviour |
+|---|---|
+| Family never unlocked at all | 🔒 **Level locked.** A real door. |
+| Family owned, tier too low | ✅ **Loaner fires** — pre-placed, locked to slot, unsellable. No block. |
+
+🔥 **The property that makes this safe:** families are granted by the levels that
+introduce them — node 0's boss hands over Brazier `03` and Tandoor `09–10` exactly as
+§7.0 designed. **So a lock is always opened by playing forward, never by grinding
+sideways**, and the player never meets a wall they cannot read.
+
+### 10.5 The Utensils screen
+
+Main-menu screen listing all ~14 prop families × their tiers. Per row: sprite, family name,
+tier owned, **hat cost of the next tier**, **unlock condition in words**, and which levels
+use it.
+
+🔥 **This is the return loop from Plan §6, arriving as a side effect.** A visible ladder
+with a visible next step is the "visible medium-term goal" retention design asks for —
+obtained free from a menu already being built. That is a better argument for building it
+than the locking is.
+
+⚠️ **Blocked on a naming pass that does not exist.** Levels have no names anywhere in
+these docs — only dish names. An unlock condition reading *"Clear Node 2 Level 3"* is much
+weaker than one naming the level. **Naming 34 levels is a prerequisite for this screen.**

@@ -1,6 +1,6 @@
 # RecipeList — dishes, and the ingredients they call for
 
-**Last updated:** Sep 8 2026, 05:10 IST
+**Last updated:** Sep 8 2026, 19:40 IST
 **Status:** 🟢 **Node selections locked** (§7, Sep 6) · FTUE fixed (§7.0) · asset inventory typed (§8.5). §3's early proposal is superseded by §7.
 
 Companion to [PropList.md](PropList.md). A recipe drives two things on screen at once:
@@ -469,7 +469,7 @@ and plated dishes.**
 \* recolours of containers made for node 1. Mustard oil `S3-19` and sunflower `S3-20` were
 already in the pack; **mustard oil is node 4's signature and needed no work at all.**
 
-### 8.3 🔄 Loose sprites — **2** genuinely absent, down from 4
+### 8.3 🛑 **SUPERSEDED Sep 8 2026 by §8.3a — this audit was wrong.** Loose sprites — ❌"2 genuinely absent"
 
 ✅ **Resolved Sep 6 by the hand-sort.** `Untagged/` is dissolved; every Essentials
 sprite now sits in a typed folder (§8.5). Searching the named set settles this:
@@ -488,6 +488,94 @@ They are hand-drawn, or generated some other way.
 The rest — aubergine, cauliflower, spinach, potato, onion, tomato, garlic, ginger,
 cabbage, peas, green beans, bread, basil — are ✅ **confirmed present** in
 `Ingredient/`.
+
+### 8.3a 🔴 The real loose-ingredient audit — Sep 8 2026
+
+§8.3 above claimed **2** absent sprites and listed *aubergine, cauliflower, spinach,
+potato, onion, tomato, garlic, ginger, cabbage, peas, green beans, bread, basil* as
+"✅ confirmed present in `Ingredient/`."
+
+🔴 **Five of those thirteen do not exist.** Verified by listing the folder and by
+`find -iname` across the entire `_sliced` tree, not by reading this document:
+
+| §8.3 claimed present | Actually |
+|---|---|
+| Aubergine | ❌ absent — no match anywhere in the pack |
+| Cauliflower | ❌ absent |
+| Potato | ❌ absent |
+| **Onion** | ❌ absent — and **6 of the 24 dishes need it** |
+| Peas | ❌ absent |
+| spinach, tomato, garlic, ginger, cabbage, green beans, bread, basil | ✅ genuinely present |
+
+**The 27 files actually in `Ingredient/`:** Cabbage, Broccoli, Bamboo Shoot, Bhut Jolokia,
+Mix Veg Bowl, Nut Type, Milk Jar, Cream, Tomato, Pumpkin, Green Beans, Ginger, Garlic,
+Okra, Bottle Gourd, Spinach, Broad Beans, Flour Dough, Flour Batter, Rice, Broth, Kneaded
+Dough, Proofed Dough, Dried Herb Bundle, Cinnamon, Coffee Extract, Basil Plant.
+
+#### The full gap, and the route for each
+
+| Missing | Blocks | Route |
+|---|---|---|
+| **Onion** | Baingan Bharta, Gobhi Masala, Upma, Risotto, Bamboo Shoot Fry, Ooti — **6 dishes** | ✏️ **Hand-draw first.** One sprite unblocks a quarter of the menu |
+| Aubergine, Cauliflower, Coconut | 1, 1, 2 dishes | ✏️ Hand-draw — silhouette-critical (§8.10) |
+| Potato, Peas | 1 each | 🤖 Generate — blob-shaped, §8.10 |
+| Kidney beans, Toor dal | Rajma, Sambar | ➡️ **Relabel two `Container/*-Pending` jars.** Pulses read badly loose and well in a labelled jar. Zero new art |
+| Green chilli | Coconut Chutney | ➡️ **Recolour `04-Spices-Bhut Jolokia` to green.** Free |
+| Pine nut | Pesto | ➡️ **Use `06-Primary-Nut Type` as-is.** Closes §8.3's second "absent" |
+| Tea leaf | Chai — **FTUE critical path** | 🤖 Generate. Currently a procedural placeholder (`kitchenConfig.ts`) |
+| **~13 spice inputs** | The grinding levels of nodes 1, 2, 3 | 🤖 Generate — §8.10 |
+| Spaghetti, Arborio rice, White beans, Mixed veg, Semolina, Batter, Tamarind, Noodles | — | ✅ **Not gaps.** Already covered by `Final Recipe/01`, `Ingredient/20`, `17`, `05`, `Container/01`, `06`, `10` |
+
+🟢 **Why none of this is a blocker.** `art(alias, fallback)` in
+[textures.ts](../../jam-entry/src/game/textures.ts) renders a missing sprite as a labelled
+coloured tile. Every gap here is legibility, not a crash — which is what makes it an
+art-agent job running in parallel rather than a schedule risk.
+
+🟠 **The genuine content risk is the spices.** Garam masala needs 7 of its 9 inputs
+drawn; the Italian herb blend 4 of 6. Node 4's paste (ginger + garlic + bhut jolokia) is
+the **only fully-provisioned masala in the game.** Three grinding levels depend on art
+that does not exist.
+
+### 8.10 🤖 Generate-and-crop — the route for blob-shaped ingredients
+
+Proposed by the user Sep 8: *"generate it through art agent using SDXL on our trained LoRA
+and then use a new mask to crop it out from the dish."* ✅ **Adopted, for the subset the
+silhouette rule allows.**
+
+**Two of the three pieces already exist:**
+
+1. ✅ **The crop mask is written.** `Art\_gen	ools
+ecolour.py`'s `food_region()`
+   returns `diff & (alpha > 0)` — the pixels differing from the base curry tray, which by
+   the composite rule **are** exactly the inpainted food. Deterministic, and already used
+   on all 28 generated dishes. Nothing new to build.
+2. ✅ **No txt2img needed.** `diag_txt2img.json` exists but has **no LoRA loader wired**,
+   so that path is unproven. Use the **existing inpaint pipeline** (`run_dish.py`, 28/28
+   success) with an ingredient prompt instead of a dish prompt, then crop. **Zero new
+   tooling.**
+3. ✅ **Colour is not an obstacle**, contrary to a first reading of §8.4b. The LoRA cannot
+   be *prompted* off warm — [KitchenMode.md](KitchenMode.md) §8.8 proved explicit colour
+   words were in the prompt and ignored, 28/28 landing at hue 9–27° — but **colour was
+   moved off the generation path entirely.** `recolour.py` applies a deterministic HSV
+   transform to the food region, which is how 10 of the 30 dishes were palette-corrected.
+   White and green are reachable; they are just not *generated*.
+
+🔴 **The one real limit is silhouette.** The crop returns **the tray's food ellipse**,
+not the ingredient's outline. On a belt at `pathWidth` 72 the silhouette is what makes an
+ingredient identifiable at a glance.
+
+| Shape | Verdict |
+|---|---|
+| **Blob** — powders, piles, pastes, loose seed | ✅ **Generate.** The tray's ellipse *is* the correct shape for a mound |
+| **Distinct outline** — onion, aubergine, cauliflower, coconut | ✏️ **Hand-draw.** An ellipse of onion-coloured texture reads as a blob |
+
+✅ **So the split is ~17 generated against 4 hand-drawn**, and §8.8's known
+one-region/one-transform limit does not bite here: a single-ingredient sprite **is** one
+region, so the garnish-washout that affects Coconut Chutney and Veg Momo cannot occur.
+
+⚠️ **Acceptance item before generating all 17:** confirm the cropped region upscales to
+belt size without mush. Dishes are 212×141 and the food ellipse is a sub-region of that.
+**Verify on one sprite first.**
 
 ### 8.4 Finished dishes — the dominant cost
 
