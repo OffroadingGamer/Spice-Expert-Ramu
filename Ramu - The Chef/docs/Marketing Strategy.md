@@ -1,6 +1,6 @@
 # Marketing Strategy
 
-**Last updated:** Sep 8 2026, 22:40 IST
+**Last updated:** Sep 8 2026, 23:30 IST
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)
 
@@ -31,14 +31,21 @@ the RUN Discord, where the audience votes as well as plays:
 | RUN Discord | `https://run.world/jams/september-2026-jam?game=PpB5gECS0AMU49mGYAKM` |
 | LinkedIn | `https://w.run/puneetmakes/spice-expert-ramu` |
 
-## 2. Where the numbers stand — Sep 8 2026
+## 2. Where the numbers stand — Sep 8 2026, 23:15 IST pull
 
 | | Rank #1 | **Us (rank #2)** |
 |---|---|---|
-| Total plays | 989 | **417** |
-| **Daily Unique Plays** ← *the scored metric* | 645 | **308** |
+| Total plays | 989* | **421** |
+| **Daily Unique Plays** ← *the scored metric* | 645* | **320** |
 
-Daily uniques: Sep 3 **9** · Sep 4 **117** · Sep 5 **54** · Sep 6 **59** · Sep 7 **60**.
+\* Rank #1's figures are Plan §5.7's Sep 8 morning read and are **not refreshed this
+pull** — the jam board renders client-side and isn't fetchable from here; per Plan
+§5.7 it's a manual browser read off `run.world/jams/september-2026-jam`, next due
+Sep 10.
+
+Daily uniques: Sep 3 **9** · Sep 4 **117** · Sep 5 **54** · Sep 6 **59** · Sep 7 **60**
+· Sep 8 **21 so far** (day not yet rolled — was partial **9** at the last pull, still
+climbing).
 **Three flat days at 54–60 with no post** — a stable floor, not a decaying spike.
 Full analysis in [Plan.md](Plan.md) §5.7.
 
@@ -67,3 +74,12 @@ Full analysis in [Plan.md](Plan.md) §5.7.
 **Drafted:** nothing yet.
 **Posted by user:** —
 **Outcome:** — baseline recorded in §2 above.
+
+### 2026-09-08 — baseline refresh — no draft (per charter, first-run round)
+**Drafted:** nothing — this round is read + baseline only, per charter.
+**Posted by user:** —
+**Outcome:** §2 refreshed from `rundot jam promo` + `rundot analytics export daily_activity_30d`.
+Total plays 417→421, rank #2 unchanged. Sep 8 closed the partial 9 up to 21 so far
+(day still open at pull time). Rank #1's figures could not be refreshed — the jam
+board page renders client-side and isn't fetchable from here; still the Sep 8 morning
+read, next manual check due per Plan §5.7 on Sep 10.

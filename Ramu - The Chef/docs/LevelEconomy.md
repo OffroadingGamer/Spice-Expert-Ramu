@@ -1,6 +1,6 @@
 # LevelEconomy — the source of truth for every currency value, per level
 
-**Last updated:** Sep 8 2026, 22:40 IST
+**Last updated:** Sep 8 2026, 23:30 IST
 **Status:** 🟡 **FTUE level 1 finalised. Every other level is deliberately empty.**
 **Tracked in git** — this file is *not* gitignored and must never be. It carries no
 credentials; it is design data, and it is meant to be read alongside the code.
@@ -25,7 +25,7 @@ code states the fact** — reconcile explicitly, do not assume.
 
 | | **Node 0** | **Node 1** | **Node 2** | **Node 3** | **Node 4** |
 |---|---|---|---|---|---|
-| Cuisine | Beverages *(FTUE)* | North Indian | South Indian | Italian | North Eastern |
+| Cuisine | Beverages *(FTUE)* | North Indian | South Indian | Italian | North East Indian |
 | Masala | — *(no grinding level)* | Garam Masala | Sambar podi **+** Rasam podi | Italian herb blend | The paste *(ginger · garlic · bhut jolokia)* |
 | Levels | **4** | 8 | **9** | 8 | 8 |
 | Economy defined | **1 of 4** | 0 of 8 | 0 of 9 | 0 of 8 | 0 of 8 |
@@ -175,7 +175,7 @@ likely the easiest to price once node 0 is proven.
 
 ---
 
-## 6. Node 4 — North Eastern
+## 6. Node 4 — North East Indian
 
 ⬜ **Entire node undefined.**
 
@@ -977,3 +977,100 @@ match a formula it already agrees with buys nothing.
 
 ⬜ **Level names do not exist.** These five carry their dish name as a placeholder. The
 34-level naming pass is still outstanding and still blocks §10.5's Utensils screen.
+
+### 11.3 🔒 All 37 level names — approved Sep 8 2026
+
+🔴 **Correction: the game has 37 levels, not 34.** §10.2 and §11.2 used 34 loosely.
+The real count is **32 ordinary levels + 5 bosses**:
+
+| Node | Dishes | Grinding | Boss | Total |
+|---|---|---|---|---|
+| 0 Beverages | 3 | — | 1 | **4** |
+| 1 North Indian | 6 | 1 | 1 | **8** |
+| 2 South Indian | 6 | **2** | 1 | **9** |
+| 3 Italian | 6 | 1 | 1 | **8** |
+| 4 North East Indian | 6 | 1 | 1 | **8** |
+| | | | | **37** |
+
+✅ **§10.2's hat economy survives the correction**: 32 × ~200 + 5 × ~630 ≈ **9,550**,
+still inside the stated 7,000–10,000 band. Only the count was wrong, not the conclusion.
+
+**Four principles these names follow.** Recorded because they decide what a *future* name
+must look like:
+
+1. 🔑 **Order-independent.** Each name is tied to its dish and station, never its slot
+   number — so settling the order inside nodes 2–4 later changes **no name**. Only node 1's
+   order is fixed (§11.1).
+2. **Two to three words.** They must fit a level tile *and* an unlock line: *"Clear: Under
+   Pressure."*
+3. **They say what you do, not what you cook.** The dish name is the subtitle; the level
+   name carries the beat.
+4. **Kitchen vernacular** — the jam theme is *Back to Work*.
+
+#### Node 0 — Beverages · FTUE
+
+| # | Name | Dish |
+|---|---|---|
+| 1 | **First Pour** | Chai |
+| 2 | **Second Order** | Coffee |
+| 3 | **Two Tickets** | Chai & Coffee |
+| 4 | **Morning Rush** | 👑 boss — grants Brazier + Tandoor |
+
+#### Node 1 — North Indian · Garam Masala — **order fixed** (§11.1)
+
+| # | Name | Dish | Station |
+|---|---|---|---|
+| 1 | **Open the Dhaba** | Jeera Rice | Rice Cooker — no masala, the on-ramp |
+| 2 | **Fill the Dabba** | *grinding* | Spice Grinder → Garam Masala |
+| 3 | **Smoke & Ash** | Baingan Bharta | Brazier |
+| 4 | **Rise of Tandoor** | Naan | Tandoor — pre-placed, unsellable |
+| 5 | **Under Pressure** | Rajma | Pressure Cooker |
+| 6 | **Tawa Hot** | Gobhi Masala | Cast Iron Skillet |
+| 7 | **Greens and Gold** | Palak Aloo | Fry Pan |
+| 8 | **Baraat Service** | 👑 boss | — |
+
+#### Node 2 — South Indian · Sambar + Rasam podi — order ⬜ undecided
+
+| Name | Dish | Station |
+|---|---|---|
+| **Grind Coarse** | Coconut Chutney | Spice Grinder |
+| **Sambar District** | *grinding* | Spice Grinder |
+| **Rasam Town** | *grinding* | Spice Grinder |
+| **Morning Tiffin** | Upma | Sauce Pan |
+| **Sour and Hot** | Rasam | Sauce Pot |
+| **Rise of Steam** | Idli | Steam Cooktop |
+| **Quick Fry** | Beans Poriyal | Cast Iron Skillet |
+| **The Long Simmer** | Sambar | Pressure Cooker |
+| **Sunday Crowd** | 👑 boss | — |
+
+#### Node 3 — Italian · herb blend — order ⬜ undecided
+
+| Name | Dish | Station |
+|---|---|---|
+| **Oven Light** | Bruschetta | Cooktop **L1** — where the ladder starts |
+| **Green Blend** | *grinding* | Spice Grinder |
+| **Mortar Work** | Pesto | Spice Grinder |
+| **Garlic & Oil** | Aglio e Olio | Fry Pan |
+| **Angry Sauce** | Arrabbiata | Sauce Pot |
+| **Everything Pot** | Minestrone | Stock Pot |
+| **Stir and Wait** | Risotto | Sauce Pan |
+| **Full House** | 👑 boss | — |
+
+#### Node 4 — North East Indian · the paste — order ⬜ undecided
+
+| Name | Dish | Station |
+|---|---|---|
+| **Steam Basket** | Sticky Rice | Steam Cooktop |
+| **Pound the Paste** | *grinding* | ginger · garlic · bhut jolokia |
+| **Wild Greens** | Xaak Bhaji | Fry Pan |
+| **Fold and Steam** | Veg Momo | Steam Cooktop |
+| **Peas and Patience** | Ooti | Pressure Cooker |
+| **Broth and Noodles** | Veg Thukpa | Stock Pot |
+| **The Wok Arrives** | Bamboo Shoot Fry | Fry Pan **L4** — the node's headline tier |
+| **Last Service** | 👑 boss | — |
+
+🔥 **The five boss names run as a day, then as a career:** Morning Rush → Baraat Service
+→ Sunday Crowd → Full House → **Last Service**. The final one lands where it should.
+
+✅ **§10.5's Utensils screen is unblocked.** Its unlock conditions can now read
+*"Clear: Under Pressure"* rather than *"Clear Node 1 Level 5."*

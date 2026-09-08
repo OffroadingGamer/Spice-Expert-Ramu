@@ -9,7 +9,7 @@
 > contract below is broken or a version changes, update it here **and** log the
 > reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 8 2026, 22:40 IST
+**Last updated:** Sep 8 2026, 23:30 IST
 **Implementation status:** ▶ **LIVE — v1.7.0 public + approved** (since Sep 5, 14:10:21 IST, §8a.11). ⚠️ This header read **v1.2.3** until Sep 7 while §8a.11 recorded the truth — a handover quoted the header and shipped the wrong number to an agent.
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 

@@ -1,6 +1,6 @@
 # RecipeList — dishes, and the ingredients they call for
 
-**Last updated:** Sep 8 2026, 22:40 IST
+**Last updated:** Sep 8 2026, 23:30 IST
 **Status:** 🟢 **Node selections locked** (§7, Sep 6) · FTUE fixed (§7.0) · asset inventory typed (§8.5). §3's early proposal is superseded by §7.
 
 Companion to [PropList.md](PropList.md). A recipe drives two things on screen at once:
@@ -254,7 +254,7 @@ Everything needing a labelled vessel drawn off `S3-50`, at 2–5 min each. Rough
 
 | Group | Items | # |
 |---|---|---|
-| **Masalas** — one per node, the output of its grinding levels | Garam Masala · Sambar Podi · Rasam Podi · North-Eastern blend · Italian herb blend | 5 |
+| **Masalas** — one per node, the output of its grinding levels | Garam Masala · Sambar Podi · Rasam Podi · North East Indian blend · Italian herb blend | 5 |
 | **Oils** — mustard `S3-19` and sunflower `S3-20` already exist | Ghee · Sesame · Coconut · Olive | 4 |
 | **Grains and pulses** | Flour · Rice · Arborio rice · Toor dal · Chickpeas · Kidney beans · Semolina · Spaghetti · Noodles | 9 |
 | **Beverage dry goods** | Tea leaf · Sugar · Coffee extract | 3 |
@@ -270,7 +270,7 @@ cannot be answered.
 ### 6.4 Node order
 
 **Beverages (FTUE, Chai → High-Tea)** → **North Indian** → **South Indian**
-→ **Italian** → **North Eastern**. Candidate dish lists per node were put to the
+→ **Italian** → **North East Indian**. Candidate dish lists per node were put to the
 user Sep 5, 21:19 IST; ⬜ selection pending, and asset requirements follow from it.
 
 ---
@@ -387,7 +387,7 @@ Ground from oregano, basil, parsley, black pepper, chilli flakes, bay leaf.
 ⚠️ **Every dish also uses olive oil**, so the oil cell carries no information for this
 node. Either accept it as flavour or let a node declare a default oil.
 
-### 7.4 Node 4 — North Eastern · masala: **the paste** (ginger, garlic, **bhut jolokia**)
+### 7.4 Node 4 — North East Indian · masala: **the paste** (ginger, garlic, **bhut jolokia**)
 
 | Dish | Primary | Oil | Secondary | Utensil |
 |---|---|---|---|---|
@@ -404,8 +404,8 @@ families across six dishes, which fits the 4 slots exactly: the boss can put all
 the belt at once, which no other node can do.
 
 🔥 **A fresh paste, not a dry blend — and bhut jolokia rather than green chilli.**
-North Eastern cooking is defined by the *absence* of a dry masala; a
-"North-Eastern garam masala" would be an invention. Bhut jolokia makes the paste
+North East Indian cooking is defined by the *absence* of a dry masala; a
+"North East Indian garam masala" would be an invention. Bhut jolokia makes the paste
 **specific rather than merely authentic** — it is the one NE ingredient a player anywhere
 recognises — and it turns the container **red-orange**, so the node's most-seen cell stops
 reading as another green chutney.

@@ -1,6 +1,6 @@
 # KitchenMode — the belt game view as a second mode
 
-**Last updated:** Sep 8 2026, 22:40 IST
+**Last updated:** Sep 8 2026, 23:30 IST
 **Status:** 🟢 **Architecture settled.** Eight decisions taken Sep 4, 23:10 IST — all
 eight went to the recommended option. ✅ **Built and running privately** — eight Test Mode rounds, `c043804`, **v1.15.0 private-only**; §6.7. This line read *"Nothing built yet"* until Sep 7 while §6.7 below recorded the opposite.
 **🛑 Hard gate: playable end to end by Sep 10, or it is cut.** §5.
@@ -244,7 +244,7 @@ tutorial level. Then four cuisine nodes in this order:
 | 1 | **North Indian** | 1–2 spice-grinding levels producing its masala |
 | 2 | **South Indian** | ditto |
 | 3 | **Italian** | ditto |
-| 4 | **North Eastern** | ditto |
+| 4 | **North East Indian** | ditto |
 
 Every node ends in a **boss**: all props unlocked *for that node* available across the 4
 slots, starting cash covering **tier 1 only**, waves accelerating until the walkout limit.
