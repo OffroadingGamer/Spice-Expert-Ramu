@@ -14,13 +14,28 @@
 import { Container, type Application } from 'pixi.js';
 import { KITCHEN_CONFIG } from './kitchenConfig.ts';
 
+/** The contain-fit content rect, in CSS pixels (matches app.screen's unit). */
+export interface KitchenStageRect {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
 export interface KitchenStage {
     /** Add all scene content here, positioned in the belt's design units. */
     root: Container;
     destroy(): void;
 }
 
-export function createKitchenStage(app: Application): KitchenStage {
+/**
+ * Round 21, task 3a: onLayout publishes the same rect layout() already
+ * computes, so a DOM overlay (TestBelt.tsx) can align to it instead of
+ * re-deriving min(w/720, h/1280) itself — that second copy of the stage's
+ * own geometry is exactly the drift SLOT_ZONES exists to prevent elsewhere.
+ * Fires once immediately and again on every renderer 'resize'.
+ */
+export function createKitchenStage(app: Application, onLayout?: (rect: KitchenStageRect) => void): KitchenStage {
     const root = new Container();
     app.stage.addChild(root);
 
@@ -32,6 +47,12 @@ export function createKitchenStage(app: Application): KitchenStage {
         root.scale.set(s);
         root.x = (app.screen.width - KITCHEN_CONFIG.boardWidth * s) / 2;
         root.y = (app.screen.height - KITCHEN_CONFIG.boardHeight * s) / 2;
+        onLayout?.({
+            x: root.x,
+            y: root.y,
+            width: KITCHEN_CONFIG.boardWidth * s,
+            height: KITCHEN_CONFIG.boardHeight * s,
+        });
     };
     app.renderer.on('resize', layout);
     layout();

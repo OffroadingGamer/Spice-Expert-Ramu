@@ -65,8 +65,14 @@ export const MANIFEST: Manifest = {
                 // alpha-trimmed, padded to a square canvas (content height
                 // 80%), downscaled to 256x256 — see kitchenScene.ts's HUD
                 // coin readout and TestBelt.tsx's end screen.
+                // Round 21: Exit Sign icon added to the same set (still our
+                // own generated art, still no licence comment) — drawn as
+                // geometry to the palette and metrics sampled off the two
+                // above: outline #500C23, stroke 8px at 256, content bbox
+                // inset 25px. Used by kitchenScene.ts's walkouts-left group.
                 { alias: 'ui-chef-hat', src: 'images/ui-chef-hat.png' },
                 { alias: 'ui-coin', src: 'images/ui-coin.png' },
+                { alias: 'ui-exit-sign', src: 'images/ui-exit-sign.png' },
                 // Round 3: station props + belt ingredients + final dishes.
                 // ing-tea-leaf / ing-sugar / ing-chai-masala have no manifest
                 // line yet (§2.6 — procedural placeholder until art exists).
