@@ -2085,3 +2085,22 @@ uniques are the score; the trend matters more than any single day.
     could not verify the spec) but its *reason* was wrong, and it wrote that reason into a
     routing note for the next session. **Findings and environment claims travel together
     in a hand-back; check the second before acting on the first.**
+74. **A balance is not a budget until you know its expiry.** I twice sequenced work around
+    129,247 credits — including advising that we *wait* to advertise until the nodes
+    shipped — while treating the number as a constant. It was not. **92,047 of it expires
+    Sep 15 and does not roll over**, which inverts that advice completely: after that date
+    the balance sits below the platform's \$50 campaign minimum, so no campaign is possible
+    at all and the choice is "this week or never". `rundot credits` reports balance and
+    usage and **no expiry**; the binary carries no expiry string; the web has nothing. The
+    date was visible only on the Finances dashboard, which the user opened. **When a plan
+    rests on a granted resource, establish its expiry before sequencing around it — and
+    where the tooling cannot answer, say so and ask, rather than reading silence as
+    "no expiry."**
+75. **Citations decay the same way claims do — check that the section still says what the
+    comment says it says.** `kitchenScene.ts`'s file header states the dobo_ui UI assets
+    are *"private-build only, see KitchenMode.md §2.6."* §2.6 is the grey-box art section
+    and says nothing about the pack, private builds or licences; the real statement sits in
+    **§6.7**, about 150 lines away. **The claim was true and the pointer was wrong**, which
+    is the more dangerous combination — anyone verifying it reads §2.6, finds nothing, and
+    can reasonably conclude the constraint is stale and drop it. Same family as lesson 4:
+    a pointer is itself a claim about a document's structure, and documents move.

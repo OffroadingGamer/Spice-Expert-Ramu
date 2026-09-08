@@ -1704,6 +1704,97 @@ existing message is what explains the refusal.
 
 ⬜ **Still absent after all four rounds: persistence and progression.** `ACTIVE_LEVEL_ID`
 is a module constant read at module scope in three files; a reload returns to `n0l1`.
+➡️ **Progression resolved by round 23 (§6.20); persistence is still open** — a reload
+still returns to `n0l1`, and that is the save round.
+
+### 6.20 ✅ Round 23 landed — level progression, Sep 9 2026
+
+Commit `64cb92b`, private **v1.33.0**. Four files, 156+/56−: `data/levels.ts`,
+`kitchenScene.ts`, `sim/kitchen.ts`, `ui/TestBelt.tsx`. `kitchenConfig.ts` empty diff.
+
+**What changed.** `getActiveLevel()` and `getActiveIngredientKinds()` are **deleted
+outright** — no wrappers, no deprecation shim. `createKitchenSim(level)` and
+`createKitchenScene(level)` take the level as a parameter; `TestBelt.tsx` owns which level
+is current and rebuilds the scene per level. Inside the sim the level becomes closure
+constants still named `ACTIVE_LEVEL` / `ACTIVE_INGREDIENT_KINDS`, so every reader below is
+unchanged text — a deliberately small diff across the acceptance-tested core.
+`makeBag(kinds)` now takes its kind list instead of closing over a module global.
+
+**Verified independently, Sep 9.** Diffstat exact. All seven plain-text `getActive*`
+matches are **comments** — two pre-existing in the untouched `kitchenConfig.ts`, five new
+narration in the three edited files. `__r23Debug` grep clean. `tsc --noEmit` exit 0. Tags
+read private 1.33.0, review 1.7.0, public 1.7.0. The bands are byte-identical (zero
+`band(` lines in the diff), so the board geometry recorded above is untouched.
+
+**The round's best decision was not in the handover.** The agent kept `PATH` →
+`SLOT_ZONES` at module scope and wrote down why: moving it into the factory *"would
+recompute it per run and turn Guard A from a load-time assertion into a per-run one, so it
+could fail mid-shift instead of failing the build."* That is correct and load-bearing — a
+guard that fires during a player's shift is a worse guard than one that fails the build.
+
+**Two agent notes, both handled correctly.** A NaN in the end screen's
+discarded/Chef-Hats display came from their generic test driver feeding all seven
+ingredient kinds on a three-kind level, where `held` is only initialised for a level's own
+kinds. **Unreachable in real play**, and the code confirms the mechanism: `makeBag` draws
+only from `getIngredientKinds(level)`, so an out-of-domain kind cannot spawn. Their
+scene-leak result was labelled as *evidence*, not proof — canvas and hamburger counts
+pinned at 1 across six advances, zero exceptions, and completions landing exactly on
+12/14/16/boss/12. That last figure is the real signal: a stale scene double-processing
+events would not hit every target exactly.
+
+**Still absent: persistence.** A reload returns to `n0l1`, confirmed by the agent. That is
+the save round's job, not this one's.
+
+### 6.21 🔴 The end screen — two defects and the card treatment, Sep 9 2026
+
+**Defect 1 — completions are totalled under one dish name.** `TestBelt.tsx:552` renders
+`{shiftResult.completed} chai completed`. On a two-recipe level that reads *"16 chai
+completed"* for a run that was **15 Masala Chai and 1 Coffee** — and the dish board
+directly beneath it already shows the split correctly (×15 / ×1). The label was hardcoded
+in round 5, when one recipe existed. Progression made it *visibly* wrong rather than
+merely latent. `:561`'s `chai short` carries the same fault.
+
+**The data already exists, and the fix does not need the sim.** `sim/kitchen.ts` emits
+`{ type: 'completed'; recipeIndex }` and `kitchenScene.ts:1327` accumulates
+`dishCounts: number[]` from it. `KitchenState.completed` is a scalar and **should stay
+one**. The clean route is to carry `dishCounts` on `EconomySnapshot` — already the
+transport for scene-computed values the sim has no notion of (`coinsEarned`, `hats`) — and
+render one line per recipe from `level.recipes[i].name`. **No change to `sim/kitchen.ts`.**
+
+**Defect 2 — the panel has no backdrop.** The end screen is `bg-black/70` over the live
+board, so the board reads through it and the three buttons overlap station sprites.
+
+**Treatment, from the user Sep 9:** `UI/Cards/CardRegular/CardRegular1_wood.png` for the
+cleared state, `CardRegular1_red.png` for failure, scaled up to contain the content.
+Measured anatomy — both cards, sampled down the centre column:
+
+| Region | wood (281×343) | red (281×342) |
+|---|---|---|
+| Outer border | `#97513E` | `#97513E` |
+| Header band | y 7–78, `#DD9A79` | y 7–79, `#F65D63` |
+| Divider | y 79–84 | y 80–85 |
+| Cream body | y 85–320, `#FFFEEB` | y 86–320, `#FFFEEB` |
+| Footer accent | y 321–335 | y 321–335 |
+| Side insets | 7 px each edge | 7 px each edge |
+
+Title in the header band; **everything else — figures, coins, stars, hats and all three
+buttons — inside the cream body.** ⚠️ **The two cards are not pixel-identical**: red is 1 px
+shorter and its divider sits 1 px lower, so a single set of nine-slice values will be 1 px
+out on one of them. Visually irrelevant; recorded so nobody chases it.
+
+⚠️ **This does not change the licence position, and it does not reopen a settled one.**
+The dobo_ui assets are the **demo tier of Cozy UI Pack**, and §6.7 already records:
+*"Licences unread on the UI pack (dobo_ui demo tier)… Fine for a private build; not
+cleared for any public deploy."* Three dobo_ui assets already ship in the private build
+(`ui-billboard`, `ui-hotbar`, `ui-container`); two cards join the same set under the same
+unresolved gate. **Plan item 46's closure covered toxiccolors and hoshiixs, which dobo_ui
+is not.** Kitchen Mode going public is gated on this **with or without the cards** — the
+cards add no new exposure.
+
+⚠️ **`kitchenScene.ts`'s file header cites §2.6 for "private-build only", and §2.6 says
+nothing about it** — it is the grey-box art section. The statement lives in **§6.7**.
+Recorded here rather than corrected in code, which is outside this note's scope.
+
 
 ### 8.11 🔑 The art inventory audit — nothing is missing, Sep 9 2026
 
