@@ -116,6 +116,23 @@
  * time the picker is open. See the picker/sell-confirmation JSX below for
  * the enumerated exit paths and PropPicker.tsx's own header for tasks 2/3
  * (the picker's shared icon scale and its coin-prefixed cost display).
+ *
+ * Round 23: this file now owns the current level. `LEVEL` was a module
+ * constant read once off `getActiveLevel()`; it's now `getLevelById(levelId)`
+ * with `levelId` in React state (task 4), seeded from `FIRST_LEVEL_ID` — a
+ * reload always returns to that seed, since nothing here persists it (task
+ * 6: no SaveData, no SAVE_KEY bump, that's its own round). Advancing reuses
+ * the existing remount path unchanged (the scene-creation effect already
+ * tears down scene/stage/app and `key={runId}` remounts the host div) —
+ * `levelId` just joins `runId` in that effect's dependency array, so a level
+ * change can never land against a stale scene. The end screen's Next Level
+ * button (task 5) drives that advance, gated on `cleared` — a boss
+ * (`LEVEL.isBoss`) has a null target (§7.3b), so its sim can never reach
+ * 'won' and always ends 'lost' on the walkout budget instead; treating only
+ * 'won' as a clear would make N0 L4 (Morning Rush) unpassable and node 1
+ * unreachable. No per-level prop gating this round (task 6) —
+ * LevelRecord.props/prePlaced stay unread, the picker still offers
+ * KITCHEN_CONFIG.levelProps unconditionally.
  */
 import { useEffect, useRef, useState } from 'react';
 import type { Application } from 'pixi.js';
@@ -124,14 +141,12 @@ import { createPixiApp } from '../game/pixiApp.ts';
 import { createKitchenStage, type KitchenStage, type KitchenStageRect } from '../game/kitchenStage.ts';
 import { createKitchenScene, type EconomySnapshot, type Scene } from '../game/kitchenScene.ts';
 import { KITCHEN_CONFIG } from '../game/kitchenConfig.ts';
-import { getActiveLevel } from '../game/data/levels.ts';
+import { FIRST_LEVEL_ID, getLevelById, getNextLevelId } from '../game/data/levels.ts';
 import type { KitchenState } from '../game/sim/kitchen.ts';
 import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import { MANIFEST } from '../assets/manifest.ts';
 import PropPicker from './PropPicker.tsx';
-
-const LEVEL = getActiveLevel();
 
 // Round 11: same manifest-lookup pattern as PropPicker.tsx's ASSET_SRC — one
 // place (the manifest) lists what an alias's image file actually is.
@@ -169,6 +184,13 @@ export default function TestBelt() {
     const appRef = useRef<Application | null>(null);
     const sceneRef = useRef<Scene | null>(null);
     const [runId, setRunId] = useState(0);
+    // Round 23, task 4: this file now owns the current level — no
+    // persistence (task 6), so a reload always seeds back to FIRST_LEVEL_ID.
+    // `getLevelById` only returns undefined for an id this file never set
+    // itself (FIRST_LEVEL_ID or a real getNextLevelId() result), so the
+    // assertion below can't actually fail.
+    const [levelId, setLevelId] = useState(FIRST_LEVEL_ID);
+    const LEVEL = getLevelById(levelId)!;
     // Only setState is used — the live per-tick state has no React reader
     // now that the walkouts counter is drawn on the Pixi canvas itself and
     // the end screen reads the frozen `shiftResult` snapshot instead.
@@ -246,7 +268,7 @@ export default function TestBelt() {
                 onSlotsFilledChange: (n) => setFilledSlots(n),
                 onSlotsUnlockedChange: (n) => setUnlockedSlots(n),
                 onMessage: (text) => setMessage(text),
-            });
+            }, LEVEL);
             sceneRef.current = scene;
             if (disposed) {
                 scene.destroy();
@@ -268,7 +290,12 @@ export default function TestBelt() {
                 appRef.current = null;
             }
         };
-    }, [runId]);
+        // Round 23, task 4: `levelId` joins `runId` here so a level change
+        // (Next Level) can never run this effect against a stale `LEVEL` —
+        // React re-runs it whenever either changes, and `LEVEL` above is
+        // recomputed fresh every render off the same `levelId` this effect
+        // reads, so the two can't disagree.
+    }, [runId, levelId]);
 
     // Mirrors GameCanvas.tsx:56 — store.paused otherwise has no effect here,
     // since kitchenScene's own ticker never reads it.
@@ -338,6 +365,21 @@ export default function TestBelt() {
                     ? 2
                     : 1
             : 0;
+    // Round 23, task 5: "cleared" is NOT phase === 'won' alone — a boss
+    // (LEVEL.isBoss) has target: null, so sim/kitchen.ts:343 can never fire
+    // 'won' for one; its shift always ends 'lost' on the walkout budget
+    // instead (§7.3b). A boss's shift ENDING is its completion, so it counts
+    // as cleared too — without this, N0 L4 (Morning Rush) is unpassable and
+    // node 1 is unreachable. No Next Level when an ordinary level is lost,
+    // or when this is the last entry in LEVELS (getNextLevelId returns null).
+    const cleared = shiftResult !== null && (shiftResult.phase === 'won' || LEVEL.isBoss);
+    const nextLevelId = cleared ? getNextLevelId(LEVEL.id) : null;
+    const goToNextLevel = () => {
+        if (nextLevelId === null) return;
+        sfx.click();
+        setLevelId(nextLevelId);
+        setRunId((n) => n + 1);
+    };
 
     return (
         <div className="absolute inset-0 bg-surface">
@@ -558,6 +600,18 @@ export default function TestBelt() {
                         </div>
                     )}
                     <div className="flex gap-4">
+                        {/* Round 23, task 5: Next Level, primary, first —
+                            only when cleared (see `cleared`'s own comment
+                            above) AND a next level actually exists. */}
+                        {nextLevelId !== null && (
+                            <button
+                                type="button"
+                                className="rounded-2xl bg-primary px-8 py-3 text-xl font-bold text-black"
+                                onClick={goToNextLevel}
+                            >
+                                Next Level
+                            </button>
+                        )}
                         <button
                             type="button"
                             className="rounded-2xl bg-primary px-8 py-3 text-xl font-bold text-black"

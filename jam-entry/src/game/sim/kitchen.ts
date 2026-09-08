@@ -54,12 +54,20 @@
  * hard-coded KITCHEN_CONFIG.recipe. See tapSlot's own comment for the
  * multi-recipe completion rule (at most one completion per tap, by
  * declaration order) this makes necessary.
+ *
+ * Round 23: `createKitchenSim` now takes the level as a parameter instead of
+ * reading a frozen module-scope global — `ACTIVE_LEVEL`/
+ * `ACTIVE_INGREDIENT_KINDS` become closure constants declared at the top of
+ * the factory, off the `level` argument, so every existing reader below
+ * (`ACTIVE_LEVEL.target`, `.recipes`, `.walkoutsAllowed`) is unchanged. The
+ * belt geometry below this point (PATH through SLOT_ZONES) is
+ * level-independent and stays at module scope, computed once at load —
+ * moving it into the factory would recompute it per run and turn Guard A
+ * from a load-time assertion into a per-run one, so it could fail mid-shift
+ * instead of failing the build.
  */
 import { KITCHEN_CONFIG } from '../kitchenConfig.ts';
-import { getActiveLevel, getActiveIngredientKinds } from '../data/levels.ts';
-
-const ACTIVE_LEVEL = getActiveLevel();
-const ACTIVE_INGREDIENT_KINDS = getActiveIngredientKinds();
+import { getIngredientKinds, type LevelRecord } from '../data/levels.ts';
 
 export type KitchenPhase = 'running' | 'won' | 'lost';
 
@@ -284,9 +292,12 @@ export const SLOT_ZONES: SlotZone[] = (() => {
  * is 5), which raises the drought ceiling to 2(5)-2=8. That is flagged, not
  * fixed, at this round's call site (see the file header) — do not retune
  * spawnInterval or the bag mechanism itself to compensate.
+ *
+ * Round 23: takes `kinds` as a parameter rather than closing over a
+ * module-scope global — the caller (createKitchenSim) now derives it from
+ * its own `level` argument.
  */
-function makeBag(): () => string {
-    const kinds = ACTIVE_INGREDIENT_KINDS.map((k) => k.key);
+function makeBag(kinds: string[]): () => string {
     let bag: string[] = [];
     return () => {
         if (bag.length === 0) {
@@ -300,7 +311,13 @@ function makeBag(): () => string {
     };
 }
 
-export function createKitchenSim(): KitchenSim {
+export function createKitchenSim(level: LevelRecord): KitchenSim {
+    // Round 23: closure constants off the `level` parameter — every
+    // existing reader below (ACTIVE_LEVEL.target/.recipes/.walkoutsAllowed)
+    // is unchanged text, since it was already reading through these names.
+    const ACTIVE_LEVEL = level;
+    const ACTIVE_INGREDIENT_KINDS = getIngredientKinds(level);
+
     const held: Record<string, number> = {};
     for (const k of ACTIVE_INGREDIENT_KINDS) held[k.key] = 0;
 
@@ -319,7 +336,7 @@ export function createKitchenSim(): KitchenSim {
     let nextUid = 1;
     let spawnTimer = 0;
     const events: KitchenEvent[] = [];
-    const drawKind = makeBag();
+    const drawKind = makeBag(ACTIVE_INGREDIENT_KINDS.map((k) => k.key));
 
     function spawnIfDue(dt: number): void {
         // Round 9, task 1: gates on the safety cap only — the win condition

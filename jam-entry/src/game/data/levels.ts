@@ -32,15 +32,24 @@
  * once and referenced from every level that cooks them (N0 L3 and N0 L4
  * both cook the same pair L1/L2 introduce separately) so the copies can't
  * quietly drift apart from each other.
+ *
+ * Round 23: level selection is no longer frozen at module scope.
+ * `getActiveLevel()`/`getActiveIngredientKinds()` are deleted outright (no
+ * wrappers) — `ACTIVE_LEVEL_ID` is renamed `FIRST_LEVEL_ID` (where a fresh
+ * session starts, not "the level"), and callers now navigate explicitly:
+ * `getLevelById(id)`, `getNextLevelId(id)`, and `getIngredientKinds(level)`
+ * (the same union this file always computed, now taking the level as an
+ * argument instead of reading a frozen global). The level records
+ * themselves are unchanged — this is only how one gets selected.
  */
 
 /** Round 17: display info for one ingredient key — the alias/label/color
  *  kitchenScene.ts's makeIngredientView needs, independent of which
  *  recipe(s) reference the key. Every key any of the five levels' recipes
  *  use must have an entry here; sim/kitchen.ts and kitchenScene.ts both
- *  derive their live ingredient set as the ACTIVE level's own union of this
- *  catalog (getActiveIngredientKinds() below) — never the full catalog, and
- *  never KITCHEN_CONFIG.ingredientKinds (SUPERSEDED, see that file). */
+ *  derive their live ingredient set as a level's own union of this catalog
+ *  (Round 23: `getIngredientKinds(level)` below) — never the full catalog,
+ *  and never KITCHEN_CONFIG.ingredientKinds (SUPERSEDED, see that file). */
 export interface IngredientKind {
     key: string;
     alias: string;
@@ -248,32 +257,38 @@ export const LEVELS: LevelRecord[] = [
 
 const BY_ID = new Map(LEVELS.map((l) => [l.id, l]));
 
-/** The single hard-coded selection point — level-select is out of scope this
- *  round (handover: "hard-code the active level to N0 L1 so the build stays
- *  byte-identical in behaviour"). Change this and only this to test a
- *  different level; it is not read by anything except getActiveLevel(). */
-export const ACTIVE_LEVEL_ID = 'n0l1';
+/** Round 23: where a fresh session starts — no longer "the level" (that was
+ *  `ACTIVE_LEVEL_ID`, read once at module scope by the now-deleted
+ *  `getActiveLevel()`). TestBelt.tsx holds the current level in React state,
+ *  seeded from this constant. */
+export const FIRST_LEVEL_ID = 'n0l1';
 
-export function getActiveLevel(): LevelRecord {
-    const level = BY_ID.get(ACTIVE_LEVEL_ID);
-    if (!level) {
-        throw new Error(`levels.ts: ACTIVE_LEVEL_ID '${ACTIVE_LEVEL_ID}' has no matching LevelRecord.`);
-    }
-    return level;
+/** Round 23: the level with this id, or undefined if none matches. */
+export function getLevelById(id: string): LevelRecord | undefined {
+    return BY_ID.get(id);
+}
+
+/** Round 23: the entry after `id` in `LEVELS` order, or null past the last
+ *  one — the linear-advance rule task 5's Next Level button drives off. */
+export function getNextLevelId(id: string): string | null {
+    const idx = LEVELS.findIndex((l) => l.id === id);
+    if (idx < 0 || idx >= LEVELS.length - 1) return null;
+    return LEVELS[idx + 1].id;
 }
 
 /**
- * Round 17, task 2: the union of every ingredient across the ACTIVE level's
- * recipes — the ONE place this union is computed, so sim/kitchen.ts's bag
- * and kitchenScene.ts's billboard/asset-preload can never disagree about
- * what belongs to a level (same anti-drift reason sim/kitchen.ts's
- * SLOT_ZONES is computed once and only traced elsewhere). Order follows
- * INGREDIENT_CATALOG, not recipe-declaration order — irrelevant to the bag
- * (Fisher-Yates shuffles it anyway) and to the billboard (each row draws its
- * own recipe's ingredients in that recipe's own order, not this list's).
+ * Round 17, task 2 (Round 23: takes the level as a parameter instead of
+ * reading a frozen module-scope global): the union of every ingredient
+ * across a level's recipes — the ONE place this union is computed, so
+ * sim/kitchen.ts's bag and kitchenScene.ts's billboard/asset-preload can
+ * never disagree about what belongs to a level (same anti-drift reason
+ * sim/kitchen.ts's SLOT_ZONES is computed once and only traced elsewhere).
+ * Order follows INGREDIENT_CATALOG, not recipe-declaration order —
+ * irrelevant to the bag (Fisher-Yates shuffles it anyway) and to the
+ * billboard (each row draws its own recipe's ingredients in that recipe's
+ * own order, not this list's).
  */
-export function getActiveIngredientKinds(): IngredientKind[] {
-    const level = getActiveLevel();
+export function getIngredientKinds(level: LevelRecord): IngredientKind[] {
     const keys = new Set(level.recipes.flatMap((r) => r.ingredients));
     return INGREDIENT_CATALOG.filter((k) => keys.has(k.key));
 }

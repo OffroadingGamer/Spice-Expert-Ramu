@@ -139,7 +139,9 @@
  * Round 17: content goes per-level. `level`/`ACTIVE_INGREDIENT_KINDS`/
  * `KIND_INFO` move to MODULE scope (read once, like sim/kitchen.ts's own
  * ACTIVE_LEVEL) since `BAKED_ALIASES` needs them before createKitchenScene
- * ever runs. The billboard now draws one ingredient row per active recipe
+ * ever runs — superseded by Round 23 below, which moves all three back into
+ * the function body, off a `level` parameter instead of a module-scope
+ * global. The billboard now draws one ingredient row per active recipe
  * (buildIngredientRow, stacked, §8b's shrink-to-fit reused vertically when
  * two rows don't fit) and the final-dish tray one entry per recipe
  * (makeFinalDishView/layoutDishEntries), both replacing the old
@@ -199,6 +201,16 @@
  * around both slot modals (task 4a, entirely on that side; this file has no
  * notion of `paused`) is what makes that snapshot exact for the modal's
  * whole lifetime, so no live subscription is needed.
+ *
+ * Round 23: `createKitchenScene` takes `level` as a parameter instead of
+ * reading a frozen module-scope global — TestBelt.tsx now owns which level
+ * is active and can create a fresh scene for a different one after Next
+ * Level. `ACTIVE_INGREDIENT_KINDS`/`KIND_INFO`/`BAKED_ALIASES`, all
+ * level-dependent, move from module scope into the function body, computed
+ * off the parameter before the async asset load (BAKED_ALIASES must exist
+ * before `Assets.load` runs); `createKitchenSim(level)` is passed the same
+ * parameter through. `UI_ALIASES`/`MANIFEST_ALIASES`/`EXIT_SIGN_ALIAS`/
+ * `HAS_EXIT_SIGN` are level-independent and stay at module scope, untouched.
  */
 import {
     Assets,
@@ -216,7 +228,7 @@ import {
 import { playSample, prefetchCue, sfx, switchCue } from '../audio/audio.ts';
 import { CONFIG } from './config.ts';
 import { KITCHEN_CONFIG } from './kitchenConfig.ts';
-import { getActiveLevel, getActiveIngredientKinds, type IngredientKind, type RecipeRecord } from './data/levels.ts';
+import { getIngredientKinds, type IngredientKind, type LevelRecord, type RecipeRecord } from './data/levels.ts';
 import { createKitchenSim, isEligibleDist, posAt, SLOT_ZONES, type KitchenState } from './sim/kitchen.ts';
 import type { KitchenStage } from './kitchenStage.ts';
 import { MANIFEST } from '../assets/manifest.ts';
@@ -284,15 +296,6 @@ const BAND_TINTS = {
     finalDishArea: 0x27241c,
 } as const;
 
-// Round 17: read once at module scope, like sim/kitchen.ts's own
-// ACTIVE_LEVEL — BAKED_ALIASES below needs it before createKitchenScene
-// ever runs, and every other reference in this file used to declare its own
-// local `level` inside that function; one module-scope binding replaces
-// both so there is only ever one read of getActiveLevel() in this file.
-const level = getActiveLevel();
-const ACTIVE_INGREDIENT_KINDS = getActiveIngredientKinds();
-const KIND_INFO = new Map<string, IngredientKind>(ACTIVE_INGREDIENT_KINDS.map((k) => [k.key, k]));
-
 // Round 11 (corrected round 12): 'ui-chef-hat' is force-loaded here even
 // though it's never drawn on this Pixi canvas — TestBelt.tsx's end screen
 // shows it as a plain DOM <img>, which never reads Pixi's Assets/texture
@@ -325,12 +328,6 @@ const MANIFEST_ALIASES = new Set(MANIFEST.bundles.flatMap((b) => b.assets).map((
 // against a labelled placeholder tile.
 const EXIT_SIGN_ALIAS = 'ui-exit-sign';
 const HAS_EXIT_SIGN = MANIFEST_ALIASES.has(EXIT_SIGN_ALIAS);
-const BAKED_ALIASES = [
-    ...KITCHEN_CONFIG.levelProps.map((p) => p.alias),
-    ...ACTIVE_INGREDIENT_KINDS.map((k) => k.alias).filter((a) => MANIFEST_ALIASES.has(a)),
-    ...level.recipes.map((r) => r.finalDish).filter((a) => MANIFEST_ALIASES.has(a)),
-    'prop-fridge',
-];
 
 /**
  * `callbacks` lets a React overlay (ui/TestBelt.tsx) show the live HUD and
@@ -340,9 +337,26 @@ const BAKED_ALIASES = [
 export async function createKitchenScene(
     app: Application,
     stage: KitchenStage,
-    callbacks: KitchenSceneCallbacks
+    callbacks: KitchenSceneCallbacks,
+    level: LevelRecord
 ): Promise<Scene> {
     const { onChange, onShiftEnd, onSlotTapEmpty, onSlotTapFilled, onSlotsFilledChange, onSlotsUnlockedChange, onMessage } = callbacks;
+    // Round 23: level-dependent — computed off the `level` parameter, not a
+    // module-scope global read once at first import (see the Round 23
+    // file-header note and levels.ts's own). Declared before Assets.load
+    // since BAKED_ALIASES must exist before that call runs.
+    const ACTIVE_INGREDIENT_KINDS = getIngredientKinds(level);
+    const KIND_INFO = new Map<string, IngredientKind>(ACTIVE_INGREDIENT_KINDS.map((k) => [k.key, k]));
+    // Baked art across rounds 3-4: real where it exists (manifest-listed),
+    // fallback everywhere else via `Assets.cache.has()` checks below — see
+    // MANIFEST_ALIASES's own comment above for why this filters to aliases
+    // the manifest actually lists.
+    const BAKED_ALIASES = [
+        ...KITCHEN_CONFIG.levelProps.map((p) => p.alias),
+        ...ACTIVE_INGREDIENT_KINDS.map((k) => k.alias).filter((a) => MANIFEST_ALIASES.has(a)),
+        ...level.recipes.map((r) => r.finalDish).filter((a) => MANIFEST_ALIASES.has(a)),
+        'prop-fridge',
+    ];
     // Manifest-listed (deferred bundle) — load on demand rather than trust
     // background-load timing, so Test Mode never races its own art. Round
     // 19: ui-exit-sign only when the manifest actually lists it — see
@@ -1486,7 +1500,7 @@ export async function createKitchenScene(
         });
     }
 
-    const sim = createKitchenSim();
+    const sim = createKitchenSim(level);
 
     // Round 9, task 4 (narrowed by round 10): the round no longer starts at
     // scene creation — it waits for TestBelt.tsx's Ready button to call
