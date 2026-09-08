@@ -258,8 +258,11 @@ them; this section is what supersedes them.
 ### 7.1 §6 — "Can a prop be upgraded? **No**" is **reversed**
 
 The reason recorded for that answer was *"upgrade tiers cost art we do not have."* The
-rename pass ([SpriteIndex.md](SpriteIndex.md) §6.14, §6.18) found **39 of 44 props
-tiered across 13 families**, Cooktop and Fry pan five deep. The stated reason no longer
+rename pass ([SpriteIndex.md](SpriteIndex.md) §6.14, §6.18) found **41 of 44 props
+tiered across 13 families**, Cooktop and Fry pan five deep. *(Corrected Sep 9 2026: this
+read "39 of 44". The 13 families and the two five-deep ladders are right; the sprite
+count was not — counted off the filesystem, those 13 families hold **41** sprites, with
+3 untiered (Brazier, Masala container, Steam Cooktop) making 44. §8.)* The stated reason no longer
 exists.
 
 **The replacement is not the same mechanic.** Props are *not* upgraded in place:
@@ -315,4 +318,83 @@ All three are the same error: ids pinned before the sheets were sliced and named
 `Ingredient/`, `Container/`, `Cooking Oil/`, `Utensil/` and `Final Recipe/`, and §4 has
 been re-pinned in one pass against them by content hash. **The estimate above was low:
 10 of the 11 rows carried at least one wrong pin, not three.** See §4.
+
+## 8. 🔒 The prop catalogue — settled Sep 9 2026
+
+Built from the 44 filenames in `Art/_sliced/01 - Kitchen Essentials/props/`, which encode
+family and tier directly. **43 station sprites across 15 families** — `22-Masala
+container` is excluded by §7.3 (Container is an ingredient, not a station).
+
+**Two of the 43 are baked today** (`prop-kettle-l1`, `prop-water-dispenser-l1`).
+
+### 8.1 The families
+
+| Family key | Tiers | Sprite files | Aliases |
+|---|---|---|---|
+| `beverage-dispenser` | 2 | 01, 02 | `prop-beverage-dispenser-l1…l2` |
+| `brazier` | 1 (assigned) | 03 | `prop-brazier-l1` |
+| `cast-iron-skillet` | 2 | 04, 05 | `prop-cast-iron-skillet-l1…l2` |
+| `cooktop` | **5** | 06–10 | `prop-cooktop-l1…l5` |
+| `dough-counter` | 3 | 11–13 | `prop-dough-counter-l1…l3` |
+| `fry-pan` | **5** | 14–18 | `prop-fry-pan-l1…l5` |
+| `kettle` | 3 | 19–21 | `prop-kettle-l1…l3` |
+| `pressure-cooker` | 3 | 23–25 | `prop-pressure-cooker-l1…l3` |
+| `rice-cooker` | 3 | 26–28 | `prop-rice-cooker-l1…l3` |
+| `sauce-pan` | 3 | 29–31 | `prop-sauce-pan-l1…l3` |
+| `sauce-pot` | 3 | 32–34 | `prop-sauce-pot-l1…l3` |
+| `spice-grinder` | 4 | 35–38 | `prop-spice-grinder-l1…l4` |
+| `steam-cooktop` | 1 (assigned) | 39 | `prop-steam-cooktop-l1` |
+| `stock-pot` | 3 | 40–42 | `prop-stock-pot-l1…l3` |
+| `water-dispenser` | 2 | 43, 44 | `prop-water-dispenser-l1…l2` |
+
+Cost falls out of `kitchenConfig.ts`'s `propTierCost[tier-1]` — 40 / 70 / 120 / 200 / 320.
+
+### 8.2 The decisions — user, Sep 9 2026
+
+**1. A level's prop entry is explicit and never a bare string meaning two things.**
+`LevelRecord.props` today mixes family names (`'kettle'`) with **tier requirements**
+(`'tandoor'`, which is not a family — it is Cooktop L4/L5, per §7.3's Wok precedent and
+[RecipeList.md](RecipeList.md) §7.5). The entry becomes `{ family, tiers? }`, where an
+omitted `tiers` means every tier of that family. `grants` takes the same shape. **Nothing
+is inferred from a string at parse time.**
+
+**2. The Cooktop ladder is the file numbering; the pack's own descriptions are not the
+ladder.** User: *"L1 is just oven and L2 is just cooktop L3 is cooktop with oven and L4 is
+tandoor type cooktop."*
+
+| Tier | File | What it is |
+|---|---|---|
+| 1 | `06-Cooktop only oven(Level1)` | **Oven only** |
+| 2 | `07-Cooktop without anything(Level2)` | **Cooktop (hob) only** |
+| 3 | `08-Cooktop with Oven(Level3)` | Hob **with** oven |
+| 4 | `09-Cooktop only tandoor(Level4)` | **Tandoor**-type cooktop |
+| 5 | `10-Cooktop & Tandoor(Level5)` | Hob **and** tandoor |
+
+Consistent with everything already pinned to it: Naan pre-places `09` at L4
+([RecipeList.md](RecipeList.md) §7.5, [LevelEconomy.md](LevelEconomy.md)), and Bruschetta
+needs `06` as its oven (RecipeList §7.3).
+
+⚠️ **Cooktop is the one family whose tiers are not a capability superset.** L1 is an
+oven, L2 is a hob — **L2 cannot do what L1 does.** Everywhere else a higher tier is
+strictly better, which is what `propTierCost` ascending and §7.1's *"the lower tier stays
+placeable"* both assume. **This is why decision 1 uses an explicit `tiers` list rather
+than a `minTier`:** a dish needing an oven is served by tiers `[1, 3]`, which is not
+expressible as a minimum. Tandoor remains expressible either way (`[4, 5]`).
+
+**3. The two untiered singletons are assigned tier 1**, not special-cased at the call
+site: `brazier` → 1 (consistent with N0 L4 granting it as an entry-level station) and
+`steam-cooktop` → 1. Both then price at 40 through `propTierCost` like any other tier 1.
+
+**4.** §7.1's sprite count corrected from 39 to **41** — see the note there.
+
+**5.** `15-Fry pan(Level 2).png` renamed to `15-Fry pan(Level2).png`. All 44 filenames now
+parse on one pattern; [SpriteIndex.md](SpriteIndex.md) §6.14/§6.18 closed.
+
+### 8.3 ⬜ Still open — one question, for the user
+
+**Does a tandoor satisfy an oven requirement?** If yes, an oven dish is `[1, 3, 4, 5]`; if
+no, it is `[1, 3]`. It decides whether a player who has climbed to the tandoor can still
+bake Bruschetta, and it is a cooking call, not an engineering one. **Nothing should be
+authored against oven-requiring dishes until this is answered** — node 3 (Italian) is
+where it first bites.
 

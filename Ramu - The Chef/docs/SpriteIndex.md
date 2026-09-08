@@ -670,9 +670,12 @@ designed with station tiers in it, not have them retrofitted.**
   `41-Stovetop with Oven(Level2)`, `42-Stovetop without flames(Level1)`. The three carry
   **different base names**, so alphabetical sorting puts `&` first and the tiers run
   backwards. Every other family ascends. Fixing it means giving all three a common base.
-- **`12-Fry pan(Level 2).png` has a space** where every other tier is `(LevelN)`. The sort
-  parses the tier rather than the string so it lands correctly, but anything that later
-  parses these filenames naively will trip on it.
+- ~~**`12-Fry pan(Level 2).png` has a space** where every other tier is `(LevelN)`.~~
+  ✅ **RESOLVED Sep 9 2026.** Superseded twice over: §6.18's renumber made this file
+  `15-`, and the space itself is now gone — renamed to `15-Fry pan(Level2).png` on the
+  user's call, *"All the Fry pan names seem similar to me aside from just level denotion
+  updates and sprite change. Rename appropriately to fit in if necessary."* All 44
+  filenames now parse on one pattern.
 
 ### 6.18 ✅ Prop ordering complete · Sep 5, 20:15 IST
 
@@ -721,9 +724,11 @@ singletons in total (03, 22, 39).
 | 8 | Effects prop | 6 | — |
 | | **Total** | **128** | ✓ |
 
-⚠️ **`15-Fry pan(Level 2).png` still carries a space** where its four siblings use
-`(LevelN)`. The sort parses the tier rather than the string so it lands correctly, but a
-naive filename parser will not.
+✅ **RESOLVED Sep 9 2026 — `15-Fry pan(Level2).png`.** The space is gone and all 44
+filenames parse on the single pattern `NN-<Family>(LevelN).png` (three untiered files
+carry no suffix). Flagged twice before this — here and at §6.14 — and fixed only when
+something was finally about to parse them: the prop catalogue, [PropList.md](PropList.md)
+§8.
 
 ### 6.20 `Untagged/` — every non-Prop sprite, staged for hand-sorting
 
