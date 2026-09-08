@@ -163,6 +163,17 @@
  * `SLOT_ZONES` rather than deriving its own copy (round 12/13's anti-drift
  * reasoning). Round 9's old unlock guard is retired in its own comment below,
  * not restored — TestBelt.tsx's new FTUE Ready gate (n0l1 only) replaces it.
+ *
+ * Round 19: the billboard's upper panel now shows Walkouts alone, centred
+ * (task 3) — Coins moves out entirely into finalDishArea's left half
+ * alongside the DOM hamburger, the two agreeing on a horizontal fraction
+ * (x = boardWidth/4) rather than a shared pixel constant (task 4). Round
+ * 18's single-row final-dish tray is replaced outright by a vertical,
+ * scrollable dish BOARD (task 5) — `dishBoardViewport` is the one place its
+ * geometry is computed, the same anti-drift shape as `SLOT_ZONES`. The reach
+ * overlay's corner brightening (task 6) is fixed by drawing each zone
+ * opaque and compositing the group's alpha once via `cacheAsTexture`, rather
+ * than blending four (or one self-overlapping) translucent shapes.
  */
 import {
     Assets,
@@ -278,6 +289,15 @@ const UI_ALIASES = ['ui-slot-empty', 'ui-slot-filled', 'ui-hotbar', 'ui-containe
 // keeps "no asset work this round" true without every future level author
 // needing to remember this rule too.
 const MANIFEST_ALIASES = new Set(MANIFEST.bundles.flatMap((b) => b.assets).map((a) => a.alias as string));
+
+// Round 19, task 3: the exit-sign icon's art is a parallel handover — it may
+// not exist in the manifest yet. Checked once here (not force-loaded via
+// UI_ALIASES, which would throw Assets.load on a missing manifest entry
+// exactly as BAKED_ALIASES's own comment above describes) so the HUD can
+// render text-only when it's absent, per that task's explicit instruction
+// against a labelled placeholder tile.
+const EXIT_SIGN_ALIAS = 'ui-exit-sign';
+const HAS_EXIT_SIGN = MANIFEST_ALIASES.has(EXIT_SIGN_ALIAS);
 const BAKED_ALIASES = [
     ...KITCHEN_CONFIG.levelProps.map((p) => p.alias),
     ...ACTIVE_INGREDIENT_KINDS.map((k) => k.alias).filter((a) => MANIFEST_ALIASES.has(a)),
@@ -297,8 +317,10 @@ export async function createKitchenScene(
 ): Promise<Scene> {
     const { onChange, onShiftEnd, onSlotTapEmpty, onSlotTapFilled, onSlotsFilledChange, onSlotsUnlockedChange, onMessage } = callbacks;
     // Manifest-listed (deferred bundle) — load on demand rather than trust
-    // background-load timing, so Test Mode never races its own art.
-    await Assets.load([...UI_ALIASES, ...BAKED_ALIASES]);
+    // background-load timing, so Test Mode never races its own art. Round
+    // 19: ui-exit-sign only when the manifest actually lists it — see
+    // HAS_EXIT_SIGN's comment above.
+    await Assets.load([...UI_ALIASES, ...BAKED_ALIASES, ...(HAS_EXIT_SIGN ? [EXIT_SIGN_ALIAS] : [])]);
     const tex = {
         slotEmpty: Assets.get<Texture>('ui-slot-empty'),
         slotFilled: Assets.get<Texture>('ui-slot-filled'),
@@ -313,6 +335,11 @@ export async function createKitchenScene(
     // caller (TestBelt.tsx) destroys the stage separately, after this scene.
     const boardRoot = new Container();
     stage.root.addChild(boardRoot);
+    // Round 19, task 5: teardown for the scrollable dish board's drag/wheel
+    // listeners, which (unlike everything else in this closure) are NOT
+    // children of boardRoot and so aren't caught by boardRoot.destroy().
+    // Only ever populated when the dish board is actually scrollable.
+    const extraCleanups: (() => void)[] = [];
 
     function band(y: number, height: number, color: number): void {
         const g = new Graphics();
@@ -324,6 +351,14 @@ export async function createKitchenScene(
     band(B.stationRow.y, B.stationRow.height, BAND_TINTS.stationRow);
     band(B.beltRun2.y, B.beltRun2.height, BAND_TINTS.beltRun2);
     band(B.finalDishArea.y, B.finalDishArea.height, BAND_TINTS.finalDishArea);
+    // Round 19: hoisted here (FD was declared later, locally to the
+    // final-dish block) so both the coin group (task 4, finalDishContent —
+    // y 1000-1160) and the dish board viewport (task 5, the WHOLE
+    // finalDishArea — y 1000-1280, since the hamburger no longer reserves
+    // any of the right half) share one read apiece, rather than reaching
+    // into KITCHEN_CONFIG.bands twice for the same rectangles.
+    const FD = B.finalDishContent;
+    const FA = B.finalDishArea;
 
     // Round 3, task 2: the belt drawn as a path, not just band color — same
     // two-pass edge+dirt stroke as towerScene.ts's drawRoad, same pathWidth,
@@ -378,44 +413,67 @@ export async function createKitchenScene(
     upperPanel.position.set(BB.panelInner.x, BB.upperPanel.y);
     boardRoot.addChild(upperPanel);
 
-    // Round 9, task 8: the upper panel splits left/right — Walkouts Left on
-    // the left quarter-centre, Coins on the right, both at the panel's
-    // vertical centre. `HUD_MAX_W` keeps a four-digit wallet from
-    // overflowing into the other half, via `setFitText` below (same
-    // shrink-to-fit discipline as the ingredient row's `fitText`, but
-    // mutating an existing Text in place rather than recreating one every
-    // tick — these two update every frame, badges only on an event).
-    const HUD_MAX_W = BB.panelInner.width / 2 - 24;
+    // Round 9, task 8 (superseded by round 19): the upper panel used to
+    // split left/right, Walkouts on the left quarter-centre and Coins on the
+    // right. Round 19, task 4 moves Coins out of this panel entirely, into
+    // finalDishArea's left half (below) — Walkouts now owns the whole panel
+    // and centres on it. `HUD_MAX_W` widens from a quarter-width budget to
+    // (nearly) the whole panel accordingly.
+    const HUD_SIDE_INSET = 24;
+    const HUD_MAX_W = BB.panelInner.width - 2 * HUD_SIDE_INSET;
     const hudY = BB.upperPanel.y + BB.upperPanel.height / 2;
+    const panelCenterX = BB.panelInner.x + BB.panelInner.width / 2;
+
+    // Round 19, task 3: an exit-sign icon to the left of the text, when the
+    // art exists — `ui-exit-sign`'s sprite is a parallel handover, not
+    // guaranteed to have landed in the manifest yet (HAS_EXIT_SIGN, above).
+    // No manifest line is added and no placeholder tile is drawn for it this
+    // round: a labelled placeholder in the HUD banner would look worse than
+    // no icon, per the handover, so this renders text-only when absent.
+    const EXIT_SIGN_ICON_H = 26;
+    const EXIT_SIGN_GAP = 8;
+    const exitSignIcon = HAS_EXIT_SIGN ? new Sprite(Assets.get<Texture>(EXIT_SIGN_ALIAS)) : null;
+    if (exitSignIcon) {
+        exitSignIcon.anchor.set(0.5);
+        exitSignIcon.height = EXIT_SIGN_ICON_H;
+        exitSignIcon.width = exitSignIcon.texture.width * (EXIT_SIGN_ICON_H / exitSignIcon.texture.height);
+        boardRoot.addChild(exitSignIcon);
+    }
+
     const walkoutsText = new Text({
         text: '',
         style: { fill: 0x1b1b2b, fontSize: 26, fontWeight: '800' },
     });
-    walkoutsText.anchor.set(0.5);
-    walkoutsText.position.set(BB.panelInner.x + BB.panelInner.width / 4, hudY);
+    // Left-anchored (was centred) — layoutWalkouts below positions the
+    // icon+text group by its own left edge so the pair can be centred on the
+    // panel together, rather than centring the text alone and eyeballing
+    // where the icon sits relative to it.
+    walkoutsText.anchor.set(0, 0.5);
     boardRoot.addChild(walkoutsText);
+    function layoutWalkouts(): void {
+        const iconSpan = exitSignIcon ? exitSignIcon.width + EXIT_SIGN_GAP : 0;
+        const groupLeft = panelCenterX - (iconSpan + walkoutsText.width) / 2;
+        if (exitSignIcon) exitSignIcon.position.set(groupLeft + exitSignIcon.width / 2, hudY);
+        walkoutsText.position.set(groupLeft + iconSpan, hudY);
+    }
 
-    // Round 11: the word "Coins" is replaced by the baked ui-coin icon —
-    // icon height matched to the text's own base size (26), then a small
-    // gap, then the number. The number's own max width shrinks by the
-    // icon+gap first, so the group's total width still can't exceed
-    // HUD_MAX_W and collide with walkoutsText, same bound the bare text used
-    // to respect.
-    //
-    // Round 12a: the group is RIGHT-ANCHORED, not centred on the panel's
-    // right quarter-point. Centring suited the old fixed-width "Coins : N"
-    // string but not an icon plus a 1-3 digit number: a narrow group left a
-    // visible gap to the panel's right edge while sitting far from
-    // walkoutsText. Anchoring the right edge also keeps the readout still as
-    // the digit count changes — a centred group shifts BOTH of its ends on
-    // every coin gained. The collision bound holds by construction: the
-    // group is at most HUD_MAX_W wide, so its left edge cannot reach the
-    // panel's midpoint.
+    // Round 19, task 4: coins move out of the upper panel into
+    // finalDishArea's left half — Pixi stays Pixi (no wallet callback into
+    // React), only the position changes. The upper panel's dark text fill
+    // (0x1b1b2b, tuned for the light hotbar wood texture) would be invisible
+    // against finalDishArea's dark band tint, so this switches to white —
+    // the same fill the dish-count text already uses successfully on this
+    // same band.
     const COIN_ICON_H = 26;
     const COIN_ICON_GAP = 6;
-    // The same 24 HUD_MAX_W reserves off the half-width — one inset for this
-    // block, so the right margin and the collision slack can't drift apart.
-    const HUD_RIGHT_INSET = 24;
+    // Centred on boardWidth/4 (180) — the left half's own centre. The cap
+    // (half the board, less a margin on each side) keeps the group clear of
+    // dishBoardViewport's left edge (x=368, task 5) even at its natural,
+    // unshrunk width; setFitText below only ever needs to bite into that
+    // margin for an implausibly large wallet.
+    const COIN_GROUP_CENTER_X = KITCHEN_CONFIG.boardWidth / 4;
+    const COIN_GROUP_CENTER_Y = FD.y + FD.height / 2;
+    const COIN_GROUP_MAX_W = KITCHEN_CONFIG.boardWidth / 2 - 40;
     const coinIcon = new Sprite(tex.coin);
     coinIcon.anchor.set(0.5);
     coinIcon.height = COIN_ICON_H;
@@ -424,7 +482,7 @@ export async function createKitchenScene(
 
     const coinsText = new Text({
         text: '',
-        style: { fill: 0x1b1b2b, fontSize: 26, fontWeight: '800' },
+        style: { fill: 0xffffff, fontSize: 26, fontWeight: '800' },
     });
     coinsText.anchor.set(0, 0.5);
     boardRoot.addChild(coinsText);
@@ -1003,6 +1061,22 @@ export async function createKitchenScene(
         return points;
     }
 
+    // Round 19, task 6: each zone's own stroke geometry self-overlaps at the
+    // belt's two right-hand corner vertices — zone 2 [496,941] contains the
+    // vertex at 746, zone 3 [1011,1456] contains 1206, and the join geometry
+    // 'round' generates there double-composites when drawn at REACH_ALPHA
+    // directly, brightening a ~beltwidth square. (The left vertices at
+    // 176/1776 fall inside round 18's end insets and correctly carry no band
+    // at all — that absence is unrelated and untouched.) The fix: stroke
+    // every zone fully OPAQUE (alpha 1 — overlapping opaque triangles just
+    // overwrite each other, no accumulation), then flatten the group to a
+    // single texture via cacheAsTexture and apply REACH_ALPHA ONCE on that
+    // flattened result — one composite over the whole (now self-consistent)
+    // group instead of a blend per triangle. The four zones are disjoint
+    // from EACH OTHER, so one shared alpha over all four remains correct;
+    // the artefact this fixes was always internal to a single zone's own
+    // geometry, never a cross-zone overlap.
+    const reachOverlayGroup = new Container();
     const reachOverlays = KITCHEN_CONFIG.slots.map((_, i) => {
         const g = new Graphics();
         const points = zonePoints(SLOT_ZONES[i]);
@@ -1019,55 +1093,105 @@ export async function createKitchenScene(
             g.stroke({
                 width: CONFIG.sizes.pathWidth,
                 color: REACH_COLOR,
-                alpha: REACH_ALPHA,
+                alpha: 1,
                 cap: 'butt',
                 join: 'round',
             });
         }
         g.visible = false;
-        world.addChild(g);
+        reachOverlayGroup.addChild(g);
         return g;
     });
+    reachOverlayGroup.alpha = REACH_ALPHA;
+    reachOverlayGroup.cacheAsTexture(true);
+    world.addChild(reachOverlayGroup);
     // Visibility mirrors slotProp[i] !== null — called from the same two
     // places that already fire onSlotsFilledChange (placeProp, sellProp), and
     // gated on nothing else, so it's live during setup, before Ready.
+    // Round 19: also refreshes the cached texture — cacheAsTexture snapshots
+    // the group once, so a visibility change on one child needs an explicit
+    // updateCacheTexture() or the flattened cache would go stale.
     function updateReachOverlay(i: number): void {
         reachOverlays[i].visible = slotProp[i] !== null;
+        reachOverlayGroup.updateCacheTexture();
     }
 
     const dishViews = new Map<number, Container>();
 
-    // Round 4, task 1: one entry per dish type — [sprite] x[count] — instead
-    // of round 3's accumulating 12-slot pool. A type with zero served stays
-    // hidden entirely (not shown as x0). Stays inside finalDishContent
-    // (y 1000-1160); hamburgerReserve (1160-1280) is never touched.
-    //
-    // Round 5, task 8: drawn at up to finalDishSize (205x136, native aspect
-    // preserved) — the room a two-dish grid used to split, round 5 gave
-    // whole to the one dish that FTUE level served. Count text sized to
-    // match.
-    //
-    // Round 17, task 5: one entry PER ACTIVE RECIPE, not a single hardcoded
-    // slot — finalDishes/finalDishSlotX/finalDishSize (KITCHEN_CONFIG, now
-    // SUPERSEDED) are all derived from level.recipes.length instead. Each
-    // recipe gets an even boardWidth/count-wide share of finalDishContent;
-    // for count===1 that share is the full board width, so `fdScale` below
-    // resolves to 1 and N0 L1/L2/N1 L1 draw at exactly the round-5 205x136
-    // size, unchanged. A dish with no manifest sprite (jeera-rice) falls
-    // back to a procedural tile, same fallback makeIngredientView already
-    // uses for an unsprited ingredient.
-    const FD = KITCHEN_CONFIG.bands.finalDishContent;
-    const entryY = FD.y + FD.height / 2;
+    // Round 19, task 5: the dish board — a vertical, scrollable list, one
+    // row per recipe, replacing round 17's horizontal per-recipe split
+    // outright. `dishBoardViewport` is the ONE place this geometry is
+    // computed (same anti-drift shape as sim/kitchen.ts's SLOT_ZONES) — the
+    // right half of finalDishArea (FA), inset 8 on all four sides. With the
+    // hamburger gone from this half (task 4 moved it, and the coin group,
+    // into the LEFT half instead), this viewport uses the full band down to
+    // FA's own bottom edge — hamburgerReserve (1160-1280) is no longer a
+    // right-half concern at all, only a left-half one (kitchenScene.ts no
+    // longer draws anything there; TestBelt.tsx's DOM hamburger occupies it).
+    const DISH_BOARD_INSET = 8;
+    const dishBoardViewport = {
+        x: KITCHEN_CONFIG.boardWidth / 2 + DISH_BOARD_INSET,
+        y: FA.y + DISH_BOARD_INSET,
+        w: KITCHEN_CONFIG.boardWidth / 2 - DISH_BOARD_INSET * 2,
+        h: FA.height - DISH_BOARD_INSET * 2,
+    };
     const dishRecipeCount = level.recipes.length;
     const FD_CAP = KITCHEN_CONFIG.finalDishSize; // round 5's 205x136 — the size cap
-    const slotWidth = KITCHEN_CONFIG.boardWidth / dishRecipeCount;
-    // 76 approximates the count-text gap (16) + a 1-2 digit "×N" at fontSize
-    // 44 (~60) each entry also needs beside its sprite, so the shrink check
-    // accounts for the whole group's width, not just the sprite's.
-    const fdScale = Math.min(1, slotWidth / (FD_CAP.w + 76));
-    const fdw = FD_CAP.w * fdScale;
-    const fdh = FD_CAP.h * fdScale;
-    const finalDishSlotX = level.recipes.map((_, i) => slotWidth * (i + 0.5));
+    const dishRowCenterX = dishBoardViewport.x + dishBoardViewport.w / 2;
+
+    // A recipe name label, always drawn (round 18, task 4's rule survives
+    // unchanged here — see the 🔵 dimming rule below for why it's the ONE
+    // thing in a row that's never hidden or dimmed). Borrows PROP_LABEL_
+    // STYLE's dark stroke so it reads against the billboard-brown band.
+    const ROW_NAME_GAP = 6;
+    const RECIPE_NAME_STYLE = {
+        fill: 0xffffff,
+        fontSize: 22,
+        fontWeight: '700',
+        stroke: { color: 0x1b1b2b, width: 3 },
+    } as const;
+    // Measured, not hardcoded — a probe with a tall glyph, destroyed right
+    // after, the same one-off-probe idiom formatPropLabel already uses below.
+    const nameProbe = new Text({ text: 'Mg', style: RECIPE_NAME_STYLE });
+    const nameBlockHeight = nameProbe.height;
+    nameProbe.destroy();
+
+    // Row height: ROW_MAX is exactly the natural (unscaled) stack height —
+    // the full-size sprite (FD_CAP.h) + the gap + the name block — so a
+    // single recipe (dishRecipeCount===1) always resolves dishRowScale to 1
+    // below and draws at the unchanged round-5 205x136 size. ROW_MIN is a
+    // hard floor of AVAIL/3, so a level can never shrink rows past a stable
+    // three-row minimum — a 4th+ recipe grows the list instead of the rows.
+    const ROW_MAX = FD_CAP.h + ROW_NAME_GAP + nameBlockHeight;
+    const ROW_MIN = dishBoardViewport.h / 3;
+    const rowHeight = Math.min(ROW_MAX, Math.max(ROW_MIN, dishBoardViewport.h / dishRecipeCount));
+    const contentHeight = dishRecipeCount * rowHeight;
+    const scrollable = contentHeight > dishBoardViewport.h;
+    // Centred when everything fits (a one-recipe level keeps today's
+    // centred look); top-aligned and scrollable otherwise.
+    const boardTopY = scrollable
+        ? dishBoardViewport.y
+        : dishBoardViewport.y + (dishBoardViewport.h - contentHeight) / 2;
+
+    // One row scale for the whole board (every row is the same height) — the
+    // name block above is treated as fixed (its own setFitText floor governs
+    // it, not this scale), so the sprite gets whatever vertical room is left
+    // after reserving it. At ROW_MIN (88) that leaves ~54 units of sprite
+    // height against a still-~22px name — the name reads large relative to
+    // the dish there; accepted per the handover, not retuned here.
+    // `widthCapScale` is round 17's own 76-unit budget (count-text gap + a
+    // 1-2 digit ×N), re-derived against the viewport's fixed 344 width
+    // instead of a per-recipe slotWidth — it isn't the binding constraint at
+    // today's recipe counts (never below 1 for n<=7), but stays in place so
+    // sprite+gap+×N still can never exceed the viewport if that changes.
+    const MIN_ROW_SCALE = 0.2;
+    const spriteFitScale = (rowHeight - ROW_NAME_GAP - nameBlockHeight) / FD_CAP.h;
+    const widthCapScale = dishBoardViewport.w / (FD_CAP.w + 76);
+    const dishRowScale = Math.max(MIN_ROW_SCALE, Math.min(spriteFitScale, widthCapScale));
+    const fdw = FD_CAP.w * dishRowScale;
+    const fdh = FD_CAP.h * dishRowScale;
+    const COUNT_FONT_FLOOR = 16;
+    const countFontSize = Math.max(COUNT_FONT_FLOOR, Math.round(44 * dishRowScale));
 
     function makeFinalDishView(alias: string, name: string): Container {
         if (Assets.cache.has(alias)) {
@@ -1090,59 +1214,70 @@ export async function createKitchenScene(
         return c;
     }
 
+    // The scroll container: everything a row draws is a child of this, not
+    // of boardRoot directly, so scrolling is one Container.y change rather
+    // than repositioning every child. `dishBoardMaskG` is parented into the
+    // display list (boardRoot, not the scroll container itself — masking a
+    // container with its own child is a Pixi footgun) per the handover.
+    const dishBoardMaskG = new Graphics();
+    dishBoardMaskG.rect(dishBoardViewport.x, dishBoardViewport.y, dishBoardViewport.w, dishBoardViewport.h).fill(0xffffff);
+    boardRoot.addChild(dishBoardMaskG);
+    const dishBoardScroll = new Container();
+    dishBoardScroll.mask = dishBoardMaskG;
+    boardRoot.addChild(dishBoardScroll);
+
     const dishCounts: number[] = level.recipes.map(() => 0);
-    const dishEntryViews: { view: Container; countText: Text }[] = level.recipes.map((recipe) => {
+    // Round 19, task 5 (🔵): the sprite, the count text, and the name label
+    // per row — replaces round 17/18's single [view, countText] pair.
+    const dishRows: { view: Container; countText: Text; y: number }[] = level.recipes.map((recipe, i) => {
+        const rowY = boardTopY + i * rowHeight;
         const view = makeFinalDishView(recipe.finalDish, recipe.name);
-        view.visible = false;
-        boardRoot.addChild(view);
-        const countText = new Text({ text: '', style: { fill: 0xffffff, fontSize: 44, fontWeight: '800' } });
+        dishBoardScroll.addChild(view);
+        const countText = new Text({ text: '', style: { fill: 0xffffff, fontSize: countFontSize, fontWeight: '800' } });
         countText.anchor.set(0, 0.5);
         countText.visible = false;
-        boardRoot.addChild(countText);
-        return { view, countText };
+        dishBoardScroll.addChild(countText);
+        const nameLabel = new Text({ text: '', style: RECIPE_NAME_STYLE });
+        nameLabel.anchor.set(0.5, 0);
+        setFitText(nameLabel, recipe.name, dishBoardViewport.w, 22, 10);
+        nameLabel.position.set(dishRowCenterX, rowY + fdh + ROW_NAME_GAP);
+        dishBoardScroll.addChild(nameLabel);
+        return { view, countText, y: rowY };
     });
 
-    // Round 18, task 4: the recipe's name, centred under the WHOLE group
-    // (sprite + ×N — finalDishSlotX[i] is the group's own centre, not the
-    // sprite's), permanently visible — a first-timer never gets told what
-    // they're cooking otherwise, and count 0 is exactly when they need that
-    // most, unlike the sprite/×N above which only appear on the first serve.
-    // Borrows PROP_LABEL_STYLE's dark stroke so it reads against the
-    // billboard-brown band, at the size/weight the handover asked for rather
-    // than the label's own 13px. `setFitText` against `slotWidth` (not
-    // fdw+76) so a long name shrinks before it could ever spill into the
-    // neighbouring dish's half of the board — the same reasoning `fdScale`
-    // above already applies to the sprite+count group.
-    const RECIPE_NAME_GAP = 8;
-    const RECIPE_NAME_STYLE = {
-        fill: 0xffffff,
-        fontSize: 22,
-        fontWeight: '700',
-        stroke: { color: 0x1b1b2b, width: 3 },
-    } as const;
-    level.recipes.forEach((recipe, i) => {
-        const label = new Text({ text: '', style: RECIPE_NAME_STYLE });
-        label.anchor.set(0.5, 0);
-        setFitText(label, recipe.name, slotWidth, 22, 10);
-        label.position.set(finalDishSlotX[i], entryY + fdh / 2 + RECIPE_NAME_GAP);
-        boardRoot.addChild(label);
-    });
-    function layoutDishEntries(): void {
-        level.recipes.forEach((_, i) => {
-            const count = dishCounts[i];
-            const { view, countText } = dishEntryViews[i];
-            view.visible = count > 0;
-            countText.visible = count > 0;
-            if (count === 0) return;
-            countText.text = `×${count}`;
-            const centerX = finalDishSlotX[i];
-            const gap = 16;
-            const totalW = fdw + gap + countText.width;
-            const spriteX = centerX - totalW / 2 + fdw / 2;
-            view.position.set(spriteX, entryY);
-            countText.position.set(spriteX + fdw / 2 + gap, entryY);
-        });
+    // Round 19, task 5 (🔵): before anything is served, the row shows a
+    // DIMMED sprite (DISH_UNSERVED_ALPHA), not empty space — the board's job
+    // before the first dish lands is "here is what you are cooking", and a
+    // bare name gets a first-timer less than half of that. ×N stays hidden
+    // at count 0 (round 4's rule: a zero type is never shown as ×0); the
+    // name stays fully opaque throughout, the one element in a row that's
+    // never hidden or dimmed. At count 0 the sprite alone centres on the row
+    // centre, so it shifts left by roughly half the ×N width the instant the
+    // first dish lands — a one-time, accepted shift (reserving blank space
+    // for a number that doesn't exist yet would look worse).
+    const DISH_UNSERVED_ALPHA = 0.35;
+    function layoutDishRow(i: number): void {
+        const count = dishCounts[i];
+        const { view, countText, y } = dishRows[i];
+        const spriteCenterY = y + fdh / 2;
+        view.visible = true;
+        if (count === 0) {
+            view.alpha = DISH_UNSERVED_ALPHA;
+            countText.visible = false;
+            view.position.set(dishRowCenterX, spriteCenterY);
+            return;
+        }
+        view.alpha = 1;
+        countText.visible = true;
+        countText.text = `×${count}`;
+        const gap = 16;
+        const totalW = fdw + gap + countText.width;
+        const spriteX = dishRowCenterX - totalW / 2 + fdw / 2;
+        view.position.set(spriteX, spriteCenterY);
+        countText.position.set(spriteX + fdw / 2 + gap, spriteCenterY);
     }
+    level.recipes.forEach((_, i) => layoutDishRow(i));
+
     // Round 8, task 6: fires on 'completed' only, not on every pickup — the
     // ×N under the belt is now the number of that dish actually made, which
     // is what it has always looked like it meant. Round 17: takes which
@@ -1150,7 +1285,86 @@ export async function createKitchenScene(
     // two-recipe level credits the right counter.
     function onCompletedDish(recipeIndex: number): void {
         dishCounts[recipeIndex]++;
-        layoutDishEntries();
+        layoutDishRow(recipeIndex);
+    }
+
+    // Round 19, task 5: drag-to-scroll (+ desktop wheel), installed ONLY
+    // when the content actually overflows the viewport — "no shipping level
+    // scrolls today" (max 2 recipes live), so this path is untested by
+    // ordinary play and only exercises via the temporary 6-recipe check
+    // (acceptance item 11). Offset is dishBoardScroll's own `.y`, clamped to
+    // [AVAIL - contentHeight, 0] — 0 keeps the top row's top at the
+    // viewport's top edge, the negative floor keeps the last row's bottom at
+    // the viewport's bottom edge. No stopPropagation anywhere: onTap
+    // (below) hit-tests only the four slot boxes at y 540-860, nowhere near
+    // this viewport (y 1008+), so the two can never contend for the same
+    // gesture — confirmed, not just assumed, before writing this.
+    //
+    // Affordance that more exists below: none added beyond the mask itself
+    // clipping a partial row at the viewport's bottom edge when scrollable —
+    // a truncated dish reads as "there's more" on its own, and a fourth
+    // decoration risked cluttering a board whose whole point is legibility.
+    if (scrollable) {
+        const minOffset = dishBoardViewport.h - contentHeight;
+        const maxOffset = 0;
+        // The hit-test target is a SEPARATE, NEVER-MOVED zone — not
+        // dishBoardScroll itself. Pixi's `hitArea` is tested in the
+        // object's own LOCAL space, and dishBoardScroll's local space
+        // shifts by exactly its own `.y` as it scrolls, so a hitArea fixed
+        // at the viewport's rectangle would silently drift out of
+        // alignment with the visually-fixed on-screen viewport the moment
+        // the container scrolls off 0 (confirmed the hard way: after one
+        // drag to the floor, a second drag inside the same visible area
+        // stopped registering at all). A dedicated invisible zone at a
+        // constant position has no such drift.
+        const dishBoardHitZone = new Graphics();
+        dishBoardHitZone
+            .rect(dishBoardViewport.x, dishBoardViewport.y, dishBoardViewport.w, dishBoardViewport.h)
+            .fill({ color: 0xffffff, alpha: 0 });
+        dishBoardHitZone.eventMode = 'static';
+        boardRoot.addChild(dishBoardHitZone);
+        let dragging = false;
+        let dragStartY = 0;
+        let scrollStartY = 0;
+        // `e.global` is in the RENDERER's screen space (CSS px, matching
+        // app.screen) — dishBoardScroll.y lives in design-space units, one
+        // level inside kitchenStage.ts's contain-fit scale. Converting
+        // through boardRoot.toLocal (the same idiom onTap below already
+        // uses for its own hit-test) turns the pointer's screen-space
+        // position into design-space directly, so the drag tracks the
+        // finger 1:1 regardless of the current letterbox scale — a raw
+        // `e.global.y` delta applied straight to dishBoardScroll.y would
+        // under-move the content by exactly that scale factor.
+        const onDown = (e: FederatedPointerEvent) => {
+            dragging = true;
+            dragStartY = boardRoot.toLocal(e.global).y;
+            scrollStartY = dishBoardScroll.y;
+        };
+        const onMove = (e: FederatedPointerEvent) => {
+            if (!dragging) return;
+            const dy = boardRoot.toLocal(e.global).y - dragStartY;
+            dishBoardScroll.y = Math.min(maxOffset, Math.max(minOffset, scrollStartY + dy));
+        };
+        const endDrag = () => { dragging = false; };
+        dishBoardHitZone.on('pointerdown', onDown);
+        app.stage.on('pointermove', onMove);
+        app.stage.on('pointerup', endDrag);
+        app.stage.on('pointerupoutside', endDrag);
+        const onWheel = (e: WheelEvent) => {
+            // Same scale correction as the drag handler above — deltaY is a
+            // CSS-px-ish DOM value, not a design-space one.
+            const dyDesign = e.deltaY / stage.root.scale.y;
+            dishBoardScroll.y = Math.min(maxOffset, Math.max(minOffset, dishBoardScroll.y - dyDesign));
+            e.preventDefault();
+        };
+        app.canvas.addEventListener('wheel', onWheel, { passive: false });
+        extraCleanups.push(() => {
+            dishBoardHitZone.off('pointerdown', onDown);
+            app.stage.off('pointermove', onMove);
+            app.stage.off('pointerup', endDrag);
+            app.stage.off('pointerupoutside', endDrag);
+            app.canvas.removeEventListener('wheel', onWheel);
+        });
     }
 
     const sim = createKitchenSim();
@@ -1171,16 +1385,18 @@ export async function createKitchenScene(
     // change (attemptUnlock, placeProp, sellProp) and every tick.
     function refreshHud(): void {
         const remaining = Math.max(0, level.walkoutsAllowed - sim.state.walkouts);
-        setFitText(walkoutsText, `Walkouts Left : ${remaining}`, HUD_MAX_W, 26, 14);
-        // Round 11: the icon consumes width setFitText previously had —
-        // shrink its budget by the icon+gap so (icon+gap+number) still fits
-        // HUD_MAX_W as a group.
-        setFitText(coinsText, `${wallet}`, HUD_MAX_W - coinIcon.width - COIN_ICON_GAP, 26, 14);
-        // Round 12a: right-anchored — see the coinIcon block above.
-        const groupRight = BB.panelInner.x + BB.panelInner.width - HUD_RIGHT_INSET;
-        const groupLeft = groupRight - (coinIcon.width + COIN_ICON_GAP + coinsText.width);
-        coinIcon.position.set(groupLeft + coinIcon.width / 2, hudY);
-        coinsText.position.set(groupLeft + coinIcon.width + COIN_ICON_GAP, hudY);
+        const walkoutsMaxW = exitSignIcon ? HUD_MAX_W - exitSignIcon.width - EXIT_SIGN_GAP : HUD_MAX_W;
+        setFitText(walkoutsText, `Walkouts Left : ${remaining}`, walkoutsMaxW, 26, 14);
+        layoutWalkouts();
+
+        // Round 19: centred on COIN_GROUP_CENTER_X/Y (finalDishArea's left
+        // half), not right-anchored on the upper panel — see the coinIcon
+        // block above.
+        setFitText(coinsText, `${wallet}`, COIN_GROUP_MAX_W - coinIcon.width - COIN_ICON_GAP, 26, 14);
+        const coinGroupW = coinIcon.width + COIN_ICON_GAP + coinsText.width;
+        const coinGroupLeft = COIN_GROUP_CENTER_X - coinGroupW / 2;
+        coinIcon.position.set(coinGroupLeft + coinIcon.width / 2, COIN_GROUP_CENTER_Y);
+        coinsText.position.set(coinGroupLeft + coinIcon.width + COIN_ICON_GAP, COIN_GROUP_CENTER_Y);
     }
     refreshHud();
     function start(): void {
@@ -1437,6 +1653,10 @@ export async function createKitchenScene(
         destroy() {
             app.ticker.remove(tick);
             app.stage.off('pointertap', onTap);
+            // Round 19: the dish board's drag/wheel listeners live on
+            // app.stage and app.canvas, neither of which boardRoot.destroy()
+            // below reaches.
+            for (const cleanup of extraCleanups) cleanup();
             boardRoot.destroy({ children: true });
         },
     };

@@ -72,6 +72,19 @@
  * a shift with an empty board and watch it run out. Every other level keeps
  * the plain button unchanged. Setup interaction itself (slot taps, picker,
  * hamburger) is untouched — still ungated, exactly as round 10 left it.
+ *
+ * Round 19: round 10's separate top-of-screen setup nudge is retired — round
+ * 18's Ready-slot sequence already teaches the same thing, at the point
+ * where the player is actually looking (task 1). This deliberately removes
+ * setup text on N0 L2+ too: teaching is FTUE-only now, and every other level
+ * always showed a plain Ready button anyway, so there was nothing left for
+ * the top nudge to say there that the bottom slot didn't already cover. The
+ * Ready slot itself moves up to `bottom: 22%` (task 2) so it clears
+ * finalDishArea (design y 1000+) ahead of tasks 3-5 moving content into that
+ * band. The hamburger moves from centred to `left: 25%` (task 4) — the same
+ * horizontal fraction kitchenScene.ts's coin group now centres on, so the
+ * two agree on where "the left quarter" is without sharing a literal pixel
+ * value across a DOM/Pixi boundary.
  */
 import { useEffect, useRef, useState } from 'react';
 import type { Application } from 'pixi.js';
@@ -308,7 +321,30 @@ export default function TestBelt() {
             {!ready && !shiftResult && (
                 <div
                     className="pointer-events-none absolute inset-x-0 flex justify-center px-6"
-                    style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}
+                    // Round 19, task 2: was `calc(4rem + safe-area)`, which sat
+                    // inside finalDishArea (design y 1000-1280) and would have
+                    // collided with tasks 3-5 moving content into that band.
+                    // NOT 280/1280=22%: this wrapper's percentage is relative
+                    // to the full DOM viewport (TestBelt's outer `absolute
+                    // inset-0`), but kitchenStage.ts's contain-fit letterboxes
+                    // the Pixi content INSIDE that same box via an internal
+                    // transform (stage.root.x/y/scale) — the canvas element's
+                    // own CSS box is the full viewport, not the letterboxed
+                    // content rect. At a non-9:16 viewport (every real phone;
+                    // this project's own standard 420x900 test viewport is
+                    // 0.467, design is 0.5625) that gap means 22% of the full
+                    // viewport lands BELOW design y 1000, not above it —
+                    // measured at 1072 before this correction. 30%, measured
+                    // against that same 420x900 viewport (via the true
+                    // content-space conversion, not a naive canvas-rect
+                    // scale), lands at design y ≈ 949 — 51 units of margin.
+                    // Still not literally device-independent (a narrower/
+                    // taller phone letterboxes more and eats into that
+                    // margin), but holds with margin at this project's own
+                    // validated test aspect; a true fix would content-fit this
+                    // wrapper the same way kitchenStage.ts fits the canvas,
+                    // which is out of this round's scope.
+                    style={{ bottom: '30%' }}
                 >
                     {LEVEL.id === 'n0l1' && filledSlots === 0 ? (
                         <p className="rounded-2xl bg-black/70 px-6 py-3 text-center text-xl font-bold text-white">
@@ -337,32 +373,29 @@ export default function TestBelt() {
                 </div>
             )}
 
-            {/* Round 5, task 3 (rewritten round 10): the setup nudge. Slots
-                start locked, so "tap an empty station" is wrong as the first
-                message — name the actual first step (unlock costs coins)
-                until one is unlocked, then fall back to round 5's original
-                text once there's an empty station to point at. No longer
-                gated on `ready` — setup happens before the Ready press. */}
-            {!menuOpen && !shiftResult && filledSlots === 0 && (
-                <div
-                    className="pointer-events-none absolute inset-x-0 flex justify-center px-6"
-                    style={{ top: 'calc(1rem + env(safe-area-inset-top, 0px))' }}
-                >
-                    <p className="rounded-full bg-black/70 px-4 py-2 text-center text-[1.1rem] font-semibold text-white/90">
-                        {unlockedSlots === 0
-                            ? `Tap a locked station to unlock it — ${KITCHEN_CONFIG.slotUnlockCost} coins`
-                            : 'Tap an empty station to set it up'}
-                    </p>
-                </div>
-            )}
+            {/* Round 19, task 1: round 10's separate top-of-screen setup nudge
+                (duplicating round 18's Ready-slot text a second time, on
+                EVERY level with an empty board, not just FTUE) is retired —
+                see the file header. Deleted, not hidden: `unlockedSlots` and
+                `filledSlots` still exist for the Ready-slot gate below. */}
 
-            {/* Hamburger: centre bottom, replaces the old Exit button. No
-                longer gated on `ready` — it's needed most during setup. */}
+            {/* Hamburger: bottom, left of centre. No longer gated on `ready`
+                — it's needed most during setup.
+
+                Round 19, task 4: moved from centred (`left-1/2`) to
+                `left: 25%` — the same horizontal quarter-fraction
+                kitchenScene.ts's coin group (x = boardWidth/4) now centres
+                on, so the two agree on where "left quarter" is without
+                sharing a literal pixel value across the DOM/Pixi boundary.
+                Still `-translate-x-1/2`'d off that point, and still stacked
+                in the 1160-1280 reserve below the coins group — see
+                kitchenScene.ts's dishBoardViewport comment for why that
+                reserve is now a LEFT-half-only concern. */}
             {!menuOpen && (
                 <button
                     type="button"
                     aria-label="Shift menu"
-                    className="pointer-events-auto absolute left-1/2 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-xl bg-black/55 transition-transform active:scale-95"
+                    className="pointer-events-auto absolute left-[25%] flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-xl bg-black/55 transition-transform active:scale-95"
                     style={{ bottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))' }}
                     onClick={openMenu}
                 >
