@@ -189,6 +189,16 @@
  * assumption that the mask itself would clip a partial row and read as
  * "more below" was never true, since ROW_MIN is exactly AVAIL/3 and a
  * scrollable board always shows exactly three whole rows at rest.
+ *
+ * Round 22: props now share one fit scale (`PROP_FIT_SCALE`, task 1) instead
+ * of each sprite fitting `propSize` independently — a per-prop fit let two
+ * props at different native aspect ratios render at different apparent size
+ * even though the art shares one world scale; one shared minimum keeps that
+ * scale consistent across the board. `onSlotTapEmpty` (task 4b) now also
+ * hands the picker a snapshot of `wallet` — the pause TestBelt.tsx applies
+ * around both slot modals (task 4a, entirely on that side; this file has no
+ * notion of `paused`) is what makes that snapshot exact for the modal's
+ * whole lifetime, so no live subscription is needed.
  */
 import {
     Assets,
@@ -246,8 +256,10 @@ export interface KitchenSceneCallbacks {
      * instant — coins earned, wallet, and Chef Hats.
      */
     onShiftEnd(s: KitchenState, economy: EconomySnapshot): void;
-    /** Round 5, task 3: an empty slot was tapped — show the prop picker. */
-    onSlotTapEmpty(slotIndex: number): void;
+    /** Round 5, task 3: an empty slot was tapped — show the prop picker.
+     *  Round 22, task 4b: also carries the current wallet, snapshotted once
+     *  rather than subscribed — see the Round 22 file-header note. */
+    onSlotTapEmpty(slotIndex: number, wallet: number): void;
     /** Round 9, task 6: a filled slot was tapped with nothing to serve —
      *  offer to sell it. `info` is the placed prop's name and its refund. */
     onSlotTapFilled(slotIndex: number, info: { name: string; refund: number }): void;
@@ -345,6 +357,23 @@ export async function createKitchenScene(
         badgeCount: Assets.get<Texture>('ui-badge-count'),
         coin: Assets.get<Texture>('ui-coin'),
     };
+
+    // Round 22, task 1: one fit scale shared by every levelProps sprite, not
+    // a per-prop fit against propSize — normalising each sprite to touch its
+    // OWN box edge let the box, not the object, set apparent size, so props
+    // whose native aspect ratios differ rendered at different scale even
+    // though the pack's sprites share one world scale (confirmed by eye —
+    // see the round's screenshot). The minimum across every prop is the one
+    // factor that keeps every sprite within propSize AND at the same scale
+    // as its neighbours. Derived from the loaded textures, not a typed
+    // pixel size in kitchenConfig.ts, which would go stale the moment a
+    // sprite is re-exported.
+    const PROP_FIT_SCALE = Math.min(
+        ...KITCHEN_CONFIG.levelProps.map((p) => {
+            const t = Assets.get<Texture>(p.alias);
+            return Math.min(KITCHEN_CONFIG.propSize.w / t.width, KITCHEN_CONFIG.propSize.h / t.height);
+        })
+    );
 
     // A child of stage.root, not stage.root itself — kitchenStage.ts's
     // caller (TestBelt.tsx) destroys the stage separately, after this scene.
@@ -998,10 +1027,10 @@ export async function createKitchenScene(
 
         const p = new Sprite(propTex);
         p.anchor.set(0.5);
-        const { w: pw, h: ph } = KITCHEN_CONFIG.propSize;
-        const fit = Math.min(pw / propTex.width, ph / propTex.height);
-        p.width = propTex.width * fit;
-        p.height = propTex.height * fit;
+        // Round 22, task 1: PROP_FIT_SCALE, not a per-prop fit — see its
+        // definition above.
+        p.width = propTex.width * PROP_FIT_SCALE;
+        p.height = propTex.height * PROP_FIT_SCALE;
         p.position.set(slot.x, slot.y);
         boardRoot.addChild(p);
 
@@ -1614,7 +1643,7 @@ export async function createKitchenScene(
                 if (slotLocked[i]) attemptUnlock(i);
                 // Round 5, task 3: an empty slot opens the picker instead of
                 // serving — a station has to be set up before it can work.
-                else if (slotProp[i] === null) onSlotTapEmpty(i);
+                else if (slotProp[i] === null) onSlotTapEmpty(i, wallet);
                 else attemptUseOrSell(i);
                 break;
             }

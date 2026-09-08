@@ -105,6 +105,17 @@
  * below for the exact derivations. Also this round: the ui-exit-sign icon
  * (task 1/2) — no changes needed in this file for that, it flows through
  * kitchenScene.ts's existing HAS_EXIT_SIGN gate untouched.
+ *
+ * Round 22, task 4: both `pendingSlot` (the picker) and `sellSlot` (the sell
+ * confirmation) now pause the shift on open and resume it on every exit
+ * path — before this round neither did, so the belt kept running (and
+ * walkouts kept accruing) behind either modal with no way for the player to
+ * react. `pendingSlot` also now carries a `wallet` snapshot alongside the
+ * slot index (task 4b), taken once when the slot is tapped rather than
+ * subscribed live, since the pause guarantees it stays exact for the whole
+ * time the picker is open. See the picker/sell-confirmation JSX below for
+ * the enumerated exit paths and PropPicker.tsx's own header for tasks 2/3
+ * (the picker's shared icon scale and its coin-prefixed cost display).
  */
 import { useEffect, useRef, useState } from 'react';
 import type { Application } from 'pixi.js';
@@ -169,8 +180,12 @@ export default function TestBelt() {
     const [shiftResult, setShiftResult] = useState<KitchenState | null>(null);
     // Round 9: the economy snapshot frozen at the same instant as shiftResult.
     const [shiftEconomy, setShiftEconomy] = useState<EconomySnapshot | null>(null);
-    // Round 5, task 3: which empty slot opened the picker, if any.
-    const [pendingSlot, setPendingSlot] = useState<number | null>(null);
+    // Round 5, task 3: which empty slot opened the picker, if any. Round 22,
+    // task 4b: carries the wallet snapshotted at the moment the slot was
+    // tapped — the shift is paused for the picker's whole lifetime (below),
+    // so this snapshot never goes stale; a live subscription would re-render
+    // the picker on every ingredient grab for no reason.
+    const [pendingSlot, setPendingSlot] = useState<{ index: number; wallet: number } | null>(null);
     const [filledSlots, setFilledSlots] = useState(0);
     // Round 10: mirrors filledSlots — how many slots are unlocked, so the
     // setup nudge can tell "nothing unlocked yet" apart from "unlocked but
@@ -221,8 +236,13 @@ export default function TestBelt() {
             scene = await createKitchenScene(app, stage, {
                 onChange: (s) => setState(s),
                 onShiftEnd: (s, economy) => { setShiftResult(s); setShiftEconomy(economy); },
-                onSlotTapEmpty: (i) => setPendingSlot(i),
-                onSlotTapFilled: (i, info) => setSellSlot({ index: i, ...info }),
+                // Round 22, task 4a: both slot modals pause the shift on
+                // open, unconditionally — during setup the ticker has
+                // nothing to advance anyway, so a "only if running" branch
+                // would only be one more thing to get wrong. See the JSX
+                // below for every resume path.
+                onSlotTapEmpty: (i, wallet) => { store.patch({ paused: true }); setPendingSlot({ index: i, wallet }); },
+                onSlotTapFilled: (i, info) => { store.patch({ paused: true }); setSellSlot({ index: i, ...info }); },
                 onSlotsFilledChange: (n) => setFilledSlots(n),
                 onSlotsUnlockedChange: (n) => setUnlockedSlots(n),
                 onMessage: (text) => setMessage(text),
@@ -556,14 +576,24 @@ export default function TestBelt() {
                 </div>
             )}
 
-            {/* Round 5, task 3: the prop picker for an empty slot. */}
+            {/* Round 5, task 3: the prop picker for an empty slot. Round 22,
+                task 4a: every exit path resumes the shift — pick (onPick,
+                below) and Cancel/backdrop (both routed through PropPicker's
+                own onClose) are the only two ways out. Resume fires last,
+                after the scene mutation (placeProp) and after clearing this
+                modal's own state, matching onClose's own ordering. */}
             {pendingSlot !== null && (
                 <PropPicker
+                    wallet={pendingSlot.wallet}
                     onPick={(propIndex) => {
-                        sceneRef.current?.placeProp(pendingSlot, propIndex);
+                        sceneRef.current?.placeProp(pendingSlot.index, propIndex);
                         setPendingSlot(null);
+                        store.patch({ paused: false });
                     }}
-                    onClose={() => setPendingSlot(null)}
+                    onClose={() => {
+                        setPendingSlot(null);
+                        store.patch({ paused: false });
+                    }}
                 />
             )}
 
@@ -589,11 +619,14 @@ export default function TestBelt() {
             )}
 
             {/* Round 9, task 6: sell confirmation for a filled slot with
-                nothing to serve — same DOM-overlay pattern again. */}
+                nothing to serve — same DOM-overlay pattern again. Round 22,
+                task 4a: three exit paths (confirm, Cancel, backdrop), each
+                resuming the shift last — after the scene mutation (sellProp,
+                confirm only) and after clearing this modal's own state. */}
             {sellSlot && (
                 <div
                     className="pointer-events-auto absolute inset-0 z-20 flex items-end justify-center bg-black/60"
-                    onClick={() => setSellSlot(null)}
+                    onClick={() => { setSellSlot(null); store.patch({ paused: false }); }}
                 >
                     <div className="mx-3 mb-3 w-full max-w-md rounded-2xl bg-black/85 p-4" onClick={(e) => e.stopPropagation()}>
                         <p className="mb-1 text-center text-xl font-bold text-white">Sell {sellSlot.name}?</p>
@@ -602,14 +635,18 @@ export default function TestBelt() {
                             <button
                                 type="button"
                                 className="flex-1 rounded-xl bg-primary py-2 text-lg font-bold text-black transition-transform active:scale-95"
-                                onClick={() => { sceneRef.current?.sellProp(sellSlot.index); setSellSlot(null); }}
+                                onClick={() => {
+                                    sceneRef.current?.sellProp(sellSlot.index);
+                                    setSellSlot(null);
+                                    store.patch({ paused: false });
+                                }}
                             >
                                 Sell
                             </button>
                             <button
                                 type="button"
                                 className="flex-1 rounded-xl bg-white/10 py-2 text-lg font-semibold text-white/70 transition-transform active:scale-95"
-                                onClick={() => { sfx.click(); setSellSlot(null); }}
+                                onClick={() => { sfx.click(); setSellSlot(null); store.patch({ paused: false }); }}
                             >
                                 Cancel
                             </button>
