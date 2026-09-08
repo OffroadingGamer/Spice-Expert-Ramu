@@ -211,6 +211,13 @@
  * before `Assets.load` runs); `createKitchenSim(level)` is passed the same
  * parameter through. `UI_ALIASES`/`MANIFEST_ALIASES`/`EXIT_SIGN_ALIAS`/
  * `HAS_EXIT_SIGN` are level-independent and stay at module scope, untouched.
+ *
+ * Round 25, task 1: EconomySnapshot now carries `dishCounts` — the same
+ * per-recipe tallies the dish board (`dishCounts`, local to this function)
+ * already keeps — so TestBelt.tsx's end screen can print one line per
+ * recipe instead of totalling every completion under one hardcoded dish
+ * name. No new counting: `computeEconomySnapshot` just copies the array
+ * that already exists at the same scope depth.
  */
 import {
     Assets,
@@ -240,6 +247,13 @@ export interface EconomySnapshot {
     /** Floored at 100 for display/scoring — see kitchenConfig.ts's `coins`. */
     coinsEarned: number;
     hats: number;
+    /** Round 25, task 1: per-recipe completion counts, index-aligned to
+     *  `level.recipes` — a frozen copy of the dish board's own running
+     *  tally at the instant of 'won'/'lost', so a two-recipe level's end
+     *  screen can name each dish instead of totalling under one name.
+     *  KitchenState.completed stays the scalar sum used by the win check
+     *  and the belt ramp; this is purely for display. */
+    dishCounts: number[];
 }
 
 export interface Scene {
@@ -1565,7 +1579,7 @@ export async function createKitchenScene(
         if (level.isBoss) {
             const waves = Math.floor(sim.state.completed / 4);
             const hats = 15 * waves * (waves + 1);
-            return { wallet, coinsEarned: Math.max(100, coinsEarned), hats };
+            return { wallet, coinsEarned: Math.max(100, coinsEarned), hats, dishCounts: [...dishCounts] };
         }
         const leftover = Object.values(sim.state.held).reduce((a, b) => a + b, 0);
         const H = KITCHEN_CONFIG.hats;
@@ -1577,7 +1591,10 @@ export async function createKitchenScene(
         // Round 9, task 3: coinsEarned is floored at 100 for display/scoring
         // only — the underlying accumulator can dip lower, this just keeps a
         // heavy loss from ever showing (or scoring against) a negative.
-        return { wallet, coinsEarned: Math.max(100, coinsEarned), hats };
+        // Round 25, task 1: a copy, not the live `dishCounts` array — this is
+        // a frozen snapshot, and the live array keeps mutating on every
+        // 'completed' event after the end screen has already rendered it.
+        return { wallet, coinsEarned: Math.max(100, coinsEarned), hats, dishCounts: [...dishCounts] };
     }
 
     // Round 9, task 5 (superseded by round 12; retired by round 18): unlock a

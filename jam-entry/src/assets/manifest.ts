@@ -73,6 +73,13 @@ export const MANIFEST: Manifest = {
                 { alias: 'ui-chef-hat', src: 'images/ui-chef-hat.png' },
                 { alias: 'ui-coin', src: 'images/ui-coin.png' },
                 { alias: 'ui-exit-sign', src: 'images/ui-exit-sign.png' },
+                // Round 25, task 2: end-screen card backdrop, baked from
+                // Ramu - The Chef/UI/Cards/CardRegular/ (gitignored source,
+                // same demo pack as ui-billboard/ui-hotbar/ui-container
+                // above) — wood on a clear ('won'), red on a loss ('lost').
+                // 9-sliced in TestBelt.tsx, never uniform-scaled.
+                { alias: 'ui-card-wood', src: 'images/ui-card-wood.png' },
+                { alias: 'ui-card-red', src: 'images/ui-card-red.png' },
                 // Round 3: station props + belt ingredients + final dishes.
                 // ing-tea-leaf / ing-sugar / ing-chai-masala have no manifest
                 // line yet (§2.6 — procedural placeholder until art exists).

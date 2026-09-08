@@ -133,8 +133,26 @@
  * unreachable. No per-level prop gating this round (task 6) —
  * LevelRecord.props/prePlaced stay unread, the picker still offers
  * KITCHEN_CONFIG.levelProps unconditionally.
+ *
+ * Round 25: two end-screen fixes. Task 1 — the figure list now prints one
+ * line per recipe (`LEVEL.recipes`, named), off a new `dishCounts` on
+ * kitchenScene.ts's EconomySnapshot, instead of totalling every completion
+ * under one hardcoded "chai" line; the loss shortfall line no longer names a
+ * dish either (`LEVEL.target` is a level-wide total, not any one recipe's).
+ * Task 2 — the end screen's `bg-black/70` scrim (which let the live board
+ * read through and let its buttons overlap station sprites) is replaced by
+ * an actual card panel: a 9-sliced (`border-image`, `fill`) wood/red PNG
+ * (`ui-card-wood`/`ui-card-red`, baked from the same demo pack as
+ * ui-billboard/ui-hotbar/ui-container) that grows to contain its content
+ * without distorting its corners. The title sits in the fixed header band
+ * (absolutely positioned at half the header's own border-width, so it stays
+ * correct regardless of the panel's final size); every other figure, the
+ * star row, Chef Hats, and all three buttons move inside the cream body —
+ * see CARD_GEOMETRY/cardPanelStyle just below the imports for the measured
+ * slice values and why border-image-width is left at its CSS default
+ * (`auto`, which just adopts border-width) rather than set separately.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { Application } from 'pixi.js';
 import { setMusicVolume, setSfxVolume, sfx, switchCue } from '../audio/audio.ts';
 import { createPixiApp } from '../game/pixiApp.ts';
@@ -153,6 +171,35 @@ import PropPicker from './PropPicker.tsx';
 const ASSET_SRC = new Map(
     MANIFEST.bundles.flatMap((b) => b.assets).map((a) => [a.alias as string, a.src as string])
 );
+
+// Round 25, task 2: the end-screen card backdrop's 9-slice geometry, sampled
+// down each source PNG's own centre column (see the handover) — top differs
+// by 1px between the two (red's divider sits 1px lower; expected, not
+// chased), right/bottom/left are shared. CARD_ZOOM scales the fixed
+// header/footer/side art up to a legible on-screen size; it does NOT touch
+// border-image-slice (that reads pixel offsets in the SOURCE image, which
+// never changes) — only border-width/border-image-width, which is what
+// "zoom" actually means for a 9-slice: the fixed frame gets thicker, the
+// cream body in the middle still stretches to whatever the content needs.
+const CARD_ZOOM = 1.3;
+const CARD_GEOMETRY = {
+    wood: { sliceTop: 85, borderTop: Math.round(85 * CARD_ZOOM) },
+    red: { sliceTop: 86, borderTop: Math.round(86 * CARD_ZOOM) },
+} as const;
+const CARD_SIDE = Math.round(7 * CARD_ZOOM);
+const CARD_BOTTOM = Math.round(22 * CARD_ZOOM);
+
+function cardPanelStyle(variant: 'wood' | 'red'): CSSProperties {
+    const g = CARD_GEOMETRY[variant];
+    const src = ASSET_SRC.get(variant === 'wood' ? 'ui-card-wood' : 'ui-card-red');
+    return {
+        borderStyle: 'solid',
+        borderWidth: `${g.borderTop}px ${CARD_SIDE}px ${CARD_BOTTOM}px ${CARD_SIDE}px`,
+        borderImageSource: `url(${src})`,
+        borderImageSlice: `${g.sliceTop} 7 22 7 fill`,
+        borderImageRepeat: 'stretch',
+    };
+}
 
 function IconMusic({ muted }: { muted: boolean }) {
     return (
@@ -350,6 +397,11 @@ export default function TestBelt() {
     const shiftLeftover = shiftResult
         ? Object.values(shiftResult.held).reduce((sum, v) => sum + v, 0)
         : 0;
+    // Round 25, task 1: per-recipe completion counts for the end screen's
+    // dish lines. shiftEconomy is always set in the same onShiftEnd call as
+    // shiftResult (see the effect below), so this only ever falls back
+    // before either has fired.
+    const dishCounts = shiftEconomy?.dishCounts ?? LEVEL.recipes.map(() => 0);
     // Round 9, task 9: stars are on coinsEarned, and only on a clear — a
     // loss shows none at all, regardless of coins earned.
     // Round 16: LEVEL.stars is null on a boss — it awards no stars at all
@@ -543,92 +595,168 @@ export default function TestBelt() {
                 kitchenScene's onShiftEnd event) — not by polling state.phase
                 on a tick that may not run once the last dish resolves.
                 Round 5, task 7: figures restacked one per line. */}
-            {shiftResult && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-black/70">
-                    <p className="text-3xl font-bold">
-                        {shiftResult.phase === 'won' ? 'Shift cleared' : 'Too many walkouts'}
-                    </p>
-                    <div className="flex flex-col items-center gap-1 text-lg text-white/70">
-                        <p>{shiftResult.completed} chai completed</p>
-                        <p>{shiftResult.served} ingredients collected</p>
-                        <p>{shiftResult.walkouts} walked out</p>
-                        <p>{shiftLeftover} ingredients discarded</p>
-                        {/* Round 9, task 2: replaces shiftPending — zero on a
-                            win hides the line entirely (rendered only on a
-                            loss); the real gap on a loss. Round 16: also
-                            hidden on a boss (LEVEL.target null) — there is
-                            no target to have fallen short of. */}
-                        {shiftResult.phase === 'lost' && LEVEL.target !== null && <p>{chaiShort} chai short</p>}
-                    </div>
-                    {/* Round 9, task 9: Chef Hats on any completed run (win or
-                        loss); coins earned + stars + thresholds only on a
-                        clear — a loss shows no stars at all. */}
-                    {shiftEconomy && (
-                        <div className="flex flex-col items-center gap-3">
-                            {/* Round 16: also gated on LEVEL.stars !== null —
-                                a boss shows coins/hats but no star row at
-                                all, per §7.3b. */}
-                            {shiftResult.phase === 'won' && LEVEL.stars !== null && (
-                                <>
-                                    <p className="flex items-center gap-2 text-xl font-bold text-white">
-                                        <img src={ASSET_SRC.get('ui-coin')} alt="" className="h-6 w-6 object-contain" />
-                                        earned = {shiftEconomy.coinsEarned}
-                                    </p>
-                                    {/* Round 20, task 1: fills right-to-left — star i (0-indexed,
-                                        left to right) lights when stars >= 3-i, so the star that
-                                        goes dark first on a lower grade is the leftmost one. This
-                                        row is positionally paired with the threshold row directly
-                                        below (three / two / clear, left to right); reordering one
-                                        without the other breaks the pairing a player reads between
-                                        them. */}
-                                    <div className="flex gap-6 text-3xl">
-                                        <span>{stars >= 3 ? '★' : '☆'}</span>
-                                        <span>{stars >= 2 ? '★' : '☆'}</span>
-                                        <span>{stars >= 1 ? '★' : '☆'}</span>
-                                    </div>
-                                    <div className="flex gap-6 text-sm text-white/50">
-                                        <span>{LEVEL.stars.three}</span>
-                                        <span>{LEVEL.stars.two}</span>
-                                        <span>clear</span>
-                                    </div>
-                                </>
-                            )}
-                            <p className="flex items-center gap-2 text-lg text-white/70">
-                                <img src={ASSET_SRC.get('ui-chef-hat')} alt="" className="h-6 w-6 object-contain" />
-                                {shiftEconomy.hats} Chef Hats
-                            </p>
-                        </div>
-                    )}
-                    <div className="flex gap-4">
-                        {/* Round 23, task 5: Next Level, primary, first —
-                            only when cleared (see `cleared`'s own comment
-                            above) AND a next level actually exists. */}
-                        {nextLevelId !== null && (
-                            <button
-                                type="button"
-                                className="rounded-2xl bg-primary px-8 py-3 text-xl font-bold text-black"
-                                onClick={goToNextLevel}
+            {/* Round 25, task 2: a real panel backdrop instead of bg-black/70
+                straight over the live board — the board was reading through
+                and the buttons overlapped station sprites. The dim scrim
+                here is now just enough to focus attention on the card; the
+                card itself (opaque cream body, `fill`-sliced) is what stops
+                the board showing through. `variant`/`geometry` are scoped to
+                this block since they only matter once shiftResult exists. */}
+            {shiftResult && (() => {
+                const variant: 'wood' | 'red' = shiftResult.phase === 'won' ? 'wood' : 'red';
+                const geometry = CARD_GEOMETRY[variant];
+                return (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 p-4">
+                        {/* The panel: border-image-width defaults to the
+                            plain `border-width` above (CSS's own "auto"
+                            behavior), so the interior content box already
+                            starts exactly at the cream body's edge — no
+                            manual padding math duplicating the border
+                            widths. `position: relative` is only so the
+                            title (below) can anchor to this box, not the
+                            viewport. */}
+                        <div
+                            className="relative flex max-w-full flex-col items-center"
+                            style={{ ...cardPanelStyle(variant), maxWidth: 'calc(100vw - 2rem)' }}
+                        >
+                            {/* Round 25, task 2: the title sits in the header
+                                band — anchored to its vertical centre
+                                (borderTop / 2) regardless of the panel's
+                                final width/height, so it stays correctly
+                                placed whether the cream body below it is at
+                                its narrowest or stretched wide for a long
+                                button row. It renders as this box's own
+                                child, so it paints after (on top of) the
+                                border-image beneath it — no z-index needed. */}
+                            <p
+                                className="absolute left-1/2 whitespace-nowrap text-center text-2xl font-bold text-white"
+                                style={{
+                                    // A positioned ancestor's offsets resolve
+                                    // against its PADDING edge (inside the
+                                    // border), not its outer border edge — so
+                                    // "the header's vertical centre" is a
+                                    // NEGATIVE offset from that edge (half the
+                                    // header's own height, back up across the
+                                    // border into it), not a positive one.
+                                    // Confirmed the hard way: a positive
+                                    // offset here landed the title down among
+                                    // the cream-body dish lines instead.
+                                    top: -(geometry.borderTop / 2),
+                                    transform: 'translate(-50%, -50%)',
+                                    textShadow: '0 1px 4px rgba(0,0,0,0.65)',
+                                }}
                             >
-                                Next Level
-                            </button>
-                        )}
-                        <button
-                            type="button"
-                            className="rounded-2xl bg-primary px-8 py-3 text-xl font-bold text-black"
-                            onClick={() => setRunId((n) => n + 1)}
-                        >
-                            Run Again
-                        </button>
-                        <button
-                            type="button"
-                            className="rounded-2xl bg-white/15 px-8 py-3 text-xl font-bold text-white"
-                            onClick={toMainMenu}
-                        >
-                            Main Menu
-                        </button>
+                                {shiftResult.phase === 'won' ? 'Shift cleared' : 'Too many walkouts'}
+                            </p>
+                            {/* Everything else — the figure list, coins, star
+                                row, Chef Hats, and all three buttons — sits
+                                in the cream body, per the handover. Text
+                                colors below are dark (the header's white
+                                title is the one exception, since it sits over
+                                the header band's own colored art, not the
+                                cream). */}
+                            <div className="flex flex-col items-center gap-6 px-4 py-4">
+                                <div className="flex flex-col items-center gap-1 text-lg text-[#7a6353]">
+                                    {/* Round 25, task 1: one line per recipe, named from
+                                        LEVEL.recipes, instead of totalling every
+                                        completion under one hardcoded dish name — a
+                                        two-recipe level used to print "N chai completed"
+                                        even when most of N was coffee. `dishCounts` comes
+                                        off the frozen shiftEconomy snapshot (index-
+                                        aligned to LEVEL.recipes); shiftResult.completed
+                                        stays the scalar the sim itself uses for the win
+                                        check, unrelated to this display. A zero-count
+                                        recipe still renders — "0 Coffee" is information,
+                                        same reasoning as the live dish board showing
+                                        unserved recipes dimmed rather than hiding them. */}
+                                    {LEVEL.recipes.map((recipe, i) => (
+                                        <p key={recipe.id}>{dishCounts[i] ?? 0} {recipe.name} completed</p>
+                                    ))}
+                                    <p>{shiftResult.served} ingredients collected</p>
+                                    <p>{shiftResult.walkouts} walked out</p>
+                                    <p>{shiftLeftover} ingredients discarded</p>
+                                    {/* Round 9, task 2: replaces shiftPending — zero on a
+                                        win hides the line entirely (rendered only on a
+                                        loss); the real gap on a loss. Round 16: also
+                                        hidden on a boss (LEVEL.target null) — there is
+                                        no target to have fallen short of. Round 25: LEVEL
+                                        .target is a level-wide total across recipes, not
+                                        any one dish's — worded as "short of target",
+                                        never naming a specific dish. */}
+                                    {shiftResult.phase === 'lost' && LEVEL.target !== null && <p>{chaiShort} short of target</p>}
+                                </div>
+                                {/* Round 9, task 9: Chef Hats on any completed run (win or
+                                    loss); coins earned + stars + thresholds only on a
+                                    clear — a loss shows no stars at all. */}
+                                {shiftEconomy && (
+                                    <div className="flex flex-col items-center gap-3">
+                                        {/* Round 16: also gated on LEVEL.stars !== null —
+                                            a boss shows coins/hats but no star row at
+                                            all, per §7.3b. */}
+                                        {shiftResult.phase === 'won' && LEVEL.stars !== null && (
+                                            <>
+                                                <p className="flex items-center gap-2 text-xl font-bold text-[#3a2a1e]">
+                                                    <img src={ASSET_SRC.get('ui-coin')} alt="" className="h-6 w-6 object-contain" />
+                                                    earned = {shiftEconomy.coinsEarned}
+                                                </p>
+                                                {/* Round 20, task 1: fills right-to-left — star i (0-indexed,
+                                                    left to right) lights when stars >= 3-i, so the star that
+                                                    goes dark first on a lower grade is the leftmost one. This
+                                                    row is positionally paired with the threshold row directly
+                                                    below (three / two / clear, left to right); reordering one
+                                                    without the other breaks the pairing a player reads between
+                                                    them. */}
+                                                <div className="flex gap-6 text-3xl text-[#3a2a1e]">
+                                                    <span>{stars >= 3 ? '★' : '☆'}</span>
+                                                    <span>{stars >= 2 ? '★' : '☆'}</span>
+                                                    <span>{stars >= 1 ? '★' : '☆'}</span>
+                                                </div>
+                                                <div className="flex gap-6 text-sm text-[#9c8873]">
+                                                    <span>{LEVEL.stars.three}</span>
+                                                    <span>{LEVEL.stars.two}</span>
+                                                    <span>clear</span>
+                                                </div>
+                                            </>
+                                        )}
+                                        <p className="flex items-center gap-2 text-lg text-[#7a6353]">
+                                            <img src={ASSET_SRC.get('ui-chef-hat')} alt="" className="h-6 w-6 object-contain" />
+                                            {shiftEconomy.hats} Chef Hats
+                                        </p>
+                                    </div>
+                                )}
+                                <div className="flex flex-wrap justify-center gap-4">
+                                    {/* Round 23, task 5: Next Level, primary, first —
+                                        only when cleared (see `cleared`'s own comment
+                                        above) AND a next level actually exists. */}
+                                    {nextLevelId !== null && (
+                                        <button
+                                            type="button"
+                                            className="rounded-2xl bg-primary px-8 py-3 text-xl font-bold text-black"
+                                            onClick={goToNextLevel}
+                                        >
+                                            Next Level
+                                        </button>
+                                    )}
+                                    <button
+                                        type="button"
+                                        className="rounded-2xl bg-primary px-8 py-3 text-xl font-bold text-black"
+                                        onClick={() => setRunId((n) => n + 1)}
+                                    >
+                                        Run Again
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="rounded-2xl bg-black/10 px-8 py-3 text-xl font-bold text-[#3a2a1e]"
+                                        onClick={toMainMenu}
+                                    >
+                                        Main Menu
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            )}
+                );
+            })()}
 
             {/* Round 5, task 3: the prop picker for an empty slot. Round 22,
                 task 4a: every exit path resumes the shift — pick (onPick,
