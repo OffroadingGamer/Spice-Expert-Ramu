@@ -1,6 +1,6 @@
 # LevelEconomy — the source of truth for every currency value, per level
 
-**Last updated:** Sep 8 2026, 23:30 IST
+**Last updated:** Sep 9 2026, 00:20 IST
 **Status:** 🟡 **FTUE level 1 finalised. Every other level is deliberately empty.**
 **Tracked in git** — this file is *not* gitignored and must never be. It carries no
 credentials; it is design data, and it is meant to be read alongside the code.

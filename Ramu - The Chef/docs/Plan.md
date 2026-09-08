@@ -8,7 +8,7 @@
 > plan item slips or is cut, do not silently delete it — strike it, move it, and
 > log the reason in [Retro.md](Retro.md).
 
-**Last updated:** Sep 8 2026, 23:30 IST
+**Last updated:** Sep 9 2026, 00:20 IST
 **Status:** ▶ **LIVE — v1.1.0** at https://w.run/puneetmakes/spice-expert-ramu since ~15:05 PT Sep 3. Scoring clock running.
 **Scope:** cuisine level run (GDD §10.10) · SFX at P1 (§12) · 3D→sprite art pipeline (§11a).
 
@@ -930,6 +930,72 @@ read off <https://run.world/jams/september-2026-jam>.
 
 🔥 **Nothing in the plan changes either way.** FTUE → notifications → ship Kitchen
 Mode raises our own ceiling regardless of their rate. Only the word for success changes.
+
+### 5.8 🔒 The full board, read manually — Sep 8 2026 evening
+
+§5.7 could only see our own row. The user read the jam page directly; this is the
+board, and it **settles the question §5.7 left open.**
+
+| # | Entry | Days | Total plays | **Daily Unique Plays** | DUP/day | Prize |
+|---|---|---|---|---|---|---|
+| 1 | **9 to Thrive** | 5 | 1,009 | **658** | **131.6** | $1,000 |
+| 2 | **Spice Expert: Ramu** | 5 | 427 | **325** | **65.0** | **$600** |
+| 3 | **The Good Life** | 5 | 381 | **279** | **55.8** | $300 |
+| 4 | Back That Thing Up! | 4 | 212 | 167 | 41.8 | $200 |
+| 5 | The Grind | 4 | 216 | 152 | 38.0 | $100 |
+| 6 | The Last Audit | 3 | 193 | 151 | **50.3** | — |
+
+#### 🔴 #1 is out of reach. This is now measured, not estimated.
+
+At current rates over the 10 remaining scoring days: **#1 finishes ~1,974, we finish
+~975.** Overtaking needs **165/day — 2.5× our 65.** §5.7 estimated their rate at ~107/day
+from a single cumulative reading; the board says **131.6**. They are faster than assumed,
+not slower.
+
+⚠️ **The one hopeful signal, and it is too small to plan on.** Between the morning read
+(#1 989/645, us 417/308) and the evening board, **#1 gained 13 DUP and we gained 17** — we
+out-paced them by 4 on a day that was low for us. On that differential alone, closing a
+333 gap takes **83 days.** Interesting, not actionable.
+
+#### 🟠 The real fight is #3, and it is closer than the gap to #1 suggests
+
+**The Good Life is 46 DUP behind us** — less than one good day. At current rates we finish
+975 against their 837, a 138 cushion. **But that cushion is not a moat:** if they reach
+80/day they finish 1,079 and take second.
+
+💰 **The prize maths reframes the whole effort:**
+
+| | Swing |
+|---|---|
+| **Holding 2nd vs dropping to 3rd** | **$300** — achievable at our current rate |
+| Taking 1st vs holding 2nd | $400 — needs 2.5×, unlikely |
+
+➡️ **Play to defend 2nd, not to chase 1st.** Both are served by identical work, so
+nothing in the plan changes — only the honest statement of what success is.
+
+#### 🔥 The competitive read that actually matters
+
+**Both #1 and #3 are long-arc progression games.** *9 to Thrive*: clock in, pay rent, build
+from a studio mattress to a mega mansion. *The Good Life*: start at the bottom, fill orders,
+become CEO. Ours is the only top-three entry **without a visible long-term goal in the
+public build** — and progression is precisely the "visible medium-term goal" retention
+lever (§6, GDD §10.9).
+
+**Our progression system exists and is unshipped.** Nodes, 37 named levels, chef hats, the
+tier ladder, the Utensils screen — all designed, none public. Public is still v1.7.0 tower
+defence.
+
+⚠️ **Two supporting measurements:**
+
+1. **#1's sessions-per-DUP is 1.53 against our 1.31.** Their players come back *within*
+   the day more often than ours. That is engagement depth, not acquisition.
+2. **The Last Audit is doing 50.3/day at 3 days in, against our 65.0 at 5 days.** Newer
+   entries are arriving at nearly our rate. **Our 54–60/day floor is not a moat** — being
+   early stopped being an advantage.
+
+➡️ **Unchanged conclusion, better evidence: ship Kitchen Mode.** It is the progression
+game the two entries around us already have, and the single largest promotional act
+available.
 
 ## 6. Trigger rules — decided in advance, executed without debate
 
