@@ -646,7 +646,8 @@ export async function createKitchenScene(
         // prop name labels.
         const line1 = new Text({ text: '', style: PROP_LABEL_STYLE });
         line1.anchor.set(0.5);
-        setFitText(line1, 'Unlock for', LOCK_CONTENT.width, 13, 8);
+        let line1Size = 13;
+        setFitText(line1, 'Unlock for', LOCK_CONTENT.width, line1Size, 8);
         boardRoot.addChild(line1);
 
         // Line 2: "<n>" + coin icon, a horizontal group centred on x=0 —
@@ -675,12 +676,38 @@ export async function createKitchenScene(
             costSize -= 1;
             sizeLine2();
         }
-        const line2Width = costText.width + LOCK_LINE2_GAP + coinIconSmall.width;
-        const line2Height = Math.max(costText.height, coinIconSmall.height);
+        let line2Width = costText.width + LOCK_LINE2_GAP + coinIconSmall.width;
+        let line2Height = Math.max(costText.height, coinIconSmall.height);
+
+        // Round 15, task 4: nothing previously stopped the stack's total
+        // height from exceeding LOCK_CONTENT.height — a later font-size
+        // raise would overflow ItemSlot1.png's inner well silently, with no
+        // error anywhere. Shrink to fit: the same iterate-to-fit pattern as
+        // setFitText and line 2's width loop above, rather than clip or
+        // overflow. Floors of 10 (padlock) / 8 (text, matching the floors
+        // already used above) keep the shrink from running unbounded.
+        let lockSize = LOCK_ICON_SIZE;
+        let totalHeight = lock.height + LOCK_ROW_GAP + line1.height + LOCK_ROW_GAP + line2Height;
+        while (totalHeight > LOCK_CONTENT.height && (lockSize > 10 || line1Size > 8 || costSize > 8)) {
+            if (lockSize > 10) {
+                lockSize -= 1;
+                lock.style.fontSize = lockSize;
+            }
+            if (line1Size > 8) {
+                line1Size -= 1;
+                setFitText(line1, 'Unlock for', LOCK_CONTENT.width, line1Size, 8);
+            }
+            if (costSize > 8) {
+                costSize -= 1;
+                sizeLine2();
+                line2Width = costText.width + LOCK_LINE2_GAP + coinIconSmall.width;
+            }
+            line2Height = Math.max(costText.height, coinIconSmall.height);
+            totalHeight = lock.height + LOCK_ROW_GAP + line1.height + LOCK_ROW_GAP + line2Height;
+        }
 
         // Vertical stack — padlock, line 1, line 2 — centred on the content
         // rect's own centre, not the slot centre (see LOCK_CONTENT above).
-        const totalHeight = lock.height + LOCK_ROW_GAP + line1.height + LOCK_ROW_GAP + line2Height;
         const stackTop = slot.y + LOCK_CONTENT.centerY - totalHeight / 2;
         lock.position.set(slot.x, stackTop + lock.height / 2);
         line1.position.set(slot.x, stackTop + lock.height + LOCK_ROW_GAP + line1.height / 2);

@@ -231,8 +231,10 @@ export const KITCHEN_CONFIG = {
     slotBox: { w: 139, h: 150 },
 
     /** Round 9, task 5: coins to unlock a LOCKED slot. Flat, all four
-     *  (LevelEconomy.md §7.1). See kitchenScene.ts for the guard that stops
-     *  a second slot unlocking before any prop is placed in the first. */
+     *  (LevelEconomy.md §7.1). Round 12 replaced the guard that used to stop
+     *  a second slot unlocking before any prop was placed in the first —
+     *  attemptUnlock (kitchenScene.ts) now only refuses an unlock that would
+     *  leave the wallet unable to afford the cheapest utensil afterward. */
     slotUnlockCost: 50,
 
     /**

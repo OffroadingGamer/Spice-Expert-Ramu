@@ -217,6 +217,18 @@ export const SLOT_ZONES: SlotZone[] = (() => {
                 bestSlot = slotIndex;
             }
         });
+        // Nearest-slot-to-midpoint assumes a bijection between zones and slots.
+        // If a future slot reposition breaks that assumption, fail loudly here
+        // (module load) rather than leaving a silently-overwritten slot to
+        // TypeError on the first tap of that station, far from this cause.
+        if (bySlot[bestSlot] !== undefined) {
+            const prev = bySlot[bestSlot];
+            throw new Error(
+                `SLOT_ZONES: slot ${bestSlot} claimed by two zones ` +
+                `[${prev.start}, ${prev.end}] and [${zone.start}, ${zone.end}] — ` +
+                `nearest-slot-to-midpoint is no longer a bijection. Check KITCHEN_CONFIG.slots.`
+            );
+        }
         bySlot[bestSlot] = zone;
     }
     return bySlot;

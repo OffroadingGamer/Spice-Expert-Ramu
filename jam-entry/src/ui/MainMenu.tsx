@@ -58,6 +58,16 @@ export default function MainMenu() {
                 className="w-64 rounded-2xl bg-primary px-12 py-4 text-xl font-bold text-black shadow-lg transition-transform active:scale-95"
                 onClick={() => {
                     sfx.click();
+                    store.patch({ phase: 'testbelt' });
+                }}
+            >
+                Play Game
+            </button>
+            <button
+                type="button"
+                className="w-64 rounded-2xl bg-slate-600 px-12 py-4 text-xl font-bold text-white shadow-lg transition-transform active:scale-95"
+                onClick={() => {
+                    sfx.click();
                     store.patch({
                         phase: 'playing',
                         selectedPad: null,
@@ -65,7 +75,7 @@ export default function MainMenu() {
                     });
                 }}
             >
-                Start Shift
+                Challenge Mode
             </button>
             <button
                 type="button"
@@ -86,18 +96,6 @@ export default function MainMenu() {
                 }}
             >
                 Ranks
-            </button>
-            {/* TEST MODE: private grey-box belt (build-order item 4). Unconditional
-                for now, by instruction — remove or flag before the next public deploy. */}
-            <button
-                type="button"
-                className="w-64 rounded-2xl bg-fuchsia-600 px-12 py-4 text-xl font-bold text-white shadow-lg transition-transform active:scale-95"
-                onClick={() => {
-                    sfx.click();
-                    store.patch({ phase: 'testbelt' });
-                }}
-            >
-                TEST MODE
             </button>
             <div className="text-center text-[1.1rem] leading-7 text-white/50">
                 Tap a counter to set up a station

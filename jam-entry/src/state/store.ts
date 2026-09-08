@@ -13,9 +13,11 @@ import type { MetaLevels } from './save.ts';
 
 /** The UI-facing app state. */
 export interface AppState {
-    /** 'loading' → 'menu' → 'playing'. 'testbelt' is a private, menu-gated
-     *  grey-box test screen (src/ui/TestBelt.tsx) — never reachable from
-     *  'playing', never deployed public-facing content. */
+    /** 'loading' → 'menu' → 'playing' | 'testbelt'. 'testbelt' is Kitchen
+     *  Mode (src/ui/TestBelt.tsx) — now the menu's primary "Play Game"
+     *  action, never reachable from 'playing'. It ships public only once
+     *  the FTUE node and Node 1 are complete; until then this build stays
+     *  private. */
     phase: 'loading' | 'menu' | 'playing' | 'testbelt';
     /** 0..1 progress of the critical-asset warm during 'loading' */
     loadProgress: number;
