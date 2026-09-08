@@ -8,7 +8,7 @@
 > where nothing shipped is still an entry — the reason it did not ship is the most
 > valuable thing in this document. Never rewrite history to look tidier.
 
-**Last updated:** Sep 9 2026, 00:20 IST
+**Last updated:** Sep 9 2026, 01:30 IST
 
 ---
 
@@ -2035,3 +2035,27 @@ uniques are the score; the trend matters more than any single day.
     real; the conclusion I drew from it was two days out of date. **A limitation recorded
     in one section is often lifted in the next one — read forward before ruling something
     out.**
+68. 🔴 **Write acceptance criteria against the task list, not against the finished
+    feature.** Three rounds running, my own acceptance items contradicted my own task
+    specs. Belt round 2: the task said *you choose the counter band* while check #4 demanded
+    the two layers' content boxes be **identical** — which forced the counter to be
+    invisible. Same round, check #5 banned any orange within 4 px of a crossed edge, which
+    forced the rail to break at every seam. Round 16: task 3 authorised wiring four fields,
+    then acceptance item 6 demanded a spawn behaviour that wiring could not produce.
+    **Each time the agent read the criterion literally, chose the testable reading over the
+    nicer-looking one, and flagged it — which was correct every time.** The pattern is
+    writing tasks conservatively and then describing the finished feature in the checks.
+69. **When an agent re-derives a bug to a different place than the brief named, believe the
+    isolation test, not the brief.** I told the belt agent its overhang was on the vertical
+    axis. It isolated each placement loop separately and found the horizontal one — and
+    the evidence settled it: the stray sat in row bands 304–720 and 2144–2560, exactly the
+    two horizontal runs' counter bands. It also fixed the vertical overhang it had *proven
+    invisible* under draw order, on the grounds that a reference implementation should not
+    depend on draw-order luck. Both calls were better than the instruction.
+70. **A fix aimed at a misdiagnosis can be worse than the defect.** An agent judged four
+    accepted sprites to have white-matted edges and decontaminated them. Measuring the whole
+    set afterwards, the **untouched** new sprites carried *more* bright low-alpha pixels
+    (potato 68%, turmeric 64%) than the ones diagnosed (onion 48%) — ordinary antialiasing,
+    present everywhere. The fix clamped **83% of onion's edge pixels to pure black** where
+    the originals were a natural (71,64,61). **Before accepting a remedy, check the
+    diagnosis against a control** — here, any sprite nobody thought was broken.

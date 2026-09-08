@@ -1,6 +1,6 @@
 # KitchenMode — the belt game view as a second mode
 
-**Last updated:** Sep 9 2026, 00:20 IST
+**Last updated:** Sep 9 2026, 01:30 IST
 **Status:** 🟢 **Architecture settled.** Eight decisions taken Sep 4, 23:10 IST — all
 eight went to the recommended option. ✅ **Built and running privately** — eight Test Mode rounds, `c043804`, **v1.15.0 private-only**; §6.7. This line read *"Nothing built yet"* until Sep 7 while §6.7 below recorded the opposite.
 **🛑 Hard gate: playable end to end by Sep 10, or it is cut.** §5.
@@ -1466,7 +1466,7 @@ everything reads correctly. Closed by observation, not by that measurement.
    98 today). A later font-size raise overflows the well silently, breaking round 6's
    containment rule with no error anywhere.
 
-### 6.16 ✈️ Round 15 in flight — what to check its return against, Sep 8 2026
+### 6.16 ✅ Round 15 — LANDED `4ad296e`, private v1.25.0 (was: in flight)
 
 Scope: **Kitchen Mode becomes the primary play action.** Not a mechanic round.
 
@@ -1498,3 +1498,125 @@ deployed public-facing content"* becomes false with this round and is corrected 
 🔒 **Explicitly not in this round:** leaderboard config (irreversible, separately
 sequenced), analytics `mode` properties, the FTUE cold-open, and restoring round 9's
 unlock guard.
+
+### 6.17 ✅ Rounds 15–17 landed — the menu, the container, the content, Sep 8–9 2026
+
+**Round 15 — Kitchen Mode becomes the primary play action.** `4ad296e`, private
+**v1.25.0**. `Play Game` takes the primary treatment and routes to `phase: 'testbelt'`;
+the tower game becomes `Challenge Mode` with its `onClick` untouched; TEST MODE and its
+comment are gone. Both latent guards closed:
+
+- 🔑 **Guard A fires at module load.** The throw sits **inside the `SLOT_ZONES` IIFE**,
+  so a zone/slot collision fails on import rather than as a `TypeError` on the first tap of
+  a station. It detects a double-claim, which is sufficient **only because zones (4) and
+  slots (4) are equal** — pigeonhole does the rest. ⚠️ If `slots` ever outgrows the zone
+  count, a slot could be left `undefined` with no collision to catch it.
+- **Guard B shrinks the lock stack to fit.** At the default size 22 the total is ~70
+  against 98, so the loop never runs and round 14's behaviour is untouched. ⚠️ It shrinks
+  padlock, line 1 and line 2 *simultaneously* — a padlock-only overflow drives the text to
+  its floor of 8. Works, over-corrects; fold a tiered version in next time that file is
+  open.
+
+**Round 16 — the level container.** `b1bc5a1`, private **v1.26.0**.
+`src/game/data/levels.ts` carries a `LevelRecord` type and five instances. Only `target`,
+`walkoutsAllowed`, `startingFloat` and `stars` were wired live; the superseded constants in
+`kitchenConfig.ts` were **commented, not deleted**, and its diff was verified
+**100% comments** — no geometry moved.
+
+**Round 17 — per-level content.** `0c4a256`, private **v1.27.0**. Recipes move into the
+level record; `ingredientKinds` becomes the union across the active level's recipes;
+`finalDishes` derives per level.
+
+🔑 **The multi-recipe completion rule, and why it is shaped this way.** Round 8's
+invariant was *at most one set can ever newly complete per tap*. With two recipes sharing
+`milk`, one tap could satisfy both. The implementation walks `ACTIVE_LEVEL.recipes` in
+declaration order with an **immediate break on match**, then consumes only that recipe's
+ingredients — structurally impossible to complete two per tap, and deterministic. Proven
+live: chai and coffee both one short, one milk served, `completed` went 0→1 and chai's
+ingredients zeroed while coffee's stayed at 1.
+
+✅ **The economy reads from the records, proven rather than asserted.** N0 L2, L3 and
+N1 L1 clear flawlessly at **406 / 464 / 312** — exactly LevelEconomy §11.2's derived
+figures. The boss paid **450** hats for 22 completions (5 waves), matching `15n(n+1)`.
+
+⚠️ **The L3 drought, measured and NOT retuned.** The 5-kind union costs **78.4 spawns
+per 16 completions against L1's 36 per 12 — 63% more spawns per completion.** But the
+harness ran four stations and caught everything, so it proves the drought costs *time*,
+not *lives*. **The number that matters — walkouts for a player running one or two stations
+— does not exist yet and needs a human playthrough.**
+
+⚠️ **Two known gaps, both deliberate.** `dish-jeera-rice` is not in the manifest, so
+N1 L1's served dish renders as a procedural placeholder (`tray-jeera-rice.png` exists in
+the generated set, one bake away). And the billboard heading became the *level* name, so
+FTUE L1 reads **First Pour** where it read **Masala Chai** — unavoidable once two recipes
+can be active, and the fix is round 18's Task 4.
+
+### 6.18 ✈️ Round 18 in flight — FTUE gating, zone trim, dish names
+
+**Scope: the first-run experience.** Not new levels, not new mechanics.
+
+1. **The Ready gate.** `Ready` becomes unreachable with an empty board on FTUE L1.
+   In its place: *Tap a locked station to unlock it — 50 coins* while all slots are locked,
+   then *Tap an empty station to set it up* once one is unlocked. Ready appears only after
+   a prop is placed. **FTUE L1 only** — later levels keep today's behaviour.
+2. 🔴 **Round 9's parked unlock guard is RETIRED, not restored.** Round 12 replaced its
+   economic half; the Ready gate replaces its teaching half **and does it better** — it
+   stops the shift starting with an empty board at all, which is the actual softlock.
+3. **The zone trim**, from the user's annotated screenshot
+   (`references/Errors/FTUE Belt setup.jpeg`). Their marks convert to **d 424** for zone
+   1's right edge against today's 441, and **d 214** for its left against today's 176. Two
+   constants rather than pasted numbers: **`slotBandSeam` 40 → 70** and a new
+   **`slotBandEndInset` 40**.
+
+| Zone | Range | Length | Owns |
+|---|---|---|---|
+| 1 | **216 → 426** | 210 | `slots[0]` |
+| 2 | **496 → 941** | 445 | `slots[1]` |
+| 3 | **1011 → 1456** | 445 | `slots[3]` |
+| 4 | **1526 → 1736** | 210 | `slots[2]` |
+
+✅ **Ownership recomputed and unchanged** — all four midpoints still resolve to the same
+slot, so **Guard A must not fire.**
+
+⚠️ **Coverage falls 92.5% → 81.9%**, and dead belt per lap goes 120 units (~1.0 s) to
+290 (~2.4 s). **This is a difficulty change dressed as a visual one** — `earned` has no
+distance term, so the star bands do not absorb it. **If FTUE L1 stops clearing at 12
+dishes, the fix is the level's float or target, never the zones.**
+
+4. **Recipe name under each served dish**, centred on the group so it sits below both the
+   sprite and the count. Sprite bottom is **1208**, the band ends at **1280** — 72 units to
+   work in. Visible **even at count 0**, because a first-timer needs it most before the
+   first dish lands.
+
+### 8.10 ✅ The belt countertop tile set — finished, awaiting a wiring round
+
+Four rounds. **12 tiles at 1024×1024 RGBA**, in `Art\_gen\belt-final-v3\`.
+
+🔴 **Round 1's AI-generated set was unusable, and the failure is worth remembering:**
+each piece was a closed object with its outline running all the way around, carrying
+126–156 px of transparent margin. Assembled at butt joints it produced **eight
+disconnected islands.** The report claimed the loop closed; the files disproved it.
+
+✅ **Rounds 2–3 replaced generation with a distance field** — `mask = distance to the
+centreline <= 144` — which makes seams correct *by construction* rather than by post-hoc
+trial. Round 3 fixed the centreline to a **sharp L**, matching Pixi's round join
+(`kitchenScene.ts` strokes the belt with cap and join both `round`): a round outer fillet
+of exactly half-width and a sharp inner mitre. Round 2's R=360 arc had put a dish
+**37.25 units** from the art's centreline at the vertex, against a 36-unit half-width.
+
+**Final measurements:** seams `mean|L-R| = 0.0000` at 100% alpha match · corner-to-straight
+edge profiles `np.array_equal` on both axes and both layers · all 8 rotations byte-exact ·
+counter visibility **30.7%** · vertex inside the belt mask · rail continuous with zero
+orange in the band interior · **7,813/7,813 centreline samples on belt, zero deviation.**
+
+🔑 **Real bands, correcting an off-by-one in the spec:** `dist <= 144` from an integer
+centre gives **368…656 = 289 px** for the belt and **304…720 = 417 px** for the counter —
+not 288/416.
+
+🔒 **The placement rule — this is what the wiring round implements:**
+
+> Corner tiles centred on each rectangle vertex, rotated so their baked-in arms point along
+> the two legs meeting there. Straight runs filled with full-size tiles, first flush to the
+> start boundary and last flush to the end boundary; when a whole number does not fit
+> exactly, **spread them evenly and let them overlap in the middle rather than overhang at
+> either end** — safe because it is one uniform texture. Corners drawn after straights.

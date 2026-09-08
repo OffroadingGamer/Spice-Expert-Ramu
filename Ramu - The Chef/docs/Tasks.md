@@ -5,10 +5,10 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 9 2026, 00:20 IST
+**Last updated:** Sep 9 2026, 01:30 IST
 **Live:** **v1.7.0 public** · <https://w.run/puneetmakes/spice-expert-ramu> — went public Sep 5 2026 with the full audio layer; was v1.2.3 from Sep 4
-**Private:** **v1.24.0** — the belt Test Mode build, 14 rounds, `222cffc`. **Never public**; `set-public` has never been run on it. [KitchenMode.md](KitchenMode.md) §6.15
-**Jam board:** **rank #2** · 417 plays · **308 Daily Unique Plays** vs rank #1's 645 — [Plan.md](Plan.md) §5.7 (read Sep 8 2026)
+**Private:** **v1.27.0** — the belt Test Mode build, 17 rounds, `0c4a256`. **Never public**; `set-public` has never been run on it. [KitchenMode.md](KitchenMode.md) §6.17
+**Jam board:** **rank #2** · 427 plays · **325 Daily Unique Plays** vs rank #1's **658** and rank #3's **279** — [Plan.md](Plan.md) §5.8 (full board read Sep 8 2026)
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST** · 🛑 **Delivery gate: four cuisine nodes** — KitchenMode §6.8
 
 ---
