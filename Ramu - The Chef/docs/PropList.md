@@ -390,11 +390,18 @@ site: `brazier` → 1 (consistent with N0 L4 granting it as an entry-level stati
 **5.** `15-Fry pan(Level 2).png` renamed to `15-Fry pan(Level2).png`. All 44 filenames now
 parse on one pattern; [SpriteIndex.md](SpriteIndex.md) §6.14/§6.18 closed.
 
-### 8.3 ⬜ Still open — one question, for the user
+### 8.3 ✅ CLOSED — a tandoor satisfies an oven requirement
 
-**Does a tandoor satisfy an oven requirement?** If yes, an oven dish is `[1, 3, 4, 5]`; if
-no, it is `[1, 3]`. It decides whether a player who has climbed to the tandoor can still
-bake Bruschetta, and it is a cooking call, not an engineering one. **Nothing should be
-authored against oven-requiring dishes until this is answered** — node 3 (Italian) is
-where it first bites.
+**User, Sep 9 2026: *"Yes Tandoor satisfy an oven requirement for the sake of game
+balance."*** So an oven-requiring dish is authored as **`tiers: [1, 3, 4, 5]`** — every
+Cooktop tier except **L2, the bare hob, which is the only one that cannot bake.**
+
+The reason given is the right one: without it, climbing the Cooktop ladder would *cost*
+a player their oven dishes, so the ladder would punish progression. Bruschetta
+([RecipeList.md](RecipeList.md) §7.3) stays playable for a player who has reached the
+tandoor.
+
+⚠️ **L2 remains the one hole in the ladder**, and it is now the only special case in the
+whole catalogue. Any oven dish authored with a bare `{ family: 'cooktop' }` — no `tiers`
+— is a bug, because the omitted form means *every* tier and L2 cannot bake.
 

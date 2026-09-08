@@ -2104,3 +2104,28 @@ uniques are the score; the trend matters more than any single day.
     is the more dangerous combination — anyone verifying it reads §2.6, finds nothing, and
     can reasonably conclude the constraint is stale and drop it. Same family as lesson 4:
     a pointer is itself a claim about a document's structure, and documents move.
+76. **A tier number is not a capability — "higher is better" is an assumption, and it is
+    worth testing per family.** The prop ladder was modelled as tiers with an ascending
+    cost curve, and every consumer assumed tier N+1 does everything tier N does:
+    `propTierCost` rising 40→320, and [PropList.md](PropList.md) §7.1's *"the lower tier
+    stays placeable, so the choice is a live one."* Settling the Cooktop ladder's semantics
+    showed it does not hold there — **L1 is an oven, L2 is a bare hob, and L2 cannot
+    bake.** Had a level's prop entry been modelled as `minTier`, node 3 would have shipped
+    offering a hob for an oven-requiring Bruschetta level, unplayable with nothing on
+    screen explaining why. The entry became an explicit `tiers` list instead. **The fix was
+    free because the table was pulled out of the filesystem and checked with a human
+    before it became a schema**; after 34 levels were authored against it, it would not
+    have been. *(The user then closed the follow-on question in the direction that keeps
+    progression from punishing the player: a tandoor satisfies an oven requirement, so an
+    oven dish is `[1, 3, 4, 5]` and L2 is the single hole — PropList §8.3.)*
+77. **Fixing a resource leak can remove the thing that was quietly ending the game.**
+    Round 24 removed roughly 40% structural ingredient waste on multi-recipe levels. On a
+    **boss** — endless by design, its only exit the walkout budget — that waste was what
+    produced walkouts for a competent player. With it gone, a good run reaches the
+    200-spawn safety cap, spawning stops, the belt drains, and **the shift has no
+    terminator at all.** The implementing agent measured the exact symptom — *"ran to the
+    200-spawn safety cap still running"* — and filed it as a property of the belt ramp
+    rather than as a soft-lock, because it was looking at what its change caused rather
+    than at what its change had *removed*. **When a fix eliminates a source of failure,
+    ask what depended on that failure.** An endless mode's only exit is exactly the thing
+    you just made rare.

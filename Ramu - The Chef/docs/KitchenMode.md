@@ -1796,6 +1796,57 @@ nothing about it** — it is the grey-box art section. The statement lives in **
 Recorded here rather than corrected in code, which is outside this note's scope.
 
 
+### 6.22 ✅ Round 24 landed — and it exposed a boss soft-lock, Sep 9 2026
+
+Commit `3f95f5a`, private **v1.34.0**. Two files, 78+/21−: `sim/kitchen.ts` and
+`data/levels.ts` (the `:209` comment only). `kitchenConfig.ts` and the rest of `data/`
+untouched — narrower than round 23, exactly the authorised scope.
+
+**What changed.** The bag is built from the **multiset** of recipe ingredients —
+`makeBag(ACTIVE_LEVEL.recipes.flatMap((r) => r.ingredients))` — so milk, wanted by both
+N0 L3/L4 recipes, now spawns at the 2-in-6 rate its demand implies instead of 1-in-5.
+`getIngredientKinds` is untouched and still feeds `held` and the badge row. The completion
+walk starts at `(lastCompletedIndex + 1 + n) % recipes.length`, held in a closure variable
+rather than on `KitchenState`, so a contested ingredient alternates instead of always
+resolving to declaration order.
+
+**Verified independently.** `tsc --noEmit` exit 0. `__r24Debug` grep clean. Tags read
+private 1.34.0, review 1.7.0, public 1.7.0. Both tasks are implemented as specified; the
+round-17 comment and `levels.ts:209` are both rewritten rather than left asserting the
+removed behaviour.
+
+**Results, and they reconcile.** N0 L1 reproduced `completed: 12, coinsEarned: 348` to the
+digit both in a pure harness and through the real UI — the no-op proof the handover asked
+for. N0 L3 clears **[8, 8]** at **`coinsEarned: 464`**, against the old **[14, 2]**. N0 L4
+runs **[33, 33]** with `held` never exceeding 1, against the old bug's 30-each stranding;
+66 completions across ~198 spawns is exactly the 1-chai-1-coffee-per-6 the multiset
+predicts. The agent also built a **synthetic two-of-three-shared level** — the case the
+handover named as where task 1 alone degenerates — and confirmed task 2 holds it at
+[33, 33]. That test was not asked for.
+
+#### 🔴 The finding: a boss now has no terminator for a competent player
+
+The agent reported *"ran to the 200-spawn safety cap still running"* and filed it as a
+property of the belt ramp, unrelated to tasks 1/2. **The observation is right and the
+filing is wrong.**
+
+`checkShiftEnd` fires `'won'` only when `ACTIVE_LEVEL.target !== null`; a boss has a null
+target, so its **only** exit is `walkouts >= walkoutsAllowed`. Spawning stops dead at
+`KITCHEN_CONFIG.maxSpawns = 200` — `spawnIfDue` simply returns — and nothing ends the
+shift when it does. So a player who reaches 200 spawns with fewer than 5 walkouts drains
+the belt and is left on an empty board **with no way to finish the run.**
+
+⚠️ **Round 24 did not cause this, it made it reachable.** Before, ~40% of spawns on a
+multi-recipe level were structurally unusable, so walkouts accrued on their own and every
+boss run ended. With the waste gone, a competent player never walks out. **The fix removed
+the thing that was quietly ending the game.**
+
+Not in round 24's scope and correctly left alone. It needs its own decision: end the boss
+at `maxSpawns`, raise the cap, or give a boss a real terminator (a wave count, a timer).
+That is a design call — §7.3b's *"survival depth"* payout formula assumes a boss ends by
+failing, and an endless mode that can be survived indefinitely has no depth to pay for.
+
+
 ### 8.11 🔑 The art inventory audit — nothing is missing, Sep 9 2026
 
 **Run because the user challenged my claim that nodes 2–4 needed ~18 new dish sprites.
