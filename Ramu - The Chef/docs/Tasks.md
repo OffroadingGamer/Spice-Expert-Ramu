@@ -5,9 +5,10 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 9 2026, 12:30 IST
+**Last updated:** Sep 9 2026, 14:00 IST
 **Live:** **v1.7.0 public** · <https://w.run/puneetmakes/spice-expert-ramu> — went public Sep 5 2026 with the full audio layer; was v1.2.3 from Sep 4
-**Private:** **v1.39.0** — **27 belt rounds + Challenge rounds A and A2 landed**, `3e15c9d` (+ `accc4df`). **Never public**; `set-public` has never been run on it. [KitchenMode.md](KitchenMode.md) §6.27 · [GDD.md](GDD.md) §10.11c
+**Private:** **v1.40.0** — **27 belt rounds + Challenge rounds A, A2 and C landed**, `ee4d043`. **Never public**; `set-public` has never been run on it. [KitchenMode.md](KitchenMode.md) §6.27 · [GDD.md](GDD.md) §10.11c · [Specs.md](Specs.md) §8d
+🔄 **In flight:** **Round D — the FTUE rewrite** (persistent, unbreakable, visible top-up). **Round B** (Warrior achievements, GDD §10.11b) follows; it has **zero file overlap with C or D**.
 ✅ **PROMOTABLE:** v1.39.0 is the **first public-deploy candidate since v1.7.0**. The Test Mode
 entry is gated behind `?test=1` (`jam-entry/src/state/devMode.ts`), so Challenge Mode is the only
 public route and it now has a scripted FTUE, stated win/lose and audio sliders.

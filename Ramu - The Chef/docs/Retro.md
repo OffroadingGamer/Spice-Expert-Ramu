@@ -2201,3 +2201,19 @@ uniques are the score; the trend matters more than any single day.
     refactor, diff the resolved class strings against the previous commit — do not trust an
     eyeball comparison, and treat a file whose comment disagrees with its code as failing
     until one of them moves.** Caught in review; fixed in `accc4df`.
+82. **A disclosed number is still a claim — recompute it, especially when it comes with a
+    reason not to act on it.** Round C honestly volunteered that `padTapRadius` fell to
+    31.4 px on a 390-wide phone, and explained it away: *"that viewport is width-bound, not
+    height-bound, [so] shrinking the bands further can't fix it."* Recomputing the fit from
+    the shipped constants showed **all three tested viewports are height-bound**, and that
+    31.4 px was the value at the **first-pass** band sizes (110/150) rather than the shipped
+    ones (170/180), where the real figure is **29.7 px**. The measurement was taken before a
+    change and never re-taken, and the explanation attached to it was inverted — the bands
+    were exactly the available lever. **The disclosure was made in good faith and was more
+    useful than silence; it just wasn't checked.** Two rules: a self-reported number that
+    arrives with its own dismissal is the *most* worth re-deriving, because the dismissal
+    discourages the check. And when a round changes a constant mid-flight, every number
+    measured against the old value is stale — re-take them all, not just the failing one.
+    ⚠️ **My acceptance criterion was also mis-specified**: it compared a *radius* against
+    44 px, which is a convention for target **width**. The shipped target is 59 px across
+    and always passed. Both sides of a threshold need the same units stated.

@@ -1152,6 +1152,68 @@ means a new entry and a reset scoring clock.
 
 ---
 
+## 8d. 🔒 The viewport contract — contain-fit, round C, Sep 9 2026
+
+Commit `ee4d043`, private **v1.40.0**. `stage.ts` was unlocked for this one round by
+explicit user grant and is **locked again**.
+
+**The bug.** `stage.ts` scaled by width alone (`app.screen.width / DESIGN_WIDTH`), and
+`CONFIG.path`'s last point sits at **y: 1300** while `CONFIG.boardHeight` is **1280** — the
+path ends 20 units below the nominal board **by construction**. `anchorBoard` centred
+against `boardHeight` and clamped at zero, so on any viewport shorter than the board the
+tail was cut. On 742×1312 the goal landed 28 CSS px below the fold with the Ready button
+over it. **Players could not see the goal they were defending**; enemies vanished off the
+bottom edge and a life disappeared with no visible cause — the mechanical root of playtest
+finding 3 (*"confused as to what went wrong"*).
+
+**The contract now.**
+
+| Constant | Value | Source |
+|---|---|---|
+| `DESIGN_WIDTH` | 720 | fixed |
+| `PLAYFIELD_HEIGHT` | **1300** | 🔒 `Math.max(...CONFIG.path.map(p => p.y))` — **derived at load, never typed** |
+| `TOP_BAND` / `BOTTOM_BAND` | 170 / 180 | measured off the rendered HUD, not guessed |
+| `FIT_HEIGHT` | **1650** | `PLAYFIELD_HEIGHT + bands` |
+
+`scale = min(screenW / DESIGN_WIDTH, screenH / FIT_HEIGHT)`, with the column centred
+horizontally so a height-bound viewport letterboxes evenly. `anchorBoard` now centres
+against `PLAYFIELD_HEIGHT`, not `boardHeight`.
+
+🔥 **`getFit()` / `designToScreen()` are the ONE transform.** Any DOM overlay placing
+something over the canvas calls them. `Hud.tsx` previously re-derived the fit by hand for
+the FTUE arrow — that copy is gone, and a `grep` for an independent fit computation in
+`Hud.tsx` returns nothing. **Do not re-derive this a second time**; a duplicated transform
+already caused a near-miss once.
+
+⚠️ **`CONFIG.path` stays forbidden.** Its 1300 endpoint feeds traverse distance and tower
+coverage; moving it invalidates `npm run balance`. The viewport was fitted to the path,
+never the reverse — balance is untouched.
+
+#### 🔴 A correction to the round's own report
+
+The report disclosed `padTapRadius` as **31.4 px** at 390×844 and reasoned that *"that
+viewport is width-bound, not height-bound, [so] shrinking the bands further can't fix it."*
+**Both halves are wrong**, and were caught in review by recomputing the fit rather than
+re-reading the report:
+
+| Viewport | scale | Bound by | Tap radius | Tap diameter |
+|---|---|---|---|---|
+| 742×1312 | 0.795 | **height** | 46.1 px | 92.2 px |
+| 750×1334 | 0.808 | **height** | 46.9 px | 93.8 px |
+| 390×844 | 0.512 | **height** | **29.7 px** | 59.3 px |
+
+**All three are height-bound**, so the bands are precisely the lever the report said did not
+exist. And 31.4 px is the value at the **first-pass** bands (110/150, `FIT_HEIGHT` 1560),
+not the shipped ones — a measurement taken before the resize and never re-taken. At the
+shipped 170/180 the real figure is **29.7 px**.
+
+✅ **No action taken, because the acceptance criterion itself was mis-specified.** It asked
+for a *radius* ≥ 44 px, but the 44 px convention is a target's **width**, not its radius.
+The shipped tap target is **59 px across** on a 390-wide phone, which clears the guideline
+comfortably. The number was fine; the reasoning and the stated value were not. See
+[Retro.md](Retro.md) lesson 82.
+
+
 ## 10. Known technical risks
 
 | Risk | Likelihood | Mitigation |
