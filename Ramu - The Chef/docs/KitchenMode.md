@@ -1916,6 +1916,40 @@ run.** `{three: 455, two: 411}` therefore stands unchanged and needs no re-deriv
 the thresholds now encode a legible rule rather than an accident of grab-count.
 
 
+### 6.25 ✅ Round 25 landed — per-recipe end-screen lines and a real card panel, Sep 9 2026
+
+Commit `ffe497b`, private **v1.35.0**. Five files, 238+/86−: `kitchenScene.ts`,
+`TestBelt.tsx`, `manifest.ts` and the two baked card PNGs. **`sim/kitchen.ts` and
+`src/game/data/` untouched**, exactly as bounded — task 1 was designed to avoid the
+acceptance-tested core and did.
+
+**Task 1.** `EconomySnapshot` carries `dishCounts: number[]`, index-aligned to
+`level.recipes`, returned as **`[...dishCounts]`** on both paths — a copy, not the live
+array, so the frozen snapshot stays frozen. `TestBelt.tsx:673` renders
+`{dishCounts[i] ?? 0} {recipe.name} completed`, one line per recipe. The shortfall line
+(`:686`) now reads *"N short of target"* with no dish name, since `LEVEL.target` is a
+level-wide total.
+
+**Task 2.** `bg-black/70` is replaced by a nine-sliced `border-image` panel — wood on a
+clear, red on a loss — title in the fixed header band, everything else including all three
+buttons inside the cream body.
+
+**Verified independently.** `tsc --noEmit` exit 0. `__r25Debug` grep clean. Tags read
+private 1.35.0, review 1.7.0, public 1.7.0. 🔒 **No `.png.json` sidecar reached
+`public/`** — the only JSON check across the whole tree comes back empty, and both PNGs
+are byte-identical to their sources in `UI/Cards/CardRegular/`. Both aliases went into the
+**`deferred`** bundle, not `critical`, so they do not touch the loading screen.
+
+**What the agent caught that the handover did not anticipate.** Its first attempt landed
+the title a full header-height too low: with `border-image`, the artwork paints in the
+**border box**, but an absolutely-positioned child's `top: 0` resolves against the
+**padding box**. Every offset measured off the visible artwork is short by the border
+width. Found and fixed inside the round — see [Retro.md](Retro.md) lesson 78.
+
+⬜ **Cosmetic leftover:** the shortfall variable is still named `chaiShort` though it no
+longer refers to chai. Not worth a round; fold it into the next edit of that file.
+
+
 #### 🔴 The finding: a boss now has no terminator for a competent player
 
 The agent reported *"ran to the 200-spawn safety cap still running"* and filed it as a

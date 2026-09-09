@@ -2129,3 +2129,13 @@ uniques are the score; the trend matters more than any single day.
     than at what its change had *removed*. **When a fix eliminates a source of failure,
     ask what depended on that failure.** An endless mode's only exit is exactly the thing
     you just made rare.
+78. **With `border-image`, an absolutely-positioned child resolves against the padding
+    edge, not the artwork's edge.** Round 25's card panel needed its title inside a
+    nine-sliced header band and landed it a full header-height too low on the first
+    attempt. `border-image` paints **in the border box**; `position: absolute; top: 0`
+    resolves against the **padding box**. So every offset measured off the visible
+    artwork is short by exactly the border width — and the code reads as correct, because
+    the arithmetic *is* correct, just against the wrong box. The implementing agent caught
+    and fixed it inside the round. Recorded because the next nine-sliced panel meets the
+    same trap, and because this is lesson 72's shape in CSS rather than in canvas
+    geometry: **the number was right and the box was wrong.**
