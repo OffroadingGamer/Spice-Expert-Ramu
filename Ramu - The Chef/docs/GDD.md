@@ -522,6 +522,81 @@ is running without looking.
 4. **Cost is ~8–9 h**, placing the project near 55 h of the user's 40–60 h range.
    Affordable, not free. Craft pass trims 8 h → 5 h to absorb it.
 
+### 10.11 🔒 Challenge-mode FTUE and Warrior achievements — Sep 9 2026
+
+**Source: a live playtest session on the RUN Discord.** Not inference — real players, six
+findings. This section records the two features that answer them; the raw feedback is
+[Plan.md](Plan.md) item 58.
+
+✅ **This is cut-list item 8 being honoured, not broken.** *"Tutorial text screens. The
+FTUE is the first 30 seconds of play, or it does not exist."* The current onboarding is a
+sentence — `TestBelt.tsx:525`'s *"Tap a locked station to unlock it"* on the belt, and
+nothing at all on Challenge mode. A scripted, visually-cued first three waves **replaces**
+text with play.
+
+#### 10.11a The script — user's spec, Sep 9, mapped to real entities
+
+Every element already exists; nothing here needs new game systems.
+
+| Beat | What happens | Code entity |
+|---|---|---|
+| Pre-start | A counter is **pre-selected** and the build dialogue opens on it | Pad **0** `(360, 215)` + `BuildSheet.tsx` |
+| | Player picks a counter, presses **Ready** | existing Ready button |
+| Wave 1 | plays normally | |
+| Wave 1 end | **Ready hides.** The same counter re-selects, with an **arrow** pointing at it, to teach *upgrade* | pad 0 again |
+| | Dialogue closes → Ready returns → **Wave 2** | |
+| Wave 2 end | The **centre of the three platforms below** auto-selects, prompting a **second** counter | Pad **2** `(360, 485)` — the row is `(250/360/520, 485)` |
+| | Placed → Ready returns → **Wave 3** | |
+| Wave 3 end | **Achievement unlocks**, named for the counter placed **first** | §10.11b |
+
+🔥 **Keep this deliberate:** pad 0 carries a **`damage × 1.5` bonus** — the strongest pad
+on the board (`config.ts:116`). The FTUE therefore puts a new player's first counter on the
+best square by construction. Do not "fix" this later.
+
+**Runs once**, gated on a save flag — see the ⚠️ note below.
+
+#### 10.11b Warrior achievements
+
+Four, one per counter, named for it. **The names already exist in `data/towers.ts`** — no
+renaming needed:
+
+| Achievement | Tower id | Display name |
+|---|---|---|
+| **Grill Warrior** | `fox` | Grill |
+| **Prep Board Warrior** | `owl` | Prep Board |
+| **Tandoor Warrior** | `bear` | Tandoor |
+| **Fryer Warrior** | `squirrel` | Fryer |
+
+**Settled by the user, Sep 9:**
+
+1. **10 levels each**, keyed to that tower's **total meta spend**, so it reads as one ladder.
+2. **Meta upgrades drive it, never in-run upgrades.** Only meta persists (`MetaLevels`);
+   an achievement that resets every run is not an achievement.
+3. **Main-menu screen**, reached by a **medium trophy button carrying a notification
+   count of unclaimed trophies** — the same vocabulary as §10.9's *"unclaimed-pay badge"*.
+
+⚠️ **No achievements API exists.** Verified Sep 9: nothing in our code, and **nothing in
+the RUN SDK** — the apparent `quest` hits in its typings are `Request` substrings. This is
+built from scratch: save fields, unlock rules, a screen, and an unlock toast. Per §10.9's
+own posture, **check `rundot skills` for a copy-in feature template before hand-building.**
+
+⬜ **Open — what does claiming pay?** "Unclaimed" implies a claim step with a reward, and
+the currency is unset. ⚠️ It **cannot** be chef hats: KitchenMode §6 decision 12 keeps the
+currencies fully separate (*"belt boosts never touch `MetaLevels`"*), and Warrior
+achievements are a Challenge-mode feature. **Gems is the consistent answer**, since gems
+are what meta upgrades already spend — but it is unconfirmed.
+
+#### ⚠️ One sequencing constraint, and it matters more than either feature
+
+Both this FTUE (a "played before" flag) and the belt's round 28 (`kitchen`) change
+**`save.ts`** — the file holding live players' gems, best wave and meta levels on a build
+that is public and scoring **right now**. **Make the shape change ONCE**, in whichever
+round lands first, covering every new field at the same time. Two migrations on that file
+is twice the chance of the one mistake that actually costs players progress. KitchenMode
+§2.2's rules apply unchanged: additive only, never bump `SAVE_KEY`, never move an existing
+field.
+
+
 ## 11. Art
 
 | Field | Value |
