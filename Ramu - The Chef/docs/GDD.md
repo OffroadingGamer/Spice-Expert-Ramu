@@ -671,6 +671,55 @@ bundled module gives **10**. Anything keyed to the campaign length must be deriv
   ([PropList.md](PropList.md) §8.1), hats as its currency, mirroring the four Warriors.
 
 
+### 10.11d ✅ Round D landed — the FTUE has walls, Sep 9 2026
+
+Commit `b0e5c22`, private **v1.41.0**. Seven files, 316+/88−. 🔒 **`config.ts` and
+`save.ts` diffs are empty** — persistence here means *ignoring* `challengeDone` on read,
+not storing anything new, so round A's migration stays the only one.
+
+**What round A had wrong.** Its script was run-once and escapable in one tap: `Close` was
+always present, and `startWave()` had **no guard at all**, so Close-then-Ready began wave 1
+on an empty board. It also retired permanently via `challengeDone`, which is why the
+onboarding appeared broken on a device that had already seen it — the save was doing
+exactly what it was built to do.
+
+**The walls, verified from source.**
+
+| Wall | Where |
+|---|---|
+| Ready gated | `actions.ts:146` — `if (store.get().ftueBeat !== null) return;` **one gate**, not a hidden button |
+| Canvas taps walled | `towerScene.ts:312` — blocks re-tapping the forced pad, tapping another pad, and backdrop deselect in a single guard |
+| `Close` hidden | `BuildSheet.tsx:235` — hidden, not merely disabled, for a beat's duration |
+| `Sell` disabled | `BuildSheet.tsx:149` — `disabled={ftueActive}`, the **whole** onboarding, not just inside beats |
+| Beats release | `actions.ts:103` (place) and `:121` (upgrade) — the single place each can resolve |
+
+🔥 **The FTUE now retires when wave 3 BEGINS, not when it clears** (`actions.ts:157`) — a
+deliberate change from round A. Freedom arrives with the wave the player is meant to
+exercise it on.
+
+#### 🔒 The soft-lock, and how it was closed
+
+**The trap was real, deterministic, and visible to the player as a dead button.** Buying the
+Tandoor at beat 1 leaves `140 − 110 = 30`; wave 1 pays at most `6 × 5 + 15 = 45`; the forced
+upgrade costs **90** against **75** — short with *flawless play*, and
+`BuildSheet.tsx:166` renders Upgrade `disabled` behind a hidden Close.
+
+`grantFtueShortfall(requiredCost)` tops up **exactly** `Math.max(0, requiredCost - coins)`
+and never more, shown to the player as a shift-float toast. ⚠️ **Both call sites derive
+their requirement** — the upgrade's own cost, and `Math.min(...TOWERS.map(d => d.cost))` —
+so neither is a typed number. It is reachable **only** from `towerScene.ts`'s FTUE logic.
+
+✅ **The agent exercised the real trap rather than a hypothetical**: it bought the Tandoor,
+lost one beetle past its range, and hit **70 coins against a 90 upgrade → grant +20**. That
+reconciles exactly with the model above (perfect play 75 → shortfall 15; one leak costs 5
+of bounty → 70 → shortfall 20). **The user's ruling stands honoured**: a grant, not a free
+upgrade, so the player still pays full price and the economy lesson lands.
+
+⬜ **Carried forward:** the `wave >= 2 && wave <= 4` upgrade hint was narrowed to
+`wave === 4`, since a persistent FTUE covers waves 1–2 of every run and the 2–3 cases could
+never fire again.
+
+
 ## 11. Art
 
 | Field | Value |
