@@ -13,7 +13,6 @@
  * Aliases (display sizes live in CONFIG.sizes; author real art at 2x them):
  *   'tower-fox' / 'tower-owl' / 'tower-bear' / 'tower-squirrel'
  *                                              the towers, front-facing
- *   'enemy-beetle' / 'enemy-wasp' / 'enemy-snail' / 'enemy-hornet' / 'enemy-stag'
  *   'proj-fox' / 'proj-owl' / 'proj-bear'      projectiles (beams draw as lines)
  *   'fx-ice'                                   translucent cube over frozen enemies
  *   'pad'                                      stone build spot (flat 3/4 ellipse)
@@ -21,10 +20,17 @@
  *   'burrow'                                   hole the bugs enter/exit through
  *   'grass-tile'                               ground, must tile on BOTH axes
  *
+ * The five enemies (beetle/wasp/snail/hornet/stag) are the exception: they
+ * draw from the dish-* aliases already registered for the recipe game (see
+ * manifest.ts), not a dedicated enemy-* alias — art('enemy-beetle', ...) was
+ * pointing at genuine insect PNGs baked Sep 4, before the 30-dish roster was
+ * canon (Round G). Each make*Texture() below hardcodes which dish alias it
+ * reads, via artSquare() so a non-square tray never gets stretched.
+ *
  * Procedural textures are drawn at 2x their design-unit display size and
  * scaled down by the sprites that use them, so edges stay crisp at high DPR.
  */
-import { Assets, Graphics, Texture, type Renderer } from 'pixi.js';
+import { Assets, Container, Graphics, Sprite, Texture, type Renderer } from 'pixi.js';
 import { CONFIG } from './config.ts';
 
 const C = CONFIG.colors;
@@ -36,6 +42,33 @@ const generated = new WeakSet<Texture>();
 function art(alias: string, fallback: () => Texture): Texture {
     if (Assets.cache.has(alias)) return Assets.get<Texture>(alias);
     return fallback();
+}
+
+/**
+ * Same resolution rule as art(), but for sprites (like the dish trays) whose
+ * natural aspect ratio isn't square: the loaded art is uniformly scaled to
+ * CONTAIN within a `size` x `size` square (centered, transparent letterbox)
+ * and baked into a new square texture. Callers that force sprite.width ===
+ * sprite.height (towerScene.ts's enemy sprites do) would otherwise stretch a
+ * landscape tray non-uniformly. The baked texture is a fresh render, so it's
+ * tracked in `generated` like gen()'s output for freeTexture() to reclaim.
+ */
+function artSquare(renderer: Renderer, alias: string, size: number, fallback: () => Texture): Texture {
+    if (!Assets.cache.has(alias)) return fallback();
+    const src = Assets.get<Texture>(alias);
+    const box = new Container();
+    const bg = new Graphics().rect(0, 0, size, size).fill({ color: 0xffffff, alpha: 0 });
+    const sprite = new Sprite(src);
+    const scale = size / Math.max(src.width, src.height);
+    sprite.width = src.width * scale;
+    sprite.height = src.height * scale;
+    sprite.anchor.set(0.5);
+    sprite.position.set(size / 2, size / 2);
+    box.addChild(bg, sprite);
+    const tex = renderer.generateTexture({ target: box, resolution: 1 });
+    box.destroy({ children: true });
+    generated.add(tex);
+    return tex;
 }
 
 function gen(renderer: Renderer, draw: (g: Graphics) => void): Texture {
@@ -163,16 +196,16 @@ function bugBase(g: Graphics, w: number, h: number, body: number, dark: number):
 }
 
 export function makeBeetleTexture(renderer: Renderer): Texture {
-    return art('enemy-beetle', () => gen(renderer, (g) => {
-        const s = CONFIG.sizes.enemy.beetle * SS;
+    const s = CONFIG.sizes.enemy.beetle * SS;
+    return artSquare(renderer, 'dish-chai', s, () => gen(renderer, (g) => {
         bugBase(g, s, s, C.beetle, C.beetleDark);
         g.rect(s * 0.48, s * 0.36, s * 0.04, s * 0.54).fill(C.beetleDark); // shell split
     }));
 }
 
 export function makeWaspTexture(renderer: Renderer): Texture {
-    return art('enemy-wasp', () => gen(renderer, (g) => {
-        const s = CONFIG.sizes.enemy.wasp * SS;
+    const s = CONFIG.sizes.enemy.wasp * SS;
+    return artSquare(renderer, 'dish-bhindi-fry', s, () => gen(renderer, (g) => {
         // wings
         g.ellipse(s * 0.2, s * 0.42, s * 0.18, s * 0.1).fill({ color: 0xffffff, alpha: 0.5 });
         g.ellipse(s * 0.8, s * 0.42, s * 0.18, s * 0.1).fill({ color: 0xffffff, alpha: 0.5 });
@@ -183,8 +216,8 @@ export function makeWaspTexture(renderer: Renderer): Texture {
 }
 
 export function makeSnailTexture(renderer: Renderer): Texture {
-    return art('enemy-snail', () => gen(renderer, (g) => {
-        const s = CONFIG.sizes.enemy.snail * SS;
+    const s = CONFIG.sizes.enemy.snail * SS;
+    return artSquare(renderer, 'dish-rajma', s, () => gen(renderer, (g) => {
         // body/foot
         g.ellipse(s * 0.45, s * 0.78, s * 0.4, s * 0.16).fill(C.snail);
         g.circle(s * 0.16, s * 0.5, s * 0.11).fill(C.snail); // head
@@ -197,8 +230,8 @@ export function makeSnailTexture(renderer: Renderer): Texture {
 }
 
 export function makeHornetTexture(renderer: Renderer): Texture {
-    return art('enemy-hornet', () => gen(renderer, (g) => {
-        const s = CONFIG.sizes.enemy.hornet * SS;
+    const s = CONFIG.sizes.enemy.hornet * SS;
+    return artSquare(renderer, 'dish-beans-poriyal', s, () => gen(renderer, (g) => {
         g.ellipse(s * 0.2, s * 0.38, s * 0.2, s * 0.11).fill({ color: 0xffffff, alpha: 0.5 });
         g.ellipse(s * 0.8, s * 0.38, s * 0.2, s * 0.11).fill({ color: 0xffffff, alpha: 0.5 });
         bugBase(g, s, s, C.hornet, C.waspDark);
@@ -209,8 +242,8 @@ export function makeHornetTexture(renderer: Renderer): Texture {
 }
 
 export function makeStagTexture(renderer: Renderer): Texture {
-    return art('enemy-stag', () => gen(renderer, (g) => {
-        const s = CONFIG.sizes.enemy.stag * SS;
+    const s = CONFIG.sizes.enemy.stag * SS;
+    return artSquare(renderer, 'dish-ooti', s, () => gen(renderer, (g) => {
         // mandibles
         g.poly([s * 0.34, s * 0.2, s * 0.18, s * 0.0, s * 0.3, s * 0.0, s * 0.44, s * 0.16]).fill(C.stag);
         g.poly([s * 0.66, s * 0.2, s * 0.82, s * 0.0, s * 0.7, s * 0.0, s * 0.56, s * 0.16]).fill(C.stag);

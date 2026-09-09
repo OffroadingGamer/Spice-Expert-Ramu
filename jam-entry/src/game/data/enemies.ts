@@ -20,11 +20,11 @@ export interface EnemyDef {
 }
 
 export const ENEMIES: EnemyDef[] = [
-    { id: 'beetle', name: 'Dal Tadka', hp: 46, speed: 90, bounty: 5, livesCost: 1 },
-    { id: 'wasp', name: 'Masala Chai', hp: 34, speed: 150, bounty: 5, livesCost: 1 },
-    { id: 'snail', name: 'Biryani', hp: 175, speed: 55, bounty: 10, livesCost: 1 },
-    { id: 'hornet', name: 'Masala Dosa', hp: 90, speed: 160, bounty: 8, livesCost: 1 },
-    { id: 'stag', name: 'Full Thali', hp: 700, speed: 50, bounty: 30, livesCost: 3 },
+    { id: 'beetle', name: 'Chai', hp: 46, speed: 90, bounty: 5, livesCost: 1 },
+    { id: 'wasp', name: 'Bhindi Fry', hp: 34, speed: 150, bounty: 5, livesCost: 1 },
+    { id: 'snail', name: 'Rajma', hp: 175, speed: 55, bounty: 10, livesCost: 1 },
+    { id: 'hornet', name: 'Beans Poriyal', hp: 90, speed: 160, bounty: 8, livesCost: 1 },
+    { id: 'stag', name: 'Ooti', hp: 700, speed: 50, bounty: 30, livesCost: 3 },
 ];
 
 export function enemyDef(id: string): EnemyDef {

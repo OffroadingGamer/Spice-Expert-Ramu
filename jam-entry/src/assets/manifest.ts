@@ -28,11 +28,21 @@ export const MANIFEST: Manifest = {
         {
             name: 'critical',
             assets: [
-                { alias: 'enemy-beetle', src: 'images/enemy-beetle.png' },
-                { alias: 'enemy-wasp', src: 'images/enemy-wasp.png' },
-                { alias: 'enemy-snail', src: 'images/enemy-snail.png' },
-                { alias: 'enemy-hornet', src: 'images/enemy-hornet.png' },
-                { alias: 'enemy-stag', src: 'images/enemy-stag.png' },
+                // Round G: the five dishes textures.ts draws the enemies
+                // from (chai/bhindi-fry/rajma/beans-poriyal/ooti) — moved
+                // here from 'deferred' so wave 1 never renders the
+                // procedural fallback while the rest of the dish roster is
+                // still loading in the background. This replaces the five
+                // enemy-*.png insect sprites (Sep 4, pre-dish-roster; see
+                // Retro.md lesson 86) that critical loaded until now and
+                // that textures.ts no longer references — net smaller, not
+                // larger: those five insect PNGs totalled ~235KB, these
+                // five dish PNGs total ~63KB.
+                { alias: 'dish-chai', src: 'images/dish-chai.png' },
+                { alias: 'dish-bhindi-fry', src: 'images/dish-bhindi-fry.png' },
+                { alias: 'dish-rajma', src: 'images/dish-rajma.png' },
+                { alias: 'dish-beans-poriyal', src: 'images/dish-beans-poriyal.png' },
+                { alias: 'dish-ooti', src: 'images/dish-ooti.png' },
                 { alias: 'tower-fox', src: 'images/tower-fox.png' },
                 { alias: 'tower-owl', src: 'images/tower-owl.png' },
                 { alias: 'tower-bear', src: 'images/tower-bear.png' },
@@ -149,8 +159,6 @@ export const MANIFEST: Manifest = {
                 { alias: 'dish-arrabbiata', src: 'images/dish-arrabbiata.png' },
                 { alias: 'dish-baingan-bharta', src: 'images/dish-baingan-bharta.png' },
                 { alias: 'dish-bamboo-shoot-fry', src: 'images/dish-bamboo-shoot-fry.png' },
-                { alias: 'dish-beans-poriyal', src: 'images/dish-beans-poriyal.png' },
-                { alias: 'dish-bhindi-fry', src: 'images/dish-bhindi-fry.png' },
                 { alias: 'dish-bruschetta', src: 'images/dish-bruschetta.png' },
                 { alias: 'dish-coconut-chutney', src: 'images/dish-coconut-chutney.png' },
                 { alias: 'dish-dal-cooked', src: 'images/dish-dal-cooked.png' },
@@ -160,10 +168,8 @@ export const MANIFEST: Manifest = {
                 { alias: 'dish-jeera-rice', src: 'images/dish-jeera-rice.png' },
                 { alias: 'dish-minestrone', src: 'images/dish-minestrone.png' },
                 { alias: 'dish-naan', src: 'images/dish-naan.png' },
-                { alias: 'dish-ooti', src: 'images/dish-ooti.png' },
                 { alias: 'dish-palak-aloo', src: 'images/dish-palak-aloo.png' },
                 { alias: 'dish-pesto', src: 'images/dish-pesto.png' },
-                { alias: 'dish-rajma', src: 'images/dish-rajma.png' },
                 { alias: 'dish-rasam', src: 'images/dish-rasam.png' },
                 { alias: 'dish-risotto', src: 'images/dish-risotto.png' },
                 { alias: 'dish-sambar', src: 'images/dish-sambar.png' },
