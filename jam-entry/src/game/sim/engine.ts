@@ -506,23 +506,40 @@ export function createEngine(meta: MetaLevels = {}): Engine {
             }
         }
 
-        // deaths pay bounties
+        // deaths pay bounties. Round H Task 5: enemies.ts is sealed this
+        // round, so the level-11+ income cut is a multiplier applied here
+        // rather than a stat change — bounty is the dominant income source
+        // once wave sizes grow, so this (not just waveBonus below) is what
+        // keeps coins a live constraint at higher levels.
+        const level = state.waveIndex + 1;
+        const bountyMult = level < CONFIG.economy.lateEconomy.fromLevel ? 1 : CONFIG.economy.lateEconomy.bountyMult;
         for (let i = state.enemies.length - 1; i >= 0; i--) {
             if (state.enemies[i].hp <= 0) {
-                state.coins += state.enemies[i].def.bounty;
+                state.coins += Math.round(state.enemies[i].def.bounty * bountyMult);
                 state.kills++;
                 events.push({ type: 'death' });
                 state.enemies.splice(i, 1);
             }
         }
 
-        // wave over? There is no win: after the authored waves, endless
-        // generated waves keep coming (data/waves.ts waveAt).
+        // wave over? There is no win: after the authored levels, Overtime
+        // keeps coming (data/waves.ts waveAt).
         const wave = waveAt(state.waveIndex);
         const doneSpawning = entryIndex >= wave.entries.length;
         if (doneSpawning && state.enemies.length === 0) {
             state.projectiles.length = 0;
-            state.coins += CONFIG.economy.waveBonus;
+            state.coins +=
+                level < CONFIG.economy.lateEconomy.fromLevel
+                    ? CONFIG.economy.waveBonus
+                    : CONFIG.economy.lateEconomy.waveBonus;
+            // Round H Task 6: through level 5, walkouts still happen and are
+            // still shown (the 'leak' events above already fired, and lives
+            // already dropped mid-wave) but the level always ENDS with a
+            // full life bar — the player learns what a leak costs without
+            // being punished for it yet. A run that dies mid-wave (lives
+            // hit 0 above, phase already 'lost') never reaches here, so this
+            // can't mask an actual loss — only a level survived with leaks.
+            if (level <= 5) state.lives = CONFIG.economy.startLives;
             state.waveIndex++;
             state.phase = 'build';
             events.push({ type: 'wave-clear', cleared: state.waveIndex });

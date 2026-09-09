@@ -273,23 +273,27 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 retireFtue();
             }
         } else if (cleared === 2) {
-            const emptyPads = CONFIG.pads
-                .map((_, i) => i)
-                .filter((i) => !engine.state.towers.some((tw) => tw.padIndex === i));
-            if (emptyPads.length === 0) {
-                // Nowhere left to force a placement (the reported hard-lock's
-                // other route: a full board). Retire instead of walling the
-                // player behind an impossible beat.
+            // Round H Task 1: if pad 2 is already occupied here, the player
+            // placed a second counter unprompted between beats — the lesson
+            // (place a second counter) is already demonstrated. The old
+            // fallback (force a THIRD placement onto the nearest empty pad,
+            // funded by grantFtueShortfall) taught nothing and handed out
+            // coins they didn't need. Retire instead, same as a full board.
+            if (engine.state.towers.some((tw) => tw.padIndex === 2)) {
                 retireFtue();
                 return;
             }
-            // Prefer pad 2; otherwise whichever empty pad sits closest to
-            // it, so the forced placement still reads as "the pad by the
-            // one you just upgraded" rather than a random jump.
-            const target = emptyPads.includes(2) ? 2 : emptyPads.reduce((best, p) => {
-                const dist = (i: number) => Math.hypot(CONFIG.pads[i].x - CONFIG.pads[2].x, CONFIG.pads[i].y - CONFIG.pads[2].y);
-                return dist(p) < dist(best) ? p : best;
-            });
+            const emptyPads = CONFIG.pads
+                .map((_, i) => i)
+                .filter((i) => !engine.state.towers.some((tw) => tw.padIndex === i));
+            // pad 2 is confirmed empty above, so it's always in this list —
+            // no full-board case is reachable here, but the check stays as
+            // a harmless backstop.
+            if (emptyPads.length === 0) {
+                retireFtue();
+                return;
+            }
+            const target = 2;
             // Beat 5's requirement: the cheapest tower, so whatever the
             // player affords is guaranteed placeable at the target pad.
             grantFtueShortfall(Math.min(...TOWERS.map((def) => def.cost)));

@@ -15,6 +15,46 @@
  * verify the game is still winnable but not trivial, without playtesting.
  * ========================================================================
  */
+/**
+ * Round H Task 3: pad 0's bonus stat was the only 'damage' bonus in the
+ * roster, so setting it to null would otherwise let `as const` narrow every
+ * pad's bonus union down to 'range' | 'fireRate' — silently breaking the
+ * `stat === 'damage'` checks in sim/engine.ts and BuildSheet.tsx even though
+ * they never changed. Typed explicitly here so 'damage' stays a valid pad
+ * bonus stat regardless of which pad literal currently uses it.
+ */
+type PadBonus = { stat: 'damage' | 'range' | 'fireRate'; mult: number } | null;
+interface Pad {
+    x: number;
+    y: number;
+    bonus: PadBonus;
+}
+
+/**
+ * Build spots. The center pads reach two path legs; corners reach one.
+ * A pad with a `bonus` is a GOLD stone: any tower built there gets the
+ * stat multiplier. Bonuses sit on the weaker-coverage pads on purpose,
+ * so "great spot" vs "great bonus" is a real decision.
+ */
+const PADS: Pad[] = [
+    // Round H Task 3: this pad sat at the head of the path with a x1.5
+    // damage bonus, so maxing it first (before spending anywhere else)
+    // dominated every other opening — the pad0-rush strategy in
+    // scripts/simulate.ts. Stripped to null; coordinates untouched. The
+    // full pad-bonus rebalance is a later round once the level-design
+    // schematics land.
+    { x: 360, y: 215, bonus: null },
+    // x250 on purpose: at x200 this pad also covers the first corner
+    // (the sim showed that extra coverage is worth ~3 lives)
+    { x: 250, y: 485, bonus: null },
+    { x: 360, y: 485, bonus: null },
+    { x: 520, y: 485, bonus: null },
+    { x: 200, y: 795, bonus: null },
+    { x: 520, y: 795, bonus: { stat: 'range', mult: 1.5 } },
+    { x: 200, y: 1090, bonus: { stat: 'fireRate', mult: 1.5 } },
+    { x: 450, y: 1090, bonus: null },
+];
+
 export const CONFIG = {
     colors: {
         grass: 0x14141a,        // kitchen floor
@@ -72,10 +112,19 @@ export const CONFIG = {
         shadow: 0x000000,
     },
 
-    /** On-screen display sizes in design units (textures draw at 2x these). */
+    /**
+     * On-screen display sizes in design units (textures draw at 2x these).
+     * Round H: widened the enemy spread (was 42/40/50/46/66 — four of five
+     * packed into 40-50, reading as one silhouette at a glance) so class is
+     * legible by size alone: beetle/wasp small (grunt/fastest, and beetle
+     * must still read clean 14-deep on wave 7); snail/hornet mid; stag
+     * clearly largest. Textures.ts's artSquare() contain-fits the dish
+     * trays into a square, so visible height is ~66% of this number — that
+     * ratio is unchanged by this round, just the numbers it's applied to.
+     */
     sizes: {
         tower: 64,
-        enemy: { beetle: 42, wasp: 40, snail: 50, hornet: 46, stag: 66 },
+        enemy: { beetle: 36, wasp: 32, snail: 54, hornet: 48, stag: 84 },
         pad: { w: 96, h: 52 },
         projectile: 16,
         pathWidth: 72,
@@ -106,24 +155,8 @@ export const CONFIG = {
         { x: 610, y: 1300 },
     ],
 
-    /**
-     * Build spots. The center pads reach two path legs; corners reach one.
-     * A pad with a `bonus` is a GOLD stone: any tower built there gets the
-     * stat multiplier. Bonuses sit on the weaker-coverage pads on purpose,
-     * so "great spot" vs "great bonus" is a real decision.
-     */
-    pads: [
-        { x: 360, y: 215, bonus: { stat: 'damage', mult: 1.5 } },
-        // x250 on purpose: at x200 this pad also covers the first corner
-        // (the sim showed that extra coverage is worth ~3 lives)
-        { x: 250, y: 485, bonus: null },
-        { x: 360, y: 485, bonus: null },
-        { x: 520, y: 485, bonus: null },
-        { x: 200, y: 795, bonus: null },
-        { x: 520, y: 795, bonus: { stat: 'range', mult: 1.5 } },
-        { x: 200, y: 1090, bonus: { stat: 'fireRate', mult: 1.5 } },
-        { x: 450, y: 1090, bonus: null },
-    ],
+    /** Build spots — see the PADS definition above the CONFIG object. */
+    pads: PADS,
 
     /** Tap tolerance for selecting a pad, from its center. */
     padTapRadius: 58,
@@ -131,7 +164,24 @@ export const CONFIG = {
     economy: {
         startCoins: 140,   // two cheap towers, or one mid + savings
         startLives: 10,
-        waveBonus: 15,     // flat build-phase income per cleared wave
+        waveBonus: 15,     // flat build-phase income per cleared wave, levels 1-10
+        /**
+         * Round H Task 5: levels 1-10 keep the economy above exactly as-is
+         * (onboarding stays generous). From level 11 (sim/engine.ts checks
+         * waveIndex >= lateEconomy.fromLevel - 1), both the flat clear bonus
+         * and the per-kill bounty (enemies.ts is sealed this round, so the
+         * cut is a multiplier applied where bounty is paid, not a stat
+         * change) drop — bounty dominates income once wave sizes grow, so
+         * that multiplier is what actually keeps coins a live constraint
+         * instead of the ~25,000 idle-by-level-15 pileup this round exists
+         * to fix. Tuned alongside the levels 1-80 threat curve
+         * (data/waves.ts) — see the balance report's coin-curve column.
+         */
+        lateEconomy: {
+            fromLevel: 11,
+            waveBonus: 6,
+            bountyMult: 0.55,
+        },
         /**
          * Fraction of a tower's TOTAL spend (purchase plus upgrades bought)
          * refunded on sell: at 0.75, a tower that cost 200 in total sells
