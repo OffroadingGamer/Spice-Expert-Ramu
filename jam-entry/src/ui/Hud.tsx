@@ -6,11 +6,13 @@
  * control opts back in with pointer-events-auto.
  *
  * LAYOUT CONTRACT (portrait, phone-first):
- *   row 1        status chip (walkouts, cash) left, hamburger right
+ *   row 1        lives chip + coins chip left, hamburger right — this is
+ *                stage.ts's reserved TOP_BAND; keep row 1+2 within it
  *   row 2        rush counter left, speed buttons right, both nowrap
  *   bottom       "Ready!" centred, hidden while the build sheet is open
  *                (BuildSheet is also inset-x-0 bottom-0, so they must never
- *                coexist) and hidden while the shift menu is open
+ *                coexist) and hidden while the shift menu is open — this is
+ *                stage.ts's reserved BOTTOM_BAND
  * Every edge uses px-3 plus safe-area padding: nothing touches a screen
  * edge, and the speed row shrinks rather than overflowing.
  *
@@ -23,20 +25,23 @@
  * fires per run (keyed on runId — Retry counts as a new run), the 🚪 chip is
  * labelled, and while `ftueActive` the pad-0/pad-2 forced selections get an
  * arrow cue pointing at the live pad on the Pixi canvas below — computed
- * from CONFIG.pads + the same width-fit/board-centering transform stage.ts
- * and towerScene.ts use, read here but never written.
+ * from CONFIG.pads via stage.ts's designToScreen() (the same contain-fit
+ * transform stage.ts and towerScene.ts use internally), read here but
+ * never written, and never re-derived by hand (round C, task 2).
  */
 import { useEffect, useState } from 'react';
 import { setMusicVolume, setSfxVolume, sfx, switchCue } from '../audio/audio.ts';
 import { startWave } from '../game/actions.ts';
 import { CONFIG } from '../game/config.ts';
-import { DESIGN_WIDTH } from '../game/stage.ts';
+import { designToScreen } from '../game/stage.ts';
 import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import Slider from './Slider.tsx';
 
-/** Live screen position of a pad, tracking the canvas's own width-fit +
- *  board-centering transform (stage.ts / towerScene.ts's anchorBoard). */
+/** Live screen position of a pad, tracking the canvas's own contain-fit +
+ *  board-centering transform — stage.ts's designToScreen() is the one
+ *  source of truth for this (round C, task 2: a hand-rolled second copy of
+ *  this formula here caused a near-miss review). */
 function usePadScreenPos(padIndex: number | null): { x: number; y: number } | null {
     const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
     useEffect(() => {
@@ -45,11 +50,8 @@ function usePadScreenPos(padIndex: number | null): { x: number; y: number } | nu
         if (!frame) return;
         const compute = () => {
             const rect = frame.getBoundingClientRect();
-            const scale = rect.width / DESIGN_WIDTH;
-            const designHeight = rect.height / scale;
-            const boardRootY = Math.max(0, (designHeight - CONFIG.boardHeight) / 2);
             const pad = CONFIG.pads[padIndex];
-            setPos({ x: pad.x * scale, y: (pad.y + boardRootY) * scale });
+            setPos(designToScreen(pad.x, pad.y, rect.width, rect.height));
         };
         compute();
         const ro = new ResizeObserver(compute);
@@ -58,6 +60,12 @@ function usePadScreenPos(padIndex: number | null): { x: number; y: number } | nu
     }, [padIndex]);
     return pos;
 }
+
+/** Danger threshold for the lives chip's red pulse: ≤30% of starting lives
+ *  is the conventional "danger zone" cutoff (enough runway left to react,
+ *  not so early it cries wolf) — for CONFIG.economy.startLives (10) that's
+ *  3. Derived, not typed in, so a balance change to startLives carries it. */
+const LIVES_DANGER = Math.ceil(CONFIG.economy.startLives * 0.3);
 
 export default function Hud() {
     const coins = useStore((s) => s.coins);
@@ -127,8 +135,25 @@ export default function Hud() {
             <div className="flex flex-col gap-2 px-3">
                 {/* row 1: status + hamburger */}
                 <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0 rounded-xl bg-black/55 px-3 py-2 text-lg font-bold tabular-nums whitespace-nowrap">
-                        🚪 {lives} lives · 💵 {coins}
+                    <div className="flex min-w-0 gap-2">
+                        {/* Two opaque chips, not one translucent pill: the
+                            number the player most needs (lives) was losing
+                            to the board behind it. Lives turn red and pulse
+                            below LIVES_DANGER; motion-safe: respects
+                            prefers-reduced-motion for free. */}
+                        <div
+                            className={
+                                'rounded-xl px-3 py-2 text-xl font-bold tabular-nums whitespace-nowrap ' +
+                                (lives <= LIVES_DANGER
+                                    ? 'bg-red-900 text-red-200 motion-safe:animate-pulse'
+                                    : 'bg-surface text-white')
+                            }
+                        >
+                            🚪 {lives}
+                        </div>
+                        <div className="rounded-xl bg-surface px-3 py-2 text-xl font-bold tabular-nums whitespace-nowrap text-white">
+                            💵 {coins}
+                        </div>
                     </div>
                     <button
                         type="button"

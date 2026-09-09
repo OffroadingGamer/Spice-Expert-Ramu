@@ -45,7 +45,7 @@ import { store } from '../state/store.ts';
 import { completeFtue, getSave, recordRunEnd } from '../state/save.ts';
 import { submitRunScores } from '../sdk/leaderboard.ts';
 import { sfx } from '../audio/audio.ts';
-import type { Stage } from './stage.ts';
+import { PLAYFIELD_HEIGHT, type Stage } from './stage.ts';
 
 /** The scene contract: every createXxxScene(app, stage) returns one of these. */
 export interface Scene {
@@ -86,9 +86,10 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     // ---- static board ------------------------------------------------------
     const grass = new TilingSprite({ texture: tex.grass, width: stage.width, height: stage.designHeight() });
     grass.tileScale.set(0.5);
-    // boardRoot carries EVERYTHING gameplay-positioned. The board is designed
-    // for a 1280-unit-tall screen; on taller aspects boardRoot is offset so
-    // the extra height splits evenly above and below — the path itself never
+    // boardRoot carries EVERYTHING gameplay-positioned. stage.ts's contain-fit
+    // (FIT_HEIGHT) guarantees at least PLAYFIELD_HEIGHT units of vertical
+    // room; on taller/wider-fit aspects boardRoot is offset so the extra
+    // height splits evenly above and below — the path itself never
     // stretches, keeping path length (and therefore balance) identical on
     // every device and in the headless simulator.
     const boardRoot = new Container();
@@ -163,7 +164,23 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     const anchorBoard = () => {
         const dh = stage.designHeight();
         grass.height = dh;
-        boardRoot.y = Math.max(0, (dh - CONFIG.boardHeight) / 2);
+        // Contain-fit (stage.ts, round C) can letterbox horizontally: the
+        // content column (DESIGN_WIDTH wide, centered by stage.root's own
+        // x-offset) no longer always spans the full screen. Re-derive the
+        // grass floor's true design-unit width from the live screen/scale
+        // and recenter it around the column's own center (DESIGN_WIDTH / 2
+        // maps to screen-center regardless of scale/offset) so it covers
+        // the whole screen instead of leaving bare margins outside the
+        // column.
+        const fullDesignW = app.screen.width / stage.scale();
+        grass.width = fullDesignW;
+        grass.x = stage.width / 2 - fullDesignW / 2;
+        // Centre against the playfield's real extent (PLAYFIELD_HEIGHT,
+        // derived from CONFIG.path — see stage.ts), not the nominal
+        // CONFIG.boardHeight: boardHeight undercounts the path's actual
+        // last point (y:1300 vs boardHeight's 1280), which is what let the
+        // goal clip off the bottom pre-round-C.
+        boardRoot.y = Math.max(0, (dh - PLAYFIELD_HEIGHT) / 2);
     };
     anchorBoard();
     const offResize = stage.onResize(anchorBoard);
