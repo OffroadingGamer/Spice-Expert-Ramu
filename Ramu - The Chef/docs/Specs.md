@@ -1214,6 +1214,61 @@ comfortably. The number was fine; the reasoning and the stated value were not. S
 [Retro.md](Retro.md) lesson 82.
 
 
+## 9a. 🔒 The public tag is NOT creator-writable — discovered Sep 9 2026
+
+🔴 **This supersedes every earlier statement in this project that promotion is
+`rundot game update-tag public --version X`. It is not, and that command cannot work.**
+
+```
+rundot game update-tag public --version 1.42.0
+  -> 400 BadRequest
+     {"error":"You are not authorized to update public tag","success":false}
+```
+
+**The actual release model:**
+
+| Tag | Who writes it |
+|---|---|
+| `private` | creator — `rundot deploy` lands here, always |
+| `review` | creator — `rundot game update-tag review --version X` |
+| `public` | 🔒 **RUN, on approving the review tag.** Not the creator, ever |
+
+**Evidence.** `list-tags` labelled the review row **"Review (Approved)"** while review and
+public both read 1.41.0. Moving review to 1.42.0 **dropped the "(Approved)" label** and left
+public at 1.41.0. So approval is per-version state on the review tag, and publishing is
+what approval *does*.
+
+✅ **This also explains, innocently, how public went 1.7.0 → 1.41.0 without anyone
+promoting it**: review was set to 1.41.0, RUN approved it, and the platform published it.
+See the correction in §9b below.
+
+⚠️ **There is no CLI path to request or trigger approval.** `game`, `jam`, `socials` and
+`quests` were all searched for review/approve/submit/publish verbs; only
+`game set-public` matches, and that governs **explore-page listing only** — not which
+version serves. Approval appears to be a platform-side action surfaced in the dashboard.
+
+🔴 **Consequence for release planning: shipping is not on our clock.** A fix is not live
+when we deploy it, nor when we set the review tag — it is live when RUN approves. Any plan
+that assumes we can promote on demand is wrong, and the lead time is unmeasured. **Set the
+review tag as early as possible, because the wait starts then.**
+
+## 9b. ❌ A wrong accusation, corrected — Sep 9 2026
+
+**I accused the marketing agent of promoting past an explicit full stop and then falsely
+reporting `public 1.7.0 (unchanged)`. That accusation was wrong, and the agent disputed it
+with evidence rather than accepting it.**
+
+The public tag moved 1.7.0 → 1.41.0 between its two reports, and I concluded the agent had
+moved it. **It could not have**: the platform refuses creator writes to that tag with a 400,
+as §9a shows. The version changed because RUN approved review 1.41.0.
+
+🔥 **What I actually had was a state change and an assumption about its cause.** Only two
+things were verified — public read 1.7.0 before and 1.41.0 after. "The agent did it" was
+inference, and I wrote it into a handover as established fact, including a paragraph
+instructing the next agent that the earlier report could not be relied upon. That paragraph
+was unfounded. See [Retro.md](Retro.md) lesson 85.
+
+
 ## 10. Known technical risks
 
 | Risk | Likelihood | Mitigation |

@@ -9,7 +9,7 @@
 **Live:** **v1.7.0 public** · <https://w.run/puneetmakes/spice-expert-ramu> — went public Sep 5 2026 with the full audio layer; was v1.2.3 from Sep 4
 **LIVE: v1.41.0 public** since Sep 9 — Challenge Mode only; the belt is gated behind `?test=1`.
 **Private:** **v1.42.0** — **27 belt rounds + Challenge rounds A, A2, C, D and E landed**, `366e77d`. [GDD.md](GDD.md) §10.11c–e · [Specs.md](Specs.md) §8d
-🔴 **v1.42.0 is a HOTFIX and is not yet promoted** — it closes a hard-lock that is live in v1.41.0 (place a second counter on pad 2 before Ready, then clear wave 2). A reload escapes it, so no player is permanently stuck, but every unfixed hour carries it.
+🔴 **v1.42.0 is a HOTFIX awaiting RUN APPROVAL** — it closes a hard-lock live in v1.41.0 (place a second counter on pad 2 before Ready, then clear wave 2). A reload escapes it, so no player is permanently stuck, but every unapproved hour carries it. **Review is set to 1.42.0; public stays 1.41.0 until RUN approves.** 🔒 **We cannot promote it ourselves** — the public tag rejects creator writes (400). [Specs.md](Specs.md) §9a
 ⏸️ **Next:** **Round B** (Warrior achievements, GDD §10.11b) — designed, **awaiting user approval to write**.
 ✅ **PROMOTABLE:** v1.39.0 is the **first public-deploy candidate since v1.7.0**. The Test Mode
 entry is gated behind `?test=1` (`jam-entry/src/state/devMode.ts`), so Challenge Mode is the only

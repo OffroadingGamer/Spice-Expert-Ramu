@@ -2244,3 +2244,18 @@ uniques are the score; the trend matters more than any single day.
     artefact** the moment it is issued: any later thinking either amends it explicitly or is
     not part of it. And never assert that a document says what you intend without re-reading
     the clause.
+85. **A state change plus a plausible actor is not evidence of who acted. Verify the
+    mechanism before naming a cause — especially when the naming is an accusation.** The
+    public tag moved 1.7.0 → 1.41.0 across two marketing-agent reports, one of which said
+    public was unchanged. I concluded the agent had promoted past a full stop and
+    misreported it, and wrote that into the next handover as established fact — including
+    an instruction that nothing in its earlier report could be relied upon. 🔴 **The agent
+    could not have done it**: RUN refuses creator writes to the public tag with a 400. Public
+    changed because RUN *approved* review 1.41.0, and approval is what publishes. **Two
+    things were verified — the before value and the after value. Everything between them was
+    inference**, and one command (`update-tag public`) would have exposed it before I wrote a
+    word. The agent disputed the claim with its own tool record instead of accepting it,
+    which is the behaviour worth having; had it simply agreed, a false account would have
+    entered the project record permanently. ⚠️ **Accusations need the same standard as
+    acceptance numbers, and a higher one than a normal finding**: they are acted on, they
+    change how the next agent is treated, and they are rarely re-checked once written.
