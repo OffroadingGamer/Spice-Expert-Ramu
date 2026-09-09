@@ -5,9 +5,10 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 9 2026, 09:30 IST
+**Last updated:** Sep 9 2026, 11:00 IST
 **Live:** **v1.7.0 public** · <https://w.run/puneetmakes/spice-expert-ramu> — went public Sep 5 2026 with the full audio layer; was v1.2.3 from Sep 4
-**Private:** **v1.36.0** — the belt Test Mode build, **26 rounds landed** (round 26, the sprite bake, still in flight), `96d18cb`. **Never public**; `set-public` has never been run on it. [KitchenMode.md](KitchenMode.md) §6.26
+**Private:** **v1.37.0** — the belt Test Mode build, **27 rounds landed**, `0a1410b`. **Never public**; `set-public` has never been run on it. [KitchenMode.md](KitchenMode.md) §6.27
+🔄 **In flight:** **Round A — Challenge-mode FTUE** (GDD §10.11): scripted first three waves, explicit win/lose in both modes, audio sliders, and the ONE consolidated `SaveData` change that belt round 28 also depends on. ⚠️ **This is the first public-deploy candidate since v1.7.0.**
 **Jam board:** **rank #2** · 427 plays · **325 Daily Unique Plays** vs rank #1's **658** and rank #3's **279** — [Plan.md](Plan.md) §5.8 (full board read Sep 8 2026)
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST** · 🛑 **Delivery gate: four cuisine nodes** — KitchenMode §6.8
 

@@ -1975,6 +1975,36 @@ The gate: 0 completions → no Next Level; 20 → no Next Level; 40 → Next Lev
 **Wall clock: 217.6s for a real 40-completion clear**, against the model's 217s. The
 pacing arithmetic in §6.23 reproduces in play to within half a second.
 
+### 6.27 ✅ Round 26 landed — the sprite bake, Sep 9 2026
+
+Commit `0a1410b`, private **v1.37.0**. **74 sprites baked** — 41 props, 28 dish trays and
+the 5 ingredients `INGREDIENT_CATALOG` actually names.
+
+**Verified independently.** `public/images/` went **34 → 108**, exactly +74. 🔒 **No
+`.png.json` sidecar reached `public/`** — no JSON file exists anywhere under it. The
+`critical` bundle is **still 15 assets** (the tower game's, untouched) against **92
+deferred**, so nothing new lands on the loading screen. `public/` grew 2.6M → **4.1M**;
+a raw copy would have added ~4.3M, so the optimisation pass was genuinely applied.
+
+**Reported by the agent** (not independently re-run here): N0 L1 cleared `won`, walkouts 0,
+`earned = 348`; N0 L2 and L3 cleared first attempt; N0 L4 cleared genuinely at **125
+completions**, well past the 40 bar, with `hasNext=true`. Screenshots confirm real Tea
+Leaf / Coffee Extract / Cream sprites on N0 L3's billboard, and real Rice / Ghee plus a
+Jeera Rice dish preview on N1 L1 — **every grey placeholder tile in the playtest
+screenshots is gone.**
+
+⬜ **One line in the report I could not verify**: *"no runaway recurrence — the mid-sweep
+abort fix held."* It refers to work described in an earlier turn of that agent's session
+and has no counterpart in the commit diff visible here. Recorded as unexplained rather
+than assumed benign.
+
+⚠️ **Deliberately NOT baked: the 24 generated ingredients** in `Art/_gen/ingredients/`
+(cardamom, clove, pine-nut …). They have **no `INGREDIENT_CATALOG` keys**, so an alias for
+any of them would be invented before the recipes that name them exist — the same failure
+the prop catalogue avoided. They wait for recipes. `_style-check.png` in that folder is a
+contact sheet, never an ingredient.
+
+
 #### 🔴 The agent caught an error in my handover
 
 Acceptance criterion 4 stated the expected spawn interval at completion 12 as **2.20**.
