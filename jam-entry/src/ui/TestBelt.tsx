@@ -6,11 +6,14 @@
  * Additive and isolated: owns its own Pixi app + local state, never reads or
  * writes the shared AppState beyond `phase`/`paused`/the audio volumes
  * (already-existing fields), never calls leaderboard.ts (the belt's boards
- * don't exist), ships grey-box art plus five demo-tier UI sprites
- * (KitchenMode.md §2.6 — private-build only, licence not cleared for public).
+ * don't exist). It does NOT cite KitchenMode.md §2.6 for a UI-sprite licence
+ * restriction — §2.6 never contained one, and in any case that restriction
+ * was cleared Sep 9 (Plan item 57).
  *
- * The TEST MODE entry button (MainMenu.tsx) is unconditional for now, by
- * instruction — remove or flag it before the next public deploy.
+ * Round A2, task 4: the MainMenu.tsx entry button is now gated behind
+ * devMode.ts's `?test=1` latch — it was the public menu's primary CTA,
+ * dropping every player into this unfinished belt. This comment used to
+ * flag that as unresolved; it's resolved now.
  *
  * Round 5: slots start empty and are filled via PropPicker.tsx (itself a
  * duplicate of BuildSheet.tsx's pattern, see its own header); the end
@@ -173,6 +176,7 @@ import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import { MANIFEST } from '../assets/manifest.ts';
 import PropPicker from './PropPicker.tsx';
+import Slider from './Slider.tsx';
 
 // Round 11: same manifest-lookup pattern as PropPicker.tsx's ASSET_SRC — one
 // place (the manifest) lists what an alias's image file actually is.
@@ -208,31 +212,6 @@ function cardPanelStyle(variant: 'wood' | 'red'): CSSProperties {
         borderImageRepeat: 'stretch',
     };
 }
-
-function IconMusic({ muted }: { muted: boolean }) {
-    return (
-        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor"
-            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M9 17V4l11-2v13" />
-            <circle cx="6" cy="17" r="3" />
-            <circle cx="17" cy="15" r="3" />
-            {muted && <line x1="3" y1="3" x2="21" y2="21" />}
-        </svg>
-    );
-}
-
-function IconSpeaker({ muted }: { muted: boolean }) {
-    return (
-        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor"
-            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M11 5 6 9H2v6h4l5 4z" />
-            {muted ? <line x1="3" y1="3" x2="21" y2="21" /> : <path d="M15.5 8.5a5 5 0 0 1 0 7" />}
-        </svg>
-    );
-}
-
-let lastMusic = 0.6;
-let lastSfx = 0.8;
 
 export default function TestBelt() {
     const hostRef = useRef<HTMLDivElement | null>(null);
@@ -283,8 +262,6 @@ export default function TestBelt() {
     const paused = useStore((s) => s.paused);
     const musicVol = useStore((s) => s.musicVol);
     const sfxVol = useStore((s) => s.sfxVol);
-    const musicMuted = musicVol <= 0;
-    const sfxMuted = sfxVol <= 0;
 
     useEffect(() => {
         let disposed = false;
@@ -366,15 +343,6 @@ export default function TestBelt() {
         setSfxVolume(sound);
         setAudioVolumes(music, sound);
         store.patch({ musicVol: music, sfxVol: sound });
-    };
-    const toggleMusic = () => {
-        sfx.click();
-        if (musicMuted) applyVolumes(lastMusic || 0.6, sfxVol);
-        else { lastMusic = musicVol; applyVolumes(0, sfxVol); }
-    };
-    const toggleSfx = () => {
-        if (sfxMuted) { applyVolumes(musicVol, lastSfx || 0.8); sfx.click(); }
-        else { lastSfx = sfxVol; applyVolumes(musicVol, 0); }
     };
     const openMenu = () => { sfx.click(); store.patch({ paused: true }); setMenuOpen(true); };
     const closeMenu = () => { sfx.click(); store.patch({ paused: false }); setMenuOpen(false); };
@@ -863,37 +831,14 @@ export default function TestBelt() {
                 >
                     <div className="flex flex-col items-center gap-8" onClick={(e) => e.stopPropagation()}>
                         <h2 className="text-2xl font-bold text-primary">Shift paused</h2>
-                        <div className="flex items-center gap-8">
-                            <div className="flex flex-col items-center gap-2">
-                                <button
-                                    type="button"
-                                    aria-label={musicMuted ? 'Unmute music' : 'Mute music'}
-                                    aria-pressed={!musicMuted}
-                                    className={
-                                        'flex h-20 w-20 items-center justify-center rounded-full transition-transform active:scale-95 ' +
-                                        (musicMuted ? 'bg-white/10 text-white/40' : 'bg-primary text-black')
-                                    }
-                                    onClick={toggleMusic}
-                                >
-                                    <IconMusic muted={musicMuted} />
-                                </button>
-                                <span className="text-[1.1rem] text-white/70">Music</span>
-                            </div>
-                            <div className="flex flex-col items-center gap-2">
-                                <button
-                                    type="button"
-                                    aria-label={sfxMuted ? 'Unmute sound' : 'Mute sound'}
-                                    aria-pressed={!sfxMuted}
-                                    className={
-                                        'flex h-20 w-20 items-center justify-center rounded-full transition-transform active:scale-95 ' +
-                                        (sfxMuted ? 'bg-white/10 text-white/40' : 'bg-primary text-black')
-                                    }
-                                    onClick={toggleSfx}
-                                >
-                                    <IconSpeaker muted={sfxMuted} />
-                                </button>
-                                <span className="text-[1.1rem] text-white/70">Sound</span>
-                            </div>
+                        <div className="flex flex-col gap-5">
+                            <Slider compact label="Music" value={musicVol} onChange={(v) => applyVolumes(v, sfxVol)} />
+                            <Slider
+                                compact
+                                label="Sound"
+                                value={sfxVol}
+                                onChange={(v) => { applyVolumes(musicVol, v); sfx.click(); }}
+                            />
                         </div>
                         <button
                             type="button"

@@ -6,29 +6,7 @@
 import { setMusicVolume, setSfxVolume, sfx } from '../audio/audio.ts';
 import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
-
-function Slider({ label, value, onChange }: {
-    label: string;
-    value: number;
-    onChange: (v: number) => void;
-}) {
-    return (
-        <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-                <span className="text-xl font-bold">{label}</span>
-                <span className="text-[1.1rem] tabular-nums text-white/60">{Math.round(value * 100)}%</span>
-            </div>
-            <input
-                type="range"
-                min={0}
-                max={100}
-                value={Math.round(value * 100)}
-                className="h-3 w-full accent-[#ff6b1a]"
-                onChange={(e) => onChange(Number(e.target.value) / 100)}
-            />
-        </div>
-    );
-}
+import Slider from './Slider.tsx';
 
 export default function Settings() {
     const musicVol = useStore((s) => s.musicVol);

@@ -33,29 +33,7 @@ import { CONFIG } from '../game/config.ts';
 import { DESIGN_WIDTH } from '../game/stage.ts';
 import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
-
-function Slider({ label, value, onChange }: {
-    label: string;
-    value: number;
-    onChange: (v: number) => void;
-}) {
-    return (
-        <div className="flex w-56 flex-col gap-1">
-            <div className="flex items-center justify-between">
-                <span className="text-lg font-bold">{label}</span>
-                <span className="text-[1.1rem] tabular-nums text-white/60">{Math.round(value * 100)}%</span>
-            </div>
-            <input
-                type="range"
-                min={0}
-                max={100}
-                value={Math.round(value * 100)}
-                className="h-3 w-full accent-[#ff6b1a]"
-                onChange={(e) => onChange(Number(e.target.value) / 100)}
-            />
-        </div>
-    );
-}
+import Slider from './Slider.tsx';
 
 /** Live screen position of a pad, tracking the canvas's own width-fit +
  *  board-centering transform (stage.ts / towerScene.ts's anchorBoard). */
@@ -97,6 +75,7 @@ export default function Hud() {
     const ftueArrowPad = useStore((s) => s.ftueArrowPad);
     const [menuOpen, setMenuOpen] = useState(false);
     const [showObjective, setShowObjective] = useState(true);
+    const [showMilestone, setShowMilestone] = useState(false);
     // Only show the cue while its pad is STILL the selection — however the
     // player dismisses the sheet (Close, re-tapping the pad on the canvas,
     // the backdrop), the arrow disappears with it instead of lingering into
@@ -110,6 +89,28 @@ export default function Hud() {
         const t = setTimeout(() => setShowObjective(false), 4000);
         return () => clearTimeout(t);
     }, [runId]);
+
+    // Round A2: the campaign-milestone banner — the moment `wave` first
+    // crosses into overtime (waveCount + 1), once, per waves.ts's own
+    // authoritative count. Deriving isMilestoneWave and keying the effect on
+    // that boolean (rather than on [wave, waveCount] directly) matters:
+    // overtime keeps incrementing `wave` on every later rush too, and each
+    // of those changes reruns any effect keyed on `wave` itself — cleanup
+    // clears the pending hide-timeout, but the handler's own `wave !==
+    // waveCount + 1` guard returns early on those later waves without ever
+    // re-arming it, leaving the banner stuck on screen for the rest of the
+    // run. Keying on isMilestoneWave collapses every later wave to the same
+    // "false" value, so the effect only re-runs at the two edges that
+    // matter — the crossing itself, and whenever it's no longer true — and
+    // explicitly hides on the latter rather than leaving it to a timer that
+    // may never get the chance to fire.
+    const isMilestoneWave = wave === waveCount + 1;
+    useEffect(() => {
+        if (!isMilestoneWave) { setShowMilestone(false); return; }
+        setShowMilestone(true);
+        const t = setTimeout(() => setShowMilestone(false), 4500);
+        return () => clearTimeout(t);
+    }, [isMilestoneWave]);
 
     const applyVolumes = (music: number, sound: number) => {
         setMusicVolume(music);
@@ -169,18 +170,38 @@ export default function Hud() {
 
             {/* Objective banner: states the goal and the fail consequence
                 once per run, then fades — tap to dismiss early. Suppressed
-                once the FTUE arrow cue is up, so only one thing speaks at a
-                time (round 19's belt mistake: two cues teaching the same
-                moment). In practice the arrow never appears this early
-                (it only fires at wave-1-end), but this keeps the guarantee
-                exact rather than timing-dependent. */}
-            {showObjective && activeArrowPad === null && (
+                once the FTUE arrow cue or the milestone banner is up, so
+                only one thing speaks at a time (round 19's belt mistake:
+                two cues teaching the same moment). In practice the arrow
+                never appears this early (it only fires at wave-1-end) and
+                the milestone never fires this early either (wave 1 !==
+                waveCount + 1), but this keeps the guarantee exact rather
+                than timing-dependent. */}
+            {showObjective && activeArrowPad === null && !showMilestone && (
                 <div
                     className="pointer-events-auto absolute inset-x-0 top-20 flex justify-center px-6"
                     onClick={() => setShowObjective(false)}
                 >
                     <p className="max-w-xs rounded-xl bg-black/70 px-4 py-2 text-center text-[1.05rem] font-semibold leading-snug">
                         Survive {waveCount} rushes. Run out of lives (🚪) and the shift ends.
+                    </p>
+                </div>
+            )}
+
+            {/* Campaign-milestone banner: the reward for reaching overtime,
+                not an instruction — primary colour, not bg-black/70, so it
+                reads distinct from the objective banner above. Suppressed
+                while the FTUE arrow cue is up (activeArrowPad === null) for
+                the same one-voice rule; in practice unreachable together
+                since the FTUE always completes well before wave 11, but the
+                guard is exact rather than timing-dependent. */}
+            {showMilestone && activeArrowPad === null && (
+                <div
+                    className="pointer-events-auto absolute inset-x-0 top-20 flex justify-center px-6"
+                    onClick={() => setShowMilestone(false)}
+                >
+                    <p className="max-w-xs rounded-xl bg-primary px-4 py-2 text-center text-[1.05rem] font-semibold leading-snug text-black">
+                        Full shift held. Everything from here is overtime — how far can you push it?
                     </p>
                 </div>
             )}
