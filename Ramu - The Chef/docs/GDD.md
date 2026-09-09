@@ -593,13 +593,16 @@ unpicking the tower game's economy.
 
 The trophy button's badge sums both tabs; each tab carries its own count.
 
-⬜ **Still open — what the Belt tab contains.** Challenge mode has four towers, hence four
-Warrior achievements. The belt has **15 prop families with tier ladders**
-([PropList.md](PropList.md) §8.1), which would carry the identical pattern — but no belt
-achievement set has been specified. ⚠️ **The Belt tab is also blocked on two rounds the
-Challenge tab is not:** chef hats are not persisted until the save round, and
-`level.props` is not consumed until the catalogue-wiring round. **The screen should ship
-with the Challenge tab live and the Belt tab present but empty**, filling in as those land.
+✅ **CLOSED — the Belt tab is one achievement per prop family. User, Sep 9.** Challenge
+mode has four towers, hence four Warrior achievements; the belt has **15 prop families with
+tier ladders** ([PropList.md](PropList.md) §8.1), carrying the identical pattern — own and
+upgrade this thing — with **chef hats** as the currency.
+
+⚠️ **The Belt tab is still blocked where the Challenge tab is not, but less than it was.**
+Round A already added `SaveData.kitchen` with `hats` and a per-level `clears` map, so the
+**persistence shape exists**; what is missing is anything that *writes* them. `level.props`
+is still unconsumed until the catalogue-wiring round. **The screen should ship with the
+Challenge tab live and the Belt tab present but empty**, filling in as those land.
 
 #### ⚠️ One sequencing constraint, and it matters more than either feature
 
