@@ -512,8 +512,13 @@ from real play before the currency design is written. **Do not invent a score fo
 name **64.4** units instead of 56.4. `"Water … - Lv 1"` still truncates today. The
 dashed form ships; the user decides on review.
 
-⚠️ **Licences unread** on the UI pack (dobo_ui demo tier), the props, the ingredients
-and the dish sprites. Fine for a private build; **not cleared for any public deploy.**
+~~⚠️ **Licences unread** on the UI pack (dobo_ui demo tier), the props, the ingredients
+and the dish sprites. Fine for a private build; **not cleared for any public deploy.**~~
+
+✅ **CLEARED Sep 9 2026 — user ruling: "permission granted."** This line is superseded
+and must not be quoted as a live blocker again. The props, ingredients and dish sprites
+were already covered by Plan item 46 (toxiccolors and hoshiixs, purchased); **dobo_ui was
+never in that item** and was the last one outstanding. See [Retro.md](Retro.md), Sep 9.
 
 ### 6.8 🛑 The delivery gate — **replaces §5's Sep 10 stop rule**, Sep 7 2026
 

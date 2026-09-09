@@ -1524,6 +1524,31 @@ mask fix. That is a real property of a model trained on 163 warm-toned kitchen s
 and it is the one diagnosis in this whole sequence that survived contact with evidence.
 
 
+### Sep 9, 08:30 IST · The last licence gate — dobo_ui, cleared
+
+✅ **CLEARED at the user's ruling: *"permission granted."*** Recorded here at their
+instruction so it is not re-litigated.
+
+**What it was.** [KitchenMode.md](KitchenMode.md) §6.7 carried the line *"Licences unread on
+the UI pack (dobo_ui demo tier)… Fine for a private build; **not cleared for any public
+deploy**"* — and it was the **only** thing standing between the belt and a public ship that
+no number of implementation rounds could move. The Sep 6 closure (above) settled toxiccolors
+and hoshiixs, both purchased. **dobo_ui was never in that item.** It is the *demo* tier of
+Cozy UI Pack, free rather than bought, and `UI/developerNote_dobo_ui.txt` publishes no terms
+at all — only *"consider purchasing a complete version."*
+
+**Why it mattered more than its size suggests.** It is not one sprite. `ui-billboard`,
+`ui-hotbar`, `ui-container` and both round-25 cards are dobo_ui — **the entire belt HUD.**
+Replacing them would have been a scoped art round nobody had written, days before the
+deadline. So a free four-file dependency was gating a five-node game mode.
+
+**The lesson, which is not about licences.** I found this by chasing a *code comment* —
+`kitchenScene.ts`'s header cites §2.6 for "private-build only", and §2.6 says nothing about
+it (Retro 75). The real constraint sat in §6.7, unreferenced from anywhere in the code, and
+had been quietly true since round 2. **A blocker recorded only in prose, in a section nobody
+routes to, is a blocker that surfaces at the worst possible moment.** The go-live checklist
+now names it explicitly rather than leaving it to be rediscovered.
+
 ## 2. Checkpoint ledger
 
 Runbook checkpoints. Update as each passes, with the actual time.
