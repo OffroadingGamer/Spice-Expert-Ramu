@@ -56,12 +56,29 @@ export interface AppState {
     sfxVol: number;
     /** Bugs squashed in the run that just ended (end screen) */
     runKills: number;
-    /** True while the current Challenge run is playing the scripted FTUE
-     *  (GDD §10.11) — gates the forced pad selections and the "Tap a cook
-     *  to upgrade" hint (the arrow cue replaces it during the FTUE). */
+    /** True from the moment a Challenge run starts until wave 3 begins
+     *  (GDD §10.11, round D: persistent — every run, not just the first).
+     *  Gates the "Tap a cook to upgrade" hint (the cues below replace it)
+     *  and keeps Sell disabled for the whole onboarding, not just the
+     *  forced beats themselves. */
     ftueActive: boolean;
-    /** Pad index the FTUE arrow cue currently points at; null = no cue. */
-    ftueArrowPad: number | null;
+    /** Which forced FTUE beat currently walls the UI (Ready blocked, Close
+     *  hidden, canvas taps locked to the beat's own pad) — null during free
+     *  play within waves 1-2, and for the rest of the run once wave 3
+     *  starts. 'place0' (run start, pad 0) and 'place2' (post-wave-2, pad 2)
+     *  are picker beats with a canvas arrow cue; 'upgrade0' (post-wave-1,
+     *  pad 0) is a tower-view beat with a DOM cue anchored to BuildSheet's
+     *  own Upgrade button instead (never both at once — one voice). */
+    ftueBeat: 'place0' | 'upgrade0' | 'place2' | null;
+    /** Empty pad indices mid-pulse during the post-wave-2 transition, just
+     *  before pad 2 auto-selects; null outside that ~1s window. */
+    ftuePulsePads: number[] | null;
+    /** Last FTUE coin top-up (round D, task 3): the exact shortfall granted
+     *  so a forced beat's requirement was affordable, shown briefly as a
+     *  toast. ftueGrantNonce bumps on every grant (amounts can repeat
+     *  across the two grant points, so the value alone can't key a re-show). */
+    ftueGrantAmount: number;
+    ftueGrantNonce: number;
     /** PNG data URLs of the tower art, generated at boot for DOM UI use */
     towerIcons: Record<string, string>;
     /** Platform engagement prompts: capability-gated by the host at boot */
@@ -95,7 +112,10 @@ const INITIAL: AppState = {
     sfxVol: 0.8,
     runKills: 0,
     ftueActive: false,
-    ftueArrowPad: null,
+    ftueBeat: null,
+    ftuePulsePads: null,
+    ftueGrantAmount: 0,
+    ftueGrantNonce: 0,
     towerIcons: {},
     likeAvailable: false,
     commentsAvailable: false,

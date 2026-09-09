@@ -8,7 +8,6 @@ import { sfx } from '../audio/audio.ts';
 import { openComments, promptLike } from '../sdk/engagement.ts';
 import { trackFunnelStep } from '../sdk/analytics.ts';
 import { devModeEnabled } from '../state/devMode.ts';
-import { getSave } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import GemCounter from './GemCounter.tsx';
 
@@ -80,16 +79,19 @@ export default function MainMenu() {
                 }
                 onClick={() => {
                     sfx.click();
-                    // GDD §10.11: the scripted three-wave FTUE runs once,
-                    // gated on save.ftue.challengeDone — pad 0 pre-selects
-                    // (and BuildSheet opens on it) only for that first run.
-                    const ftueActive = !getSave().ftue.challengeDone;
+                    // GDD §10.11 (round D): the scripted three-wave FTUE is
+                    // persistent — every run enters scripted, not just the
+                    // player's first. save.ftue.challengeDone no longer
+                    // gates entry (actions.ts's startWave still calls
+                    // completeFtue() when wave 3 begins — it's the hook for
+                    // a later behaviour-based toggle, not a gate today).
                     store.patch({
                         phase: 'playing',
-                        selectedPad: ftueActive ? 0 : null,
+                        selectedPad: 0,
                         runId: store.get().runId + 1,
-                        ftueActive,
-                        ftueArrowPad: null,
+                        ftueActive: true,
+                        ftueBeat: 'place0',
+                        ftuePulsePads: null,
                     });
                 }}
             >

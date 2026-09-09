@@ -5,8 +5,16 @@
  * Engine state is read synchronously via actions.getEngine(); re-renders
  * ride on store changes (coins, selection, padVersion). Selling keeps the
  * pad selected, so the sheet flips straight to the build options.
+ *
+ * Round D (FTUE walls, GDD §10.11): Close is hidden for the duration of a
+ * forced beat (store.ftueBeat !== null — actions.ts is the real gate, this
+ * is just the display rule), and Sell stays disabled for the whole
+ * onboarding (store.ftueActive), not only inside the forced beats — it
+ * returns once wave 3 begins. The forced-upgrade beat's arrow cue is a DOM
+ * cue anchored to the Upgrade button's own rect (no stage.ts transform —
+ * this button lives inside the sheet's normal DOM layout, not the canvas).
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { sfx } from '../audio/audio.ts';
 import { getEngine, placeTower, sellTower, setTargeting, upgradeTower } from '../game/actions.ts';
 import { CONFIG } from '../game/config.ts';
@@ -49,9 +57,13 @@ export default function BuildSheet() {
     const coins = useStore((s) => s.coins);
     const tdPhase = useStore((s) => s.tdPhase);
     const towerIcons = useStore((s) => s.towerIcons);
+    const ftueActive = useStore((s) => s.ftueActive);
+    const ftueBeat = useStore((s) => s.ftueBeat);
     useStore((s) => s.padVersion); // re-render on coin-free engine mutations
     const [confirmSell, setConfirmSell] = useState(false);
     const [showTargetHelp, setShowTargetHelp] = useState(false);
+    const upgradeBtnRef = useRef<HTMLButtonElement>(null);
+    const [upgradeArrowPos, setUpgradeArrowPos] = useState<{ x: number; y: number } | null>(null);
 
     // a new selection always starts with both popups closed
     useEffect(() => {
@@ -60,10 +72,28 @@ export default function BuildSheet() {
     }, [selectedPad]);
 
     const engine = getEngine();
+    const tower = selectedPad !== null ? engine?.state.towers.find((t) => t.padIndex === selectedPad) : undefined;
+    const showUpgradeArrow = ftueBeat === 'upgrade0' && selectedPad === 0;
+
+    // Anchor the arrow to the Upgrade button's own rect — viewport (fixed)
+    // coords, no stage.ts transform, since this button is normal DOM layout
+    // inside the sheet, not something positioned on the canvas.
+    useEffect(() => {
+        if (!showUpgradeArrow) { setUpgradeArrowPos(null); return; }
+        const compute = () => {
+            const btn = upgradeBtnRef.current;
+            if (!btn) return;
+            const r = btn.getBoundingClientRect();
+            setUpgradeArrowPos({ x: r.left + r.width / 2, y: r.top });
+        };
+        compute();
+        window.addEventListener('resize', compute);
+        return () => window.removeEventListener('resize', compute);
+    }, [showUpgradeArrow, tower?.level]);
+
     if (selectedPad === null || !engine) return null;
     if (tdPhase === 'lost') return null;
 
-    const tower = engine.state.towers.find((t) => t.padIndex === selectedPad);
     const refund = tower ? Math.floor(tower.spent * CONFIG.economy.sellRefund) : 0;
 
     return (
@@ -112,9 +142,15 @@ export default function BuildSheet() {
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2">
+                                    {/* Disabled (not hidden) for the whole onboarding, not just
+                                        the forced beats — it returns once wave 3 begins. */}
                                     <button
                                         type="button"
-                                        className="rounded-xl bg-red-500/80 px-5 py-3 text-[1.1rem] font-bold text-white transition-transform active:scale-95"
+                                        disabled={ftueActive}
+                                        className={
+                                            'rounded-xl px-5 py-3 text-[1.1rem] font-bold text-white transition-transform active:scale-95 ' +
+                                            (ftueActive ? 'bg-red-500/30 opacity-40' : 'bg-red-500/80')
+                                        }
                                         onClick={() => { sfx.click(); setConfirmSell(true); }}
                                     >
                                         Sell
@@ -125,6 +161,7 @@ export default function BuildSheet() {
                                             const affordable = coins >= cost;
                                             return (
                                                 <button
+                                                    ref={upgradeBtnRef}
                                                     type="button"
                                                     disabled={!affordable}
                                                     className={
@@ -191,15 +228,29 @@ export default function BuildSheet() {
                             <BonusBadge padIndex={selectedPad} />
                         </div>
                     )}
-                    <button
-                        type="button"
-                        className="mt-3 w-full rounded-xl bg-white/10 py-2 text-[1.1rem] font-semibold text-white/70 transition-transform active:scale-95"
-                        onClick={() => { sfx.click(); store.patch({ selectedPad: null }); }}
-                    >
-                        Close
-                    </button>
+                    {/* Hidden (not just disabled) for the duration of a forced beat —
+                        the real gate is the canvas tap-wall (towerScene.ts's onTap)
+                        and startWave()'s own guard; this only keeps the escape
+                        hatch out of sight. */}
+                    {!ftueBeat && (
+                        <button
+                            type="button"
+                            className="mt-3 w-full rounded-xl bg-white/10 py-2 text-[1.1rem] font-semibold text-white/70 transition-transform active:scale-95"
+                            onClick={() => { sfx.click(); store.patch({ selectedPad: null }); }}
+                        >
+                            Close
+                        </button>
+                    )}
                 </div>
             </div>
+            {upgradeArrowPos && (
+                <div
+                    className="pointer-events-none fixed z-10 flex flex-col items-center"
+                    style={{ left: upgradeArrowPos.x, top: upgradeArrowPos.y - 60, transform: 'translateX(-50%)' }}
+                >
+                    <span className="motion-safe:animate-bounce text-5xl leading-none">⬇️</span>
+                </div>
+            )}
             {showTargetHelp && (
                 <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/70 px-8">
                     <div className="flex w-full max-w-sm flex-col gap-3 rounded-2xl bg-black/90 p-6">

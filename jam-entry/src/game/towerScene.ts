@@ -19,7 +19,8 @@ import {
 import { CONFIG } from './config.ts';
 import { WAVES } from './data/waves.ts';
 import { createEngine, type EngineEvent } from './sim/engine.ts';
-import { registerEngine, syncStore, getTowersPlacedThisRun } from './actions.ts';
+import { registerEngine, syncStore, getTowersPlacedThisRun, grantFtueShortfall } from './actions.ts';
+import { TOWERS } from './data/towers.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
 import {
     freeTexture,
@@ -42,7 +43,7 @@ import {
     makeWaspTexture,
 } from './textures.ts';
 import { store } from '../state/store.ts';
-import { completeFtue, getSave, recordRunEnd } from '../state/save.ts';
+import { getSave, recordRunEnd } from '../state/save.ts';
 import { submitRunScores } from '../sdk/leaderboard.ts';
 import { sfx } from '../audio/audio.ts';
 import { PLAYFIELD_HEIGHT, type Stage } from './stage.ts';
@@ -227,24 +228,52 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         }
     }
 
+    /** Pending pad-2 auto-select after the post-wave-2 pulse (round D task
+     *  1/2) — cleared on scene destroy so a mid-pulse quit can't fire a
+     *  store.patch into whatever screen comes next. */
+    let ftuePulseTimer: ReturnType<typeof setTimeout> | null = null;
+
     /**
-     * GDD §10.11's scripted three-wave FTUE, advanced off the same
-     * wave-clear events analytics already drains here — no new engine hook.
-     * Wave 1 end re-selects pad 0 (teaches upgrade, arrow cue replaces the
-     * "Tap a cook to upgrade" text — see Hud.tsx); wave 2 end auto-selects
-     * the empty pad 2, prompting a second counter; wave 3 end retires the
-     * script for good. A run that never reaches wave 3 (e.g. lost on wave 1)
-     * leaves `ftueActive` true, so the next Challenge Mode entry restarts it.
+     * GDD §10.11's scripted three-wave FTUE (round D: persistent — every
+     * run, not just the first — and walled: see actions.ts's startWave/
+     * placeTower/upgradeTower for the Ready/Close/Sell gates this beat
+     * state drives). Advanced off the same wave-clear events analytics
+     * already drains here — no new engine hook.
+     *
+     * Wave 1 end forces pad 0's tower view open with the Upgrade button
+     * cued (BuildSheet.tsx); wave 2 end pulses every empty pad, then
+     * auto-selects pad 2 with the picker cued (Hud.tsx). Wave 3 STARTING
+     * (not clearing — see actions.ts's startWave) retires the script for
+     * good. A run that never reaches wave 3 (e.g. lost on wave 1 or 2)
+     * leaves `ftueActive` true, so Retry restarts the whole script from
+     * beat 1 (EndScreen.tsx).
      */
     function applyFtueWaveEnd(cleared: number): void {
         if (!store.get().ftueActive) return;
         if (cleared === 1) {
-            store.patch({ selectedPad: 0, ftueArrowPad: 0 });
+            const t = engine.state.towers.find((tw) => tw.padIndex === 0);
+            // Beat 3's requirement: the forced upgrade's own cost — this is
+            // the documented trap (Tandoor at beat 1 leaves the upgrade
+            // unaffordable with flawless play). Computed from live state,
+            // never typed in; grantFtueShortfall no-ops if already affordable.
+            if (t && t.level <= t.def.upgrades.length) {
+                grantFtueShortfall(t.def.upgrades[t.level - 1].cost);
+            }
+            store.patch({ selectedPad: 0, ftueBeat: 'upgrade0' });
         } else if (cleared === 2) {
-            store.patch({ selectedPad: 2, ftueArrowPad: 2 });
-        } else if (cleared === 3) {
-            completeFtue();
-            store.patch({ ftueActive: false, ftueArrowPad: null });
+            const emptyPads = CONFIG.pads
+                .map((_, i) => i)
+                .filter((i) => !engine.state.towers.some((tw) => tw.padIndex === i));
+            // Beat 5's requirement: the cheapest tower, so whatever the
+            // player affords is guaranteed placeable at pad 2.
+            grantFtueShortfall(Math.min(...TOWERS.map((def) => def.cost)));
+            // Ready/Close/Sell wall from the moment wave 2 clears (before
+            // pad 2 is even selected) through the pulse, not just after.
+            store.patch({ selectedPad: null, ftueBeat: 'place2', ftuePulsePads: emptyPads });
+            ftuePulseTimer = setTimeout(() => {
+                ftuePulseTimer = null;
+                store.patch({ selectedPad: 2, ftuePulsePads: null });
+            }, 900);
         }
     }
 
@@ -274,6 +303,13 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
 
     // ---- tap-to-select pads ------------------------------------------------
     const onTap = (e: FederatedPointerEvent) => {
+        // Round D: a forced beat (place0/upgrade0/place2) walls every
+        // canvas tap — re-tapping the forced pad, tapping empty board, or
+        // tapping any other pad would all otherwise change/clear
+        // selectedPad (see the hit/deselect logic below) and escape the
+        // script. BuildSheet's own buttons (not gated by this listener)
+        // remain the only way through.
+        if (store.get().ftueBeat !== null) return;
         // convert through boardRoot so pad hit-tests track the vertical offset
         const local = boardRoot.toLocal(e.global);
         let hit: number | null = null;
@@ -537,6 +573,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 ended = true;
                 trackRunEnd('quit');
             }
+            if (ftuePulseTimer) { clearTimeout(ftuePulseTimer); ftuePulseTimer = null; }
             app.ticker.remove(tick);
             app.stage.off('pointertap', onTap);
             offResize();

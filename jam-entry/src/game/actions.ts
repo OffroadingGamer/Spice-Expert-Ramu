@@ -6,7 +6,7 @@
 import { store } from '../state/store.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
 import { switchCue, prefetchCue } from '../audio/audio.ts';
-import { setFtueFirstTower } from '../state/save.ts';
+import { completeFtue, setFtueFirstTower } from '../state/save.ts';
 import { CONFIG } from './config.ts';
 import { WAVES } from './data/waves.ts';
 import type { TargetingMode } from './data/targeting.ts';
@@ -94,6 +94,14 @@ export function placeTower(padIndex: number, towerId: string): void {
         if (padIndex === 0 && store.get().ftueActive) {
             setFtueFirstTower(towerId);
         }
+        // Round D: a forced picker beat (place0 at run start, place2 after
+        // wave 2) resolves the instant its own pad gets a tower — release
+        // the walls (Ready/Close/canvas-tap lock) right here, the single
+        // place this can happen, rather than duplicating the check per UI.
+        const beat = store.get().ftueBeat;
+        if ((beat === 'place0' && padIndex === 0) || (beat === 'place2' && padIndex === 2)) {
+            store.patch({ ftueBeat: null });
+        }
     }
 }
 
@@ -106,6 +114,12 @@ export function upgradeTower(padIndex: number): void {
             pad_index: padIndex,
             wave: slot.current.state.waveIndex + 1,
         });
+        // Round D: the forced upgrade beat (pad 0 after wave 1) resolves the
+        // instant it upgrades — mirror placeTower's auto-close so the sheet
+        // doesn't linger, and release the walls.
+        if (store.get().ftueBeat === 'upgrade0' && padIndex === 0) {
+            store.patch({ ftueBeat: null, selectedPad: null });
+        }
     }
 }
 
@@ -126,6 +140,10 @@ export function setTargeting(padIndex: number, mode: TargetingMode): void {
 }
 
 export function startWave(): void {
+    // Round D: the current forced beat (place0/upgrade0/place2) walls Ready
+    // off entirely — one gate, here, so no UI path can start a wave out
+    // from under an unresolved beat regardless of what the button shows.
+    if (store.get().ftueBeat !== null) return;
     if (slot.current?.startWave()) {
         syncStore();
         track('level_start', { wave: slot.current.state.waveIndex + 1 });
@@ -133,5 +151,33 @@ export function startWave(): void {
             runAnalytics.firstWaveStarted = true;
             trackFunnelStep(4, 'first_wave_started', 'run', 2);
         }
+        // The scripted FTUE retires the instant wave 3 BEGINS, not when it
+        // clears (round D changes this from round A's wave-3-clear trigger)
+        // — Sell/Close/full freedom apply for the rest of the run from here.
+        if (store.get().ftueActive && slot.current.state.waveIndex + 1 === 3) {
+            completeFtue();
+            store.patch({ ftueActive: false, ftueBeat: null, ftuePulsePads: null });
+        }
     }
+}
+
+/**
+ * FTUE-only: top up coins to cover exactly the shortfall for a forced
+ * beat's required cost (never more) — so a first-time player is never
+ * soft-locked behind an unaffordable, hidden-Close forced action, and
+ * instead sees a real economy lesson: it costs money, and you came up
+ * short. The player still pays the requirement's full price out of this.
+ * Call sites: towerScene.ts's applyFtueWaveEnd only — never reachable from
+ * ordinary play.
+ */
+export function grantFtueShortfall(requiredCost: number): number {
+    const engine = slot.current;
+    if (!engine) return 0;
+    const shortfall = Math.max(0, requiredCost - engine.state.coins);
+    if (shortfall > 0) {
+        engine.state.coins += shortfall;
+        syncStore();
+        store.patch({ ftueGrantAmount: shortfall, ftueGrantNonce: store.get().ftueGrantNonce + 1 });
+    }
+    return shortfall;
 }

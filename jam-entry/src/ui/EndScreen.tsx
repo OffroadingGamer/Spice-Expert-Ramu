@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
 import { sfx, switchCue } from '../audio/audio.ts';
 import { CONFIG } from '../game/config.ts';
 import { adsSystem } from '../sdk/ads.ts';
-import { addGems, getSave } from '../state/save.ts';
+import { addGems } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 
 export default function EndScreen() {
@@ -110,16 +110,18 @@ export default function EndScreen() {
                 onClick={() => {
                     sfx.click();
                     switchCue('service_low');
-                    // A run lost before wave 3 leaves the FTUE unfinished
-                    // (ftue.challengeDone still false) — restart its script
-                    // rather than dropping the player into unscripted play.
-                    const ftueActive = !getSave().ftue.challengeDone;
+                    // Round D: the FTUE is persistent, so Retry always
+                    // restarts the whole script from beat 1 — whether this
+                    // run died mid-FTUE (unfinished) or well past it
+                    // (ftueActive was already false; a fresh run scripts
+                    // again regardless).
                     store.patch({
                         tdPhase: 'build',
-                        selectedPad: ftueActive ? 0 : null,
+                        selectedPad: 0,
                         runId: store.get().runId + 1,
-                        ftueActive,
-                        ftueArrowPad: null,
+                        ftueActive: true,
+                        ftueBeat: 'place0',
+                        ftuePulsePads: null,
                     });
                 }}
             >

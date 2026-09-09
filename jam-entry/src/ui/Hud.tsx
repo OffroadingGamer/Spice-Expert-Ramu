@@ -21,13 +21,20 @@
  * Main Menu. The kit's plain "Paused" card is suppressed while it is open
  * so the two overlays never stack.
  *
- * Round A (Challenge-mode FTUE, GDD §10.11): a one-time objective banner
- * fires per run (keyed on runId — Retry counts as a new run), the 🚪 chip is
- * labelled, and while `ftueActive` the pad-0/pad-2 forced selections get an
- * arrow cue pointing at the live pad on the Pixi canvas below — computed
- * from CONFIG.pads via stage.ts's designToScreen() (the same contain-fit
- * transform stage.ts and towerScene.ts use internally), read here but
- * never written, and never re-derived by hand (round C, task 2).
+ * Round A (Challenge-mode FTUE, GDD §10.11): an objective banner fires per
+ * run (keyed on runId — Retry counts as a new run), and the 🚪 chip is
+ * labelled.
+ *
+ * Round D: the FTUE is a persistent, walled script through wave 3
+ * (store.ftueBeat drives the walls — see actions.ts/towerScene.ts). Two
+ * cue kinds, never both at once (one voice):
+ *   - Canvas cues (pad 0 / pad 2 / the empty-pad pulse) are positioned via
+ *     stage.ts's designToScreen() — the same contain-fit transform
+ *     stage.ts and towerScene.ts use internally, read here but never
+ *     written, and never re-derived by hand (round C, task 2).
+ *   - The Upgrade-button arrow (forced-upgrade beat) is a DOM cue anchored
+ *     to BuildSheet's own button by getBoundingClientRect() instead — it
+ *     lives in BuildSheet.tsx, not here.
  */
 import { useEffect, useState } from 'react';
 import { setMusicVolume, setSfxVolume, sfx, switchCue } from '../audio/audio.ts';
@@ -38,27 +45,33 @@ import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import Slider from './Slider.tsx';
 
-/** Live screen position of a pad, tracking the canvas's own contain-fit +
- *  board-centering transform — stage.ts's designToScreen() is the one
- *  source of truth for this (round C, task 2: a hand-rolled second copy of
- *  this formula here caused a near-miss review). */
-function usePadScreenPos(padIndex: number | null): { x: number; y: number } | null {
-    const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+/** Live screen positions of a set of pads, tracking the canvas's own
+ *  contain-fit + board-centering transform — stage.ts's designToScreen() is
+ *  the one source of truth for this (round C, task 2: a hand-rolled second
+ *  copy of this formula here caused a near-miss review). Round D extends
+ *  this from one pad (the original FTUE arrow) to several (the empty-pad
+ *  pulse) rather than writing a second copy. */
+function usePadsScreenPos(padIndices: number[]): Array<{ x: number; y: number }> {
+    const key = padIndices.join(',');
+    const [positions, setPositions] = useState<Array<{ x: number; y: number }>>([]);
     useEffect(() => {
-        if (padIndex === null) { setPos(null); return; }
         const frame = document.getElementById('app-frame');
-        if (!frame) return;
+        if (!frame || padIndices.length === 0) { setPositions([]); return; }
         const compute = () => {
             const rect = frame.getBoundingClientRect();
-            const pad = CONFIG.pads[padIndex];
-            setPos(designToScreen(pad.x, pad.y, rect.width, rect.height));
+            setPositions(padIndices.map((i) => {
+                const pad = CONFIG.pads[i];
+                return designToScreen(pad.x, pad.y, rect.width, rect.height);
+            }));
         };
         compute();
         const ro = new ResizeObserver(compute);
         ro.observe(frame);
         return () => ro.disconnect();
-    }, [padIndex]);
-    return pos;
+        // padIndices is re-created every render; `key` is its stable identity.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [key]);
+    return positions;
 }
 
 /** Danger threshold for the lives chip's red pulse: ≤30% of starting lives
@@ -79,17 +92,35 @@ export default function Hud() {
     const sfxVol = useStore((s) => s.sfxVol);
     const selectedPad = useStore((s) => s.selectedPad);
     const runId = useStore((s) => s.runId);
-    const ftueActive = useStore((s) => s.ftueActive);
-    const ftueArrowPad = useStore((s) => s.ftueArrowPad);
+    const ftueBeat = useStore((s) => s.ftueBeat);
+    const ftuePulsePads = useStore((s) => s.ftuePulsePads);
+    const ftueGrantAmount = useStore((s) => s.ftueGrantAmount);
+    const ftueGrantNonce = useStore((s) => s.ftueGrantNonce);
     const [menuOpen, setMenuOpen] = useState(false);
     const [showObjective, setShowObjective] = useState(true);
     const [showMilestone, setShowMilestone] = useState(false);
+    const [showGrant, setShowGrant] = useState(false);
+    // The picker beats (place0/place2) get the canvas arrow; the
+    // forced-upgrade beat's cue lives inside BuildSheet instead (its own
+    // Upgrade button, not a pad) — never both cue kinds at once.
+    const canvasArrowPad = ftueBeat === 'place0' ? 0 : ftueBeat === 'place2' ? 2 : null;
     // Only show the cue while its pad is STILL the selection — however the
     // player dismisses the sheet (Close, re-tapping the pad on the canvas,
     // the backdrop), the arrow disappears with it instead of lingering into
     // the next wave pointed at a pad that's no longer relevant.
-    const activeArrowPad = ftueArrowPad !== null && selectedPad === ftueArrowPad ? ftueArrowPad : null;
-    const arrowPos = usePadScreenPos(activeArrowPad);
+    const activeArrowPad = canvasArrowPad !== null && selectedPad === canvasArrowPad ? canvasArrowPad : null;
+    const arrowPos = usePadsScreenPos(activeArrowPad !== null ? [activeArrowPad] : [])[0] ?? null;
+    const pulsePads = ftuePulsePads ?? [];
+    const pulsePositions = usePadsScreenPos(pulsePads);
+
+    // Coin top-up toast (round D, task 3): re-show on every grant, even a
+    // repeat amount — nonce, not the amount, is what keys the effect.
+    useEffect(() => {
+        if (ftueGrantNonce === 0) return;
+        setShowGrant(true);
+        const t = setTimeout(() => setShowGrant(false), 2600);
+        return () => clearTimeout(t);
+    }, [ftueGrantNonce]);
 
     // One-time objective banner per run (Retry bumps runId, so it repeats).
     useEffect(() => {
@@ -193,16 +224,30 @@ export default function Hud() {
                 </div>
             </div>
 
+            {/* Coin top-up toast (round D, task 3): the exact shortfall a
+                forced beat just granted, shown briefly near the coins chip
+                — a different screen region from the canvas/sheet arrow
+                cues below, so it never competes with "where do I tap". */}
+            {showGrant && (
+                <div className="pointer-events-none absolute left-3 top-24 z-10 rounded-lg bg-primary px-3 py-1 text-[1.05rem] font-bold text-black">
+                    +{ftueGrantAmount} 🪙 shift float
+                </div>
+            )}
+
             {/* Objective banner: states the goal and the fail consequence
                 once per run, then fades — tap to dismiss early. Suppressed
-                once the FTUE arrow cue or the milestone banner is up, so
-                only one thing speaks at a time (round 19's belt mistake:
-                two cues teaching the same moment). In practice the arrow
-                never appears this early (it only fires at wave-1-end) and
-                the milestone never fires this early either (wave 1 !==
-                waveCount + 1), but this keeps the guarantee exact rather
-                than timing-dependent. */}
-            {showObjective && activeArrowPad === null && !showMilestone && (
+                for as long as ANY forced FTUE beat is active — ftueBeat is
+                the single source for this, covering all three cue kinds
+                (canvas arrow, the pulse, AND BuildSheet's own Upgrade-button
+                arrow, which Hud.tsx has no other visibility into) — plus
+                the milestone banner, so only one thing speaks at a time
+                (round 19's belt mistake: two cues teaching the same
+                moment). In practice the objective banner's own 4s timer
+                has long since expired by the time any beat past run start
+                fires in real play, but this keeps the guarantee exact
+                rather than timing-dependent — a forced state-jump (or a
+                future faster FTUE) shouldn't be able to stack them. */}
+            {showObjective && ftueBeat === null && !showMilestone && (
                 <div
                     className="pointer-events-auto absolute inset-x-0 top-20 flex justify-center px-6"
                     onClick={() => setShowObjective(false)}
@@ -216,11 +261,11 @@ export default function Hud() {
             {/* Campaign-milestone banner: the reward for reaching overtime,
                 not an instruction — primary colour, not bg-black/70, so it
                 reads distinct from the objective banner above. Suppressed
-                while the FTUE arrow cue is up (activeArrowPad === null) for
+                while any forced FTUE beat is active (ftueBeat !== null) for
                 the same one-voice rule; in practice unreachable together
                 since the FTUE always completes well before wave 11, but the
                 guard is exact rather than timing-dependent. */}
-            {showMilestone && activeArrowPad === null && (
+            {showMilestone && ftueBeat === null && (
                 <div
                     className="pointer-events-auto absolute inset-x-0 top-20 flex justify-center px-6"
                     onClick={() => setShowMilestone(false)}
@@ -231,12 +276,23 @@ export default function Hud() {
                 </div>
             )}
 
-            {/* Ready: bottom centre, out of the way of the build sheet */}
-            {tdPhase === 'build' && selectedPad === null && !menuOpen && (
+            {/* Ready: bottom centre, out of the way of the build sheet. The
+                real gate against starting a wave mid-beat is actions.ts's
+                startWave() (one place); ftueBeat === null here just keeps
+                this display rule in sync with it — without it Ready would
+                flash visible during the post-wave-2 pulse, where
+                selectedPad is briefly null before pad 2 auto-selects. */}
+            {tdPhase === 'build' && selectedPad === null && ftueBeat === null && !menuOpen && (
                 <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-3 pb-safe-bottom">
-                    {/* The FTUE's arrow cue replaces this hint outright — one
-                        thing speaking at a time (round 19's belt mistake). */}
-                    {wave >= 2 && wave <= 4 && !ftueActive && (
+                    {/* Round D: the FTUE now scripts every run through wave
+                        3 (not just the first), so ftueActive covers waves
+                        1-2 entirely and this hint's old wave 2-3 range is
+                        dead — it can only ever fire once, at wave 4, the
+                        first build phase after the script lets go. Kept:
+                        it's a real reminder for a genuinely new mechanic
+                        (upgrading) at the first moment nothing else is
+                        cueing it. */}
+                    {wave === 4 && (
                         <p className="mb-2 rounded-xl bg-black/55 px-3 py-2 text-lg font-bold">
                             Tap a cook to upgrade
                         </p>
@@ -251,16 +307,30 @@ export default function Hud() {
                 </div>
             )}
 
-            {/* FTUE arrow cue: points at the pad the script just forced a
-                selection onto (pad 0 after wave 1, pad 2 after wave 2). */}
+            {/* FTUE canvas arrow cue: points at the pad the script just
+                forced a selection onto (pad 0 at run start, pad 2 after the
+                wave-2 pulse). The forced-upgrade beat's cue is inside
+                BuildSheet instead — see this file's header comment. */}
             {arrowPos && (
                 <div
                     className="pointer-events-none absolute z-10 flex flex-col items-center"
                     style={{ left: arrowPos.x, top: arrowPos.y - 84, transform: 'translateX(-50%)' }}
                 >
-                    <span className="animate-bounce text-5xl leading-none">⬇️</span>
+                    <span className="motion-safe:animate-bounce text-5xl leading-none">⬇️</span>
                 </div>
             )}
+
+            {/* FTUE empty-pad pulse: a brief beat over every empty pad after
+                wave 2 clears, before it resolves to pad 2 (towerScene.ts's
+                applyFtueWaveEnd). motion-safe: so a reduced-motion viewer
+                still sees the (static) rings, just not the ping animation. */}
+            {pulsePositions.map((pos, i) => (
+                <div
+                    key={pulsePads[i]}
+                    className="pointer-events-none absolute z-10 rounded-full bg-primary/60 motion-safe:animate-ping"
+                    style={{ left: pos.x - 24, top: pos.y - 24, width: 48, height: 48 }}
+                />
+            ))}
 
             {/* Shift menu. Backdrop tap closes it. */}
             {menuOpen && (
