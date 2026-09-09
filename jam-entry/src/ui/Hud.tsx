@@ -246,8 +246,9 @@ export default function Hud() {
                     <div className="flex flex-col items-center gap-8" onClick={(e) => e.stopPropagation()}>
                         <h2 className="text-2xl font-bold text-primary">Shift paused</h2>
                         <div className="flex flex-col gap-5">
-                            <Slider label="Music" value={musicVol} onChange={(v) => applyVolumes(v, sfxVol)} />
+                            <Slider compact label="Music" value={musicVol} onChange={(v) => applyVolumes(v, sfxVol)} />
                             <Slider
+                                compact
                                 label="Sound"
                                 value={sfxVol}
                                 onChange={(v) => { applyVolumes(musicVol, v); sfx.click(); }}
