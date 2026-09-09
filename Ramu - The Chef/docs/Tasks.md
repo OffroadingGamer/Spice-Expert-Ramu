@@ -5,11 +5,11 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 9 2026, 17:00 IST
+**Last updated:** Sep 9 2026, 18:30 IST
 **Live:** **v1.7.0 public** · <https://w.run/puneetmakes/spice-expert-ramu> — went public Sep 5 2026 with the full audio layer; was v1.2.3 from Sep 4
-**LIVE: v1.41.0 public** since Sep 9 — Challenge Mode only; the belt is gated behind `?test=1`.
+**LIVE: v1.42.0 public** since Sep 9 — Challenge Mode only; the belt is gated behind `?test=1`. ✅ **The scripted FTUE, the visible win condition, the readable HUD and the hard-lock fix are all in front of real players.** Approval took well under an hour ([Specs.md](Specs.md) §9a).
 **Private:** **v1.42.0** — **27 belt rounds + Challenge rounds A, A2, C, D and E landed**, `366e77d`. [GDD.md](GDD.md) §10.11c–e · [Specs.md](Specs.md) §8d
-🔴 **v1.42.0 is a HOTFIX awaiting RUN APPROVAL** — it closes a hard-lock live in v1.41.0 (place a second counter on pad 2 before Ready, then clear wave 2). A reload escapes it, so no player is permanently stuck, but every unapproved hour carries it. **Review is set to 1.42.0; public stays 1.41.0 until RUN approves.** 🔒 **We cannot promote it ourselves** — the public tag rejects creator writes (400). [Specs.md](Specs.md) §9a
+✅ **The v1.42.0 hotfix is LIVE** — the wave-2 hard-lock is closed in production. 🔒 **We never promote directly**: the public tag rejects creator writes (400); RUN publishes on approving the review tag. [Specs.md](Specs.md) §9a
 ⏸️ **Next:** **Round B** (Warrior achievements, GDD §10.11b) — designed, **awaiting user approval to write**.
 ✅ **PROMOTABLE:** v1.39.0 is the **first public-deploy candidate since v1.7.0**. The Test Mode
 entry is gated behind `?test=1` (`jam-entry/src/state/devMode.ts`), so Challenge Mode is the only
