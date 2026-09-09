@@ -56,6 +56,40 @@ export function getEngine(): Engine | null {
     return slot.current;
 }
 
+/**
+ * Round E: true while `ftueBeat`'s forced action is still physically
+ * possible against live engine state. towerScene.ts's applyFtueWaveEnd
+ * never SETS a beat this already rejects (the first half of the hard-lock
+ * fix); this is the second half — the deterministic guarantee that catches
+ * a beat that was resolvable when set but stops being true later. Called
+ * from syncStore() below, which already runs on every frame and after
+ * every action, so no separate timer/poll is needed.
+ */
+function isFtueBeatResolvable(): boolean {
+    const engine = slot.current;
+    const { ftueBeat, ftueBeatPad } = store.get();
+    if (!ftueBeat || !engine) return true;
+    if (ftueBeat === 'upgrade0') {
+        const t = engine.state.towers.find((tw) => tw.padIndex === 0);
+        return !!t && t.level <= t.def.upgrades.length;
+    }
+    const pad = ftueBeat === 'place0' ? 0 : ftueBeatPad;
+    return !engine.state.towers.some((tw) => tw.padIndex === pad);
+}
+
+/**
+ * Ends the FTUE script and releases every wall it holds — the single place
+ * this happens, whether triggered by wave 3 starting (startWave() below,
+ * the intended ending) or by a forced beat becoming unresolvable
+ * (isFtueBeatResolvable() above, or towerScene.ts's own pre-set guards —
+ * the round E hard-lock fix). completeFtue() is idempotent, so calling it
+ * from more than one path is safe.
+ */
+export function retireFtue(): void {
+    completeFtue();
+    store.patch({ ftueActive: false, ftueBeat: null, pulsePads: null });
+}
+
 /** Patch UI-facing engine values into the store (only what changed). */
 export function syncStore(): void {
     const engine = slot.current;
@@ -72,10 +106,28 @@ export function syncStore(): void {
         store.patch({ coins: s.coins, lives: s.lives, wave, tdPhase: s.phase });
         if (!highTensionLatched && s.lives < CONFIG.economy.startLives * 0.3) { highTensionLatched = true; switchCue('service_high'); }
     }
+    if (store.get().ftueBeat !== null && !isFtueBeatResolvable()) {
+        retireFtue();
+    }
 }
 
 export function placeTower(padIndex: number, towerId: string): void {
     if (slot.current?.placeTower(padIndex, towerId)) {
+        // Round D: a forced picker beat (place0 at run start, place2 after
+        // wave 2) resolves the instant its own pad gets a tower — release
+        // the walls (Ready/Close/canvas-tap lock) right here, the single
+        // place this can happen, rather than duplicating the check per UI.
+        // Round E: place2's target is ftueBeatPad, not a hardcoded 2 (see
+        // store.ts). This MUST run before syncStore() below: the beat's
+        // target pad becoming occupied is exactly what resolves it, but
+        // it's also exactly what isFtueBeatResolvable() reads as "gone
+        // unresolvable" — releasing the beat first means syncStore() sees
+        // ftueBeat already null and never gets a chance to misread it.
+        const beat = store.get().ftueBeat;
+        const beatPad = beat === 'place0' ? 0 : store.get().ftueBeatPad;
+        if ((beat === 'place0' || beat === 'place2') && padIndex === beatPad) {
+            store.patch({ ftueBeat: null });
+        }
         syncStore();
         runAnalytics.towersPlaced++;
         track('tower_placed', {
@@ -94,13 +146,11 @@ export function placeTower(padIndex: number, towerId: string): void {
         if (padIndex === 0 && store.get().ftueActive) {
             setFtueFirstTower(towerId);
         }
-        // Round D: a forced picker beat (place0 at run start, place2 after
-        // wave 2) resolves the instant its own pad gets a tower — release
-        // the walls (Ready/Close/canvas-tap lock) right here, the single
-        // place this can happen, rather than duplicating the check per UI.
-        const beat = store.get().ftueBeat;
-        if ((beat === 'place0' && padIndex === 0) || (beat === 'place2' && padIndex === 2)) {
-            store.patch({ ftueBeat: null });
+        // Round E task 2: a pad that fills stops pulsing, whether it was
+        // pulsing as the FTUE's own cue or the general post-wave pulse.
+        const pulsePads = store.get().pulsePads;
+        if (pulsePads?.includes(padIndex)) {
+            store.patch({ pulsePads: pulsePads.filter((p) => p !== padIndex) });
         }
     }
 }
@@ -108,18 +158,22 @@ export function placeTower(padIndex: number, towerId: string): void {
 export function upgradeTower(padIndex: number): void {
     const towerId = slot.current?.state.towers.find((t) => t.padIndex === padIndex)?.def.id;
     if (slot.current?.upgradeTower(padIndex)) {
+        // Round D: the forced upgrade beat (pad 0 after wave 1) resolves the
+        // instant it upgrades — mirror placeTower's auto-close so the sheet
+        // doesn't linger, and release the walls. Round E: runs before
+        // syncStore() below for the same reason as placeTower() above — the
+        // level bump that resolves this beat is also what
+        // isFtueBeatResolvable() would otherwise have to re-derive from
+        // scratch one line later.
+        if (store.get().ftueBeat === 'upgrade0' && padIndex === 0) {
+            store.patch({ ftueBeat: null, selectedPad: null });
+        }
         syncStore();
         track('tower_upgraded', {
             tower_id: towerId ?? 'unknown',
             pad_index: padIndex,
             wave: slot.current.state.waveIndex + 1,
         });
-        // Round D: the forced upgrade beat (pad 0 after wave 1) resolves the
-        // instant it upgrades — mirror placeTower's auto-close so the sheet
-        // doesn't linger, and release the walls.
-        if (store.get().ftueBeat === 'upgrade0' && padIndex === 0) {
-            store.patch({ ftueBeat: null, selectedPad: null });
-        }
     }
 }
 
@@ -146,6 +200,10 @@ export function startWave(): void {
     if (store.get().ftueBeat !== null) return;
     if (slot.current?.startWave()) {
         syncStore();
+        // Round E task 2: whatever was pulsing (the FTUE's own cue or the
+        // general post-wave pulse) belongs to the build phase that just
+        // ended — the next wave starts with a clean board.
+        store.patch({ pulsePads: null });
         track('level_start', { wave: slot.current.state.waveIndex + 1 });
         if (!runAnalytics.firstWaveStarted) {
             runAnalytics.firstWaveStarted = true;
@@ -155,8 +213,7 @@ export function startWave(): void {
         // clears (round D changes this from round A's wave-3-clear trigger)
         // — Sell/Close/full freedom apply for the rest of the run from here.
         if (store.get().ftueActive && slot.current.state.waveIndex + 1 === 3) {
-            completeFtue();
-            store.patch({ ftueActive: false, ftueBeat: null, ftuePulsePads: null });
+            retireFtue();
         }
     }
 }

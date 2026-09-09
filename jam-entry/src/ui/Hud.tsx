@@ -28,13 +28,18 @@
  * Round D: the FTUE is a persistent, walled script through wave 3
  * (store.ftueBeat drives the walls — see actions.ts/towerScene.ts). Two
  * cue kinds, never both at once (one voice):
- *   - Canvas cues (pad 0 / pad 2 / the empty-pad pulse) are positioned via
- *     stage.ts's designToScreen() — the same contain-fit transform
- *     stage.ts and towerScene.ts use internally, read here but never
- *     written, and never re-derived by hand (round C, task 2).
+ *   - Canvas cues (the picker-beat arrow, and the empty-pad pulse) are
+ *     positioned via stage.ts's designToScreen() — the same contain-fit
+ *     transform stage.ts and towerScene.ts use internally, read here but
+ *     never written, and never re-derived by hand (round C, task 2).
  *   - The Upgrade-button arrow (forced-upgrade beat) is a DOM cue anchored
  *     to BuildSheet's own button by getBoundingClientRect() instead — it
  *     lives in BuildSheet.tsx, not here.
+ *
+ * Round E: the picker-beat arrow's pad is store.ftueBeatPad, not a
+ * hardcoded pad — see store.ts/towerScene.ts. The empty-pad pulse
+ * (store.pulsePads) also stops being FTUE-exclusive: it fires after every
+ * wave clear from wave 3 on (towerScene.ts's applyPostWavePulse).
  */
 import { useEffect, useState } from 'react';
 import { setMusicVolume, setSfxVolume, sfx, switchCue } from '../audio/audio.ts';
@@ -93,7 +98,8 @@ export default function Hud() {
     const selectedPad = useStore((s) => s.selectedPad);
     const runId = useStore((s) => s.runId);
     const ftueBeat = useStore((s) => s.ftueBeat);
-    const ftuePulsePads = useStore((s) => s.ftuePulsePads);
+    const ftueBeatPad = useStore((s) => s.ftueBeatPad);
+    const pulsePads = useStore((s) => s.pulsePads) ?? [];
     const ftueGrantAmount = useStore((s) => s.ftueGrantAmount);
     const ftueGrantNonce = useStore((s) => s.ftueGrantNonce);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -102,15 +108,16 @@ export default function Hud() {
     const [showGrant, setShowGrant] = useState(false);
     // The picker beats (place0/place2) get the canvas arrow; the
     // forced-upgrade beat's cue lives inside BuildSheet instead (its own
-    // Upgrade button, not a pad) — never both cue kinds at once.
-    const canvasArrowPad = ftueBeat === 'place0' ? 0 : ftueBeat === 'place2' ? 2 : null;
+    // Upgrade button, not a pad) — never both cue kinds at once. Round E:
+    // place2's target is ftueBeatPad, not a hardcoded pad 2 (store.ts) — it
+    // may be any empty pad once the board isn't wide open.
+    const canvasArrowPad = ftueBeat === 'place0' ? 0 : ftueBeat === 'place2' ? ftueBeatPad : null;
     // Only show the cue while its pad is STILL the selection — however the
     // player dismisses the sheet (Close, re-tapping the pad on the canvas,
     // the backdrop), the arrow disappears with it instead of lingering into
     // the next wave pointed at a pad that's no longer relevant.
     const activeArrowPad = canvasArrowPad !== null && selectedPad === canvasArrowPad ? canvasArrowPad : null;
     const arrowPos = usePadsScreenPos(activeArrowPad !== null ? [activeArrowPad] : [])[0] ?? null;
-    const pulsePads = ftuePulsePads ?? [];
     const pulsePositions = usePadsScreenPos(pulsePads);
 
     // Coin top-up toast (round D, task 3): re-show on every grant, even a
@@ -240,14 +247,17 @@ export default function Hud() {
                 the single source for this, covering all three cue kinds
                 (canvas arrow, the pulse, AND BuildSheet's own Upgrade-button
                 arrow, which Hud.tsx has no other visibility into) — plus
-                the milestone banner, so only one thing speaks at a time
-                (round 19's belt mistake: two cues teaching the same
-                moment). In practice the objective banner's own 4s timer
-                has long since expired by the time any beat past run start
-                fires in real play, but this keeps the guarantee exact
-                rather than timing-dependent — a forced state-jump (or a
-                future faster FTUE) shouldn't be able to stack them. */}
-            {showObjective && ftueBeat === null && !showMilestone && (
+                the milestone banner and (round E) the general post-wave
+                pulse, which by definition fires with ftueBeat already null,
+                so only one thing speaks at a time (round 19's belt mistake:
+                two cues teaching the same moment). In practice the
+                objective banner's own 4s timer has long since expired by
+                the time any beat past run start, or the earliest possible
+                general pulse (wave 3+), fires in real play, but this keeps
+                the guarantee exact rather than timing-dependent — a forced
+                state-jump (or a future faster FTUE) shouldn't be able to
+                stack them. */}
+            {showObjective && ftueBeat === null && pulsePads.length === 0 && !showMilestone && (
                 <div
                     className="pointer-events-auto absolute inset-x-0 top-20 flex justify-center px-6"
                     onClick={() => setShowObjective(false)}
@@ -261,11 +271,13 @@ export default function Hud() {
             {/* Campaign-milestone banner: the reward for reaching overtime,
                 not an instruction — primary colour, not bg-black/70, so it
                 reads distinct from the objective banner above. Suppressed
-                while any forced FTUE beat is active (ftueBeat !== null) for
-                the same one-voice rule; in practice unreachable together
-                since the FTUE always completes well before wave 11, but the
-                guard is exact rather than timing-dependent. */}
-            {showMilestone && ftueBeat === null && (
+                while any forced FTUE beat is active (ftueBeat !== null) or
+                the general post-wave pulse is showing, for the same
+                one-voice rule; in practice unreachable together since the
+                FTUE always completes well before wave 11 and a pulse clears
+                the instant the next wave starts, but the guard is exact
+                rather than timing-dependent. */}
+            {showMilestone && ftueBeat === null && pulsePads.length === 0 && (
                 <div
                     className="pointer-events-auto absolute inset-x-0 top-20 flex justify-center px-6"
                     onClick={() => setShowMilestone(false)}
@@ -320,14 +332,19 @@ export default function Hud() {
                 </div>
             )}
 
-            {/* FTUE empty-pad pulse: a brief beat over every empty pad after
-                wave 2 clears, before it resolves to pad 2 (towerScene.ts's
-                applyFtueWaveEnd). motion-safe: so a reduced-motion viewer
-                still sees the (static) rings, just not the ping animation. */}
+            {/* Empty-pad pulse: during the FTUE, a beat over every empty pad
+                right after wave 2 clears, before it resolves to the target
+                pad (towerScene.ts's applyFtueWaveEnd). Round E generalises
+                the same field/render to fire after EVERY wave clear once
+                the FTUE is done, persisting for the whole build phase
+                (towerScene.ts's applyPostWavePulse) — a continuous
+                animate-ping read as too noisy sustained that long, so this
+                uses the gentler animate-pulse (a slow opacity breathe)
+                instead; motion-safe: still applies either way. */}
             {pulsePositions.map((pos, i) => (
                 <div
                     key={pulsePads[i]}
-                    className="pointer-events-none absolute z-10 rounded-full bg-primary/60 motion-safe:animate-ping"
+                    className="pointer-events-none absolute z-10 rounded-full bg-primary/60 motion-safe:animate-pulse"
                     style={{ left: pos.x - 24, top: pos.y - 24, width: 48, height: 48 }}
                 />
             ))}

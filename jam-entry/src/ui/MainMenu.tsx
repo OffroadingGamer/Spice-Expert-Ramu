@@ -91,7 +91,7 @@ export default function MainMenu() {
                         runId: store.get().runId + 1,
                         ftueActive: true,
                         ftueBeat: 'place0',
-                        ftuePulsePads: null,
+                        pulsePads: null,
                     });
                 }}
             >

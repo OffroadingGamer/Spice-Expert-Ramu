@@ -19,7 +19,7 @@ import {
 import { CONFIG } from './config.ts';
 import { WAVES } from './data/waves.ts';
 import { createEngine, type EngineEvent } from './sim/engine.ts';
-import { registerEngine, syncStore, getTowersPlacedThisRun, grantFtueShortfall } from './actions.ts';
+import { registerEngine, syncStore, getTowersPlacedThisRun, grantFtueShortfall, retireFtue } from './actions.ts';
 import { TOWERS } from './data/towers.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
 import {
@@ -228,8 +228,8 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         }
     }
 
-    /** Pending pad-2 auto-select after the post-wave-2 pulse (round D task
-     *  1/2) — cleared on scene destroy so a mid-pulse quit can't fire a
+    /** Pending target-pad auto-select after the post-wave-2 pulse (round D
+     *  task 1/2) — cleared on scene destroy so a mid-pulse quit can't fire a
      *  store.patch into whatever screen comes next. */
     let ftuePulseTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -242,11 +242,18 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
      *
      * Wave 1 end forces pad 0's tower view open with the Upgrade button
      * cued (BuildSheet.tsx); wave 2 end pulses every empty pad, then
-     * auto-selects pad 2 with the picker cued (Hud.tsx). Wave 3 STARTING
-     * (not clearing — see actions.ts's startWave) retires the script for
-     * good. A run that never reaches wave 3 (e.g. lost on wave 1 or 2)
-     * leaves `ftueActive` true, so Retry restarts the whole script from
-     * beat 1 (EndScreen.tsx).
+     * auto-selects one of them (preferring pad 2) with the picker cued
+     * (Hud.tsx). Wave 3 STARTING (not clearing — see actions.ts's
+     * startWave) retires the script for good. A run that never reaches
+     * wave 3 (e.g. lost on wave 1 or 2) leaves `ftueActive` true, so Retry
+     * restarts the whole script from beat 1 (EndScreen.tsx).
+     *
+     * Round E: neither beat below is ever SET unless its target is
+     * actually resolvable — the reported hard-lock was a beat set
+     * unconditionally (a hardcoded pad 2, occupied or the board full)
+     * whose release condition (actions.ts) could then never fire.
+     * actions.ts's syncStore() re-checks this on every frame as a backstop
+     * for anything that becomes unresolvable after being set.
      */
     function applyFtueWaveEnd(cleared: number): void {
         if (!store.get().ftueActive) return;
@@ -258,23 +265,63 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             // never typed in; grantFtueShortfall no-ops if already affordable.
             if (t && t.level <= t.def.upgrades.length) {
                 grantFtueShortfall(t.def.upgrades[t.level - 1].cost);
+                store.patch({ selectedPad: 0, ftueBeat: 'upgrade0' });
+            } else {
+                // Pad 0 has nothing left to upgrade — safe today (level 1
+                // of up to 3 at wave 1 end), guarded in case that changes.
+                // Nothing to force the player into; let the script go.
+                retireFtue();
             }
-            store.patch({ selectedPad: 0, ftueBeat: 'upgrade0' });
         } else if (cleared === 2) {
             const emptyPads = CONFIG.pads
                 .map((_, i) => i)
                 .filter((i) => !engine.state.towers.some((tw) => tw.padIndex === i));
+            if (emptyPads.length === 0) {
+                // Nowhere left to force a placement (the reported hard-lock's
+                // other route: a full board). Retire instead of walling the
+                // player behind an impossible beat.
+                retireFtue();
+                return;
+            }
+            // Prefer pad 2; otherwise whichever empty pad sits closest to
+            // it, so the forced placement still reads as "the pad by the
+            // one you just upgraded" rather than a random jump.
+            const target = emptyPads.includes(2) ? 2 : emptyPads.reduce((best, p) => {
+                const dist = (i: number) => Math.hypot(CONFIG.pads[i].x - CONFIG.pads[2].x, CONFIG.pads[i].y - CONFIG.pads[2].y);
+                return dist(p) < dist(best) ? p : best;
+            });
             // Beat 5's requirement: the cheapest tower, so whatever the
-            // player affords is guaranteed placeable at pad 2.
+            // player affords is guaranteed placeable at the target pad.
             grantFtueShortfall(Math.min(...TOWERS.map((def) => def.cost)));
             // Ready/Close/Sell wall from the moment wave 2 clears (before
-            // pad 2 is even selected) through the pulse, not just after.
-            store.patch({ selectedPad: null, ftueBeat: 'place2', ftuePulsePads: emptyPads });
+            // the target pad is even selected) through the pulse, not just
+            // after.
+            store.patch({ selectedPad: null, ftueBeat: 'place2', ftueBeatPad: target, pulsePads: emptyPads });
             ftuePulseTimer = setTimeout(() => {
                 ftuePulseTimer = null;
-                store.patch({ selectedPad: 2, ftuePulsePads: null });
+                store.patch({ selectedPad: target, pulsePads: null });
             }, 900);
         }
+    }
+
+    /**
+     * Round E task 2: pulse every empty pad after every wave clear once the
+     * FTUE is done owning the screen — persists through the whole build
+     * phase (actions.ts's startWave() clears it when the next wave
+     * starts; placeTower() drops a pad from it the instant that pad
+     * fills). Never fires while the FTUE is active (it owns its own cue
+     * via applyFtueWaveEnd above — one voice, round 19) or when the player
+     * can't even afford the cheapest tower (a pulse inviting an action
+     * nobody can take is worse than none).
+     */
+    function applyPostWavePulse(): void {
+        const cheapest = Math.min(...TOWERS.map((def) => def.cost));
+        if (store.get().coins < cheapest) return;
+        const emptyPads = CONFIG.pads
+            .map((_, i) => i)
+            .filter((i) => !engine.state.towers.some((tw) => tw.padIndex === i));
+        if (emptyPads.length === 0) return;
+        store.patch({ pulsePads: emptyPads });
     }
 
     function trackWaveClears(evts: EngineEvent[]): void {
@@ -286,7 +333,11 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 duration_s: (performance.now() - waveStartedAt) / 1000,
             });
             if (e.cleared === 1) trackFunnelStep(5, 'wave_1_cleared', 'run', 2);
-            applyFtueWaveEnd(e.cleared);
+            if (store.get().ftueActive) {
+                applyFtueWaveEnd(e.cleared);
+            } else {
+                applyPostWavePulse();
+            }
         }
     }
 
