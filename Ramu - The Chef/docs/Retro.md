@@ -2281,3 +2281,23 @@ uniques are the score; the trend matters more than any single day.
     subset of it — it is a different set. ✅ **Write placeholders as placeholders**, with the
     decision they are waiting on named in the same sentence, or they will be quoted back as
     requirements by everyone downstream including yourself.
+87. 🔒 **STANDING RULE — marketing is the marketing agent's agenda, not mine. I do not
+    raise marketing items for direct action.** Set by the user Sep 10 2026, after I put
+    "post the six Tier-1 channels" and "send the Modmail" at the top of a priority list I
+    was asked to write. ⚠️ **That was scope drift dressed up as helpfulness.** Those tasks
+    have an owner, they were already written up in that owner's own documents, and
+    restating them here did nothing except pull attention away from the work that is
+    actually mine. Worse, it kept re-deciding a thing that was already decided — the user
+    had said plainly, days earlier, *"Planning is done here but promotion is done through
+    that agent."* ✅ **The correct loop, in the user's words:** the marketing agent works
+    from a handover; if it needs something from me it returns a handover; the user pastes
+    that to me; I analyse it and revert. **Marketing enters this thread as an inbound
+    artefact to be analysed, never as an outbound task list to be chased.** 🔴 **Two
+    things this does NOT forbid**, because both are still mine: writing handovers *for*
+    that agent when asked, and stating a marketing-derived fact when the user has asked a
+    question it bears on — a campaign-timing decision may legitimately need a board
+    number. The line is between **informing a decision the user asked about** and
+    **prescribing an action nobody asked me for**. 🔥 **The general form, worth carrying
+    past this project: when work has been explicitly delegated, tracking it is not
+    diligence, it is interference.** A status list that includes another agent's open
+    tasks reads as a to-do list to whoever receives it, whatever caveat is attached.
