@@ -612,6 +612,62 @@ is twice the chance of the one mistake that actually costs players progress. Kit
 field.
 
 
+### 10.11c ✅ Rounds A and A2 landed — the FTUE ships, Sep 9 2026
+
+Commits `4297240` (A, private **v1.38.0**) and `3e15c9d` (A2, private **v1.39.0**),
+plus `accc4df`. §10.11a's script is built; §10.11b's achievements are **not** — round A
+only records `firstTowerId`.
+
+**Round A — the script, and the two things the playtest asked for.** Pad 0 pre-selects at
+run start (gated on `!save.ftue.challengeDone`), an arrow cue replaces the "Tap a cook to
+upgrade" text at wave-1-end, pad 2 auto-selects after wave 2, and wave-3-end retires the
+script for good. 🔥 **Pad 2 is `(360, 485)` — the true centre of the row `(250/360/520)`**,
+as specified. Challenge mode's lives chip is labelled and a run-start banner states the fail
+condition; the belt billboard finally renders `Served completed/target` (or `/bossClearAt`
+on a boss) — **`level.target` had never been rendered anywhere**, the single highest-value
+fix from the RUN Discord session.
+
+🔒 **The save migration, verified independently and not on report.** The real `save.ts`
+was bundled and run headless against a hand-written v1 blob carrying **no `v`, no `ftue`,
+no `kitchen`**: **30 of 30 checks pass.** `bestWave`, `gems`, all four `meta` tracks,
+`audio` at non-boundary 0.37/0.82 and both `ads` fields survive load, flush and reload
+byte-intact; both new branches default; a corrupt blob still falls back without throwing.
+`SAVE_KEY` untouched at `save.ts:19`. **This was the criterion that outranked everything
+else in the round, and it holds.**
+
+**Round A2 — what made the build promotable.** Three things: the campaign-milestone banner,
+sliders on the last pause screen that still had mute icons (`TestBelt.tsx`), and the
+**dev gate**. `MainMenu.tsx`'s *primary* orange "Play Game" button routed straight to
+`phase: 'testbelt'` — the public menu's main call to action dropped every player into an
+unfinished Test Mode belt. `devMode.ts` latches `?test=1` to `localStorage` (so it survives
+the host stripping the query string) and Challenge Mode takes primary styling when the belt
+entry is hidden. ⚠️ **`import.meta.env.DEV` was deliberately rejected**: `rundot deploy`
+runs a production build, so DEV is false in the *private* build too and the belt would have
+become untestable on device.
+
+#### 🔥 Challenge mode is endless by design — do not "fix" this
+
+`TdPhase` is `'build' | 'wave' | 'lost'`. There is **no won state**, and adding one would
+delete the overtime score-chase — `bestWave` is the leaderboard metric, so capping every
+run at `WAVES.length` flattens the board to a tie and removes the reason to play twice,
+the exact opposite of what playtest finding 6 asked for. The milestone was never missing;
+it was only never *shown*. `towerScene.ts:454` already fired `sfx.win()` and `Hud.tsx`
+already switched the chip to `Rush N · Overtime`. Round A2 added the visible half.
+
+⚠️ **`WAVES.length` is 10, not 13.** A brace-line grep said 13; deriving it from the
+bundled module gives **10**. Anything keyed to the campaign length must be derived from
+`waves.ts`, never counted by eye — [Retro.md](Retro.md) lesson 79's trap, caught in time.
+
+#### ⬜ What these rounds did NOT do
+
+- **Belt pause sliders exist now, but the belt FTUE does not** — N0 L1's ~22s opening
+  traverse and the hidden walkout counter are still unwritten.
+- **§10.11b's Warrior achievements are unbuilt.** Round A records `firstTowerId` and
+  nothing consumes it yet.
+- **The Belt achievements tab is settled but unbuilt:** one achievement per **prop family**
+  ([PropList.md](PropList.md) §8.1), hats as its currency, mirroring the four Warriors.
+
+
 ## 11. Art
 
 | Field | Value |

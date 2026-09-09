@@ -5,10 +5,14 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 9 2026, 11:00 IST
+**Last updated:** Sep 9 2026, 12:30 IST
 **Live:** **v1.7.0 public** · <https://w.run/puneetmakes/spice-expert-ramu> — went public Sep 5 2026 with the full audio layer; was v1.2.3 from Sep 4
-**Private:** **v1.37.0** — the belt Test Mode build, **27 rounds landed**, `0a1410b`. **Never public**; `set-public` has never been run on it. [KitchenMode.md](KitchenMode.md) §6.27
-🔄 **In flight:** **Round A — Challenge-mode FTUE** (GDD §10.11): scripted first three waves, explicit win/lose in both modes, audio sliders, and the ONE consolidated `SaveData` change that belt round 28 also depends on. ⚠️ **This is the first public-deploy candidate since v1.7.0.**
+**Private:** **v1.39.0** — **27 belt rounds + Challenge rounds A and A2 landed**, `3e15c9d` (+ `accc4df`). **Never public**; `set-public` has never been run on it. [KitchenMode.md](KitchenMode.md) §6.27 · [GDD.md](GDD.md) §10.11c
+✅ **PROMOTABLE:** v1.39.0 is the **first public-deploy candidate since v1.7.0**. The Test Mode
+entry is gated behind `?test=1` (`jam-entry/src/state/devMode.ts`), so Challenge Mode is the only
+public route and it now has a scripted FTUE, stated win/lose and audio sliders.
+🛑 **Promoting it is a separate, explicit decision** — `set-public` still must never run on a
+Test Mode build, and the gate is what makes v1.39.0 not one. [GDD.md](GDD.md) §10.11c
 **Jam board:** **rank #2** · 427 plays · **325 Daily Unique Plays** vs rank #1's **658** and rank #3's **279** — [Plan.md](Plan.md) §5.8 (full board read Sep 8 2026)
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST** · 🛑 **Delivery gate: four cuisine nodes** — KitchenMode §6.8
 

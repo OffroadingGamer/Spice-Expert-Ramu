@@ -2176,3 +2176,28 @@ uniques are the score; the trend matters more than any single day.
     the formula beside it is the *source*. State which is authoritative, and check the
     table against it before sending — an agent that trusts the table over the formula
     ships a wrong ramp and passes its own acceptance test.
+80. **Sample code in a handover is a claim, exactly like a table — Retro 79's lesson in
+    another costume.** Round A2's handover shipped a `useEffect` reference implementation
+    for the milestone banner keyed on `[wave, waveCount]`. It is buggy: overtime keeps
+    incrementing `wave`, so every later rush re-runs the effect — cleanup cancels the
+    pending hide-timeout, then the handler's own `wave !== waveCount + 1` guard returns
+    early **without re-arming it**, leaving the banner stuck on screen for the rest of the
+    run. The implementing agent found it, derived a stable `isMilestoneWave` boolean, keyed
+    the effect on that so every later wave collapses to one value, and hid explicitly on
+    the false transition. **I wrote the bug; the agent shipped the better fix.** The rule:
+    if a handover contains code the agent is expected to paste, it carries the same burden
+    of proof as an acceptance number — either reason through its lifecycle before sending,
+    or state plainly that it is a sketch and the agent owns the correctness.
+
+81. **"I screenshotted before and after and they're identical" is only as good as whether
+    the screenshots exercised the changed state.** Round A2 extracted `Slider` into a shared
+    component with a `compact` variant. `Slider.tsx`'s own header comment said *"Settings:
+    default, Hud: compact"* — correct intent — but `Hud.tsx`'s two call sites never passed
+    `compact`, so the just-verified pause menu silently picked up the Settings variant:
+    no `w-56`, `gap-2` for `gap-1`, `text-xl` for `text-lg`. Under that menu's
+    `items-center` parent the missing fixed width is what shows, shrinking the control to
+    its own content width. The report claimed the screenshots matched; the code contradicted
+    its **own documentation**, which is the cheaper signal. **When a change is a prop-level
+    refactor, diff the resolved class strings against the previous commit — do not trust an
+    eyeball comparison, and treat a file whose comment disagrees with its code as failing
+    until one of them moves.** Caught in review; fixed in `accc4df`.

@@ -209,6 +209,27 @@ menu button removed, so the live entry carries nothing half-built into the final
 
 ---
 
+### 2.5a ⚠️ One named exception to §2.5 — `Slider`, Sep 9 2026
+
+§2.5's accepted-duplication rule (*mirror existing callback/layout patterns rather than
+extracting shared abstractions*) **still stands everywhere else.** This is the one place it
+was overridden, by explicit user ruling on Sep 9, and it is recorded so the override never
+looks like drift.
+
+**Why here.** `Settings.tsx` and `Hud.tsx` each held a byte-identical volume `Slider`, and
+round A2's task 2 would have created a **third** copy in `TestBelt.tsx`. Three was the point
+the user chose to extract rather than mirror. The result is `src/ui/Slider.tsx`, with a
+`compact` prop — default for Settings, compact for both pause menus — and the extraction
+was net **negative** on line count.
+
+🔴 **The cost landed immediately, and it is exactly what §2.5 exists to prevent.** The
+extraction silently changed `Hud.tsx`'s appearance, because its call sites did not pass
+`compact` — a screen that had been visually verified one round earlier regressed without
+anyone touching it. See [Retro.md](Retro.md) lesson 81. **A shared component makes one
+edit reach every caller, which is the benefit and the risk in the same sentence.** Extract
+again only on the same terms: a real third caller, and a resolved-output diff against the
+previous commit for every existing caller.
+
 ## 6. 🔒 The belt design decisions — Sep 5 2026, 21:19 IST
 
 Fourteen decisions taken in one pass: ten compatibility questions raised against the
