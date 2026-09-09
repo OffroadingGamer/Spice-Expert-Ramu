@@ -1824,6 +1824,98 @@ predicts. The agent also built a **synthetic two-of-three-shared level** — the
 handover named as where task 1 alone degenerates — and confirmed task 2 holds it at
 [33, 33]. That test was not asked for.
 
+### 6.23 🔒 The boss terminator — settled Sep 9 2026
+
+**A boss had no success criterion at all.** `target: null` removed the win condition and
+nothing replaced it, which showed up as three separate symptoms:
+
+1. **No escalation.** `currentSpeed` floors at `minTraverse` on completion **12** and never
+   tightens again; `spawnInterval` is a flat 2.2s. From completion 12 a boss is exactly as
+   hard forever. `kitchenConfig.ts`'s own ramp comment predicted this — *"a level that
+   changes its dish target must re-derive `perCompletion`… or the ramp plateaus early."*
+   A boss has no target, so it is the extreme case of that warning.
+2. **No terminator.** Spawning stops at `maxSpawns: 200`, the belt drains, and nothing ends
+   the shift — the soft-lock §6.22 records.
+3. 🔴 **No gate, and this one was live.** `TestBelt.tsx:427` reads
+   `phase === 'won' || LEVEL.isBoss`, so **any** boss run counted as a clear — place
+   nothing, tap nothing, take five instant walkouts, and node 1 unlocked.
+
+**Decided: escalate the ramp, gate on a completion threshold, keep the cap as a real
+terminator.** A formal wave system was considered and rejected for the jam — it needs a
+third phase and new end-screen copy, and the phases that already exist are sufficient.
+
+#### The ramp — one shared boss ramp, difficulty scales by depth alone
+
+Below the shared `minTraverse` of 10.0s, a **boss only** continues:
+
+| Dial | Rate | Floor | Floor reached at |
+|---|---|---|---|
+| Belt traverse | −0.1s per completion | **5.0s** | completion 62 |
+| Spawn interval | −0.02s per completion | **1.2s** | completion 50 |
+
+Both were chosen against measured run length, not by feel. The spawn ramp is what keeps
+the boss from getting *less* crowded as it speeds up: at −0.015/floor 1.4 on-belt density
+falls from 4.5 dishes to 3.6, while −0.02/floor 1.2 holds it at **4.2–5.2**, at or above
+the current mid-game figure. It also shortens every run by ~30–40 seconds.
+
+#### `bossClearAt` — completions required, per boss
+
+User, Sep 9, on the ordering: *"N0L4 < N1L8 < N2L9 < N3L8 < N4L8 with N4L8 being the
+hardest to clear"*, and on the FTUE boss: *"we don't want it to be too extreme to finish…
+make it forgiving around 40+."*
+
+| Boss | `bossClearAt` | Traverse there | Min run time |
+|---|---|---|---|
+| **N0 L4** (FTUE) | **40** | 7.2s | ~3.6 min |
+| **N1 L8** | **48** | 6.4s | ~4.2 min |
+| **N2 L9** | **55** | 5.7s | ~4.6 min |
+| **N3 L8** | **62** | 5.0s — the floor exactly | ~5.0 min |
+| **N4 L8** | **70** | 5.0s, sustained 8 past the floor | ~5.5 min |
+
+Opening traverse is 16.0s, so the FTUE boss asks ~2.2× the starting speed and the final
+boss asks the player to hold terminal speed. Run times assume perfect play.
+
+#### ⚠️ `maxSpawns: 200` made the last boss mathematically unclearable
+
+N0 L4's multiset yields 2 completions per 6 spawns — **3 spawns per completion** — so 200
+spawns caps at **66 completions**, exactly the 33+33 round 24 measured at the cap. N3 L8's
+62 scrapes in; **N4 L8's 70 could never be reached**, and with the new gate that is a
+guaranteed loss rather than a hang. **Bosses take `bossMaxSpawns: 400`** (≈133
+completions), keeping the cap a genuine safety net rather than a de facto ceiling.
+
+⚠️ **3 spawns per completion is specific to N0 L4.** Later bosses have different recipe
+counts and overlaps, so each threshold must be checked against its own ratio.
+
+#### ⬜ Two follow-ons, deliberately not fixed here
+
+- **A boss always ends in failure**, which is correct for a survival mode and is already
+  what progression expects (§6.20: Next Level shows on a boss loss). But the end screen
+  will read *"Too many walkouts"* on a run the player should feel good about. Copy work,
+  not urgent.
+- The user's boss positions imply **4 + 8 + 9 + 8 + 8 = 37 levels**, where
+  [LevelEconomy.md](LevelEconomy.md) §10.5's naming pass is scoped to **34**. Flagged so the
+  two do not quietly disagree.
+
+### 6.24 ✅ N0 L3 three stars requires a flawless run — confirmed Sep 9 2026
+
+Round 24 removed the structural waste that was inflating `coinsEarned` (every unusable
+grab still paid `perGrab: 3`). A 16-dish clear now takes **exactly** 48 grabs, so the
+figure is deterministic and `coinsEarned -= walkoutCharge` (`kitchenScene.ts:1746`) is the
+only variable left:
+
+| Walkouts | `coinsEarned` | Stars |
+|---|---|---|
+| 0 | **464** | ★★★ (455) |
+| 1 | 439 | ★★ |
+| 2 | 414 | ★★ (411) |
+| 3+ | 389 | ★ |
+
+**The star tier is now purely a function of walkout count**, with 9 coins of headroom on
+three stars. The user confirmed this is intended: **three stars on N0 L3 demands a flawless
+run.** `{three: 455, two: 411}` therefore stands unchanged and needs no re-derivation —
+the thresholds now encode a legible rule rather than an accident of grab-count.
+
+
 #### 🔴 The finding: a boss now has no terminator for a competent player
 
 The agent reported *"ran to the 200-spawn safety cap still running"* and filed it as a
