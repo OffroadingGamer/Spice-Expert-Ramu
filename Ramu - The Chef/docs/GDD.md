@@ -580,11 +580,26 @@ the RUN SDK** — the apparent `quest` hits in its typings are `Request` substri
 built from scratch: save fields, unlock rules, a screen, and an unlock toast. Per §10.9's
 own posture, **check `rundot skills` for a copy-in feature template before hand-building.**
 
-⬜ **Open — what does claiming pay?** "Unclaimed" implies a claim step with a reward, and
-the currency is unset. ⚠️ It **cannot** be chef hats: KitchenMode §6 decision 12 keeps the
-currencies fully separate (*"belt boosts never touch `MetaLevels`"*), and Warrior
-achievements are a Challenge-mode feature. **Gems is the consistent answer**, since gems
-are what meta upgrades already spend — but it is unconfirmed.
+✅ **CLOSED — two tabs, one currency each. User, Sep 9.** The achievement screen carries
+**a Challenge-mode tab paying gems** and **a Belt-mode tab paying chef hats**.
+
+🔥 **This is a better answer than paying everything in gems**, which is what was
+originally proposed here. KitchenMode §6 decision 12 keeps the two currencies **fully
+separate** — *"belt boosts never touch `MetaLevels`"* — and a single-currency achievement
+screen would have been the one place they met. Splitting by tab means each mode's
+achievements pay into the economy that unlocked them, so **the separation holds by
+construction rather than by discipline**, and the belt stays promotable later without
+unpicking the tower game's economy.
+
+The trophy button's badge sums both tabs; each tab carries its own count.
+
+⬜ **Still open — what the Belt tab contains.** Challenge mode has four towers, hence four
+Warrior achievements. The belt has **15 prop families with tier ladders**
+([PropList.md](PropList.md) §8.1), which would carry the identical pattern — but no belt
+achievement set has been specified. ⚠️ **The Belt tab is also blocked on two rounds the
+Challenge tab is not:** chef hats are not persisted until the save round, and
+`level.props` is not consumed until the catalogue-wiring round. **The screen should ship
+with the Challenge tab live and the Belt tab present but empty**, filling in as those land.
 
 #### ⚠️ One sequencing constraint, and it matters more than either feature
 
