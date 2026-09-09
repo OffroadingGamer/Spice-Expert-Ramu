@@ -160,6 +160,14 @@ export interface LevelRecord {
     /** A boss level: no star thresholds (`stars` is null), and it ends on
      *  the walkout budget rather than a dish target (`target` is null). */
     isBoss: boolean;
+    /** Round 27: the completion count a BOSS must reach for its shift to
+     *  count as cleared (TestBelt.tsx's `cleared`) — a boss can never reach
+     *  `phase === 'won'` (target is null), so without this, any boss shift
+     *  ending at all — including zero taps — counted as a clear (KitchenMode
+     *  §6.23). null on every non-boss level, which keeps using
+     *  `phase === 'won'` alone. Recorded for later authoring: n0l4 -> 40,
+     *  N1 L8 -> 48, N2 L9 -> 55, N3 L8 -> 62, N4 L8 -> 70. */
+    bossClearAt: number | null;
 }
 
 export const LEVELS: LevelRecord[] = [
@@ -182,6 +190,7 @@ export const LEVELS: LevelRecord[] = [
         prePlaced: null,
         grants: [],
         isBoss: false,
+        bossClearAt: null,
     },
     {
         id: 'n0l2',
@@ -199,6 +208,7 @@ export const LEVELS: LevelRecord[] = [
         prePlaced: null,
         grants: [],
         isBoss: false,
+        bossClearAt: null,
     },
     {
         id: 'n0l3',
@@ -223,6 +233,7 @@ export const LEVELS: LevelRecord[] = [
         prePlaced: null,
         grants: [],
         isBoss: false,
+        bossClearAt: null,
     },
     {
         id: 'n0l4',
@@ -240,6 +251,10 @@ export const LEVELS: LevelRecord[] = [
         prePlaced: null,
         grants: ['brazier', 'tandoor'],
         isBoss: true,
+        // Round 27: the FTUE boss's clear bar (KitchenMode §6.23) — see
+        // bossClearAt's own comment on LevelRecord for the later nodes'
+        // planned values.
+        bossClearAt: 40,
     },
     {
         id: 'n1l1',
@@ -257,6 +272,7 @@ export const LEVELS: LevelRecord[] = [
         prePlaced: null,
         grants: [],
         isBoss: false,
+        bossClearAt: null,
     },
 ];
 

@@ -67,6 +67,28 @@
  * from a load-time assertion into a per-run one, so it could fail mid-shift
  * instead of failing the build.
  *
+ * Round 27: a boss (`ACTIVE_LEVEL.isBoss`, `target: null`) had no success
+ * criterion — three independent gaps, three independent fixes (KitchenMode
+ * §6.23):
+ *
+ * Task 1/2 — escalation. `currentSpeed` floored at `beltRamp.minTraverse`
+ * forever (completion 12) and `spawnIfDue` never varied `spawnInterval` at
+ * all, so a boss was exactly as hard at completion 200 as at completion 13.
+ * Both functions now take an `isBoss` parameter: past the shared floor, a
+ * boss keeps tightening at its own (slower) `bossRamp` rate down to its own
+ * (lower) floor — see kitchenConfig.ts's `bossRamp` comment for why the
+ * spawn side matters just as much as traverse.
+ *
+ * Task 3 — a terminator. Spawning used to stop dead at `maxSpawns` with
+ * nothing to end the shift once the belt drained — a competent player was
+ * soft-locked on an empty board. `checkShiftEnd` now ends a boss as 'lost'
+ * once it has spawned out (`bossMaxSpawns` — raised from 200; see that
+ * constant's comment for why 200 undershoots) AND `state.dishes.length ===
+ * 0`. Both conditions matter: the empty-belt check stops dishes still in
+ * flight being taken from the player, and with task 1/2 correctly tuned
+ * this should essentially never fire — it is the guarantee a mistuned ramp
+ * can't quietly resurrect the soft-lock.
+ *
  * Round 24: two-recipe levels were starving one recipe outright (N0 L4 ran
  * to 31 chai / 1 coffee with coffee-extract and cream stranded at 30 each).
  * Two independent causes, two independent fixes:
@@ -175,14 +197,46 @@ export const BELT_LENGTH = cumLengths[cumLengths.length - 1];
  * 🛑 lock on kitchenConfig.ts's beltPath/beltSpeed pair still holds — see
  * that file's comments. `completed` (not `served`) drives the ramp: it's
  * the count of the thing the player actually accomplished.
+ *
+ * Round 27: `isBoss` is the only new input, and it only ever makes the
+ * traverse SMALLER than the shared (non-boss) result would be, never
+ * different below the shared floor's own completion count — a non-boss
+ * level's numbers are byte-for-byte what they were before this round.
+ * `sharedFloorAt` is the completion count where beltRamp's own floor is
+ * reached (12, today); past it a boss keeps tightening at bossRamp's
+ * (slower) rate down to bossRamp's (lower) floor instead of holding flat.
  */
-function currentSpeed(completed: number): number {
-    const t = Math.max(
+function currentSpeed(completed: number, isBoss: boolean): number {
+    const sharedFloorAt =
+        (KITCHEN_CONFIG.beltRamp.baseTraverse - KITCHEN_CONFIG.beltRamp.minTraverse)
+        / KITCHEN_CONFIG.beltRamp.perCompletion;
+    const shared = Math.max(
         KITCHEN_CONFIG.beltRamp.minTraverse,
         KITCHEN_CONFIG.beltRamp.baseTraverse
             - KITCHEN_CONFIG.beltRamp.perCompletion * completed,
     );
+    if (!isBoss || completed <= sharedFloorAt) return BELT_LENGTH / shared;
+    const t = Math.max(
+        KITCHEN_CONFIG.bossRamp.minTraverse,
+        KITCHEN_CONFIG.beltRamp.minTraverse
+            - KITCHEN_CONFIG.bossRamp.perCompletion * (completed - sharedFloorAt),
+    );
     return BELT_LENGTH / t;
+}
+
+/**
+ * Round 27: the spawn-interval half of the boss ramp — see kitchenConfig.ts's
+ * `bossRamp` comment for why this side is load-bearing, not cosmetic. A
+ * non-boss level's spawnInterval stays the flat, validated
+ * KITCHEN_CONFIG.spawnInterval — this only ever narrows it, and only for a
+ * boss.
+ */
+function currentSpawnInterval(completed: number, isBoss: boolean): number {
+    if (!isBoss) return KITCHEN_CONFIG.spawnInterval;
+    return Math.max(
+        KITCHEN_CONFIG.bossRamp.minSpawnInterval,
+        KITCHEN_CONFIG.spawnInterval - KITCHEN_CONFIG.bossRamp.spawnPerCompletion * completed,
+    );
 }
 
 // Dev-time check: kitchenConfig.ts's beltSpeed must equal the ramp's own
@@ -364,7 +418,7 @@ export function createKitchenSim(level: LevelRecord): KitchenSim {
         elapsed: 0,
         held,
         completed: 0,
-        beltSpeed: currentSpeed(0),
+        beltSpeed: currentSpeed(0, ACTIVE_LEVEL.isBoss),
     };
 
     let nextUid = 1;
@@ -385,10 +439,16 @@ export function createKitchenSim(level: LevelRecord): KitchenSim {
         // Round 9, task 1: gates on the safety cap only — the win condition
         // is `completed`, not spawn count, so spawning runs open-ended
         // until checkShiftEnd fires.
-        if (state.spawned >= KITCHEN_CONFIG.maxSpawns) return;
+        // Round 27: a boss uses its own, larger cap (bossMaxSpawns) — see
+        // kitchenConfig.ts's comment for why 200 undershoots a boss.
+        const maxSpawns = ACTIVE_LEVEL.isBoss ? KITCHEN_CONFIG.bossMaxSpawns : KITCHEN_CONFIG.maxSpawns;
+        if (state.spawned >= maxSpawns) return;
         spawnTimer -= dt;
         if (spawnTimer > 0) return;
-        spawnTimer = KITCHEN_CONFIG.spawnInterval;
+        // Round 27: tightens toward bossRamp.minSpawnInterval on a boss only
+        // — see currentSpawnInterval and kitchenConfig.ts's bossRamp comment
+        // for why the spawn side of the ramp matters as much as traverse.
+        spawnTimer = currentSpawnInterval(state.completed, ACTIVE_LEVEL.isBoss);
         const pos = posAt(0);
         state.dishes.push({ uid: nextUid++, dist: 0, x: pos.x, y: pos.y, kind: drawKind() });
         state.spawned++;
@@ -403,6 +463,18 @@ export function createKitchenSim(level: LevelRecord): KitchenSim {
         if (ACTIVE_LEVEL.target !== null && state.completed >= ACTIVE_LEVEL.target) {
             state.phase = 'won';
             events.push({ type: 'won' });
+            return;
+        }
+        // Round 27: a boss's terminator. Its target is null (no 'won' is
+        // ever possible — see above), and without this, spawning simply
+        // stopping at bossMaxSpawns left the belt draining with nothing to
+        // end the shift — a competent player was soft-locked on an empty
+        // board. Both conditions matter: requiring the belt empty (not just
+        // spawned out) means a dish still in flight keeps its serving
+        // chance rather than being taken from the player.
+        if (ACTIVE_LEVEL.isBoss && state.spawned >= KITCHEN_CONFIG.bossMaxSpawns && state.dishes.length === 0) {
+            state.phase = 'lost';
+            events.push({ type: 'lost' });
         }
     }
 
@@ -485,7 +557,7 @@ export function createKitchenSim(level: LevelRecord): KitchenSim {
                 state.completed++;
                 lastCompletedIndex = completedIndex;
                 events.push({ type: 'completed', recipeIndex: completedIndex });
-                state.beltSpeed = currentSpeed(state.completed);
+                state.beltSpeed = currentSpeed(state.completed, ACTIVE_LEVEL.isBoss);
             }
             checkShiftEnd();
         },
@@ -496,7 +568,7 @@ export function createKitchenSim(level: LevelRecord): KitchenSim {
             // Round 8, task 3: recomputed every tick, not only on completion —
             // this is what makes dishes already in flight accelerate too. The
             // drawn belt and the sim must never disagree on the live speed.
-            state.beltSpeed = currentSpeed(state.completed);
+            state.beltSpeed = currentSpeed(state.completed, ACTIVE_LEVEL.isBoss);
             for (let i = state.dishes.length - 1; i >= 0; i--) {
                 const d = state.dishes[i];
                 d.dist += state.beltSpeed * dt;

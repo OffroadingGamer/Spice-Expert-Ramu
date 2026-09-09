@@ -102,6 +102,15 @@
  * dish tray. Every other constant here (belt/slot/prop geometry, the coin
  * rates, the bag-shuffle mechanism itself) is untouched — only WHICH
  * ingredients/recipes feed those mechanics is now per-level.
+ *
+ * Round 27: a boss (target: null) had no success criterion — `beltRamp`
+ * floors at completion 12 and stays there forever, and spawning simply
+ * stops at `maxSpawns`, draining the belt with nothing to end the shift.
+ * `bossRamp` and `bossMaxSpawns` below extend both dials for a boss ONLY
+ * (sim/kitchen.ts's `currentSpeed`/`currentSpawnInterval` take an `isBoss`
+ * parameter) — `beltRamp`, `spawnInterval`, `beltSpeed` and `maxSpawns`
+ * themselves are untouched, since every non-boss level's economy is
+ * derived against them. See KitchenMode §6.23.
  */
 export const KITCHEN_CONFIG = {
     boardWidth: 720,
@@ -484,6 +493,35 @@ export const KITCHEN_CONFIG = {
         minTraverse: 10.0,
     },
 
+    /**
+     * Round 27: a boss's ramp continues PAST beltRamp's own floor (10.0
+     * traverse, hit at completion 12) instead of holding flat forever — a
+     * boss is exactly as hard at completion 200 as at completion 13
+     * otherwise. Both dials are slower than the shared ramp they extend
+     * (0.1 traverse/completion vs beltRamp's 0.5; 0.02s spawn-interval/
+     * completion vs the flat 2.2s spawnInterval) — this is a long grind
+     * tightening gradually, not a second sprint.
+     *
+     * perCompletion: 5.0 traverse floor is reached at completion 62
+     * (10.0 - 0.1 * 50). spawnPerCompletion: 1.2s spawn-interval floor is
+     * reached at completion 50 (2.2 - 0.02 * 50).
+     *
+     * 🛑 The spawn ramp is load-bearing, not cosmetic. Without it, belt
+     * density (dishes in flight) FALLS as the belt speeds up — faster
+     * traverse means each dish clears the belt sooner, so a flat spawn
+     * rate feeds fewer of them into a given stretch (density ≈ traverse /
+     * spawnInterval: 4.5 at completion 12 -> 3.6 at completion 62 with a
+     * flat 2.2s). Tightening spawnInterval alongside traverse holds
+     * density in a 4.2-5.2 band instead, and shortens every run by
+     * 30-40s versus the flat-spawn alternative.
+     */
+    bossRamp: {
+        perCompletion: 0.1,
+        minTraverse: 5.0,
+        spawnPerCompletion: 0.02,
+        minSpawnInterval: 1.2,
+    },
+
     /** Design-unit travel speed along the belt. VALIDATED (§6.6: runway,
      *  measured at the old 1600-unit path). Round 4: 100 -> 111 to hold the
      *  traverse time at 16.0s over the 1780-unit path. Round 5: 111 -> 122
@@ -511,6 +549,17 @@ export const KITCHEN_CONFIG = {
     /** Safety cap only — a runaway spawn loop must not hang the tab. A clean
      *  run needs 36 spawns; a bad one ~48. 200 is unreachable in play. */
     maxSpawns: 200,
+
+    /** Round 27: the boss's own spawn cap — sim/kitchen.ts's `spawnIfDue`
+     *  uses this instead of `maxSpawns` when `LevelRecord.isBoss`, and its
+     *  `checkShiftEnd` now treats "spawned out AND belt empty" as the
+     *  terminator a boss otherwise lacks (target is null; see LevelRecord).
+     *  N0 L4 yields roughly one completion per three spawns, so the old 200
+     *  capped at ~66 completions — unreachable for N4 L8's planned 70-
+     *  completion clear bar, and a silent soft-lock rather than a loss for
+     *  anyone who fell short. 400 clears every planned bossClearAt with
+     *  room to spare. */
+    bossMaxSpawns: 400,
 
     /** Walkouts (unserved dishes reaching PASS) allowed before a LOSS.
      *  Not 10 — the belt sim carries its own count, per KitchenMode §2.7.

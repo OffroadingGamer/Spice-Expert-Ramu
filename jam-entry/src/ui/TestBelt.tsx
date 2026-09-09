@@ -151,6 +151,14 @@
  * see CARD_GEOMETRY/cardPanelStyle just below the imports for the measured
  * slice values and why border-image-width is left at its CSS default
  * (`auto`, which just adopts border-width) rather than set separately.
+ *
+ * Round 27: the `cleared` gate (task 5, above) — a boss ending its shift AT
+ * ALL used to count as a clear, including a zero-tap, five-walkout loss.
+ * `cleared` now also requires `shiftResult.completed >= LEVEL.bossClearAt`
+ * on a boss (sim/kitchen.ts's escalation ramp and spawn-out terminator are
+ * this round's other two fixes, both off-screen from this file). Every
+ * non-boss level's `bossClearAt` is null, so this clause never fires for
+ * them — `phase === 'won'` alone still decides it, unchanged.
  */
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { Application } from 'pixi.js';
@@ -418,13 +426,23 @@ export default function TestBelt() {
                     : 1
             : 0;
     // Round 23, task 5: "cleared" is NOT phase === 'won' alone — a boss
-    // (LEVEL.isBoss) has target: null, so sim/kitchen.ts:343 can never fire
-    // 'won' for one; its shift always ends 'lost' on the walkout budget
-    // instead (§7.3b). A boss's shift ENDING is its completion, so it counts
-    // as cleared too — without this, N0 L4 (Morning Rush) is unpassable and
-    // node 1 is unreachable. No Next Level when an ordinary level is lost,
-    // or when this is the last entry in LEVELS (getNextLevelId returns null).
-    const cleared = shiftResult !== null && (shiftResult.phase === 'won' || LEVEL.isBoss);
+    // (LEVEL.isBoss) has target: null, so sim/kitchen.ts's checkShiftEnd can
+    // never fire 'won' for one; its shift always ends 'lost' (either the
+    // walkout budget, or — round 27 — spawning out with an empty belt).
+    //
+    // Round 27: a boss shift ENDING is no longer enough on its own — that
+    // counted a zero-tap, five-instant-walkout run as a clear (KitchenMode
+    // §6.23, the live gate this round closes). A boss now also needs
+    // `shiftResult.completed` to have reached its own `bossClearAt` bar.
+    // Every non-boss level takes `bossClearAt: null` and keeps using
+    // `phase === 'won'` alone — this clause is unreachable for them. No Next
+    // Level when an ordinary level is lost, when a boss falls short of its
+    // bar, or when this is the last entry in LEVELS (getNextLevelId returns
+    // null).
+    const cleared = shiftResult !== null && (
+        shiftResult.phase === 'won' ||
+        (LEVEL.isBoss && LEVEL.bossClearAt !== null && shiftResult.completed >= LEVEL.bossClearAt)
+    );
     const nextLevelId = cleared ? getNextLevelId(LEVEL.id) : null;
     const goToNextLevel = () => {
         if (nextLevelId === null) return;
