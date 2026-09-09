@@ -5,10 +5,12 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 9 2026, 15:30 IST
+**Last updated:** Sep 9 2026, 17:00 IST
 **Live:** **v1.7.0 public** · <https://w.run/puneetmakes/spice-expert-ramu> — went public Sep 5 2026 with the full audio layer; was v1.2.3 from Sep 4
-**Private:** **v1.41.0** — **27 belt rounds + Challenge rounds A, A2, C and D landed**, `b0e5c22`. **Never public**; `set-public` has never been run on it. [KitchenMode.md](KitchenMode.md) §6.27 · [GDD.md](GDD.md) §10.11c–d · [Specs.md](Specs.md) §8d
-⏸️ **Next:** **Round B** (Warrior achievements, GDD §10.11b) — designed, **awaiting user approval to write**. Zero file overlap with C or D.
+**LIVE: v1.41.0 public** since Sep 9 — Challenge Mode only; the belt is gated behind `?test=1`.
+**Private:** **v1.42.0** — **27 belt rounds + Challenge rounds A, A2, C, D and E landed**, `366e77d`. [GDD.md](GDD.md) §10.11c–e · [Specs.md](Specs.md) §8d
+🔴 **v1.42.0 is a HOTFIX and is not yet promoted** — it closes a hard-lock that is live in v1.41.0 (place a second counter on pad 2 before Ready, then clear wave 2). A reload escapes it, so no player is permanently stuck, but every unfixed hour carries it.
+⏸️ **Next:** **Round B** (Warrior achievements, GDD §10.11b) — designed, **awaiting user approval to write**.
 ✅ **PROMOTABLE:** v1.39.0 is the **first public-deploy candidate since v1.7.0**. The Test Mode
 entry is gated behind `?test=1` (`jam-entry/src/state/devMode.ts`), so Challenge Mode is the only
 public route and it now has a scripted FTUE, stated win/lose and audio sliders.

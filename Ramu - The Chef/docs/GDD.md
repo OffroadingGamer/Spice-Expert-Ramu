@@ -720,6 +720,71 @@ upgrade, so the player still pays full price and the economy lesson lands.
 never fire again.
 
 
+### 10.11e ✅ Round E landed — the hard-lock, and the pulse generalised, Sep 9 2026
+
+Commit `366e77d`, private **v1.42.0**. 🔴 **A hotfix**: the defect it closes was live on
+the public build (v1.41.0) when it was written.
+
+#### The lock, and why it was total
+
+Place at pad 0, then place a **second** tower at **pad 2 before pressing Ready**. At
+wave-2-end the script set `ftueBeat: 'place2'` **unconditionally**, targeting a hardcoded
+pad 2 that now held a tower. `sim/engine.ts:536` rejects a placement on an occupied pad, so
+`actions.ts`'s release — which fires *inside* `placeTower`'s success branch — could never
+run. `upgradeTower` only released `upgrade0`. Ready was gated, Close hidden, taps walled:
+**no exit.** A second route reached the same state — fill every pad and there is nowhere to
+force a placement at all.
+
+🔥 **Root cause, stated generally: beat targets were constants, but the world they act on
+is mutable.** `place2` named a pad at author time; whether that pad was placeable is a
+runtime fact nobody checked. ✅ **Mitigation that limited the damage:** `ftueBeat` lives in
+the store, never the save, so a reload always escaped. Players lost a run, not the game.
+
+#### The fix — three layers
+
+1. **Targets are chosen at fire time from live state**, carried in a new `ftueBeatPad`.
+   Prefer pad 2; otherwise the geometrically nearest empty pad; **if no pad is empty,
+   retire the FTUE rather than wall the player behind an impossible beat.** `upgrade0` got
+   the same pre-set guard — safe today only because a wave-1 tower is Lv1 of max 3, which
+   was luck rather than design.
+2. **`isFtueBeatResolvable()`**, a pure predicate evaluated inside `syncStore()` (already
+   running every frame and after every action — no timer). If a live beat stops being
+   resolvable, `retireFtue()` drops every wall. **This is the layer that fixes states nobody
+   enumerated.**
+3. **`retireFtue()` is the single release point** — wave 3 starting, a pre-set guard, or the
+   predicate all funnel through it. Previously four files read `ftueBeat` independently to
+   arm four walls, which is why one missing check produced a total lock instead of a glitch.
+
+⚠️ **The agent's own first pass still locked, and it found that by testing rather than
+assuming.** `placeTower`/`upgradeTower` called `syncStore()` **before** their own release
+check — and the target pad becoming occupied is *simultaneously* what resolves a beat and
+what the predicate reads as "gone unresolvable". Reordering so the intentional release runs
+first makes the ambiguity unreachable. The ordering is load-bearing and commented as such
+in both functions; **do not reorder it.**
+
+#### ⬜ Open: fallback-vs-skip at beat 5
+
+What shipped: pad 2 occupied → **fall back to the nearest empty pad**, forcing a *third*
+placement. 🔴 **This contradicts what was proposed to the user in chat**, which was to
+**skip the beat and retire** on the grounds that a player who already placed a second
+counter unprompted has demonstrated the lesson, and that forcing a third triggers
+`grantFtueShortfall` for a purchase they never needed. **The handover said fallback; the
+chat proposal said skip; the agent correctly implemented the handover.** Not a defect —
+nothing locks either way — but the user's call, and it is one branch to change. See
+[Retro.md](Retro.md) lesson 84.
+
+#### Task 2 — the pulse, generalised
+
+`ftuePulsePads` → **`pulsePads`**, now firing after **every** wave clear, persisting through
+the build phase, cleared when the next wave starts, and dropping a pad the instant it fills.
+Two suppressions, both load-bearing: **never while `ftueActive`** (enforced at the call
+site — `applyFtueWaveEnd` *or* `applyPostWavePulse`, never both), and **never when the
+cheapest tower is unaffordable**, since a pulse inviting an impossible action is worse than
+none. `animate-ping` → `animate-pulse`: the ping's repeating scale-and-fade read as noisy
+once sustained for a whole build phase. The objective and milestone banners now also
+suppress on `pulsePads`, closing a one-voice gap the new cue opened.
+
+
 ## 11. Art
 
 | Field | Value |

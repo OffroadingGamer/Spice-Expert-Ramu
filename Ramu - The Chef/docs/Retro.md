@@ -2231,3 +2231,16 @@ uniques are the score; the trend matters more than any single day.
     into a planning doc. **A truncated date is ambiguous and should be asked about, not
     assumed; but a caption contradicted by the source is just a caption.** State which
     evidence wins, and let the weaker one go.
+84. **If you propose a design in chat after the handover is already written, revise the
+    handover — or say plainly which one governs.** Round E's handover specified, for the
+    case where the forced pad is occupied, *"otherwise the nearest empty pad."* The user
+    then asked what I proposed, and I answered with a **different** design — skip the beat
+    and retire — and argued explicitly against the fallback I had already written into the
+    handover, on the grounds that it forces a purchase the player never needed and triggers
+    a coin grant to fund it. I then closed that same message with *"the handover I wrote
+    already specifies all three,"* which was false for this branch. **The agent implemented
+    the handover faithfully and was right to.** Nothing broke — both designs are lock-free —
+    but the user approved one thing and received another. A handover is a **frozen
+    artefact** the moment it is issued: any later thinking either amends it explicitly or is
+    not part of it. And never assert that a document says what you intend without re-reading
+    the clause.
