@@ -1,6 +1,6 @@
 # Social Media Handover Record
 
-**Last updated:** Sep 9 2026, 19:20 IST
+**Last updated:** Sep 9 2026, 21:10 IST
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Marketing Strategy.md](Marketing%20Strategy.md)
 
@@ -222,3 +222,144 @@ and the repro/verification step was not run, since public was never actually mov
 it remains at 1.41.0 and **still carries the hard-lock defect**. Handed back: promoting
 public to 1.42.0 needs a path with the right authorization (dashboard, or a
 different key/account), which is outside what this agent can resolve from here.
+
+### 2026-09-09 20:05 IST — Channel intelligence questionnaire
+**From:** Central strategy agent (as "Marketing Agent")
+**Status:** 🚧 in progress — Task 1 (questionnaire) issued to the user in chat; Tasks 2
+(ranked plan) and 3 (return handover) blocked on the user's answers
+
+Handover — Marketing Agent · Channel intelligence questionnaire
+Scope: Build a channel strategy by asking the user structured questions. No posting, no submitting, no tags.
+
+🛑 Hard boundaries
+rundot whoami first — offroadinggamedev@gmail.com. Stop if not.
+🛑 Do not post anything, anywhere. Not one message.
+🛑 Do not submit, prepare or fund a campaign.
+🛑 Do not touch any tag — update-tag, set-public, set-private, deploy are all forbidden. A promotion is not part of this round.
+🛑 No git. No edits under jam-entry/.
+You may write only docs/Marketing Strategy.md and docs/Social Media Handover Record.md.
+🔒 Never write a ?k= key, the RUN UserId, or an unlisted game id into either file. The repo is public.
+The situation you are planning against
+We just dropped 2nd → 3rd. That is $600 → $300.
+
+Entry	Gain last window	DUP	DUP/day	plays/user
+9 to Thrive	+56	743	124	1.54
+Back That Thing Up!	+140	443	89	1.13
+Spice Expert: Ramu	+19	359	60	1.37
+The Good Life	+17	314	52	1.35
+SHIFT	+129	302	151	1.07
+🔴 SHIFT is two days old and running at 151 DUP/day — faster than the leader. It sits 57 behind us and will pass us within a window.
+
+🔥 Read the last column before you plan anything. Our plays-per-user is 1.37; SHIFT's is 1.07. We retain better than the entries beating us. This is not a game-quality problem and not a retention problem — we are being out-distributed, and only that. Do not propose product changes. Propose distribution.
+
+Assets already in hand: rundot jam promo returns a vote link, play link, caption and one-click share URLs for X, Reddit, WhatsApp, Facebook, Telegram and LinkedIn. rundot socials status shows a packet with X and Reddit both ready and tracked — and neither posted.
+
+Budget already approved: ~$70–80 campaign, ~$25 reserved for asset generation. Do not spend it this round.
+
+Task 1 — Put a questionnaire to the user
+Write a fresh questionnaire — do not recycle earlier ones. Ask what you actually need to choose channels, and keep it answerable in one sitting. Cover at least:
+
+Per platform (X, Reddit, Discord, LinkedIn, WhatsApp/Telegram, TikTok/Shorts, Instagram):
+
+Does the user have an account, and is it active or dormant?
+Rough audience size, and is it dev-facing, gamer-facing or personal?
+Account age and karma where a platform gates posting on them — Reddit especially; most game subs enforce minimums and remove posts silently.
+Is the user comfortable posting as themselves, or brand-only?
+Capacity:
+
+Hours per day available between now and Sep 19, and which hours in IST.
+Willing to record short video or screen capture, or text and images only?
+Can they reply to comments through the day, or post-and-leave?
+Communities they are already inside — this is the highest-value question. ⚠️ They attended a RUN Discord playtest and were awarded 10,000 credits for it, so that channel is already warm and proven. Ask what other Discords, subreddits, or dev groups they genuinely belong to, and where posting would be welcome rather than spam.
+
+Constraints: anything they will not do, any platform to avoid, any account they'd rather not link to this project.
+
+Task 2 — Turn answers into a ranked plan
+For each viable channel, state: expected reach, effort in minutes, whether it needs the paid campaign or is free, and when it should fire relative to Sep 13 and Sep 15. Rank by DUP per hour of the user's time — that is the scarce resource, not credits.
+
+Say plainly which channels to skip and why. A shorter honest list beats a complete one.
+
+Task 3 — Return a handover for the planning agent
+Write it so it can be pasted straight back. It must carry: the answers as given, your ranked plan, your recommended campaign shape within the $70–80 envelope, and explicitly flag anything the user's answers make impossible — a dead Reddit account, no video capability, two hours a day. Those constraints matter more than the opportunities.
+
+⚠️ One timing note
+FEEDBACK05's 10,000 credits expire Sep 13 — four days. This round is intelligence, not execution, so keep it to one pass. If a question isn't decision-changing, cut it.
+
+### 2026-09-09 21:10 IST — Channel intelligence questionnaire — answers received, ranked plan returned
+**From:** Central strategy agent (as "Marketing Agent") — continuation of the entry above
+**Status:** ✅ complete — Task 1 (questionnaire) and Task 2 (ranked plan) done; Task 3
+(return handover) follows below, for pasting straight back to the planning agent
+
+Answers were collected from the user across three MCQ rounds plus one open-text
+follow-up on community names. `rundot whoami` was re-confirmed as
+`offroadinggamedev@gmail.com` before this round proceeded, per the handover's hard
+boundary. No tag was touched, nothing was posted, no campaign was prepared or
+submitted — all per this handover's boundaries. Full findings, the ranked
+11-channel distribution plan, and the campaign-shape recommendation are written to
+[Marketing Strategy.md](Marketing%20Strategy.md) §7. This entry carries the
+paste-back handover for the planning agent, per Task 3.
+
+---
+
+**Return handover → Planning agent**
+**Subject:** Channel intelligence complete — ranked plan ready, two items need action today
+
+**The situation:** dropped 2nd → 3rd ($600 → $300); SHIFT is closing fast (151
+DUP/day, 2 days old, 57 behind us). Our retention (1.37 plays/user) beats every
+entry ahead of us — this is a distribution gap, not a product one.
+
+**What the user told us (condensed — full answers in the companion Marketing
+Strategy.md §7.1):**
+- X: brand-new, zero-audience account. Reddit: real but thin (15 karma, 17 days).
+  TikTok: dormant *and* functionally inaccessible (banned in India, no app,
+  VPN/web-only). YouTube Shorts and Instagram: both dormant but freshly claimed.
+- WhatsApp/Telegram: real dev/gamer groups, not just personal contacts.
+- Capacity is generous: 4+ hrs/day through Sep 19, flexible scheduling (will
+  weight timing toward the Indian audience given the game's theme), can
+  actively reply to comments all day.
+- Video capability is real: OBS with a vertical-layout camera rig, edits in
+  Instagram Edits. This changes the plan — it wasn't assumed going in.
+- Ten communities named by name, sized, and channel-specific (RUN.creators
+  Discord, r/GameDevelopersOfIndia, SoloDevelopment Discord + subreddit,
+  Backstage Pass, Indie Game Academy, Funsmith Club, GameDev India, GameDev.tv,
+  r/Indiangamers) — full table in §7.1.1, including which ones gate on
+  templates, participation-first norms, or (r/Indiangamers) Modmail
+  pre-clearance.
+
+**Ranked plan (full detail in §7.2):**
+- **Tier 1 (fire today, free, ≤15 min each):** WhatsApp/Telegram groups,
+  RUN.creators Discord, Funsmith Club, Indie Game Academy, GameDev India Discord,
+  Backstage Pass Discord.
+- **Tier 2 (free, needs prep, fire by Sep 11–12):** one vertical gameplay video
+  cross-posted to Instagram Reels + YouTube Shorts (not TikTok); GameDev.tv Discord
+  (reusing that video); SoloDevelopment Discord; r/GameDevelopersOfIndia (used as
+  the test case for whether the thin Reddit account survives); r/SoloDevelopment
+  (only after that test case clears).
+- **Tier 3 (start now, gated on someone else):** send the r/Indiangamers Modmail
+  request today — 110k gamer-facing members, likely the best-converting audience
+  on the list, but approval turnaround is unknown. Don't wait on it before doing
+  Tiers 1–2.
+- **Skip:** X (cold, zero-audience), TikTok (hard-excluded per the user's own
+  constraint), static Instagram posts (only the video cross-post is worth doing
+  there).
+
+**What the answers make impossible or risky (read before assuming full
+execution):**
+- The thin Reddit account can be silently Automod-removed on large subs
+  (108k/110k) with no rule violation visible — test small before going big.
+- TikTok is excluded outright, not merely deprioritized.
+- r/Indiangamers' reach depends on a human moderator's approval of unknown
+  timing — it may not land inside the window at all.
+- Nothing here was actually a hard blocker in the way the original handover
+  worried about (no dead Reddit account, no missing video capability, no
+  two-hours-a-day ceiling) — capacity and video capability both came back more
+  generous than assumed, which is the reason Tier 2 exists.
+
+**Recommended campaign shape within the $70–80 envelope (proposal only — not
+submitted, not funded, needs a separate approval):** hold the paid leg ~24–48h
+until Tier 1 has actually fired, then a `--network run` (mobile-web) buy at the
+low end of the envelope (~$50–60), since the $25 asset-generation reserve is
+likely unneeded — the Tier 2 video is being produced for free with the user's own
+gear. Fire with enough runway before the Sep 15 BACK-TO-WORK lot expiry.
+Full reasoning in §7.4 and the still-open questions from the prior round's
+credit analysis in §6.

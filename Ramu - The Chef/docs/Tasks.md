@@ -5,12 +5,13 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 9 2026, 18:30 IST
+**Last updated:** Sep 9 2026, 20:00 IST
 **Live:** **v1.7.0 public** · <https://w.run/puneetmakes/spice-expert-ramu> — went public Sep 5 2026 with the full audio layer; was v1.2.3 from Sep 4
 **LIVE: v1.42.0 public** since Sep 9 — Challenge Mode only; the belt is gated behind `?test=1`. ✅ **The scripted FTUE, the visible win condition, the readable HUD and the hard-lock fix are all in front of real players.** Approval took well under an hour ([Specs.md](Specs.md) §9a).
 **Private:** **v1.42.0** — **27 belt rounds + Challenge rounds A, A2, C, D and E landed**, `366e77d`. [GDD.md](GDD.md) §10.11c–e · [Specs.md](Specs.md) §8d
 ✅ **The v1.42.0 hotfix is LIVE** — the wave-2 hard-lock is closed in production. 🔒 **We never promote directly**: the public tag rejects creator writes (400); RUN publishes on approving the review tag. [Specs.md](Specs.md) §9a
-⏸️ **Next:** **Round B** (Warrior achievements, GDD §10.11b) — designed, **awaiting user approval to write**.
+🔴 **Rank #4, down from #2 in a day** — $600 → $200. SHIFT (3 days old) passed us by **3 DUP**, 371 vs 368, gaining +69 to our +9. ➕ **The two entries above it have stalled** (+2 and +9), so **third place is three plays away**. 🔥 **Our plays/user (1.37) beats every entry ahead of us** — a distribution gap, not a quality or retention one. [Marketing Strategy.md](Marketing%20Strategy.md) §7.
+⏸️ **Next rounds:** dish-sprite enemy reskin (gates the promo video) · tower prop reskin · wave-curve rebalance · Round F · **Round B** (GDD §10.11b) still **awaiting approval to write**.
 ✅ **PROMOTABLE:** v1.39.0 is the **first public-deploy candidate since v1.7.0**. The Test Mode
 entry is gated behind `?test=1` (`jam-entry/src/state/devMode.ts`), so Challenge Mode is the only
 public route and it now has a scripted FTUE, stated win/lose and audio sliders.

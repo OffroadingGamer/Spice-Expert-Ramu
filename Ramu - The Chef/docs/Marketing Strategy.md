@@ -1,6 +1,6 @@
 # Marketing Strategy
 
-**Last updated:** Sep 9 2026, 14:15 IST
+**Last updated:** Sep 9 2026, 21:10 IST
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)
 
@@ -194,3 +194,201 @@ spend effort chasing it before confirming Q1. The durable pool (52,200–52,300,
 non-expiring until Dec 2029 at the earliest) has no urgency and is deliberately left
 untouched. **This proposal requires a second approval before `prepare`/`generate` even
 begins spending image-generation credits, per the handover's standing rule.**
+
+## 7. Channel intelligence & ranked distribution plan — Sep 9 2026
+
+**Context this round:** we dropped 2nd → 3rd (~$600 → ~$300). SHIFT is two days old,
+running 151 DUP/day — faster than the leader — and sits 57 DUP behind us. Our
+plays/user (1.37) beats every entry ahead of us; SHIFT's is 1.07. **This is a
+distribution gap, not a retention or quality problem.** No product changes proposed
+here — only where and how we reach people.
+
+### 7.1 The answers, as given
+
+**Per-platform account status:**
+
+| Platform | State |
+|---|---|
+| X (Twitter) | Freshly made account (`@PuneetMakes`) — no existing audience |
+| Reddit | Exists, thin: **15 karma, 17 days old** — real silent-removal risk on larger/gated subs |
+| Discord (beyond RUN's own server) | Active member of ten servers/subs — see 7.1.1 below |
+| LinkedIn | Already active — covered by §1, unchanged |
+| WhatsApp/Telegram | Yes — dev/gamer group chats exist, not just personal |
+| TikTok | Dormant, freshly made (`PuneetMakes`) — **and the app itself is inaccessible**: banned in India, no non-VPN access, web-only |
+| YouTube (Shorts) | Dormant, freshly made (`@puneetmakes`) |
+| Instagram | Dormant (`puneetmakes`) |
+
+**Posting identity:** comfortable posting under personal accounts everywhere — no
+brand-only constraint.
+
+**Capacity:** **4+ hours/day** available through Sep 19, schedulable around whichever
+hours suit the target audience best (explicitly including Indian-audience timing,
+given the game's theme) — not boxed into a fixed IST window. Can record video: has
+an OBS setup with a vertical-layout camera rig, edits in the Instagram Edits app.
+Can actively reply to comments through the day, not post-and-leave.
+
+**7.1.1 Communities (the highest-value answer):**
+
+| Community | Type | Size | Note |
+|---|---|---|---|
+| RUN's own jam Discord | Already covered by §1 | — | Existing repeatable engine |
+| RUN.creators Discord (`#showcase`) | RUN in-house, separate from the jam server | 1,650 members | Not previously in the posting cadence |
+| r/GameDevelopersOfIndia | Dev-facing, India | 3.9k visitors / 479 contributions/wk | No external-link rule; must be a genuine post, not a bare link |
+| SoloDevelopment Discord (`#promo`) | Dev-facing | 11,307 members | Must participate as a community member first, not drop-and-run |
+| Backstage Pass Discord (`#Showcase-Your-Game`) | Dev-facing | 318 members | Small but zero-cost to include |
+| Indie Game Academy Discord (`#help-each-other`) | Dev-facing | 6,894 members | Explicitly allows disclosing competition/ranking/voting |
+| Funsmith Club Discord (`#share-cool-games`) | Dev-facing, playtest+critique | 10,842 members | Good fit for genuine feedback framing |
+| GameDev India Discord (`#games-from-india`) | Dev-facing, India | 9,794 members | Has a posting-format template to follow |
+| GameDev.tv Discord (`#project-showcase`) | Dev-facing | 65,700 members | Largest single community on the list; strict template (title, store page, release date, art style, genre, team info, description, trailer, screenshots) |
+| r/SoloDevelopment | Dev-facing | 108k members / 6k contributions/wk | Rules require a max of 2 posts/week and genuine context — not pure promo |
+| r/Indiangamers | **Gamer-facing**, India | 110k members / 3.8k online | Rule 8: promotional dev content needs **Modmail pre-clearance** before posting |
+
+**Constraint flagged by the user:** TikTok is functionally out — banned in India,
+no app access without a VPN, web-only upload path. Treated as a hard skip, not a
+low-priority item.
+
+### 7.2 Ranked plan — by DUP per hour of the user's time, not by credits
+
+**Tier 1 — free, low-effort (≤15 min each), fire today/tomorrow, no gating risk:**
+
+| # | Channel | Effort | Cost | Timing |
+|---|---|---|---|---|
+| 1 | WhatsApp/Telegram dev & gamer groups | ~10 min | Free | Immediately — warmest, lowest-friction reach available |
+| 2 | RUN.creators Discord `#showcase` | ~10 min | Free | Immediately — in-network, primed audience, currently unused |
+| 3 | Funsmith Club Discord `#share-cool-games` | ~10 min | Free | Today |
+| 4 | Indie Game Academy Discord `#help-each-other` | ~10 min | Free | Today — explicitly welcomes the jam/ranking framing |
+| 5 | GameDev India Discord `#games-from-india` | ~15–20 min | Free | Today/tomorrow — follow the posted template |
+| 6 | Backstage Pass Discord `#Showcase-Your-Game` | ~5 min | Free | Whenever convenient — zero-cost add-on |
+
+**Tier 2 — free but needs real prep, fire within 2–3 days:**
+
+| # | Channel | Effort | Cost | Timing |
+|---|---|---|---|---|
+| 7 | One vertical gameplay video (OBS + Instagram Edits) cross-posted to **Instagram Reels + YouTube Shorts** (not TikTok) | ~60–90 min | Free | By Sep 11–12 — matches the user's actual stated capability, evergreen/discoverable unlike a static post |
+| 8 | GameDev.tv Discord `#project-showcase` | ~30–40 min (reuses the video from #7 as the trailer asset) | Free | Sep 11–12, once the video exists |
+| 9 | SoloDevelopment Discord `#promo` | ~20 min + a few genuine participation messages first | Free | Sep 10–12 |
+| 10 | r/GameDevelopersOfIndia | ~20–30 min, thoughtful devlog-style post | Free | Sep 10 — treat as the test case for whether the thin (15 karma/17d) account survives without a silent removal, before risking bigger subs |
+| 11 | r/SoloDevelopment | ~30 min, devlog-style, max 2×/week | Free | Sep 11–12, **only after** #10 confirms the account isn't being silently filtered |
+
+**Tier 3 — start the clock now, execution depends on someone else's approval:**
+
+| # | Channel | Effort | Cost | Timing |
+|---|---|---|---|---|
+| 12 | r/Indiangamers (110k members, gamer-facing — likely the single best-converting audience on this whole list, since it's players, not devs) | ~10 min to send the Modmail request | Free | **Send the Modmail request today** — approval turnaround is unknown and is the actual risk here, not the post itself. Don't wait on it before doing Tiers 1–2. |
+
+**Tier 4 — skip:**
+
+- **X (`@PuneetMakes`):** brand-new, zero-follower account. A cold post here moves
+  nothing on its own; not worth the user's time this round. Revisit only as a
+  free cross-post once other creative exists — not ranked as a real lever.
+- **TikTok:** hard skip per the user's own constraint — banned in India, no app
+  access, brand-new dormant account. Web/VPN friction isn't worth it in the time
+  remaining.
+- **Static Instagram post (no video):** a picture on a dormant, zero-follower
+  account won't move numbers. The one Instagram lever worth using is the Tier 2
+  video cross-post, not a standalone static post.
+
+### 7.3 What the user's answers make impossible or risky (read this before assuming the full list executes)
+
+- **Reddit's thin account (15 karma, 17 days) is a real ceiling, not a formality.**
+  Large subreddits (r/SoloDevelopment 108k, r/Indiangamers 110k) commonly run
+  Automod filters that silently remove posts from new/low-karma accounts —
+  independent of the written sub rules, which don't mention a threshold. Don't
+  fire all Reddit channels at once on the assumption they'll all land; test small
+  (r/GameDevelopersOfIndia) before the two large subs.
+- **TikTok is not merely deprioritized — it's excluded.** No VPN-based workaround
+  is proposed here.
+- **r/Indiangamers' reach is gated behind a human moderator's Modmail approval**
+  of unknown turnaround. It cannot be counted on landing inside this window with
+  certainty; it's included because starting the request costs nothing and the
+  upside (110k gamer-facing members) is the largest on the list.
+- **None of the answers ruled out video, a fixed low-hours constraint, or a dead
+  Reddit account outright** — capacity turned out to be generous (4+ hrs/day) and
+  video capability real (OBS + vertical rig + Edits app), which is why Tier 2 exists
+  at all; this plan would look very different (thinner, static-image-only) if the
+  answers had gone the other way.
+
+### 7.4 Recommended campaign shape within the $70–80 envelope (analysis/proposal only — not submitted, not funded)
+
+Given assets already exist (`rundot jam promo`'s share links; `rundot socials
+status` shows an X/Reddit packet ready and untouched) and the organic plan above
+covers eleven free channels, the paid leg is best used to **amplify traffic once
+the organic wave has actually started** rather than to substitute for it:
+
+- Hold the paid leg until Tier 1 has fired (~24–48h) so it boosts real referral
+  traffic instead of starting cold.
+- Shape: `--network run` (in-app house cross-promo, mobile-web — see §6, Q3),
+  sized at the lower end of the envelope (~$50–60), leaving headroom in the
+  $70–80 total for the `$25` asset-generation reserve. **That reserve may not be
+  needed at all** — the Tier 2 video is being produced with the user's own OBS/Edits
+  pipeline for free, so the $25 could either go unspent (refunded per the
+  end-of-campaign settlement rule in §6, Q2) or extend the flight window instead.
+- Fire within a day or two of the organic wave, leaving runway before the Sep 15
+  BACK-TO-WORK lot expiry — consistent with §6's existing finding that FEEDBACK05
+  (Sep 13) is already the higher-risk lot regardless of what's prepared now.
+- **This is a proposal only.** It still requires a second, separate approval
+  before `rundot marketing prepare`/`submit` is run — no change to that standing
+  rule.
+
+### 7.5 ⚠️ Two amendments from the planning side — Sep 9 2026
+
+§7.1–7.4 stand as written and the channel research is adopted whole. Two changes:
+
+**🔴 Amendment 1 — do NOT hold the paid leg 24–48h. Submit it alongside Tier 1.**
+
+§7.4 argues the paid leg should wait so it amplifies real referral traffic instead of
+starting cold. That is sound advertising practice and **it does not apply to this network.**
+`--network run` is RUN's **in-app house cross-promo** (§6 Q3) — it surfaces the game to
+people already browsing RUN. It has no retargeting pool to warm up, so there is nothing for
+organic traffic to amplify.
+
+Against that theoretical benefit sit three concrete costs: **FEEDBACK05's 10,000 credits
+expire Sep 13**, campaign review turnaround is **unknown and unresolvable** (§6 Q1), and
+**DUP is counted daily** — a play today compounds across more scoring days than the same
+play on the 11th. Waiting 48 hours spends half the nearer lot's runway to buy an effect this
+network cannot produce.
+
+➕ **A budget note, not a reopening.** Credits not committed to a campaign simply expire;
+credits committed and unspent are refunded. So under-committing is the only option that
+*guarantees* waste. The approved envelope stands — but the gap between committing $80 and
+the full expiring ~$102 is the difference between certain loss and possible refund.
+✅ **The $25 generation reserve is almost entirely free to redeploy**: the Tier 2 video uses
+the user's own OBS pipeline, and the only art needing generation is **3 customer sprites at
+120 credits each — about $0.36 total.**
+
+**⚠️ Amendment 2 — the Tier 2 video has a dependency §7 could not have known.**
+
+Item #7 (vertical gameplay video → Reels/Shorts) is **evergreen** — it keeps being
+discovered long after posting. 🔴 **Do not shoot it against the current build.** The enemies
+are still drawn as **insects** while being named as dishes (Dal Tadka, Masala Chai,
+Biryani …), and the dish-sprite round replaces them with the 30 tray sprites already baked
+and deployed. Shooting now produces permanent content showing the weakest version of the art
+we will ever ship.
+
+✅ **The dates already line up** — the dish-sprite round lands Sep 10, §7 schedules the video
+Sep 11–12. **Keep that order.** It also improves item #8 (GameDev.tv, 65,700 members), whose
+template wants a trailer asset.
+
+**Everything else fires today**: Tier 1's six channels, and — most urgently — the
+**r/Indiangamers Modmail request**, whose 110k gamer-facing members are the best-converting
+audience on the list and whose approval clock only starts when it is sent.
+
+### 7.6 🔴 Board read, Sep 9 evening — we are 4th
+
+| # | Entry | Days | DUP | Gain | DUP/day |
+|---|---|---|---|---|---|
+| 1 | 9 to Thrive | 6 | 752 | +9 | 125 |
+| 2 | Back That Thing Up! | 5 | 445 | **+2** | 89 |
+| 3 | SHIFT | 3 | **371** | **+69** | **124** |
+| 4 | **Spice Expert: Ramu** | 6 | **368** | **+9** | 61 |
+| 5 | The Good Life | 6 | 318 | +4 | 53 |
+
+**SHIFT passed us by 3 DUP**, exactly as projected one window earlier. $600 → $200.
+
+🔥 **But the two entries above SHIFT have stalled** — Back That Thing Up! gained **+2** and
+9 to Thrive **+9**. Only SHIFT is still moving. **Third place is three plays away**, and
+second is a real target if SHIFT's surge is a one-off push rather than a durable channel.
+
+⚠️ **Nothing has been posted yet.** The socials packet has read `ready` on X and Reddit for
+hours, eleven free channels are researched and unfired, and the user has 4+ hrs/day
+available. **The plan is not the bottleneck; execution is.**
