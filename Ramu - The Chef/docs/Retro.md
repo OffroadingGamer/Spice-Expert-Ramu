@@ -2217,3 +2217,17 @@ uniques are the score; the trend matters more than any single day.
     ⚠️ **My acceptance criterion was also mis-specified**: it compared a *radius* against
     44 px, which is a convention for target **width**. The shipped target is 59 px across
     and always passed. Both sides of a threshold need the same units stated.
+83. **When a UI string and the code disagree, say which one you believe — don't report both
+    and then reason from the wrong one.** Reading the Finances page I raised two alarms and
+    both were wrong. A grant reading *"Expires Aug 29"* I took as **Aug 29 2026**, eleven days
+    past, and warned the balance might be 25,000 lower; it is **August 2029**. And a *"Runtime
+    AI usage"* panel captioned *"credits consumed by players"* I took at its word, warning that
+    ad traffic would carry a variable credit cost — it is our own art and music generation
+    spend. 🔴 **The second one is the instructive failure: I ran the right check and then
+    argued around its answer.** The grep found **no AI calls anywhere in `src/`**, which was
+    conclusive — a game that never calls an AI API cannot bill players for AI calls. Instead
+    of concluding the caption was a generic panel label, I hedged (*"either RUN bills
+    platform-level player AI, or studio generation is attributed here"*) and carried the alarm
+    into a planning doc. **A truncated date is ambiguous and should be asked about, not
+    assumed; but a caption contradicted by the source is just a caption.** State which
+    evidence wins, and let the weaker one go.
