@@ -28,11 +28,31 @@ https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 | Title | ✅ Fixed — SVG `textLength` + `lengthAdjust`, verified 320/390/430 |
 
 **Content mapping in place (names only, kit IDs untouched):** stations Grill / Prep Board
-/ Tandoor / Fryer (`fox` / `owl` / `bear` / `squirrel`); tickets Dal Tadka / Masala Chai /
-Biryani / Masala Dosa / **Full Thali** (`beetle` / `wasp` / `snail` / `hornet` / `stag`,
-the last costing 3 walkouts). Renaming an `id` touches `textures.ts`, `towerScene.ts`,
-`towerIcons.ts`, `audio.ts` and `CONFIG.sizes` — a deliberate multi-file operation, not
-a rename-in-place.
+/ Tandoor / Fryer (`fox` / `owl` / `bear` / `squirrel`). Renaming an `id` touches
+`textures.ts`, `towerScene.ts`, `towerIcons.ts`, `audio.ts` and `CONFIG.sizes` — a
+deliberate multi-file operation, not a rename-in-place.
+
+🔴 **CORRECTED Sep 9 2026 — the ticket names written here on Sep 4 were placeholders,
+and three of them named dishes that do not exist.** This clause originally read *"tickets
+Dal Tadka / Masala Chai / Biryani / Masala Dosa / **Full Thali**"*. It was written at jam
+hour one to flavour-name the kit's five insects, **two days before**
+[RecipeList.md](RecipeList.md) §7 actually selected the game's 30 dishes on Sep 6.
+**Biryani, Masala Dosa and Full Thali are in no node, no recipe and no sprite folder.**
+Only Dal Tadka and Chai survived into the real roster, by coincidence.
+
+⚠️ **The names outlived their own basis and were then reasoned from as if they were
+content.** §8 below, [Plan.md](Plan.md) item 54 and [KitchenMode.md](KitchenMode.md) §185
+all argue about what *"a Full Thali"* costs. Those arguments are about `stag`'s
+`livesCost: 3`, which is real; the dish they attach it to is not. ✅ **Read every such
+reference as naming the archetype, never the dish.**
+
+🔒 **The direction of the mapping is fixed from here: the 30 final dishes are canon and
+the enemy roster derives from them.** All 30 exist in `Art\_gen\dishes-final`, all 30 are
+registered in `manifest.ts` as `dish-*` aliases, and all 30 are deployed in
+`public/images/`. **Nothing needs generating.** The ascending order the roster is drawn
+from is RecipeList §7.0–7.4's node pathway — N0 beverages (2), the interaction-graph
+basics (4), then N1 North Indian, N2 South Indian, N3 Italian and N4 North East Indian at
+six apiece. **2 + 4 + 6 + 6 + 6 + 6 = 30, in six groups.**
 
 ---
 

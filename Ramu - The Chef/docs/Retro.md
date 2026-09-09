@@ -331,8 +331,10 @@ The kit's model mapped onto the frozen design almost 1:1, with **no frozen item 
 (`fox`, `beetle`, …) is wired through `textures.ts`, `towerScene.ts`, `towerIcons.ts`,
 `audio.ts` and `CONFIG.sizes`. Renaming them is a documented multi-file operation, and
 taking that risk at hour one with a deploy deadline was not worth it. The player reads
-`name`, never `id`. Content mapping: Grill / Prep Board / Tandoor / Fryer; Dal Tadka,
-Masala Chai, Biryani, Masala Dosa, and **Full Thali** as the 3-walkout boss ticket.
+`name`, never `id`. Content mapping: Grill / Prep Board / Tandoor / Fryer; and five
+placeholder ticket names. 🔴 **Three of those five — Biryani, Masala Dosa and Full Thali —
+named dishes this game never had**, invented here two days before the real 30 were
+selected. Corrected Sep 9 2026; see [Specs.md](Specs.md) §0 and lesson 86.
 
 **What went wrong**
 
@@ -2259,3 +2261,23 @@ uniques are the score; the trend matters more than any single day.
     entered the project record permanently. ⚠️ **Accusations need the same standard as
     acceptance numbers, and a higher one than a normal finding**: they are acted on, they
     change how the next agent is treated, and they are rarely re-checked once written.
+86. **A placeholder becomes content the moment nobody marks it as one. Date every naming
+    decision against the thing it names.** On Sep 4, hour one of the jam, five kit insects
+    were given Indian dish names so the tower game read as a kitchen — Dal Tadka, Masala
+    Chai, Biryani, Masala Dosa, Full Thali. That was correct work: the ids were expensive to
+    change, the player only sees `name`, and the game needed to read right before it needed
+    to be right. 🔴 **Two days later [RecipeList.md](RecipeList.md) §7 selected the actual 30
+    dishes, and three of the five names were not among them and never would be.** Nothing
+    connected the two events. The placeholder names sat in `Specs.md` §0 under the heading
+    *"Content mapping in place"*, and "in place" is what everything downstream believed:
+    §8, [Plan.md](Plan.md) item 54 and [KitchenMode.md](KitchenMode.md) all went on to reason
+    about what *"a Full Thali"* costs the player. ⚠️ **I then compounded it by reading that
+    clause as the spec and searching the sprite folder for matches** — concluding three
+    dishes "have no sprite and need generating at 120 credits each", when all 30 sprites
+    existed, were registered and were deployed. The mapping had a direction and I had it
+    backwards: **the art roster was canon and the names were the stale side.** 🔥 **The tell
+    was available without any code**: five names, of which exactly two appear in a
+    30-dish list that was chosen later. A set that overlaps its own successor by 40% is not a
+    subset of it — it is a different set. ✅ **Write placeholders as placeholders**, with the
+    decision they are waiting on named in the same sentence, or they will be quoted back as
+    requirements by everyone downstream including yourself.
