@@ -1955,6 +1955,41 @@ width. Found and fixed inside the round — see [Retro.md](Retro.md) lesson 78.
 longer refers to chai. Not worth a round; fold it into the next edit of that file.
 
 
+### 6.26 ✅ Round 27 landed — a boss has a success criterion, Sep 9 2026
+
+Commit `96d18cb`, private **v1.36.0**. Four files, 169+/14−: `kitchenConfig.ts`,
+`sim/kitchen.ts`, `levels.ts`, `TestBelt.tsx`. `kitchenScene.ts` net-zero,
+**`manifest.ts` and `public/` untouched** — the parallel-safety boundary with round 26 held.
+
+**All three fixes verified independently.** `SLOT_ZONES` prints exact from a pure import
+and the `beltSpeed` dev check passes at **load** (122 vs 122). Traverse on N0 L4 at
+completions 12/40/62 reads **10.0 → 7.2 → 5.0**, exact. The terminator was forced by
+dropping `bossMaxSpawns` to 3 at *runtime* — the source file was never edited — and behaved
+correctly: spawning stopped, the shift stayed `'running'` while dishes were in flight
+(proved by serving one after the cap), and flipped to `'lost'` only once the belt emptied.
+The gate: 0 completions → no Next Level; 20 → no Next Level; 40 → Next Level.
+
+**The no-op guarantee held to the digit.** N0 L1 `completed: 12, walkouts: 0, 348`; N0 L3
+`[8, 8]` at `464`. Neither moved.
+
+**Wall clock: 217.6s for a real 40-completion clear**, against the model's 217s. The
+pacing arithmetic in §6.23 reproduces in play to within half a second.
+
+#### 🔴 The agent caught an error in my handover
+
+Acceptance criterion 4 stated the expected spawn interval at completion 12 as **2.20**.
+The formula in the same handover — `2.2 − 0.02 × completed`, floor 1.2 — gives **1.96**.
+**The table was wrong; the formula was right.** The agent implemented the formula, matched
+2 of 3 checkpoints exactly, and flagged the third rather than bending code to fit a stated
+number. That is the correct call and the reason the round is trustworthy.
+
+The two dials deliberately use **different origins**, which is what made the slip easy:
+traverse continues from the shared floor (completion **12**), spawn interval decays from
+completion **0**. Both reach the floors §6.23 states — traverse 5.0 at 62, spawn 1.2 at 50
+— and the run-time model was computed against exactly this, which is why 217.6s landed on
+217s. See [Retro.md](Retro.md) lesson 79.
+
+
 #### 🔴 The finding: a boss now has no terminator for a competent player
 
 The agent reported *"ran to the 200-spawn safety cap still running"* and filed it as a

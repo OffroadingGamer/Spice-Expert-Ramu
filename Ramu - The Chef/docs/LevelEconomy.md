@@ -876,6 +876,62 @@ waves banks 3,600 hats once. They simply cannot bank it twice.
 ⬜ **Deliberately out of scope for the jam.** Richer repeat rewards — cosmetics, per-boss
 challenges, tiered repeat payouts — are the user's stated later direction, not jam work.
 
+### 10.3a 🔒 Repeat-clear hat decay on ordinary levels — settled Sep 9 2026
+
+§10.3 closed **boss** repeats. It left **ordinary levels with no repeat penalty at all**,
+so a player could re-clear N0 L1 endlessly at full value. User, Sep 9: *"more hats can be
+rewarded at reruns but with a 0.5x multiplier… so that players are incentivised not to
+grind just 1 level endlessly."*
+
+| Play | | Multiplier | Hats (≈200 base) |
+|---|---|---|---|
+| 1st | first clear | **1×** | 200 |
+| 2nd | 1st re-run | **1×** | 200 |
+| 3rd | 2nd re-run | **0.5×** | 100 |
+| 4th+ | 3rd re-run onward | **0.25×** | 50 |
+
+**The four parameters, all user-settled Sep 9:**
+
+1. **Indexing.** *"1st re-run would be 2nd time and 2nd re-run would be 3rd time."* So
+   0.5× lands on the **third** play and the second play is still full value.
+2. **Per level**, keyed on level id — never global. A global counter would penalise
+   reaching level 5 because level 1 was replayed, which inverts the intent.
+3. **Clears only.** *"A run that ends with success onto the next one is treated as level
+   completed."* A loss never increments the counter, so a fumbled run can never burn a
+   multiplier.
+4. **Round half up, floor 1.** A replay always pays something; it just stops mattering.
+
+🔥 **Why the second play stays free.** §6.24 of [KitchenMode.md](KitchenMode.md) makes
+three stars on N0 L3 a **flawless run** — one walkout costs 25 coins and drops the tier
+permanently on that attempt. A full-value retry is what keeps that rule fair: a player who
+fumbled once can fix it without paying for it, while grinding still dies at 0.25× from the
+fourth play. Taxing the retry and demanding perfection at the same time would be two
+punishments for one mistake.
+
+#### ⚠️ The boss carve-out stands — §10.3 is NOT superseded
+
+**Bosses keep the flat 50 on every repeat.** The decay must never be applied to them:
+§7.3b pays `15n(n+1)`, so a 15-wave boss first-clear is **3,600 hats** and 0.25× of that is
+**900 per replay, forever** — against ~200 for an ordinary level. That is a **4.5×
+inversion** of the exact property §10.3 was written to buy: that optimal play always points
+forward. Confirmed by the user Sep 9.
+
+| Level type | 1st | 2nd | 3rd | 4th+ |
+|---|---|---|---|---|
+| **Ordinary** | 1× | 1× | 0.5× | 0.25× |
+| **Boss** | full `15n(n+1)` | 50 flat | 50 flat | 50 flat |
+
+#### ⬜ Blocked on persistence — and it shares a store with §10.3
+
+Both rules need **per-level clear counts in `SaveData.kitchen`**, which does not exist;
+`kitchenScene.ts` already records §10.3's flat-50 as blocked on exactly that. The save
+round must build **one** repeat-tracking structure serving both, not two.
+
+**The main-menu hat total** belongs in §10.5's Utensils screen header, not as a separate
+surface — that screen already lists families against the hat cost of the next tier, so the
+running total sits where it is spent.
+
+
 ### 10.4 🔒 Levels gate on the prop **family**, never the tier
 
 Settled Sep 8. The user asked for levels locked behind props; taken literally that

@@ -2164,3 +2164,15 @@ uniques are the score; the trend matters more than any single day.
     and fixed it inside the round. Recorded because the next nine-sliced panel meets the
     same trap, and because this is lesson 72's shape in CSS rather than in canvas
     geometry: **the number was right and the box was wrong.**
+79. **If a handover states both a formula and a table of expected values, derive the table
+    from the formula — do not type it.** Round 27's acceptance criteria gave the boss spawn
+    ramp as `2.2 − 0.02 × completed` (floor 1.2) *and* a checkpoint table reading
+    "10.0/**2.20**" at completion 12. The formula gives **1.96**. I had written the base
+    value into a cell that wanted the evaluated one — easy to do because the two dials use
+    different origins (traverse continues from the shared floor at completion 12, spawn
+    decays from 0). **The implementing agent trusted the formula, matched the other two
+    checkpoints exactly, and flagged the third instead of bending code to hit a stated
+    number.** That is the behaviour worth having: a table in a handover is a *claim*, and
+    the formula beside it is the *source*. State which is authoritative, and check the
+    table against it before sending — an agent that trusts the table over the formula
+    ships a wrong ramp and passes its own acceptance test.
