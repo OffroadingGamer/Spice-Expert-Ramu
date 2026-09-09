@@ -31,7 +31,28 @@ export interface MetaStatLevels {
 /** Persistent upgrade levels, keyed by tower id. */
 export type MetaLevels = Record<string, MetaStatLevels>;
 
+/** Challenge-mode scripted FTUE (GDD §10.11): runs once, gated on `challengeDone`. */
+export interface FtueState {
+    challengeDone: boolean;
+    /** The tower id placed at the FTUE's pre-start beat (pad 0). Round B
+     *  turns this into a Warrior achievement; this round only records it. */
+    firstTowerId: string | null;
+}
+
+/** Belt-mode persistence (round 28 fills these in; this round only shapes
+ *  and defaults them so the save migration happens once, not twice). */
+export interface KitchenSaveState {
+    bestLevel: number;
+    propsOwned: string[];
+    shiftsCompleted: number;
+    hats: number;
+    clears: Record<string, number>;
+}
+
 export interface SaveData {
+    /** Shape version. 2 from this change on; absent (old saves) means 1.
+     *  SAVE_KEY itself never bumps — see the module comment above. */
+    v: number;
     /** Highest wave fully cleared across all runs. */
     bestWave: number;
     /** Meta currency, earned at the end of every run. */
@@ -42,6 +63,10 @@ export interface SaveData {
     audio: { music: number; sfx: number };
     /** Rewarded-ads daily cap slice (systems/ads.ts mutates it in place). */
     ads: AdsState;
+    /** Challenge-mode FTUE progress. */
+    ftue: FtueState;
+    /** Belt-mode progress. */
+    kitchen: KitchenSaveState;
 }
 
 function emptyMeta(): MetaLevels {
@@ -51,11 +76,14 @@ function emptyMeta(): MetaLevels {
 }
 
 const DEFAULTS: SaveData = {
+    v: 2,
     bestWave: 0,
     gems: 0,
     meta: emptyMeta(),
     audio: { music: 0.6, sfx: 0.8 },
     ads: { watchedToday: 0, lastResetDay: null },
+    ftue: { challengeDone: false, firstTowerId: null },
+    kitchen: { bestLevel: 0, propsOwned: [], shiftsCompleted: 0, hats: 0, clears: {} },
 };
 
 let data: SaveData = structuredClone(DEFAULTS);
@@ -86,7 +114,26 @@ function parse(raw: string | null): SaveData | null {
             return Number.isFinite(f) ? Math.min(1, Math.max(0, f)) : fallback;
         };
         const rawAudio = (parsed.audio ?? {}) as Partial<SaveData['audio']>;
+        const rawFtue = (parsed.ftue ?? {}) as Partial<FtueState>;
+        const ftue: FtueState = {
+            challengeDone: rawFtue.challengeDone === true,
+            firstTowerId: typeof rawFtue.firstTowerId === 'string' ? rawFtue.firstTowerId : null,
+        };
+        const rawKitchen = (parsed.kitchen ?? {}) as Partial<KitchenSaveState>;
+        const rawClears = (rawKitchen.clears ?? {}) as Record<string, unknown>;
+        const clears: Record<string, number> = {};
+        for (const [k, v] of Object.entries(rawClears)) clears[k] = num(v, 0, Number.MAX_SAFE_INTEGER);
+        const kitchen: KitchenSaveState = {
+            bestLevel: num(rawKitchen.bestLevel, 0, Number.MAX_SAFE_INTEGER),
+            propsOwned: Array.isArray(rawKitchen.propsOwned)
+                ? rawKitchen.propsOwned.filter((s): s is string => typeof s === 'string')
+                : [],
+            shiftsCompleted: num(rawKitchen.shiftsCompleted, 0, Number.MAX_SAFE_INTEGER),
+            hats: num(rawKitchen.hats, 0, Number.MAX_SAFE_INTEGER),
+            clears,
+        };
         return {
+            v: 2, // this parse always produces the current (v2) shape
             bestWave: num(parsed.bestWave, 0, Number.MAX_SAFE_INTEGER),
             gems: num(parsed.gems, 0, Number.MAX_SAFE_INTEGER),
             meta,
@@ -99,6 +146,8 @@ function parse(raw: string | null): SaveData | null {
                 lastResetDay:
                     typeof parsed.ads?.lastResetDay === 'string' ? parsed.ads.lastResetDay : null,
             },
+            ftue,
+            kitchen,
         };
     } catch {
         return null;
@@ -160,6 +209,21 @@ export function addGems(amount: number): SaveData {
     data = { ...data, gems: data.gems + Math.max(0, Math.floor(amount)) };
     flushSave();
     return data;
+}
+
+/** Record the tower placed at the FTUE's pre-start beat. Idempotent — only
+ *  the first call (per save) sticks, so a later FTUE re-run never overwrites it. */
+export function setFtueFirstTower(towerId: string): void {
+    if (data.ftue.firstTowerId !== null) return;
+    data = { ...data, ftue: { ...data.ftue, firstTowerId: towerId } };
+    flushSave();
+}
+
+/** Mark the Challenge-mode FTUE complete — it never scripts a run again. */
+export function completeFtue(): void {
+    if (data.ftue.challengeDone) return;
+    data = { ...data, ftue: { ...data.ftue, challengeDone: true } };
+    flushSave();
 }
 
 /** Cost in gems of buying INTO the next level, given the current level. */

@@ -6,6 +6,7 @@
 import { store } from '../state/store.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
 import { switchCue, prefetchCue } from '../audio/audio.ts';
+import { setFtueFirstTower } from '../state/save.ts';
 import { CONFIG } from './config.ts';
 import { WAVES } from './data/waves.ts';
 import type { TargetingMode } from './data/targeting.ts';
@@ -86,6 +87,12 @@ export function placeTower(padIndex: number, towerId: string): void {
         if (!runAnalytics.firstTowerPlaced) {
             runAnalytics.firstTowerPlaced = true;
             trackFunnelStep(3, 'first_tower_placed', 'run', 2);
+        }
+        // GDD §10.11 pre-start beat: pad 0 is the only pad the FTUE forces a
+        // selection onto, so whatever lands there is "the tower id placed at
+        // the pre-start beat" — round B turns this into a Warrior achievement.
+        if (padIndex === 0 && store.get().ftueActive) {
+            setFtueFirstTower(towerId);
         }
     }
 }

@@ -42,7 +42,7 @@ import {
     makeWaspTexture,
 } from './textures.ts';
 import { store } from '../state/store.ts';
-import { getSave, recordRunEnd } from '../state/save.ts';
+import { completeFtue, getSave, recordRunEnd } from '../state/save.ts';
 import { submitRunScores } from '../sdk/leaderboard.ts';
 import { sfx } from '../audio/audio.ts';
 import type { Stage } from './stage.ts';
@@ -171,8 +171,11 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     // ---- engine (with the player's persistent meta upgrades applied) -------
     const engine = createEngine(getSave().meta);
     registerEngine(engine); // also fires the run_start funnel step + event (actions.ts)
+    // GDD §10.11's pre-start beat pre-selects pad 0 (set by MainMenu.tsx /
+    // EndScreen.tsx's Retry BEFORE this scene mounts) — this reset must not
+    // clobber it, or the FTUE's opening BuildSheet never opens.
     store.patch({
-        selectedPad: null,
+        selectedPad: store.get().ftueActive ? 0 : null,
         waveCount: WAVES.length,
         tdPhase: 'build',
         wave: 1,
@@ -207,6 +210,27 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         }
     }
 
+    /**
+     * GDD §10.11's scripted three-wave FTUE, advanced off the same
+     * wave-clear events analytics already drains here — no new engine hook.
+     * Wave 1 end re-selects pad 0 (teaches upgrade, arrow cue replaces the
+     * "Tap a cook to upgrade" text — see Hud.tsx); wave 2 end auto-selects
+     * the empty pad 2, prompting a second counter; wave 3 end retires the
+     * script for good. A run that never reaches wave 3 (e.g. lost on wave 1)
+     * leaves `ftueActive` true, so the next Challenge Mode entry restarts it.
+     */
+    function applyFtueWaveEnd(cleared: number): void {
+        if (!store.get().ftueActive) return;
+        if (cleared === 1) {
+            store.patch({ selectedPad: 0, ftueArrowPad: 0 });
+        } else if (cleared === 2) {
+            store.patch({ selectedPad: 2, ftueArrowPad: 2 });
+        } else if (cleared === 3) {
+            completeFtue();
+            store.patch({ ftueActive: false, ftueArrowPad: null });
+        }
+    }
+
     function trackWaveClears(evts: EngineEvent[]): void {
         for (const e of evts) {
             if (e.type !== 'wave-clear') continue;
@@ -216,6 +240,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 duration_s: (performance.now() - waveStartedAt) / 1000,
             });
             if (e.cleared === 1) trackFunnelStep(5, 'wave_1_cleared', 'run', 2);
+            applyFtueWaveEnd(e.cleared);
         }
     }
 

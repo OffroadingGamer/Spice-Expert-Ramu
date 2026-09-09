@@ -15,40 +15,70 @@
  * edge, and the speed row shrinks rather than overflowing.
  *
  * The hamburger opens the shift menu, which pauses the run (store.paused
- * stops the Pixi ticker) and offers music/sound mutes plus Main Menu. The
- * kit's plain "Paused" card is suppressed while it is open so the two
- * overlays never stack.
+ * stops the Pixi ticker) and offers continuous music/sound sliders plus
+ * Main Menu. The kit's plain "Paused" card is suppressed while it is open
+ * so the two overlays never stack.
+ *
+ * Round A (Challenge-mode FTUE, GDD §10.11): a one-time objective banner
+ * fires per run (keyed on runId — Retry counts as a new run), the 🚪 chip is
+ * labelled, and while `ftueActive` the pad-0/pad-2 forced selections get an
+ * arrow cue pointing at the live pad on the Pixi canvas below — computed
+ * from CONFIG.pads + the same width-fit/board-centering transform stage.ts
+ * and towerScene.ts use, read here but never written.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { setMusicVolume, setSfxVolume, sfx, switchCue } from '../audio/audio.ts';
 import { startWave } from '../game/actions.ts';
+import { CONFIG } from '../game/config.ts';
+import { DESIGN_WIDTH } from '../game/stage.ts';
 import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 
-/** Levels restored when unmuting (seeded from the store defaults). */
-let lastMusic = 0.6;
-let lastSfx = 0.8;
-
-function IconMusic({ muted }: { muted: boolean }) {
+function Slider({ label, value, onChange }: {
+    label: string;
+    value: number;
+    onChange: (v: number) => void;
+}) {
     return (
-        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor"
-            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M9 17V4l11-2v13" />
-            <circle cx="6" cy="17" r="3" />
-            <circle cx="17" cy="15" r="3" />
-            {muted && <line x1="3" y1="3" x2="21" y2="21" />}
-        </svg>
+        <div className="flex w-56 flex-col gap-1">
+            <div className="flex items-center justify-between">
+                <span className="text-lg font-bold">{label}</span>
+                <span className="text-[1.1rem] tabular-nums text-white/60">{Math.round(value * 100)}%</span>
+            </div>
+            <input
+                type="range"
+                min={0}
+                max={100}
+                value={Math.round(value * 100)}
+                className="h-3 w-full accent-[#ff6b1a]"
+                onChange={(e) => onChange(Number(e.target.value) / 100)}
+            />
+        </div>
     );
 }
 
-function IconSpeaker({ muted }: { muted: boolean }) {
-    return (
-        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor"
-            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M11 5 6 9H2v6h4l5 4z" />
-            {muted ? <line x1="3" y1="3" x2="21" y2="21" /> : <path d="M15.5 8.5a5 5 0 0 1 0 7" />}
-        </svg>
-    );
+/** Live screen position of a pad, tracking the canvas's own width-fit +
+ *  board-centering transform (stage.ts / towerScene.ts's anchorBoard). */
+function usePadScreenPos(padIndex: number | null): { x: number; y: number } | null {
+    const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+    useEffect(() => {
+        if (padIndex === null) { setPos(null); return; }
+        const frame = document.getElementById('app-frame');
+        if (!frame) return;
+        const compute = () => {
+            const rect = frame.getBoundingClientRect();
+            const scale = rect.width / DESIGN_WIDTH;
+            const designHeight = rect.height / scale;
+            const boardRootY = Math.max(0, (designHeight - CONFIG.boardHeight) / 2);
+            const pad = CONFIG.pads[padIndex];
+            setPos({ x: pad.x * scale, y: (pad.y + boardRootY) * scale });
+        };
+        compute();
+        const ro = new ResizeObserver(compute);
+        ro.observe(frame);
+        return () => ro.disconnect();
+    }, [padIndex]);
+    return pos;
 }
 
 export default function Hud() {
@@ -62,27 +92,30 @@ export default function Hud() {
     const musicVol = useStore((s) => s.musicVol);
     const sfxVol = useStore((s) => s.sfxVol);
     const selectedPad = useStore((s) => s.selectedPad);
+    const runId = useStore((s) => s.runId);
+    const ftueActive = useStore((s) => s.ftueActive);
+    const ftueArrowPad = useStore((s) => s.ftueArrowPad);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [showObjective, setShowObjective] = useState(true);
+    // Only show the cue while its pad is STILL the selection — however the
+    // player dismisses the sheet (Close, re-tapping the pad on the canvas,
+    // the backdrop), the arrow disappears with it instead of lingering into
+    // the next wave pointed at a pad that's no longer relevant.
+    const activeArrowPad = ftueArrowPad !== null && selectedPad === ftueArrowPad ? ftueArrowPad : null;
+    const arrowPos = usePadScreenPos(activeArrowPad);
 
-    const musicMuted = musicVol <= 0;
-    const sfxMuted = sfxVol <= 0;
+    // One-time objective banner per run (Retry bumps runId, so it repeats).
+    useEffect(() => {
+        setShowObjective(true);
+        const t = setTimeout(() => setShowObjective(false), 4000);
+        return () => clearTimeout(t);
+    }, [runId]);
 
     const applyVolumes = (music: number, sound: number) => {
         setMusicVolume(music);
         setSfxVolume(sound);
         setAudioVolumes(music, sound);
         store.patch({ musicVol: music, sfxVol: sound });
-    };
-
-    const toggleMusic = () => {
-        sfx.click();
-        if (musicMuted) applyVolumes(lastMusic || 0.6, sfxVol);
-        else { lastMusic = musicVol; applyVolumes(0, sfxVol); }
-    };
-
-    const toggleSfx = () => {
-        if (sfxMuted) { applyVolumes(musicVol, lastSfx || 0.8); sfx.click(); }
-        else { lastSfx = sfxVol; applyVolumes(musicVol, 0); }
     };
 
     const openMenu = () => { sfx.click(); store.patch({ paused: true }); setMenuOpen(true); };
@@ -94,7 +127,7 @@ export default function Hud() {
                 {/* row 1: status + hamburger */}
                 <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0 rounded-xl bg-black/55 px-3 py-2 text-lg font-bold tabular-nums whitespace-nowrap">
-                        🚪 {lives} · 💵 {coins}
+                        🚪 {lives} lives · 💵 {coins}
                     </div>
                     <button
                         type="button"
@@ -134,10 +167,30 @@ export default function Hud() {
                 </div>
             </div>
 
+            {/* Objective banner: states the goal and the fail consequence
+                once per run, then fades — tap to dismiss early. Suppressed
+                once the FTUE arrow cue is up, so only one thing speaks at a
+                time (round 19's belt mistake: two cues teaching the same
+                moment). In practice the arrow never appears this early
+                (it only fires at wave-1-end), but this keeps the guarantee
+                exact rather than timing-dependent. */}
+            {showObjective && activeArrowPad === null && (
+                <div
+                    className="pointer-events-auto absolute inset-x-0 top-20 flex justify-center px-6"
+                    onClick={() => setShowObjective(false)}
+                >
+                    <p className="max-w-xs rounded-xl bg-black/70 px-4 py-2 text-center text-[1.05rem] font-semibold leading-snug">
+                        Survive {waveCount} rushes. Run out of lives (🚪) and the shift ends.
+                    </p>
+                </div>
+            )}
+
             {/* Ready: bottom centre, out of the way of the build sheet */}
             {tdPhase === 'build' && selectedPad === null && !menuOpen && (
                 <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-3 pb-safe-bottom">
-                    {wave >= 2 && wave <= 4 && (
+                    {/* The FTUE's arrow cue replaces this hint outright — one
+                        thing speaking at a time (round 19's belt mistake). */}
+                    {wave >= 2 && wave <= 4 && !ftueActive && (
                         <p className="mb-2 rounded-xl bg-black/55 px-3 py-2 text-lg font-bold">
                             Tap a cook to upgrade
                         </p>
@@ -152,6 +205,17 @@ export default function Hud() {
                 </div>
             )}
 
+            {/* FTUE arrow cue: points at the pad the script just forced a
+                selection onto (pad 0 after wave 1, pad 2 after wave 2). */}
+            {arrowPos && (
+                <div
+                    className="pointer-events-none absolute z-10 flex flex-col items-center"
+                    style={{ left: arrowPos.x, top: arrowPos.y - 84, transform: 'translateX(-50%)' }}
+                >
+                    <span className="animate-bounce text-5xl leading-none">⬇️</span>
+                </div>
+            )}
+
             {/* Shift menu. Backdrop tap closes it. */}
             {menuOpen && (
                 <div
@@ -160,37 +224,13 @@ export default function Hud() {
                 >
                     <div className="flex flex-col items-center gap-8" onClick={(e) => e.stopPropagation()}>
                         <h2 className="text-2xl font-bold text-primary">Shift paused</h2>
-                        <div className="flex items-center gap-8">
-                            <div className="flex flex-col items-center gap-2">
-                                <button
-                                    type="button"
-                                    aria-label={musicMuted ? 'Unmute music' : 'Mute music'}
-                                    aria-pressed={!musicMuted}
-                                    className={
-                                        'flex h-20 w-20 items-center justify-center rounded-full transition-transform active:scale-95 ' +
-                                        (musicMuted ? 'bg-white/10 text-white/40' : 'bg-primary text-black')
-                                    }
-                                    onClick={toggleMusic}
-                                >
-                                    <IconMusic muted={musicMuted} />
-                                </button>
-                                <span className="text-[1.1rem] text-white/70">Music</span>
-                            </div>
-                            <div className="flex flex-col items-center gap-2">
-                                <button
-                                    type="button"
-                                    aria-label={sfxMuted ? 'Unmute sound' : 'Mute sound'}
-                                    aria-pressed={!sfxMuted}
-                                    className={
-                                        'flex h-20 w-20 items-center justify-center rounded-full transition-transform active:scale-95 ' +
-                                        (sfxMuted ? 'bg-white/10 text-white/40' : 'bg-primary text-black')
-                                    }
-                                    onClick={toggleSfx}
-                                >
-                                    <IconSpeaker muted={sfxMuted} />
-                                </button>
-                                <span className="text-[1.1rem] text-white/70">Sound</span>
-                            </div>
+                        <div className="flex flex-col gap-5">
+                            <Slider label="Music" value={musicVol} onChange={(v) => applyVolumes(v, sfxVol)} />
+                            <Slider
+                                label="Sound"
+                                value={sfxVol}
+                                onChange={(v) => { applyVolumes(musicVol, v); sfx.click(); }}
+                            />
                         </div>
                         <button
                             type="button"

@@ -1533,7 +1533,17 @@ export async function createKitchenScene(
     function refreshHud(): void {
         const remaining = Math.max(0, level.walkoutsAllowed - sim.state.walkouts);
         const walkoutsMaxW = exitSignIcon ? HUD_MAX_W - exitSignIcon.width - EXIT_SIGN_GAP : HUD_MAX_W;
-        setFitText(walkoutsText, `Walkouts Left : ${remaining}`, walkoutsMaxW, 26, 14);
+        // Round A, task 2: level.target was never rendered anywhere, so a
+        // player saw walkouts counting down and dishes counting up with no
+        // stated ceiling. `completed` (not `served`, which only counts
+        // ingredient pickups) is what the sim actually checks against
+        // target/bossClearAt (sim/kitchen.ts) — that's the number shown here,
+        // under the player-facing label "Served" a finished dish earns.
+        const objective =
+            level.isBoss && level.bossClearAt !== null ? `  ·  Served ${sim.state.completed}/${level.bossClearAt}`
+            : level.target !== null ? `  ·  Served ${sim.state.completed}/${level.target}`
+            : '';
+        setFitText(walkoutsText, `Walkouts Left : ${remaining}${objective}`, walkoutsMaxW, 26, 14);
         layoutWalkouts();
 
         // Round 20, task 2a: the icon's position is set once, outside this

@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
 import { sfx, switchCue } from '../audio/audio.ts';
 import { CONFIG } from '../game/config.ts';
 import { adsSystem } from '../sdk/ads.ts';
-import { addGems } from '../state/save.ts';
+import { addGems, getSave } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 
 export default function EndScreen() {
@@ -72,6 +72,7 @@ export default function EndScreen() {
             <h2 className={'text-4xl font-bold ' + (beatCampaign ? 'text-primary' : 'text-red-400')}>
                 Shift's over.
             </h2>
+            <p className="text-[1.1rem] text-white/70">Out of lives — every bug that got past you cost one.</p>
             <p className="text-xl text-white/80 tabular-nums">Rushes held: {survived}</p>
             {beatCampaign && (
                 <p className="text-[1.1rem] font-semibold text-primary tabular-nums">
@@ -109,7 +110,17 @@ export default function EndScreen() {
                 onClick={() => {
                     sfx.click();
                     switchCue('service_low');
-                    store.patch({ tdPhase: 'build', selectedPad: null, runId: store.get().runId + 1 });
+                    // A run lost before wave 3 leaves the FTUE unfinished
+                    // (ftue.challengeDone still false) — restart its script
+                    // rather than dropping the player into unscripted play.
+                    const ftueActive = !getSave().ftue.challengeDone;
+                    store.patch({
+                        tdPhase: 'build',
+                        selectedPad: ftueActive ? 0 : null,
+                        runId: store.get().runId + 1,
+                        ftueActive,
+                        ftueArrowPad: null,
+                    });
                 }}
             >
                 Retry

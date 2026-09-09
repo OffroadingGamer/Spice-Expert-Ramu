@@ -56,6 +56,12 @@ export interface AppState {
     sfxVol: number;
     /** Bugs squashed in the run that just ended (end screen) */
     runKills: number;
+    /** True while the current Challenge run is playing the scripted FTUE
+     *  (GDD §10.11) — gates the forced pad selections and the "Tap a cook
+     *  to upgrade" hint (the arrow cue replaces it during the FTUE). */
+    ftueActive: boolean;
+    /** Pad index the FTUE arrow cue currently points at; null = no cue. */
+    ftueArrowPad: number | null;
     /** PNG data URLs of the tower art, generated at boot for DOM UI use */
     towerIcons: Record<string, string>;
     /** Platform engagement prompts: capability-gated by the host at boot */
@@ -88,6 +94,8 @@ const INITIAL: AppState = {
     musicVol: 0.6,
     sfxVol: 0.8,
     runKills: 0,
+    ftueActive: false,
+    ftueArrowPad: null,
     towerIcons: {},
     likeAvailable: false,
     commentsAvailable: false,

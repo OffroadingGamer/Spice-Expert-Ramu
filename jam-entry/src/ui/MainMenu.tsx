@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { sfx } from '../audio/audio.ts';
 import { openComments, promptLike } from '../sdk/engagement.ts';
 import { trackFunnelStep } from '../sdk/analytics.ts';
+import { getSave } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import GemCounter from './GemCounter.tsx';
 
@@ -68,10 +69,16 @@ export default function MainMenu() {
                 className="w-64 rounded-2xl bg-slate-600 px-12 py-4 text-xl font-bold text-white shadow-lg transition-transform active:scale-95"
                 onClick={() => {
                     sfx.click();
+                    // GDD §10.11: the scripted three-wave FTUE runs once,
+                    // gated on save.ftue.challengeDone — pad 0 pre-selects
+                    // (and BuildSheet opens on it) only for that first run.
+                    const ftueActive = !getSave().ftue.challengeDone;
                     store.patch({
                         phase: 'playing',
-                        selectedPad: null,
+                        selectedPad: ftueActive ? 0 : null,
                         runId: store.get().runId + 1,
+                        ftueActive,
+                        ftueArrowPad: null,
                     });
                 }}
             >
