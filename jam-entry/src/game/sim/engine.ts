@@ -14,7 +14,7 @@ import { enemyDef, type EnemyDef } from '../data/enemies.ts';
 import { KNOCKBACK_TIME, makeEffect, type StatusEffect } from '../data/status.ts';
 import type { TargetingMode } from '../data/targeting.ts';
 import { towerDef, type TowerDef } from '../data/towers.ts';
-import { ENTRY_GAP, waveAt } from '../data/waves.ts';
+import { ENTRY_GAP, waveAt, waveThreat } from '../data/waves.ts';
 // type-only: the engine stays free of the save/SDK at runtime, so the
 // headless balance sim can bundle it for node
 import type { MetaLevels } from '../../state/save.ts';
@@ -91,6 +91,10 @@ export interface ProjInst {
     knockbackBonus: number;
 }
 
+/** Round I Task 9: Kitchen Actions — the non-tower coin sink. Bought in the
+ *  build phase, each applies to the NEXT wave only, then clears itself. */
+export type KitchenActionKind = 'freeze' | 'heat' | 'slow';
+
 export interface EngineState {
     phase: TdPhase;
     /** 0-based index of the CURRENT wave (during build: the next one). */
@@ -101,9 +105,15 @@ export interface EngineState {
     kills: number;
     /** Seconds of wave time elapsed this run (leaderboard submit duration). */
     elapsed: number;
+    /** Furthest any enemy has travelled this WAVE, as a fraction of
+     *  PATH_LENGTH (0-1). Reset at startWave(); scripts/simulate.ts reports
+     *  it per level (Round I Task 2/7's "deepest" column). */
+    deepestFrac: number;
     enemies: EnemyInst[];
     towers: TowerInst[];
     projectiles: ProjInst[];
+    /** Kitchen Actions bought for the wave in progress/about to start. */
+    kitchenActions: Record<KitchenActionKind, boolean>;
 }
 
 // ---- path geometry ---------------------------------------------------------
@@ -117,6 +127,33 @@ for (let i = 0; i < PATH.length - 1; i++) {
     cumLengths.push(cumLengths[i] + len);
 }
 export const PATH_LENGTH = cumLengths[cumLengths.length - 1];
+
+// ---- Round I Task 1: splash distance falloff -------------------------------
+
+/** Linear falloff from the impact point: 1 (100%) at dist=0, down to
+ *  (1 - SPLASH_FALLOFF) at the rim (dist=splash). Was flat 1 everywhere
+ *  (Round H finding: a maxed Tandoor's splash caught ~6 enemies per shot at
+ *  full damage each). Tuned against Task 8's acceptance criteria alongside
+ *  the curve; see the balance report for the final value. */
+const SPLASH_FALLOFF = 0.95;
+
+// ---- Round I Task 9: Kitchen Actions (the coin sink) -----------------------
+
+/** Turn Up The Heat's burn recipe — a fixed, tower-independent DoT applied
+ *  on top of (or instead of) whatever the hitting tower already inflicts. */
+const HEAT_BURN = { type: 'burn' as const, tickDamage: 4, tickEvery: 0.5, duration: 2 };
+
+/** cost = round(base * threat(level) / threat(10)) — docs/LevelBlocks.md
+ *  §12: a flat price lets a late-game coin pile buy the whole system out;
+ *  scaling with the SAME threat curve the enemies scale by keeps a purchase
+ *  costing a comparable share of income at level 20 and at level 80. */
+const REF_THREAT_L10 = waveThreat(waveAt(9));
+export function kitchenActionCost(kind: KitchenActionKind, level: number): number {
+    const base = CONFIG.economy.kitchenActions[
+        kind === 'freeze' ? 'freezeBase' : kind === 'heat' ? 'heatBase' : 'slowBase'
+    ];
+    return Math.round((base * waveThreat(waveAt(level - 1))) / REF_THREAT_L10);
+}
 
 /** World position at a distance along the path (clamped to the ends). */
 export function posAt(dist: number): { x: number; y: number } {
@@ -146,6 +183,11 @@ export interface Engine {
     sellTower(padIndex: number): boolean;
     /** Change the pad's tower's targeting mode. False if the pad is empty. */
     setTargeting(padIndex: number, mode: TargetingMode): boolean;
+    /**
+     * Buy a Kitchen Action for the wave about to start (build phase only).
+     * False if already bought this wave, unaffordable, or mid-wave.
+     */
+    buyKitchenAction(kind: KitchenActionKind): boolean;
     /** Begin the next wave (build phase only). */
     startWave(): boolean;
     /** Advance the simulation. Call with small dt (the view clamps to 50ms). */
@@ -171,17 +213,27 @@ export function createEngine(meta: MetaLevels = {}): Engine {
         lives: CONFIG.economy.startLives,
         kills: 0,
         elapsed: 0,
+        deepestFrac: 0,
         enemies: [],
         towers: [],
         projectiles: [],
+        kitchenActions: { freeze: false, heat: false, slow: false },
     };
 
     let nextUid = 1;
     const events: EngineEvent[] = [];
-    // wave-spawning bookkeeping
-    let entryIndex = 0;
-    let spawnedInEntry = 0;
-    let spawnTimer = 0;
+    // Round I Task 4: wave-spawning bookkeeping — one cursor PER ENTRY (was
+    // one cursor for the whole wave, advancing to the next entry only after
+    // the current one's full count had spawned: a wave could never occupy
+    // more than one entry's worth of the belt at a time). Every entry now
+    // has its own startAt (seconds from wave start) and spawns independently
+    // on its own spacing once that time passes, so e.g. a W3 (beetle+wasp)
+    // can have both types on the belt together. Entries without an explicit
+    // startAt default to starting right after the previous entry's own
+    // start-plus-duration (+ the old ENTRY_GAP) — Round H's sequential
+    // behaviour, preserved as the fallback so nothing regresses by omission.
+    let waveElapsed = 0;
+    let entryCursors: { spawned: number; nextAt: number }[] = [];
 
     // Deterministic PRNG (mulberry32) for crit rolls: fixed seed, so a run
     // with identical inputs replays identically, in the game and the sim.
@@ -235,7 +287,7 @@ export function createEngine(meta: MetaLevels = {}): Engine {
     function spawnEnemy(id: string, hpMult: number, speedMult: number): void {
         const def = enemyDef(id);
         const pos = posAt(0);
-        state.enemies.push({
+        const e: EnemyInst = {
             uid: nextUid++,
             def,
             dist: 0,
@@ -245,23 +297,42 @@ export function createEngine(meta: MetaLevels = {}): Engine {
             effects: [],
             x: pos.x,
             y: pos.y,
+        };
+        state.enemies.push(e);
+        // Round I Task 9: Deep Freeze / Slow Service apply at ARRIVAL, to
+        // every enemy the wave spawns while bought — a board-wide effect
+        // via the existing status pipeline (data/status.ts), no new system.
+        if (state.kitchenActions.freeze) {
+            applyInflict(e, { type: 'frozen', duration: 2 }, 0, 0, 0);
+        }
+        if (state.kitchenActions.slow) {
+            applyInflict(e, { type: 'slow', factor: 0.6, duration: 4 }, 0, 0, 0);
+        }
+    }
+
+    /** Build this wave's per-entry cursors: each entry's start time (its own
+     *  startAt, or — Task 4's default — right after the previous entry's
+     *  own start plus its full spawn duration and the legacy ENTRY_GAP). */
+    function buildEntryCursors(wave: ReturnType<typeof waveAt>): { spawned: number; nextAt: number }[] {
+        let cursor = 0;
+        return wave.entries.map((entry) => {
+            const startAt = entry.startAt ?? cursor;
+            cursor = startAt + entry.count * entry.spacing + ENTRY_GAP;
+            return { spawned: 0, nextAt: startAt };
         });
     }
 
     function stepSpawning(dt: number): void {
         const wave = waveAt(state.waveIndex);
-        if (entryIndex >= wave.entries.length) return;
-        spawnTimer -= dt;
-        if (spawnTimer > 0) return;
-        const entry = wave.entries[entryIndex];
-        spawnEnemy(entry.enemy, wave.hpMult ?? 1, wave.speedMult ?? 1);
-        spawnedInEntry++;
-        if (spawnedInEntry >= entry.count) {
-            entryIndex++;
-            spawnedInEntry = 0;
-            spawnTimer = ENTRY_GAP;
-        } else {
-            spawnTimer = entry.spacing;
+        waveElapsed += dt;
+        for (let i = 0; i < wave.entries.length; i++) {
+            const entry = wave.entries[i];
+            const cur = entryCursors[i];
+            if (!cur || cur.spawned >= entry.count) continue;
+            if (waveElapsed < cur.nextAt) continue;
+            spawnEnemy(entry.enemy, entry.hpMult ?? wave.hpMult ?? 1, entry.speedMult ?? wave.speedMult ?? 1);
+            cur.spawned++;
+            cur.nextAt = waveElapsed + entry.spacing;
         }
     }
 
@@ -400,6 +471,13 @@ export function createEngine(meta: MetaLevels = {}): Engine {
         for (let i = 0; i < hit.length; i++) {
             damageEnemy(hit[i], rollDamage(t) * Math.pow(falloff, i));
             inflict(hit[i], t);
+            // Round I Task 9: Turn Up The Heat — every tower hit applies
+            // burn for the wave it's bought, independent of the tower's own
+            // status recipe (a beam tower with no status of its own still
+            // burns everything it touches while this is active).
+            if (state.kitchenActions.heat) {
+                applyInflict(hit[i], HEAT_BURN, 0, 0, 0);
+            }
         }
         events.push({
             type: 'beam',
@@ -426,6 +504,7 @@ export function createEngine(meta: MetaLevels = {}): Engine {
                 e.dist += e.speed * speedFactor(e) * dt;
             }
             if (e.dist >= PATH_LENGTH) {
+                state.deepestFrac = 1;
                 state.enemies.splice(i, 1);
                 state.lives -= e.def.livesCost;
                 events.push({ type: 'leak' });
@@ -434,6 +513,8 @@ export function createEngine(meta: MetaLevels = {}): Engine {
             const pos = posAt(e.dist);
             e.x = pos.x;
             e.y = pos.y;
+            const frac = e.dist / PATH_LENGTH;
+            if (frac > state.deepestFrac) state.deepestFrac = frac;
         }
         if (state.lives <= 0) {
             state.lives = 0;
@@ -490,14 +571,32 @@ export function createEngine(meta: MetaLevels = {}): Engine {
             if (dist <= Math.max(step_, 12)) {
                 // hit
                 const def = towerDef(p.towerId);
-                const victims = p.splash > 0
-                    ? state.enemies.filter((e) => Math.hypot(e.x - target.x, e.y - target.y) <= p.splash)
-                    : [target];
-                for (const v of victims) {
-                    damageEnemy(v, p.damage);
-                    if (def.status) {
-                        applyInflict(v, def.status, p.statusDurationBonus, p.statusDamageBonus, p.knockbackBonus);
+                // Round I Task 1: splash used to deal FULL damage to every
+                // enemy in radius (measured: a maxed Tandoor's 170-unit
+                // splash caught ~6 enemies per shot at level-80 spacing —
+                // ~770 effective DPS from one tower, making density the
+                // defender's damage stat). Now linear falloff from the
+                // impact point: 100% at dist=0, (1-FALLOFF) at the rim. The
+                // struck target itself always takes full damage regardless
+                // of the formula (dist=0 there always resolves to 1 anyway,
+                // this just avoids float noise).
+                if (p.splash > 0) {
+                    for (const v of state.enemies) {
+                        const d = Math.hypot(v.x - target.x, v.y - target.y);
+                        if (d > p.splash) continue;
+                        const factor = v === target ? 1 : Math.max(0, 1 - SPLASH_FALLOFF * (d / p.splash));
+                        damageEnemy(v, p.damage * factor);
+                        if (def.status) {
+                            applyInflict(v, def.status, p.statusDurationBonus, p.statusDamageBonus, p.knockbackBonus);
+                        }
+                        if (state.kitchenActions.heat) applyInflict(v, HEAT_BURN, 0, 0, 0);
                     }
+                } else {
+                    damageEnemy(target, p.damage);
+                    if (def.status) {
+                        applyInflict(target, def.status, p.statusDurationBonus, p.statusDamageBonus, p.knockbackBonus);
+                    }
+                    if (state.kitchenActions.heat) applyInflict(target, HEAT_BURN, 0, 0, 0);
                 }
                 state.projectiles.splice(i, 1);
             } else {
@@ -525,21 +624,21 @@ export function createEngine(meta: MetaLevels = {}): Engine {
         // wave over? There is no win: after the authored levels, Overtime
         // keeps coming (data/waves.ts waveAt).
         const wave = waveAt(state.waveIndex);
-        const doneSpawning = entryIndex >= wave.entries.length;
+        const doneSpawning = entryCursors.every((c, i) => c.spawned >= wave.entries[i].count);
         if (doneSpawning && state.enemies.length === 0) {
             state.projectiles.length = 0;
             state.coins +=
                 level < CONFIG.economy.lateEconomy.fromLevel
                     ? CONFIG.economy.waveBonus
                     : CONFIG.economy.lateEconomy.waveBonus;
-            // Round H Task 6: through level 5, walkouts still happen and are
-            // still shown (the 'leak' events above already fired, and lives
-            // already dropped mid-wave) but the level always ENDS with a
-            // full life bar — the player learns what a leak costs without
-            // being punished for it yet. A run that dies mid-wave (lives
-            // hit 0 above, phase already 'lost') never reaches here, so this
-            // can't mask an actual loss — only a level survived with leaks.
-            if (level <= 5) state.lives = CONFIG.economy.startLives;
+            // Round I Task 8: Round H's level<=5 life restore is retired —
+            // "made losing impossible but the tension fake" (the user's own
+            // words, docs/LevelBlocks.md §6b). Leaks now cost real lives from
+            // level 1 on; block 1's sweet spot (a competent build finishes
+            // around 5-8/10 lives, miser still dies ~4-8) is tuned through
+            // composition and block 1's teaching-boss hpMult instead of a
+            // restore — see data/waves.ts.
+            state.kitchenActions = { freeze: false, heat: false, slow: false };
             state.waveIndex++;
             state.phase = 'build';
             events.push({ type: 'wave-clear', cleared: state.waveIndex });
@@ -608,9 +707,18 @@ export function createEngine(meta: MetaLevels = {}): Engine {
         startWave() {
             if (state.phase !== 'build') return false;
             state.phase = 'wave';
-            entryIndex = 0;
-            spawnedInEntry = 0;
-            spawnTimer = 0;
+            state.deepestFrac = 0;
+            waveElapsed = 0;
+            entryCursors = buildEntryCursors(waveAt(state.waveIndex));
+            return true;
+        },
+        buyKitchenAction(kind) {
+            if (state.phase !== 'build') return false;
+            if (state.kitchenActions[kind]) return false; // already bought this wave
+            const cost = kitchenActionCost(kind, state.waveIndex + 1);
+            if (state.coins < cost) return false;
+            state.coins -= cost;
+            state.kitchenActions[kind] = true;
             return true;
         },
         step,

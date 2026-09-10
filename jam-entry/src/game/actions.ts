@@ -10,7 +10,7 @@ import { completeFtue, setFtueFirstTower } from '../state/save.ts';
 import { CONFIG } from './config.ts';
 import { WAVES } from './data/waves.ts';
 import type { TargetingMode } from './data/targeting.ts';
-import type { Engine } from './sim/engine.ts';
+import { kitchenActionCost, type Engine, type KitchenActionKind } from './sim/engine.ts';
 
 /**
  * DEV ROBUSTNESS: the engine reference lives on globalThis for the same
@@ -216,6 +216,27 @@ export function startWave(): void {
             retireFtue();
         }
     }
+}
+
+/**
+ * Round I Task 9: buy a Kitchen Action for the wave about to start. Minimal
+ * wrapper — mirrors placeTower/upgradeTower's pattern (call the engine,
+ * syncStore on success, track it) — the UI itself (Hud.tsx) is deliberately
+ * provisional, a row of three buttons; round 3 restyles this area.
+ */
+export function buyKitchenAction(kind: KitchenActionKind): void {
+    const level = slot.current ? slot.current.state.waveIndex + 1 : 0;
+    if (slot.current?.buyKitchenAction(kind)) {
+        syncStore();
+        track('kitchen_action_bought', { kind, wave: level });
+    }
+}
+
+/** Live price for a Kitchen Action at the CURRENT level (build phase —
+ *  applies to the wave about to start). Hud.tsx reads this to label buttons. */
+export function kitchenActionPrice(kind: KitchenActionKind): number {
+    const level = slot.current ? slot.current.state.waveIndex + 1 : 1;
+    return kitchenActionCost(kind, level);
 }
 
 /**

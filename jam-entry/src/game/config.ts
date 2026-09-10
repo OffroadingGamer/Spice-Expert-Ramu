@@ -31,28 +31,29 @@ interface Pad {
 }
 
 /**
- * Build spots. The center pads reach two path legs; corners reach one.
- * A pad with a `bonus` is a GOLD stone: any tower built there gets the
- * stat multiplier. Bonuses sit on the weaker-coverage pads on purpose,
- * so "great spot" vs "great bonus" is a real decision.
+ * Round I Task 7: the level-design schematics (docs/LevelBlocks.md §5b, §9)
+ * replace Round H's 8 pads with 10, laid out in 4 rows — A (2, single-leg
+ * coverage), B (3, between the top and middle horizontal legs), C (3,
+ * mirroring B between the middle and bottom legs), D (2, single-leg
+ * coverage) — array order A1 A2 B1 B2 B3 C1 C2 C3 D1 D2, so `pads[i]`
+ * matches every doc reference by index (old pad 2 is now B2, index 3).
+ * Coordinates were hand-solved then verified by scripts/simulate.ts's
+ * assertPadGeometry(): every pad clears every OTHER pad and every belt
+ * segment by pad half-width (48) + path half-width (36) = 84 units, with a
+ * comfortable margin (16-56 units) on all ten — see the balance report for
+ * the assertion's printed output.
  */
 const PADS: Pad[] = [
-    // Round H Task 3: this pad sat at the head of the path with a x1.5
-    // damage bonus, so maxing it first (before spending anywhere else)
-    // dominated every other opening — the pad0-rush strategy in
-    // scripts/simulate.ts. Stripped to null; coordinates untouched. The
-    // full pad-bonus rebalance is a later round once the level-design
-    // schematics land.
-    { x: 360, y: 215, bonus: null },
-    // x250 on purpose: at x200 this pad also covers the first corner
-    // (the sim showed that extra coverage is worth ~3 lives)
-    { x: 250, y: 485, bonus: null },
-    { x: 360, y: 485, bonus: null },
-    { x: 520, y: 485, bonus: null },
-    { x: 200, y: 795, bonus: null },
-    { x: 520, y: 795, bonus: { stat: 'range', mult: 1.5 } },
-    { x: 200, y: 1090, bonus: { stat: 'fireRate', mult: 1.5 } },
-    { x: 450, y: 1090, bonus: null },
+    { x: 270, y: 195, bonus: null }, // A1
+    { x: 430, y: 195, bonus: null }, // A2
+    { x: 205, y: 485, bonus: { stat: 'fireRate', mult: 1.5 } }, // B1
+    { x: 325, y: 485, bonus: { stat: 'range', mult: 1.5 } }, // B2 — old pad 2
+    { x: 445, y: 485, bonus: { stat: 'damage', mult: 1.5 } }, // B3
+    { x: 205, y: 795, bonus: { stat: 'damage', mult: 1.5 } }, // C1
+    { x: 325, y: 795, bonus: { stat: 'range', mult: 1.5 } }, // C2
+    { x: 445, y: 795, bonus: { stat: 'fireRate', mult: 1.5 } }, // C3
+    { x: 225, y: 1090, bonus: null }, // D1
+    { x: 430, y: 1090, bonus: null }, // D2
 ];
 
 export const CONFIG = {
@@ -114,17 +115,16 @@ export const CONFIG = {
 
     /**
      * On-screen display sizes in design units (textures draw at 2x these).
-     * Round H: widened the enemy spread (was 42/40/50/46/66 — four of five
-     * packed into 40-50, reading as one silhouette at a glance) so class is
-     * legible by size alone: beetle/wasp small (grunt/fastest, and beetle
-     * must still read clean 14-deep on wave 7); snail/hornet mid; stag
-     * clearly largest. Textures.ts's artSquare() contain-fits the dish
-     * trays into a square, so visible height is ~66% of this number — that
-     * ratio is unchanged by this round, just the numbers it's applied to.
+     * Round I Task 5: Round H's spread (36/32/54/48/84) is reverted — the
+     * user's words, "the size shouldn't variate and uniform fit model to be
+     * adopted." All five archetypes render at the same size; tankiness
+     * reads from the HP bar, and archetype tier reads from the glow
+     * (textures.ts's makeGlowTexture, towerScene.ts's glow render — see
+     * docs/LevelBlocks.md §6a) instead of silhouette size.
      */
     sizes: {
         tower: 64,
-        enemy: { beetle: 36, wasp: 32, snail: 54, hornet: 48, stag: 84 },
+        enemy: { beetle: 44, wasp: 44, snail: 44, hornet: 44, stag: 44 },
         pad: { w: 96, h: 52 },
         projectile: 16,
         pathWidth: 72,
@@ -143,16 +143,20 @@ export const CONFIG = {
      * The bugs' road, as polyline waypoints. Enemies climb out of a burrow
      * at the first point and escape into one at the last; both ends get a
      * burrow decal so entering/leaving reads as intentional at any offset.
+     *
+     * Round I Task 7: the right leg narrows x610 -> x540 (docs/LevelBlocks.md
+     * §1, §9) to make room for the build sidebar landing in round 3. New
+     * length 2440 (was 2650) — see data/waves.ts's PATH_LENGTH.
      */
     path: [
         { x: 170, y: 90 },
         { x: 170, y: 330 },
-        { x: 610, y: 330 },
-        { x: 610, y: 640 },
+        { x: 540, y: 330 },
+        { x: 540, y: 640 },
         { x: 110, y: 640 },
         { x: 110, y: 950 },
-        { x: 610, y: 950 },
-        { x: 610, y: 1300 },
+        { x: 540, y: 950 },
+        { x: 540, y: 1300 },
     ],
 
     /** Build spots — see the PADS definition above the CONFIG object. */
@@ -189,6 +193,22 @@ export const CONFIG = {
          * low values make placement a commitment.
          */
         sellRefund: 0.75,
+        /**
+         * Round I Task 9: the coin sink. 10 slots x 3 tower levels caps
+         * total possible board spend at a few thousand coins against a
+         * player holding tens of thousands by the endgame (docs/
+         * LevelBlocks.md §12) — "a ceiling cannot be fixed by a rate."
+         * Kitchen Actions are consumables instead: bought in the build
+         * phase, applied to the wave about to start, gone after. Base
+         * prices scale with level via sim/engine.ts's kitchenActionCost()
+         * (cost = round(base * threat(level) / threat(10))), so a purchase
+         * costs a comparable share of income at level 20 and at level 80.
+         */
+        kitchenActions: {
+            freezeBase: 60,
+            heatBase: 90,
+            slowBase: 45,
+        },
     },
 
     /**

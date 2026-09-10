@@ -131,7 +131,7 @@ const INITIAL: AppState = {
     runKills: 0,
     ftueActive: false,
     ftueBeat: null,
-    ftueBeatPad: 2,
+    ftueBeatPad: 3, // Round I Task 7: old pad 2 is now B2, index 3 (config.ts)
     pulsePads: null,
     ftueGrantAmount: 0,
     ftueGrantNonce: 0,

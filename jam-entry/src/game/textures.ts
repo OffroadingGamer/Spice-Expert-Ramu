@@ -195,64 +195,89 @@ function bugBase(g: Graphics, w: number, h: number, body: number, dark: number):
     g.circle(w * 0.58, h * 0.26, w * 0.045).fill(C.eyeWhite);
 }
 
-export function makeBeetleTexture(renderer: Renderer): Texture {
-    const s = CONFIG.sizes.enemy.beetle * SS;
-    return artSquare(renderer, 'dish-chai', s, () => gen(renderer, (g) => {
-        bugBase(g, s, s, C.beetle, C.beetleDark);
-        g.rect(s * 0.48, s * 0.36, s * 0.04, s * 0.54).fill(C.beetleDark); // shell split
-    }));
+/** Archetype silhouette (fallback only — real art is the dish tray via
+ *  artSquare). Kept as one dispatcher (was 5 separate make*Texture
+ *  functions) because Round I Task 6 needs a texture per (archetype, dish)
+ *  PAIR, not one fixed alias per archetype — see makeEnemyTexture below. */
+function drawArchetypeFallback(g: Graphics, archetypeId: string, s: number): void {
+    switch (archetypeId) {
+        case 'beetle':
+            bugBase(g, s, s, C.beetle, C.beetleDark);
+            g.rect(s * 0.48, s * 0.36, s * 0.04, s * 0.54).fill(C.beetleDark); // shell split
+            break;
+        case 'wasp':
+            g.ellipse(s * 0.2, s * 0.42, s * 0.18, s * 0.1).fill({ color: 0xffffff, alpha: 0.5 });
+            g.ellipse(s * 0.8, s * 0.42, s * 0.18, s * 0.1).fill({ color: 0xffffff, alpha: 0.5 });
+            bugBase(g, s, s, C.wasp, C.waspDark);
+            g.rect(s * 0.2, s * 0.5, s * 0.6, s * 0.09).fill(C.waspDark);
+            g.rect(s * 0.24, s * 0.68, s * 0.52, s * 0.09).fill(C.waspDark);
+            break;
+        case 'snail':
+            // body/foot
+            g.ellipse(s * 0.45, s * 0.78, s * 0.4, s * 0.16).fill(C.snail);
+            g.circle(s * 0.16, s * 0.5, s * 0.11).fill(C.snail); // head
+            g.circle(s * 0.13, s * 0.45, s * 0.028).fill(C.eyePupil);
+            // shell spiral
+            g.circle(s * 0.58, s * 0.5, s * 0.3).fill(C.snailShell);
+            g.circle(s * 0.58, s * 0.5, s * 0.18).fill(C.snail);
+            g.circle(s * 0.58, s * 0.5, s * 0.08).fill(C.snailShell);
+            break;
+        case 'hornet':
+            g.ellipse(s * 0.2, s * 0.38, s * 0.2, s * 0.11).fill({ color: 0xffffff, alpha: 0.5 });
+            g.ellipse(s * 0.8, s * 0.38, s * 0.2, s * 0.11).fill({ color: 0xffffff, alpha: 0.5 });
+            bugBase(g, s, s, C.hornet, C.waspDark);
+            g.rect(s * 0.2, s * 0.52, s * 0.6, s * 0.09).fill(C.waspDark);
+            // stinger
+            g.poly([s * 0.5, s * 0.98, s * 0.44, s * 0.84, s * 0.56, s * 0.84]).fill(C.waspDark);
+            break;
+        case 'stag':
+            // mandibles
+            g.poly([s * 0.34, s * 0.2, s * 0.18, s * 0.0, s * 0.3, s * 0.0, s * 0.44, s * 0.16]).fill(C.stag);
+            g.poly([s * 0.66, s * 0.2, s * 0.82, s * 0.0, s * 0.7, s * 0.0, s * 0.56, s * 0.16]).fill(C.stag);
+            bugBase(g, s, s, C.stag, C.beetleDark);
+            g.rect(s * 0.48, s * 0.36, s * 0.04, s * 0.54).fill(C.beetleDark);
+            // angry brows
+            g.rect(s * 0.36, s * 0.2, s * 0.1, s * 0.025).fill(C.eyeWhite);
+            g.rect(s * 0.54, s * 0.2, s * 0.1, s * 0.025).fill(C.eyeWhite);
+            break;
+        default:
+            bugBase(g, s, s, C.beetle, C.beetleDark);
+    }
 }
 
-export function makeWaspTexture(renderer: Renderer): Texture {
-    const s = CONFIG.sizes.enemy.wasp * SS;
-    return artSquare(renderer, 'dish-bhindi-fry', s, () => gen(renderer, (g) => {
-        // wings
-        g.ellipse(s * 0.2, s * 0.42, s * 0.18, s * 0.1).fill({ color: 0xffffff, alpha: 0.5 });
-        g.ellipse(s * 0.8, s * 0.42, s * 0.18, s * 0.1).fill({ color: 0xffffff, alpha: 0.5 });
-        bugBase(g, s, s, C.wasp, C.waspDark);
-        g.rect(s * 0.2, s * 0.5, s * 0.6, s * 0.09).fill(C.waspDark);
-        g.rect(s * 0.24, s * 0.68, s * 0.52, s * 0.09).fill(C.waspDark);
-    }));
+/**
+ * Round I Task 6: one enemy is now painted with whichever dish its current
+ * BLOCK assigns to its archetype (data/blocks.ts) — up to 9 blocks x 5
+ * archetypes x up to 2 alternating dishes, not the fixed 5 textures Round G
+ * built once at scene creation. towerScene.ts builds these lazily, one per
+ * (archetype, dish) pair actually seen, and caches them for the run.
+ */
+export function makeEnemyTexture(renderer: Renderer, archetypeId: string, dishSlug: string): Texture {
+    const s = (CONFIG.sizes.enemy[archetypeId as keyof typeof CONFIG.sizes.enemy] ?? 44) * SS;
+    return artSquare(renderer, `dish-${dishSlug}`, s, () => gen(renderer, (g) => drawArchetypeFallback(g, archetypeId, s)));
 }
 
-export function makeSnailTexture(renderer: Renderer): Texture {
-    const s = CONFIG.sizes.enemy.snail * SS;
-    return artSquare(renderer, 'dish-rajma', s, () => gen(renderer, (g) => {
-        // body/foot
-        g.ellipse(s * 0.45, s * 0.78, s * 0.4, s * 0.16).fill(C.snail);
-        g.circle(s * 0.16, s * 0.5, s * 0.11).fill(C.snail); // head
-        g.circle(s * 0.13, s * 0.45, s * 0.028).fill(C.eyePupil);
-        // shell spiral
-        g.circle(s * 0.58, s * 0.5, s * 0.3).fill(C.snailShell);
-        g.circle(s * 0.58, s * 0.5, s * 0.18).fill(C.snail);
-        g.circle(s * 0.58, s * 0.5, s * 0.08).fill(C.snailShell);
-    }));
-}
-
-export function makeHornetTexture(renderer: Renderer): Texture {
-    const s = CONFIG.sizes.enemy.hornet * SS;
-    return artSquare(renderer, 'dish-beans-poriyal', s, () => gen(renderer, (g) => {
-        g.ellipse(s * 0.2, s * 0.38, s * 0.2, s * 0.11).fill({ color: 0xffffff, alpha: 0.5 });
-        g.ellipse(s * 0.8, s * 0.38, s * 0.2, s * 0.11).fill({ color: 0xffffff, alpha: 0.5 });
-        bugBase(g, s, s, C.hornet, C.waspDark);
-        g.rect(s * 0.2, s * 0.52, s * 0.6, s * 0.09).fill(C.waspDark);
-        // stinger
-        g.poly([s * 0.5, s * 0.98, s * 0.44, s * 0.84, s * 0.56, s * 0.84]).fill(C.waspDark);
-    }));
-}
-
-export function makeStagTexture(renderer: Renderer): Texture {
-    const s = CONFIG.sizes.enemy.stag * SS;
-    return artSquare(renderer, 'dish-ooti', s, () => gen(renderer, (g) => {
-        // mandibles
-        g.poly([s * 0.34, s * 0.2, s * 0.18, s * 0.0, s * 0.3, s * 0.0, s * 0.44, s * 0.16]).fill(C.stag);
-        g.poly([s * 0.66, s * 0.2, s * 0.82, s * 0.0, s * 0.7, s * 0.0, s * 0.56, s * 0.16]).fill(C.stag);
-        bugBase(g, s, s, C.stag, C.beetleDark);
-        g.rect(s * 0.48, s * 0.36, s * 0.04, s * 0.54).fill(C.beetleDark);
-        // angry brows
-        g.rect(s * 0.36, s * 0.2, s * 0.1, s * 0.025).fill(C.eyeWhite);
-        g.rect(s * 0.54, s * 0.2, s * 0.1, s * 0.025).fill(C.eyeWhite);
-    }));
+/**
+ * Round I Task 5 / docs/LevelBlocks.md §6a: a soft radial glow rendered
+ * BEHIND an enemy's tray, tinted per tier (red for snail/hornet, light gold
+ * for stag; beetle/wasp get none). Deliberately NOT sprite.tint (that
+ * channel is already owned by status effects — see towerScene.ts's poison/
+ * burn tints) and deliberately NOT pixi-filters (not a dependency) — just a
+ * procedurally generated concentric-circle falloff, like every other
+ * placeholder texture in this file.
+ */
+export function makeGlowTexture(renderer: Renderer, color: number): Texture {
+    return gen(renderer, (g) => {
+        const s = 128;
+        const cx = s / 2;
+        const cy = s / 2;
+        const steps = 8;
+        for (let i = steps; i >= 1; i--) {
+            const r = cx * (i / steps);
+            const alpha = Math.min(0.5, 0.05 + 0.055 * (steps - i));
+            g.circle(cx, cy, r).fill({ color, alpha });
+        }
+    });
 }
 
 export function makeProjFoxTexture(renderer: Renderer): Texture {

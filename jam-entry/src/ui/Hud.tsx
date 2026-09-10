@@ -43,7 +43,7 @@
  */
 import { useEffect, useState } from 'react';
 import { setMusicVolume, setSfxVolume, sfx, switchCue } from '../audio/audio.ts';
-import { startWave } from '../game/actions.ts';
+import { buyKitchenAction, getEngine, kitchenActionPrice, startWave } from '../game/actions.ts';
 import { CONFIG } from '../game/config.ts';
 import { designToScreen } from '../game/stage.ts';
 import { setAudioVolumes } from '../state/save.ts';
@@ -100,6 +100,7 @@ export default function Hud() {
     const ftueBeat = useStore((s) => s.ftueBeat);
     const ftueBeatPad = useStore((s) => s.ftueBeatPad);
     const pulsePads = useStore((s) => s.pulsePads) ?? [];
+    const ftueActive = useStore((s) => s.ftueActive);
     const ftueGrantAmount = useStore((s) => s.ftueGrantAmount);
     const ftueGrantNonce = useStore((s) => s.ftueGrantNonce);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -294,6 +295,35 @@ export default function Hud() {
                 this display rule in sync with it — without it Ready would
                 flash visible during the post-wave-2 pulse, where
                 selectedPad is briefly null before pad 2 auto-selects. */}
+            {tdPhase === 'build' && selectedPad === null && ftueBeat === null && !menuOpen && !ftueActive && (
+                <div className="pointer-events-auto absolute inset-x-0 bottom-24 flex justify-center gap-2 px-3">
+                    {/* Round I Task 9: Kitchen Actions — the coin sink. One
+                        wave's effect, bought here, gone after. Deliberately
+                        minimal/provisional (round 3 restyles this area) — a
+                        plain row of three buttons, each showing its live
+                        price (sim/engine.ts's kitchenActionCost) and
+                        disabling once bought for this wave or unaffordable. */}
+                    {(['freeze', 'heat', 'slow'] as const).map((kind) => {
+                        const bought = getEngine()?.state.kitchenActions[kind] ?? false;
+                        const price = kitchenActionPrice(kind);
+                        const label = kind === 'freeze' ? 'Deep Freeze' : kind === 'heat' ? 'Turn Up The Heat' : 'Slow Service';
+                        const disabled = bought || coins < price;
+                        return (
+                            <button
+                                key={kind}
+                                type="button"
+                                disabled={disabled}
+                                className="rounded-xl bg-black/55 px-2 py-1.5 text-center text-[0.7rem] font-bold leading-tight text-white disabled:opacity-45"
+                                onClick={() => { sfx.click(); buyKitchenAction(kind); }}
+                            >
+                                <span className="block">{label}</span>
+                                <span className="block">{bought ? '✓ bought' : `${price}c`}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
+
             {tdPhase === 'build' && selectedPad === null && ftueBeat === null && !menuOpen && (
                 <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-3 pb-safe-bottom">
                     {/* Round D: the FTUE now scripts every run through wave

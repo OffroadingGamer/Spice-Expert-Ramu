@@ -18,6 +18,7 @@ import {
 } from 'pixi.js';
 import { CONFIG } from './config.ts';
 import { WAVES } from './data/waves.ts';
+import { blockForLevel } from './data/blocks.ts';
 import { createEngine, type EngineEvent } from './sim/engine.ts';
 import { registerEngine, syncStore, getTowersPlacedThisRun, grantFtueShortfall, retireFtue } from './actions.ts';
 import { TOWERS } from './data/towers.ts';
@@ -25,22 +26,19 @@ import { track, trackFunnelStep } from '../sdk/analytics.ts';
 import {
     freeTexture,
     makeBearTexture,
-    makeBeetleTexture,
     makeBurrowTexture,
+    makeEnemyTexture,
     makeFoxTexture,
     makeGoldPadTexture,
+    makeGlowTexture,
     makeGrassTexture,
-    makeHornetTexture,
     makeIceCubeTexture,
     makeOwlTexture,
     makePadTexture,
     makeProjBearTexture,
     makeProjFoxTexture,
     makeProjOwlTexture,
-    makeSnailTexture,
     makeSquirrelTexture,
-    makeStagTexture,
-    makeWaspTexture,
 } from './textures.ts';
 import { store } from '../state/store.ts';
 import { getSave, recordRunEnd } from '../state/save.ts';
@@ -70,19 +68,54 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             // ADAPT: register your new tower's texture maker here (and its
             // projectile below, unless it is a beam tower)
         } as Record<string, Texture>,
-        enemies: {
-            beetle: makeBeetleTexture(app.renderer),
-            wasp: makeWaspTexture(app.renderer),
-            snail: makeSnailTexture(app.renderer),
-            hornet: makeHornetTexture(app.renderer),
-            stag: makeStagTexture(app.renderer),
-        } as Record<string, Texture>,
+        // Round I Task 6: no longer a fixed 5 — every (archetype, dish) pair
+        // actually spawned this run gets its own texture, built on first use
+        // (see enemyTextureFor below) and cached here for the run's life.
+        enemies: new Map<string, Texture>(),
+        // §6a glow tiers: red (snail/hornet), light gold (stag); beetle/wasp
+        // get none, so no texture is built for tier 1.
+        glow: {
+            red: makeGlowTexture(app.renderer, 0xff4040),
+            gold: makeGlowTexture(app.renderer, 0xffd76a),
+        },
         projectiles: {
             fox: makeProjFoxTexture(app.renderer),
             owl: makeProjOwlTexture(app.renderer),
             bear: makeProjBearTexture(app.renderer),
         } as Record<string, Texture>,
     };
+
+    /** Glow tier per archetype (docs/LevelBlocks.md §6a). */
+    const GLOW_TIER: Record<string, 'red' | 'gold' | null> = {
+        beetle: null,
+        wasp: null,
+        snail: 'red',
+        hornet: 'red',
+        stag: 'gold',
+    };
+
+    // Double-dish blocks (6-8, Overtime) alternate PER SPAWN — this counter,
+    // one per archetype, drives that alternation (see enemyTextureFor).
+    const dishSpawnCounter: Record<string, number> = {};
+
+    /** The texture for one archetype at the CURRENT level, building and
+     *  caching it on first use. Dish choice: data/blocks.ts's block for the
+     *  current level, alternating per spawn when the block carries two. */
+    function enemyTextureFor(archetypeId: string): Texture {
+        const level = engine.state.waveIndex + 1;
+        const block = blockForLevel(level);
+        const dishes = block.dishes[archetypeId] ?? ['chai'];
+        const n = dishSpawnCounter[archetypeId] ?? 0;
+        dishSpawnCounter[archetypeId] = n + 1;
+        const dish = dishes[n % dishes.length];
+        const key = `${archetypeId}:${dish}`;
+        let t = tex.enemies.get(key);
+        if (!t) {
+            t = makeEnemyTexture(app.renderer, archetypeId, dish);
+            tex.enemies.set(key, t);
+        }
+        return t;
+    }
 
     // ---- static board ------------------------------------------------------
     const grass = new TilingSprite({ texture: tex.grass, width: stage.width, height: stage.designHeight() });
@@ -273,27 +306,34 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 retireFtue();
             }
         } else if (cleared === 2) {
-            // Round H Task 1: if pad 2 is already occupied here, the player
-            // placed a second counter unprompted between beats — the lesson
-            // (place a second counter) is already demonstrated. The old
-            // fallback (force a THIRD placement onto the nearest empty pad,
-            // funded by grantFtueShortfall) taught nothing and handed out
-            // coins they didn't need. Retire instead, same as a full board.
-            if (engine.state.towers.some((tw) => tw.padIndex === 2)) {
+            // Round I Task 7: old pad 2 (360,485) is now B2, index 3 — the
+            // 10-slot board (config.ts) re-orders A1 A2 B1 B2 B3 C1 C2 C3 D1
+            // D2, and B2 is the direct descendant (same mid-board spot, same
+            // range bonus family). Re-pointed here; store.ts's ftueBeatPad
+            // default follows suit.
+            //
+            // Round H Task 1: if the target pad is already occupied here,
+            // the player placed a second counter unprompted between beats —
+            // the lesson (place a second counter) is already demonstrated.
+            // The old fallback (force a THIRD placement onto the nearest
+            // empty pad, funded by grantFtueShortfall) taught nothing and
+            // handed out coins they didn't need. Retire instead, same as a
+            // full board.
+            const target = 3;
+            if (engine.state.towers.some((tw) => tw.padIndex === target)) {
                 retireFtue();
                 return;
             }
             const emptyPads = CONFIG.pads
                 .map((_, i) => i)
                 .filter((i) => !engine.state.towers.some((tw) => tw.padIndex === i));
-            // pad 2 is confirmed empty above, so it's always in this list —
+            // target is confirmed empty above, so it's always in this list —
             // no full-board case is reachable here, but the check stays as
             // a harmless backstop.
             if (emptyPads.length === 0) {
                 retireFtue();
                 return;
             }
-            const target = 2;
             // Beat 5's requirement: the cheapest tower, so whatever the
             // player affords is guaranteed placeable at the target pad.
             grantFtueShortfall(Math.min(...TOWERS.map((def) => def.cost)));
@@ -395,10 +435,20 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             if (!v) {
                 const node = new Container();
                 const size = SZ.enemy[e.def.id as keyof typeof SZ.enemy] ?? 44;
+                // §6a glow tier, behind everything else, so a poisoned/
+                // burning stag's tint (below) never fights it.
+                const tier = GLOW_TIER[e.def.id] ?? null;
+                if (tier) {
+                    const glow = new Sprite(tex.glow[tier]);
+                    glow.anchor.set(0.5);
+                    glow.width = size * 1.9;
+                    glow.height = size * 1.9;
+                    node.addChild(glow);
+                }
                 const shadow = new Graphics();
                 shadow.ellipse(0, size * 0.42, size * 0.4, size * 0.14)
                     .fill({ color: CONFIG.colors.shadow, alpha: 0.2 });
-                const sprite = new Sprite(tex.enemies[e.def.id]);
+                const sprite = new Sprite(enemyTextureFor(e.def.id));
                 sprite.anchor.set(0.5);
                 sprite.width = size;
                 sprite.height = size;
@@ -641,7 +691,9 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             freeTexture(tex.burrow);
             freeTexture(tex.ice);
             for (const t of Object.values(tex.towers)) freeTexture(t);
-            for (const t of Object.values(tex.enemies)) freeTexture(t);
+            for (const t of tex.enemies.values()) freeTexture(t);
+            freeTexture(tex.glow.red);
+            freeTexture(tex.glow.gold);
             for (const t of Object.values(tex.projectiles)) freeTexture(t);
         },
     };
