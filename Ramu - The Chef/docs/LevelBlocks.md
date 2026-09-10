@@ -300,25 +300,34 @@ bespoke props at fixed positions, which cannot tile.
 
 ### ✅ DELIVERED Sep 11 2026 — nine backdrops
 
-`jam-entry/public/images/bg-block-1.jpg` … `bg-block-9.jpg`. Generated with
-`gemini-3.1-flash-image-preview` at `--seed 4471`, one shared style stanza plus a
-per-block theme clause; upscaled 2× (`rundot image upscale --model cgi`) and
-JPEG-encoded to budget. Sources and full prompts are retained in the **gitignored**
-`Art/_gen/backdrops/`. Verified: **116.3–120.0 KB each, 1,092,693 B for the nine.**
+`jam-entry/public/images/bg-block-1.jpg` … `bg-block-9.jpg`, **720×1280 JPEG**.
+Generated with `gemini-3.1-flash-image-preview` at `--seed 4471`, one shared style
+stanza plus a per-block theme clause. Sources and full prompts are retained in the
+**gitignored** `Art/_gen/backdrops/`; block 2 ships its `take2` frame (`take1` baked in
+faint belt/pad-shaped ghost outlines, fixed by negative-prompting them).
+Verified: **117.6–119.5 KB each, 1,095,341 B for the nine.**
 
 ✅ **The composition brief held** — low contrast through the belt corridor, detail at
 the edges. Measured greyscale stdev, centre band vs left edge, is lower in **all nine**
 (block 3: 21.2 vs 51.8; block 9: 33.3 vs 65.8).
 
-🔴 **ASPECT ERROR — this section's fault, not the generator's.** §7 specified
-**720×1650** (1 : 2.29). The board is `CONFIG.boardHeight = 1280` against
-`DESIGN_WIDTH` 720 — **720×1280, exactly 9:16 (1 : 1.78)**, and `config.ts` notes the
-board never stretches. So **370 px, 22% of every backdrop, is cropped when fitted** —
-and the detail sits precisely in the top and bottom ~20% bands, which is what a
-vertical crop eats. The generator's *native* output was 768×1376, already the board's
-ratio; it was centre-cropped to 1650 only to obey this section's number.
-✅ **Remedy needs no regeneration:** re-derive 720×1280 from the retained uncropped
-`-take1.png` frames.
+✅ **ASPECT ERROR — found and fixed Sep 11 2026.** This section originally specified
+**720×1650** (1 : 2.29), which was wrong: the board is `CONFIG.boardHeight = 1280`
+against `DESIGN_WIDTH` 720 — **720×1280, exactly 9:16**, and `config.ts` notes it never
+stretches. The first delivery obeyed the spec, so **370 px — 22% of every backdrop —
+would have been cropped when fitted**, and the detail sits precisely in the top and
+bottom fifths, which is exactly what that crop removes.
+
+🔥 **The generator's native output was already correct: 768×1376 is the board's
+ratio.** It had been centre-cropped to 1650 only to satisfy this section's number.
+Re-derived from those retained uncropped frames at **720×1280**, losing **11 px of
+height (0.8%)** instead of 22%.
+
+✅ **No upscale was needed and none was spent.** 768×1376 → 720×1280 is a *downscale*
+throughout; upscaling first cannot add detail that a later downscale below the source
+resolution would only discard. Pure Lanczos resample, zero image-generation credits.
+JPEG quality was solved per image against a ~120 KB budget (q61–75; the low end is
+block 5's dense bamboo weave, inspected and artefact-free).
 
 ⚠️ **The payload figure this section carried — "a current total image payload well
 under 300 KB" — was wrong**, and was flagged in-place as an estimate. Measured Sep 11:
@@ -327,7 +336,7 @@ under 300 KB" — was wrong**, and was flagged in-place as an estimate. Measured
 |---|---|---|
 | `critical` (blocks first paint) | 15 | **491,669 B (0.47 MB)** |
 | `deferred` (background-loaded) | 88 | 1,676,409 B (1.60 MB) |
-| `public/images/` total, after the backdrops | — | 3,493,329 B (3.33 MB) |
+| `public/images/` total, after the backdrops | — | 3,495,977 B (3.33 MB) |
 
 🔴 **Which is why the backdrops MUST stay in `deferred` with block N+1 prefetched
 during block N.** One backdrop promoted into `critical` would add ~120 KB to a 0.47 MB
