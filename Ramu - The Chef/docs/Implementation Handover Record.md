@@ -373,3 +373,62 @@ that cannot be checked from source**, so it rests on the agent's report — stat
 such.
 
 #### Verdict — ✅ ACCEPTED, Sep 11 2026
+
+---
+
+### 2026-09-11 — Visual round — put the finished art on screen before the freeze
+
+**Status:** 📤 **HANDED OVER, not yet returned.** Written at handover time, per this
+file's rule.
+
+**Scope stamp:** the last build round. Backdrops wired, tower props, HUD wording.
+🔴 **Tiered, because it may not all fit** — finish a tier cleanly rather than leaving
+one half-built; the effective code freeze is **end of Sep 13** (CP8 is *deploy verified
+public* at Sep 14 23:30 IST, and RUN's approval lead is unmeasured).
+
+#### Tasks as authorised
+
+**Tier 1 — must ship**
+1. **Wire the nine backdrops** (720×1280, committed `fe7e89d`). Register `bg-block-1–9`
+   in `manifest.ts` **`deferred`** — 🔴 never `critical` — loaded through the
+   `ensureBlockAssets` gate with the same block N+1 prefetch. Replace the `grass`
+   `TilingSprite` with a `Sprite` scaled to **cover**; crossfade on block change.
+2. **Tower prop reskin** — §10's mapping, 🔴 **fit per FAMILY not per sprite**.
+3. **HUD rename** — §11. WAVE and RUSH stop being the same counter.
+4. ➕ **Ghost slots** — *promoted from tier 2 on Sep 11* after the user flagged pad art
+   as ambiguous in a playtest screenshot.
+5. ➕ **`BuildSheet` is see-through** — *added Sep 11 from the same screenshot.*
+   [`BuildSheet.tsx:102`](../../jam-entry/src/ui/BuildSheet.tsx) is `bg-black/80` with no
+   scrim, so the belt and pads read straight through the build menu. **Not a z-order
+   bug** — the panel is 20% transparent by construction. Make it opaque, or add a scrim.
+
+**Tier 2** — build sidebar (the 140-unit rail from the `002` schematic).
+**Tier 3** — wave roster panel (§8), only if 1 and 2 are finished and verified.
+
+#### Acceptance criteria
+
+1. Cold cache, throttled: block 1 opens on its backdrop **and** dish sprites.
+2. Block boundary crossfades with no stall.
+3. `critical` bundle size **unchanged** — verified, not assumed.
+4. All four stations show kitchen props; upgrades visibly grow within a station, and
+   every Lv3 reads at the same nominal size across stations.
+5. HUD shows ESCAPES LEFT / CASH / WAVE + RUSH with the right block label; no wrap at
+   360 px.
+6. **No board element is visible through the build menu.**
+7. FTUE plays end to end on a real device.
+8. 🛑 `data/enemies.ts`, `data/towers.ts`, `data/waves.ts`, `sim/engine.ts` diffs
+   **empty** — Round J's balance is settled.
+9. `SAVE_KEY` unchanged; a real v1.47.0 save round-trips.
+10. `tsc --noEmit` and `vite build` clean.
+
+#### Boundaries
+
+🛑 Sealed: `enemies.ts` · `towers.ts` · `waves.ts` · `sim/engine.ts`.
+🚫 Not to be touched: `save.ts` · `stage.ts` · `GameCanvas.tsx` · `audio.ts` ·
+`leaderboard.ts`. Outside `jam-entry/` → hand back.
+🚫 `rundot whoami` before any deploy; **private only**; never `set-public` /
+`set-private` / `update-tag`. Kill processes **by PID only**.
+
+#### Return
+
+_Pending._
