@@ -314,3 +314,62 @@ build deadline is Sep 14.
 
 ⚠️ Minor: the report's L20 participation row (3/5 fired, 8 peak, 18%) does not match a
 clean run (4/9, 10 peak, 16%). Every other row matches. Likely captured mid-iteration.
+
+---
+
+### 2026-09-11 — Dish-art race — Challenge Mode must not race its own art
+
+Ran **in parallel with Round J** (different files, no conflict).
+⚠️ **This entry was written on the round's RETURN, not at handover time — a lapse
+against this file's own rule**, recorded rather than quietly backdated. Same for the
+art-generation round, which is logged in [LevelBlocks.md](LevelBlocks.md) §7 instead.
+
+**Commit** `8d7802a` · not deployed — deliberately folded into the visual round's deploy
+rather than spending a version of its own.
+
+#### Why
+
+`textures.ts`'s `artSquare` returns the drawn **insect silhouette** whenever a `dish-*`
+alias misses `Assets.cache` at first request, and `makeEnemyTexture` caches that per
+`(archetype, dish)` for the run's whole life — **a miss never recovers**. All 22 dish
+PNGs are registered, but in the **`deferred`** bundle, which `preload.ts` background-
+loads. `kitchenScene.ts:374` awaits its deferred aliases explicitly; `towerScene.ts`
+awaited nothing. **Cold caches lose the race — exactly the first-time players Daily
+Unique Plays counts.**
+
+#### Task and acceptance
+
+One task: mirror Kitchen Mode's on-demand load in `towerScene.ts`, prefetching block
+N+1 during block N. Accepted on: cold cache + throttled network shows real dish art on
+block 1 wave 1; no fallback anywhere a dish PNG exists; no visible first-wave stall;
+Round J's files untouched; `tsc` and build clean.
+
+#### Return — verified from source Sep 11 2026
+
+✅ **Better than the shape specified.** Rather than an `await` that would stall the
+scene, it gates the **engine stepping loop** on `readyBlocks`: `stepSpawning` is only
+reachable from inside `engine.step()`, so holding stepping back is what prevents an
+enemy of a not-yet-loaded block from ever being composed. Verified in source — the gate
+wraps `engine.step()` entirely, and `stepSpawning` has exactly one call site.
+
+✅ Current block's load starts at scene mount, before the first tick. Block N+1 warms as
+soon as block N becomes active, so from block 2 on the gate is a no-op.
+✅ Aliases filtered through `MANIFEST_ALIASES`, so an unregistered dish cannot throw.
+✅ A failed load marks ready anyway and falls back for that one alias — art never bricks
+a run, matching `preload.ts`'s posture.
+✅ Only `towerScene.ts` changed (+108). `enemies.ts`, `towers.ts`, `sim/engine.ts` and
+`data/waves.ts` all **0 lines**. `tsc` exit 0, `vite build` clean.
+
+✅ **Checked for a soft-lock and found none.** `ensureBlockAssets` returns early
+*without* marking ready when `blockId` is out of range — which would gate stepping
+forever. Not reachable: `blockForLevel` clamps to `level <= 80 ? … : 9` and `BLOCKS`
+holds exactly 9 ids.
+
+✅ **Live cold-cache verification was done by the agent** — production bundle, headless
+Chrome CDP, `Network.setCacheDisabled(true)` with slow-3G on a wiped profile, frame-by-
+frame from the first enemy leaving the burrow: chai tray art immediately, no silhouette,
+no pop, and the wave advanced 1/80 → 2/80 without stalling. **This is the one criterion
+that cannot be checked from source**, so it rests on the agent's report — stated here as
+such.
+
+#### Verdict — ✅ ACCEPTED, Sep 11 2026
