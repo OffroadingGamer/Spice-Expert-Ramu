@@ -519,7 +519,13 @@ trivialise exactly the levels the curve exists to make dangerous.
 | 1 | **Balance** | splash falloff · sim runs full meta · restore `hpMult`/`speedMult` · concurrent spawn entries · uniform enemy size · glow tiers · belt geometry + 10 slots · all nine blocks' data · the ladder · Overtime loops · the sink | — |
 | 2 | **Art generation** | the nine backdrops (§7), regenerated from the `003`/`004` thumbnails | runs in parallel with 1 |
 | 3 | **Visual** | tower reskin (§10) · backdrops · build sidebar · ghost slots · HUD relabel (§11) · wave roster panel (§8) | 1 and 2 |
-| 4 | **Round B** | Warrior achievements, GDD §10.11b | 3 — station naming must be final |
+| ~~4~~ | ~~**Round B**~~ | ~~Warrior achievements, GDD §10.11b~~ | 🔴 **CUT Sep 11 2026** |
+
+🔴 **Round B is cut.** Decided by the user Sep 11 2026, on discovering that the
+build gate is **CP8 — final deploy verified public, Sep 14 23:30 IST** ([Plan.md](Plan.md)
+§gates), not the Sep 19 scoring deadline. Sep 14–18 is the judging window: **no code
+changes possible**. Warrior achievements are last in the queue, depend on the visual
+round finishing, and contribute nothing to Daily Unique Plays. There is no room.
 
 ✅ **The tower reskin sits in round 3, not earlier**, because the build sidebar
 *displays tower art*: laying those cards out around sprites we are about to replace
