@@ -2325,3 +2325,29 @@ uniques are the score; the trend matters more than any single day.
     *"carried claims need re-verification"* already names, arriving through a new door:
     not a claim carried across a compaction, but one inferred from a neighbouring
     document in the same breath.
+89. 🔒 **STANDING RULE — "prepare to compact" and "write the handover" both mean
+    *audit the chat for undocumented decisions first*, and say so before doing the
+    thing asked.** Set by the user Sep 10 2026. 🔥 **Both instructions are the same
+    event wearing two faces: the moment this conversation stops being reachable.**
+    A compaction discards it; a handover moves the work to a thread that never had
+    it. Anything living only in chat is, at that instant, about to become invisible
+    — and neither instruction sounds like a documentation prompt, which is exactly
+    why the check has to be automatic rather than remembered. 🔴 **The evidence is
+    this session.** I declared the level design closed and wrote a complete Round I
+    handover while the entire Round H verification existed nowhere but chat: that
+    splash deals full damage to every enemy in radius, that `simulate.ts` has never
+    modelled a player with meta upgrades, that Round H deleted the per-level HP
+    scaling, and that a maxed board survives 120 levels with nothing passing 14% of
+    the belt. **Four measured findings, the most important technical work of the
+    day, one compaction away from being lost.** The same audit also found nine
+    approved `RUSH:` labels that were never written down, three decisions with no
+    home in any document, section ordering drift inside the spec, and a Tasks.md
+    five rounds stale. **None of it surfaced until the user said "make sure
+    everything has been documented properly."** ✅ **The procedure: before compacting
+    or handing over, walk the conversation for decisions, measurements and
+    corrections that exist only here; if any do, name them and propose the
+    documentation task — then do the thing that was asked.** ⚠️ **Propose, do not
+    silently expand**: the user asked for a handover, not a doc pass, and the audit
+    is an offer they can decline. 🔥 **The general form: a measurement that lives
+    only in a message has not been recorded, it has merely been said.** The test is
+    not "did I tell the user" but "could the next thread find it".
