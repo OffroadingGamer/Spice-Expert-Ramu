@@ -295,12 +295,46 @@ cannot kill you.
 bespoke props at fixed positions, which cannot tile.
 
 - Nine images — one per block plus Overtime.
-- ⚠️ **Payload is the risk.** Nine detailed 720×1650 images could be several MB
-  against a current *total* image payload well under 300 KB. *Estimate, not
-  measured.* Ship JPEG not PNG, keep all in `deferred`, prefetch block N+1 during
-  block N.
 - The `TilingSprite` at `towerScene.ts:88` becomes a plain `Sprite` fitted to the
   playfield, with a crossfade between blocks.
+
+### ✅ DELIVERED Sep 11 2026 — nine backdrops
+
+`jam-entry/public/images/bg-block-1.jpg` … `bg-block-9.jpg`. Generated with
+`gemini-3.1-flash-image-preview` at `--seed 4471`, one shared style stanza plus a
+per-block theme clause; upscaled 2× (`rundot image upscale --model cgi`) and
+JPEG-encoded to budget. Sources and full prompts are retained in the **gitignored**
+`Art/_gen/backdrops/`. Verified: **116.3–120.0 KB each, 1,092,693 B for the nine.**
+
+✅ **The composition brief held** — low contrast through the belt corridor, detail at
+the edges. Measured greyscale stdev, centre band vs left edge, is lower in **all nine**
+(block 3: 21.2 vs 51.8; block 9: 33.3 vs 65.8).
+
+🔴 **ASPECT ERROR — this section's fault, not the generator's.** §7 specified
+**720×1650** (1 : 2.29). The board is `CONFIG.boardHeight = 1280` against
+`DESIGN_WIDTH` 720 — **720×1280, exactly 9:16 (1 : 1.78)**, and `config.ts` notes the
+board never stretches. So **370 px, 22% of every backdrop, is cropped when fitted** —
+and the detail sits precisely in the top and bottom ~20% bands, which is what a
+vertical crop eats. The generator's *native* output was 768×1376, already the board's
+ratio; it was centre-cropped to 1650 only to obey this section's number.
+✅ **Remedy needs no regeneration:** re-derive 720×1280 from the retained uncropped
+`-take1.png` frames.
+
+⚠️ **The payload figure this section carried — "a current total image payload well
+under 300 KB" — was wrong**, and was flagged in-place as an estimate. Measured Sep 11:
+
+| Bundle | Files | Bytes |
+|---|---|---|
+| `critical` (blocks first paint) | 15 | **491,669 B (0.47 MB)** |
+| `deferred` (background-loaded) | 88 | 1,676,409 B (1.60 MB) |
+| `public/images/` total, after the backdrops | — | 3,493,329 B (3.33 MB) |
+
+🔴 **Which is why the backdrops MUST stay in `deferred` with block N+1 prefetched
+during block N.** One backdrop promoted into `critical` would add ~120 KB to a 0.47 MB
+first paint — a ~25% slower first load, paid by exactly the first-time players Daily
+Unique Plays counts. ⚠️ **And `deferred` is background-loaded, which Challenge Mode
+does not await** — see the dish-art race in [Tasks.md](Tasks.md); the same trap catches
+backdrops unless the wiring awaits them.
 
 ---
 
