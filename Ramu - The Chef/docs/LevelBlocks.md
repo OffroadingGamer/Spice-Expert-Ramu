@@ -149,16 +149,30 @@ rows B and C carry all three stats, mirrored.
 `001 - Challenge round - Level schematics.png`.**
 
 🔴 **Six of ten slots are bonused — up from two.** Measured against a fully-maxed
-board (10 maxed Tandoors, full meta), this is the strongest defence yet tested:
+board (10 maxed Tandoors, full meta).
 
-| Board | Deepest any enemy reached, levels 1–120 |
-|---|---|
-| 8 slots, 1 bonus (post-Round-H) | 14% of the path |
-| 10 slots, 2 range bonuses | 12% |
-| **10 slots, 6 bonuses (approved)** | **10%** |
+⚠️ **The first three rows are PRE-Round-I and are kept only as history.** They were
+measured against the flat-splash engine, where a Tandoor dealt full damage to every
+enemy in its radius — the defect Round I fixed. **Do not size anything against them.**
 
-Every step of the level design has made the defence stronger. **The balance round
-must size its curve against this board, not against Round H's.**
+| Board | Engine | Deepest any enemy reached |
+|---|---|---|
+| 8 slots, 1 bonus (post-Round-H) | flat splash | 14% — survived all 120 |
+| 10 slots, 2 range bonuses | flat splash | 12% — survived all 120 |
+| 10 slots, 6 bonuses (approved) | flat splash | 10% — survived all 120 |
+| **10 slots, 6 bonuses (approved)** | **post-Round-I (`ed2ef78`)** | **100% — LOSES at level 86** |
+
+✅ **The instruction that stood here — *"the balance round must size its curve against
+this board"* — is retired: that round is Round I, and it landed on Sep 10 2026.** The
+same board that held every enemy inside 10% of the belt across 120 levels now reaches
+the end of the belt on four levels and loses at 86. See the
+[Implementation Handover Record](Implementation%20Handover%20Record.md), Round I.
+
+🔴 **Known gap, carried forward:** that board still holds enemies to **~11% at level
+40** (ordinary builds reach 43–55%). Ten maxed Tandoors converge their `first`-targeting
+on one lead enemy; splash falloff discounts only *secondary* victims, never the primary
+target ([`engine.ts:587`](../../jam-entry/src/game/sim/engine.ts)). Disclosed by the
+implementation agent and confirmed on verification.
 
 ---
 
@@ -459,6 +473,35 @@ pipeline whole. Only an application site and a button are new.
 🔴 **Price must scale with level**, or a 27,000-coin bank buys the whole system out
 at rush 30. Something of the form `base × threat(level) / threat(10)` keeps a
 purchase costing a comparable share of income at level 20 and at level 80.
+
+---
+
+### ✅ SHIPPED in Round I (`ed2ef78`) — three Kitchen Actions
+
+Bought in the build phase from a button row in the HUD; **one purchase per kind per
+wave**, cleared when the wave ends ([`engine.ts:641`](../../jam-entry/src/game/sim/engine.ts)).
+Price is `round(base × threat(level) / threat(10))`, as specified above.
+
+| Action | Base | Effect | Applied at |
+|---|---|---|---|
+| **Deep Freeze** | 60 | `frozen` on every enemy on the belt | wave start (`engine.ts:305`) |
+| **Turn Up The Heat** | 90 | `burn` added to every projectile hit, splash victims included | each hit (`engine.ts:478, 592, 599`) |
+| **Slow Service** | 45 | `slow`, `factor 0.6`, `duration 4s` | wave start (`engine.ts:309`) |
+
+✅ **Why three, and why these.** They are the three effects
+[status.ts](../../jam-entry/src/game/data/status.ts) already implements that read
+clearly as *kitchen* verbs — freezing, heating, slowing service. Poison and knockback
+were left out: neither has a kitchen reading a player would guess from the name.
+
+✅ **Why Heat costs double Slow.** Freeze and Slow are one-shot effects on the enemies
+currently on the belt — their value is capped by that headcount. Heat is a **multiplier
+on the whole board's output for the entire wave**, so it scales with tower count, fire
+rate and splash radius; on a built-out board it is worth far more than the other two.
+Slow is deliberately the cheapest so there is always something affordable.
+
+🔴 **Why one purchase per kind per wave.** This is what makes it a *sink* rather than a
+*stockpile*. Without the cap a 27,000-coin bank could be dumped into one hard wave and
+trivialise exactly the levels the curve exists to make dangerous.
 
 ---
 
