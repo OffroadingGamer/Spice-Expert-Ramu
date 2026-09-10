@@ -7,6 +7,7 @@
  * All positions/sizes are design units (stage.ts).
  */
 import {
+    Assets,
     Container,
     Graphics,
     Sprite,
@@ -18,7 +19,8 @@ import {
 } from 'pixi.js';
 import { CONFIG } from './config.ts';
 import { WAVES } from './data/waves.ts';
-import { blockForLevel } from './data/blocks.ts';
+import { BLOCKS, blockForLevel, type Block } from './data/blocks.ts';
+import { MANIFEST } from '../assets/manifest.ts';
 import { createEngine, type EngineEvent } from './sim/engine.ts';
 import { registerEngine, syncStore, getTowersPlacedThisRun, grantFtueShortfall, retireFtue } from './actions.ts';
 import { TOWERS } from './data/towers.ts';
@@ -49,6 +51,26 @@ import { PLAYFIELD_HEIGHT, type Stage } from './stage.ts';
 /** The scene contract: every createXxxScene(app, stage) returns one of these. */
 export interface Scene {
     destroy(): void;
+}
+
+// Dish-art race fix: which aliases the manifest actually registers — an
+// alias with no manifest entry must never reach Assets.load (it throws).
+// Same rule/pattern as kitchenScene.ts's MANIFEST_ALIASES.
+const MANIFEST_ALIASES = new Set(MANIFEST.bundles.flatMap((b) => b.assets).map((a) => a.alias as string));
+
+/** The dish-* aliases one block's enemies can render, filtered through
+ *  MANIFEST_ALIASES so a not-yet-registered dish is silently skipped
+ *  (falls back to the archetype silhouette, same as today) instead of
+ *  throwing. */
+function dishAliasesForBlock(block: Block): string[] {
+    const aliases = new Set<string>();
+    for (const slugs of Object.values(block.dishes)) {
+        for (const slug of slugs) {
+            const alias = `dish-${slug}`;
+            if (MANIFEST_ALIASES.has(alias)) aliases.add(alias);
+        }
+    }
+    return [...aliases];
 }
 
 export function createTowerScene(app: Application, stage: Stage): Scene {
@@ -115,6 +137,50 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             tex.enemies.set(key, t);
         }
         return t;
+    }
+
+    /**
+     * Dish-art race fix (handover, addendum to Round J — this file is the
+     * only one it touches). Bug: textures.ts's artSquare() falls back to the
+     * drawn archetype silhouette whenever Assets.cache misses, and
+     * makeEnemyTexture caches that per (archetype, dish) for the run's whole
+     * life — a miss never recovers. All 22 dish PNGs the nine blocks need
+     * are registered, but most sit in preload.ts's DEFERRED bundle
+     * (background-loaded on its own schedule), so a cold cache could always
+     * lose the race against wave 1's first spawn.
+     *
+     * Mirrors kitchenScene.ts:374's fix: Assets.load() the current block's
+     * dishes on demand rather than trust background-load timing.
+     * `readyBlocks` gates the engine stepping loop below (tick()) so no
+     * enemy of a not-yet-loaded block can spawn; `ensureBlockAssets` also
+     * kicks off the NEXT block's load a block early (called with `+1` at
+     * every block-boundary crossing) so blocks 2+ are already warm by the
+     * time play reaches them and the gate is a no-op in practice.
+     */
+    const readyBlocks = new Set<number>();
+    const loadingBlocks = new Set<number>();
+    let trackedBlockId = 0;
+
+    function ensureBlockAssets(blockId: number): void {
+        if (blockId < 1 || blockId > BLOCKS.length) return;
+        if (readyBlocks.has(blockId) || loadingBlocks.has(blockId)) return;
+        loadingBlocks.add(blockId);
+        const aliases = dishAliasesForBlock(BLOCKS[blockId - 1]);
+        const settle = () => {
+            loadingBlocks.delete(blockId);
+            readyBlocks.add(blockId);
+        };
+        if (aliases.length === 0) {
+            settle();
+            return;
+        }
+        Assets.load(aliases).then(settle).catch((err) => {
+            // Never brick the run over art (preload.ts's failure posture) —
+            // mark ready anyway so the sim isn't stuck forever; whichever
+            // alias failed still falls back to the silhouette at draw time.
+            console.warn('[towerScene] dish asset load failed — falling back to silhouette', err);
+            settle();
+        });
     }
 
     // ---- static board ------------------------------------------------------
@@ -232,6 +298,10 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         wave: 1,
     });
     syncStore();
+    // Kick the current block's dish load off immediately (don't wait for the
+    // first tick) so it has the longest possible head start before wave 1
+    // can spawn anything — see ensureBlockAssets's comment above.
+    ensureBlockAssets(blockForLevel(engine.state.waveIndex + 1).id);
 
     // ---- analytics bookkeeping (wall-clock, this run only) -----------------
     const runStartedAt = performance.now();
@@ -643,22 +713,38 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     // ---- tick --------------------------------------------------------------
     const tick = (ticker: Ticker) => {
         const dt = Math.min(ticker.deltaMS, 50) / 1000;
+        // Dish-art race fix: which block is live right now, and (a block
+        // boundary just crossed) make sure its assets are loading and the
+        // NEXT block's are already warming in the background.
+        const level = engine.state.waveIndex + 1;
+        const block = blockForLevel(level);
+        if (block.id !== trackedBlockId) {
+            trackedBlockId = block.id;
+            ensureBlockAssets(block.id);
+            ensureBlockAssets(block.id + 1);
+        }
         // Speed-up runs MORE substeps of the same dt (never one bigger step),
         // so 4x is exactly 4 seconds of identical simulation per second.
         // Drained per substep (not once after the loop) so a leak can be
         // attributed to the enemy that vanished in THAT step; the sound/UI
         // sync below still sees every event, in the same order, unchanged.
         const allEvents: EngineEvent[] = [];
-        for (let i = 0; i < store.get().speed; i++) {
-            const preUids = new Set(engine.state.enemies.map((e) => e.uid));
-            for (const e of engine.state.enemies) enemyDefByUid.set(e.uid, e.def.id);
-            const wasWave = prevPhase === 'wave';
-            engine.step(dt);
-            if (!wasWave && engine.state.phase === 'wave') waveStartedAt = performance.now();
-            prevPhase = engine.state.phase;
-            const stepEvents = engine.drainEvents();
-            trackLeaksForStep(stepEvents, preUids);
-            allEvents.push(...stepEvents);
+        // Gate stepping (not just this scene's own reads) on the CURRENT
+        // block's dish art being loaded — the engine's spawn timers only
+        // advance inside step(), so holding this off is what stops a cold
+        // cache from ever composing an enemy sprite before its art exists.
+        if (readyBlocks.has(block.id)) {
+            for (let i = 0; i < store.get().speed; i++) {
+                const preUids = new Set(engine.state.enemies.map((e) => e.uid));
+                for (const e of engine.state.enemies) enemyDefByUid.set(e.uid, e.def.id);
+                const wasWave = prevPhase === 'wave';
+                engine.step(dt);
+                if (!wasWave && engine.state.phase === 'wave') waveStartedAt = performance.now();
+                prevPhase = engine.state.phase;
+                const stepEvents = engine.drainEvents();
+                trackLeaksForStep(stepEvents, preUids);
+                allEvents.push(...stepEvents);
+            }
         }
         playEvents(allEvents);
         trackWaveClears(allEvents);
