@@ -169,10 +169,15 @@ the end of the belt on four levels and loses at 86. See the
 [Implementation Handover Record](Implementation%20Handover%20Record.md), Round I.
 
 🔴 **Known gap, carried forward:** that board still holds enemies to **~11% at level
-40** (ordinary builds reach 43–55%). Ten maxed Tandoors converge their `first`-targeting
-on one lead enemy; splash falloff discounts only *secondary* victims, never the primary
-target ([`engine.ts:587`](../../jam-entry/src/game/sim/engine.ts)). Disclosed by the
-implementation agent and confirmed on verification.
+40** (ordinary builds reach 43–55%).
+
+⚠️ **The reason is NOT convergent targeting**, which is what Round I reported and what
+`waves.ts` still claims. Measured: **at level 40 only 3 of the 10 towers ever fire, 7 are
+idle, and the whole wave is 12 enemies killed by essentially one Tandoor.** The belt is
+empty, not contested. Tower participation and belt depth rise together as headcount
+rises (2/10 towers at level 20 → 10/10 at level 80; 7% depth → 100%). **Density is the
+lever** — Round J acts on it. See the
+[Implementation Handover Record](Implementation%20Handover%20Record.md).
 
 ---
 

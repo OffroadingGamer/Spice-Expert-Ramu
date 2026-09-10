@@ -133,9 +133,32 @@ call**; the user never ruled on it, and it was not raised again.
    *secondary* victims — the primary target always takes 100%
    ([`engine.ts:587`](../../jam-entry/src/game/sim/engine.ts)). Three alternative fixes
    were tried and each broke monotonicity, the 120-unit/90 s ceiling, or the 85–110
-   window. ✅ **Confirmed correct on verification** — the formula reads
-   `v === target ? 1 : …`. Ordinary builds reach **43–55%** at level 40, so the belt
-   geometry itself is sound; the concentration is a full-meta artefact.
+   window.
+
+   ⚠️ **CORRECTED Sep 10 2026, after this entry was first written.** The falloff
+   *formula* is as described — `v === target ? 1 : …` — but **the convergence
+   diagnosis is measurably false**, and this entry originally endorsed it. Instrumenting
+   the maxed board (per-tower shot counts, sampled from `cooldown` resets):
+
+   | Level | Towers that fire | Idle | Total shots | Peak alive | Depth |
+   |---|---|---|---|---|---|
+   | 20 | **2 / 10** | 8 | 23 | 9 | 7% |
+   | 40 | **3 / 10** | 7 | 18 | 12 | 11% |
+   | 60 | 5 / 10 | 5 | 53 | 20 | 23% |
+   | 71 | 8 / 10 | 2 | 124 | 17 | 54% |
+   | 80 | **10 / 10** | 0 | 162 | 25 | 100% |
+
+   🔴 **At level 40, seven of the ten towers never fire a single shot, and the wave
+   is killed by essentially one tower** (pad 0, 10 of the wave's 18 shots). There is no
+   ~1300 DPS concentration: there is ~130 DPS from one Tandoor, killing a **12-enemy**
+   wave before it reaches the second tower. The belt is not defended, it is *empty*.
+
+   ✅ **Which means criterion 2 is achievable, and the `waves.ts` comment claiming it
+   needs ~30,000 HP on one unit is wrong** — it reasons from a premise that does not
+   hold. Tower participation and belt depth rise together, monotonically, as headcount
+   rises: that is the lever. Ordinary builds reach 43–55% at level 40 for the same
+   reason — weaker towers let more enemies through, which engages more towers.
+   Round J acts on this.
 2. ⚠️ **`sim/engine.ts` edited for Task 8**, which the file table enumerated under
    tasks 1, 4 and 9 only. Cites Round H's disclosure pattern as precedent — a
    precedent that, before this file, existed nowhere in writing.
@@ -169,3 +192,69 @@ re-creates the Sep 10 playtest's points 3 and 5 in a new form.
 **Proposed remedy (not yet authorised):** a tuning pass, not a round — shift the
 non-stag waves' growth out of `hpMult` and into count, using the unused ~40 units of
 headroom.
+
+---
+
+### 2026-09-10 — Round J — Density, not hit points: spend the curve's growth on headcount
+
+**Status:** 📤 **HANDED OVER, not yet returned.** Written before delivery, per this
+file's own rule.
+
+**Scope stamp:** a tuning pass over wave *data*, not a feature round. 🛑 **The engine is
+sealed** — if a task appears to need an engine change, it is out of scope; hand back.
+
+#### Why
+
+Round I made Challenge Mode losable but difficulty is carried entirely by stags. Every
+life lost in the 86-level maxed run comes from a 38–40 unit stag wave; every boss wave
+at 42–71 units is a zero-leak shutout. `targetCount()` caps beetle/wasp at **30** and
+snail/hornet at **22**, growing 0.17–0.22 per level — so a level-71 single-archetype
+wave is **21 units** absorbing **1571 threat**, forcing `hpMult` to **44×**. The
+120-unit ceiling is never approached: the highest count anywhere in 120 levels is **80**.
+
+This re-creates the Sep 10 playtest's points 3 and 5, which asked for pressure from
+quantity.
+
+#### Tasks as authorised
+
+| # | Task |
+|---|---|
+| 1 | **Delete the false diagnosis** in `waves.ts`'s `targetCount` doc comment — the "~30,000 hp on a single unit" paragraph. Replace it with the measured participation table above. |
+| 2 | **Give each wave a unit budget that grows with level**, exactly as threat already does — ramping toward (not past) the 120-unit ceiling by the late blocks. Stag keeps its own cap; the non-stag archetypes present split the remainder. |
+| 3 | **Raise or retire the per-archetype count caps** so the budget can actually be spent. |
+| 4 | **Re-tune `T1` / `DECADE_GROWTH`** so `maxed-meta` still loses inside **85–110** once counts absorb the budget. |
+| 5 | **Add a participation probe to `simulate.ts`** — per-level "towers that fired / idle / peak alive", so criteria 2 and 3 below are measurable in-repo and never regress silently. |
+
+#### Acceptance criteria
+
+| # | Criterion | Today |
+|---|---|---|
+| 1 | `maxed-meta` loses in **85–110** | 86 |
+| 2 | **≥ 8 of 10 towers fire on level 40** | 🔴 **3** |
+| 3 | **Peak concurrent enemies ≥ 40 on level 40** | 🔴 **12** |
+| 4 | **Depth ≥ 60% by level 40** (Round I's missed criterion) | 🔴 **11%** |
+| 5 | **No entry's `hpMult` exceeds 8×** anywhere in 1–120 | 🔴 **44.1×** |
+| 6 | No level exceeds **120 units or 90 s** of spawning | ✅ holds (max 80) |
+| 7 | Block 1: `balanced` finishes level 10 with **5–8 lives** | 7 |
+| 8 | `miser` loses around **4–8** | 6 |
+| 9 | Threat strictly increasing 1–120 | ✅ |
+| 10 | Every decade's breather floor exceeds the previous decade's ceiling | ✅ |
+| 11 | 🛑 `enemies.ts`, `towers.ts` **and `sim/engine.ts`** diffs empty | — |
+| 12 | `tsc --noEmit` and `vite build` clean | ✅ |
+
+⚠️ **Criteria 2–4 are expected to move together.** If depth rises while participation
+does not, the curve has been made harder rather than denser — that is the failure mode
+to watch for, and it is what criterion 5 exists to catch.
+
+#### Files
+
+**Primary:** `src/game/data/waves.ts` · `scripts/simulate.ts`
+**Permitted if needed:** `src/game/config.ts` (curve constants only)
+🛑 **Sealed:** `data/enemies.ts` · `data/towers.ts` · **`sim/engine.ts`**
+🚫 **Not to be touched:** `state/save.ts` · `stage.ts` · `GameCanvas.tsx` ·
+`audio/audio.ts` · `sdk/leaderboard.ts` · `ui/` (no UI work in this pass)
+🚫 **Never run:** `rundot set-public` / `set-private` / `update-tag`
+
+#### Return
+
+_Pending._
