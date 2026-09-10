@@ -197,8 +197,8 @@ headroom.
 
 ### 2026-09-10 — Round J — Density, not hit points: spend the curve's growth on headcount
 
-**Status:** 📤 **HANDED OVER, not yet returned.** Written before delivery, per this
-file's own rule.
+**Status:** ✅ **RETURNED, VERIFIED, ACCEPTED** — commit `8a0cfab`, private **v1.46.0**,
+user-approved Sep 11 2026.
 
 **Scope stamp:** a tuning pass over wave *data*, not a feature round. 🛑 **The engine is
 sealed** — if a task appears to need an engine change, it is out of scope; hand back.
@@ -255,6 +255,62 @@ to watch for, and it is what criterion 5 exists to catch.
 `audio/audio.ts` · `sdk/leaderboard.ts` · `ui/` (no UI work in this pass)
 🚫 **Never run:** `rundot set-public` / `set-private` / `update-tag`
 
-#### Return
+#### Return — verified from source Sep 11 2026
 
-_Pending._
+✅ **Boundary held completely.** `enemies.ts`, `towers.ts` **and `sim/engine.ts`** all
+**0 lines** changed. Only `data/waves.ts` and `scripts/simulate.ts` touched.
+
+✅ **The diagnosis correction is right, and it corrects the record again.** `pickTarget`
+only considers enemies already inside a given tower's own range — there is no global
+lead enemy for ten towers to converge on. Emptiness was the cause, as the participation
+probe showed.
+
+| # | Criterion | Result | Verified |
+|---|---|---|---|
+| 1 | `maxed-meta` loses 85–110 | **105** | ✅ |
+| 2 | ≥ 8/10 towers fire @L40 | **7/10** | ❌ missed, disclosed |
+| 3 | Peak alive ≥ 40 @L40 | **18** | ❌ missed, disclosed |
+| 4 | Depth ≥ 60% @L40 | **42%** | ❌ missed, disclosed |
+| 5 | `hpMult` ≤ 8× anywhere | **8.00×** at L41 | ✅ proven |
+| 6 | ≤ 120 units / 90 s | max **120 u / 23 s** | ✅ proven |
+| 7 | Block 1 `balanced` 5–8 lives | **6/10** | ✅ |
+| 8 | `miser` loses 4–8 | **6** | ✅ |
+| 9 | Threat strictly increasing | proven — **but hollow, see below** | ⚠️ |
+| 10 | Breather floors | proven | ✅ |
+| 11 | Sealed diffs empty | 0 lines × 3 | ✅ |
+| 12 | `tsc` / build clean | exit 0 | ✅ |
+
+Criteria 2–4 conflict with criterion 1 and the agent demonstrated it: every
+configuration reaching them dragged the loss level below 85, sometimes to 39.
+Movement was still large — 3/10 → 7/10 fired, 12 → 18 peak, 11% → 42% depth.
+
+🔴 **Undisclosed but material: ordinary builds now die 15–17 levels earlier.**
+`fox-spam` 49 → **35**, `balanced` 52 → **35**. Neither strategy appears in the return
+report. ✅ **Accepted by the user Sep 11** — it widens the meta-progression range from
+52→86 to **35→105**, giving upgrades more room to matter, at the cost that a competent
+first-time player sees **three of the nine blocks**.
+
+🔴 **Criterion 9 passes on a metric that excludes the deciding lever — the third time
+this has happened.** `waveThreat` calls `unitThreat(e.enemy, hpMult, 1)`: **`speedMult`
+is hardcoded to 1**, while the round's own report calls the speed lever *"what makes the
+game losable at all"*. Measured across levels 1–120:
+
+| Metric | Decreases |
+|---|---|
+| Bookkeeping threat (the proven one) | **0** |
+| Effective threat, speed included | **24** |
+
+Worst: L44 −23.7% · L34 −23.5% · L54 −19.9% · L41 −18.3%. The cause is that the speed
+boost applies only to wasp and hornet, so difficulty sawtooths on whether a ladder
+position happens to contain them — W1 (beetle) and W4 (snail) get none, W2 and W5 get
+all of it.
+
+⚠️ **This is [Plan.md](Plan.md) item 62 recurring.** Round H deleted HP scaling, so
+"strictly increasing threat" proved only *more enemies*; Round J excludes speed, so it
+proves only *more hp × count*. 🔥 **The pattern: we keep proving monotonicity on a
+metric that excludes whatever lever is currently doing the work.** Decided Sep 11 — no
+further tuning pass; **retire the guarantee instead of re-tuning to it**, since the
+build deadline is Sep 14.
+
+⚠️ Minor: the report's L20 participation row (3/5 fired, 8 peak, 18%) does not match a
+clean run (4/9, 10 peak, 16%). Every other row matches. Likely captured mid-iteration.
