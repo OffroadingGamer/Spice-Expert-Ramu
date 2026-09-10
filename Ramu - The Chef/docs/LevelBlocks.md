@@ -1,10 +1,10 @@
-# Level Block Spec — the 8 blocks of Challenge Mode
+# Level Block Spec — the nine blocks of Challenge Mode
 
-**Status:** complete as of Sep 10 2026 except §5c's Overtime numbers, which are a
-**proposal awaiting approval**. Dish assignments, wave ladder and glow tiers are
-all set by the user.
+**Status:** ✅ **Complete.** Every parameter is decided; the only work left is
+execution. §5d's Overtime step fractions are approved as a *structure* and get
+tuned by `npm run balance`, not re-decided.
 
-🔒 **Decided Sep 10 2026:** *one belt, eight themes.* All 8 blocks share a single
+🔒 **Decided Sep 10 2026:** *one belt, nine themes.* All nine blocks share a single
 path, a single slot array and a single `PATH_LENGTH`. Blocks differ by theme, by
 dish set, and by nothing else mechanical.
 
@@ -41,16 +41,16 @@ dish set, and by nothing else mechanical.
 | # | Parameter | Status |
 |---|---|---|
 | 1 | Levels | fixed decade |
-| 2 | `RUSH:` label | ⬜ pending |
+| 2 | `RUSH:` label | ✅ §5a |
 | 3 | Dish set | ✅ §5a |
-| 4 | Wave ladder | ✅ §5b — **identical for all blocks** |
-| 5 | Slot bonuses | ✅ §5d — **identical for all blocks** |
+| 4 | Wave ladder | ✅ §5c — **identical for all blocks** |
+| 5 | Slot bonuses | ✅ §5b — **identical for all blocks** |
 | 6 | Background | ✅ §5a themes; art generation pending (§7) |
 | 7 | ~~NPCs~~ | 🚫 **Not in Challenge Mode.** Decided Sep 10 2026: NPCs belong to the belt rounds. |
 
 🔴 **There is no "mix" parameter.** Decided Sep 10: blocks differ by node and
 theme only. ⚠️ **Consequence, accepted knowingly:** with one belt, one curve and
-one wave ladder, the eight blocks are mechanically identical — the variety is
+one wave ladder, the nine blocks are mechanically identical — the variety is
 visual. That is a legitimate jam-scope choice, recorded so nobody re-litigates it.
 
 ---
@@ -105,7 +105,27 @@ cuisines are visible in every wave.
 
 ---
 
-## 5d. Slot bonuses — identical in every block
+### The `RUSH:` labels
+
+🔒 Approved Sep 10 2026 (the planning agent's defaults, accepted as proposed).
+Blocks 6–8's full fusion names run past 30 characters, so the labels shorten them
+rather than truncating at render time.
+
+| Block | Theme | `RUSH:` label |
+|---|---|---|
+| 1 | Cafe | `CAFE` |
+| 2 | North Indian Dhaba | `NORTH INDIAN` |
+| 3 | South Indian Dhaba | `SOUTH INDIAN` |
+| 4 | Italian Cookout | `ITALIAN` |
+| 5 | North-East Indian Eatery | `NORTH EAST` |
+| 6 | NE Indian & Italian Fusion Cafe | `NE FUSION` |
+| 7 | Italian & South Indian Fusion Dhaba | `ITALIAN FUSION` |
+| 8 | South Indian & North Indian Fusion Dhaba | `DESI FUSION` |
+| 9 | 5-star Royal Indian Restaurant | `OVERTIME` |
+
+---
+
+## 5b. Slot bonuses — identical in every block
 
 🔒 Set by the user Sep 10 2026. Rows A and D (single-leg coverage) carry nothing;
 rows B and C carry all three stats, mirrored.
@@ -142,7 +162,7 @@ must size its curve against this board, not against Round H's.**
 
 ---
 
-## 5b. The wave ladder — identical in every block
+## 5c. The wave ladder — identical in every block
 
 🔒 Set by the user Sep 10 2026. `W` is the wave's position inside its block
 (level 34 → block 4, W4).
@@ -169,7 +189,7 @@ See §6b for what that has to mean mechanically.
 
 ---
 
-## 5c. Overtime (block 9, levels 81+) — 🔒 STRUCTURE APPROVED Sep 10 2026
+## 5d. Overtime (block 9, levels 81+) — 🔒 STRUCTURE APPROVED Sep 10 2026
 
 🔒 **User's shape:** a repeating 10-level loop of **2 breathing · 5 amateur tough ·
 3 brutal**, each loop scaling harder than the last.
@@ -302,16 +322,24 @@ bespoke props at fixed positions, which cannot tile.
 
 ---
 
-## 10. Tower prop reskin — proposal, Sep 10 2026
+## 10. Tower prop reskin — 🔒 mapping SET Sep 10 2026
 
-The user asked me to propose the sequencing. **The answer turned out to be much
-cheaper than expected: no art needs generating at all.**
+The user asked me to propose the sequencing. **No art needs generating: 44 Kitchen
+Essentials props are already deployed** in `public/images/` as `prop-*` aliases,
+sitting in `deferred`, licence cleared (toxiccolors).
 
-`textures.ts` sources the four stations through `art('tower-fox' | 'tower-owl' |
-'tower-bear' | 'tower-squirrel')` against the Sep 4 insect kit's animal PNGs —
-**256 KB, all in `critical`.** Meanwhile **44 Kitchen Essentials props are already
-deployed** in `public/images/` as `prop-*` aliases, sitting in `deferred`, licence
-cleared (toxiccolors).
+🔴 **CORRECTION, same day.** An earlier draft of this section said the four
+stations still draw *"the Sep 4 insect kit's animal PNGs."* **That is wrong.**
+`public/images/tower-bear.png` is a clay tandoor with glowing coals — the four
+`tower-*.png` files were AI-generated on Sep 4 ([Plan.md](Plan.md) §1b, seed 4471)
+and already depict grill / prep board / tandoor / fryer correctly.
+
+⚠️ **So the reskin is a *style* change, not a correctness fix**, and that is the
+better argument for it: the dish trays shipped in Round G are pixel art from the
+Essentials pack, while the stations are smooth generated illustration. The two do
+not sit in one frame — the same objection [SpriteIndex.md](SpriteIndex.md) §5
+raises about mixing packs. The user's playtest note *"tower sprites still
+original"* is that mismatch, not a wrong subject.
 
 **So this is Round G's move again**, exactly: repoint four `art()` calls, move the
 chosen aliases `deferred` → `critical`, drop the four `tower-*.png` entries.
@@ -320,12 +348,66 @@ chosen aliases `deferred` → `critical`, drop the four `tower-*.png` entries.
 prop families ship `l1/l2/l3` variants, and a tower has exactly three levels. The
 mockup already labels them LVL 1 / 2 / 3 — this makes the sprite match the badge.
 
-| Station | id | Proposed family | Levels available |
+🔒 **Set by the user Sep 10 2026**, from
+`Art\_sliced\01 - Kitchen Essentials\props`. Verified: all twelve files exist and
+are already deployed in `public/images/`.
+
+| Station | id | Lv1 | Lv2 | Lv3 |
+|---|---|---|---|---|
+| **Grill** | `fox` | `prop-stock-pot-l1` **40** | `-l2` **41** | `-l3` **42** |
+| **Prep Board** | `owl` | `prop-pressure-cooker-l1` **23** | `-l2` **24** | `-l3` **25** |
+| **Tandoor** | `bear` | `prop-cooktop-l2` **07** | `prop-cooktop-l3` **08** | `prop-cooktop-l5` **10** |
+| **Fryer** | `squirrel` | `prop-fry-pan-l2` **15** | `-l3` **16** | `-l4` **17** |
+
+⚠️ **The props/ numbers are sprite indices, not tier numbers**, so two families do
+not map onto `-l1/-l2/-l3`. The Tandoor takes Cooktop **07/08/10** — *without
+anything → with Oven → Cooktop & Tandoor* — deliberately skipping `06` and `09`.
+The Fryer takes Fry pan **15/16/17**, skipping `14` and `18`.
+
+➕ **Note for anyone reading belt-mode docs alongside this:** there, *"Tandoor"*
+means Cooktop L4/L5 ([RecipeList.md](RecipeList.md) §7.5), and the Naan level
+pre-places `09` specifically. Challenge Mode's Tandoor **tower** is a different
+selection (07/08/10). The two modes share sprite `10`; nothing conflicts, but the
+word means different things in each.
+
+✅ **Payload: +31 KB.** The twelve props total 285 KB against the 254 KB of
+`tower-*.png` they replace, and the swap is `critical`-neutral — the four old
+files leave `critical` as the twelve enter it.
+
+### 🔴 Sprite dimensions are inconsistent, and it will break the upgrade read
+
+Measured:
+
+| Station | Lv1 | Lv2 | Lv3 |
 |---|---|---|---|
-| Grill | `fox` | `prop-cooktop` | l1–l5 |
-| Prep Board | `owl` | `prop-dough-counter` | l1–l3 |
-| Tandoor | `bear` | `prop-stock-pot` *or* `prop-sauce-pot` | l1–l3 |
-| Fryer | `squirrel` | `prop-fry-pan` | l1–l5 |
+| Grill | 90×118 | 94×117 | 91×118 |
+| Prep Board | **146×102** | 94×103 | 102×103 |
+| **Tandoor** | **118×131** | **158×261** | **246×191** |
+| Fryer | 66×91 | 80×69 | 99×87 |
+
+Under a per-sprite contain-fit into the fixed 64-unit tower slot, the Tandoor
+would appear **tall and narrow at Lv2, then short and wide at Lv3** — the upgrade
+reads as a squash, and Prep Board Lv1 would look bigger than Lv2.
+
+✅ **Fix: fit per FAMILY, not per sprite.** Compute one bounding box across a
+station's three sprites, scale all three by that single factor, and anchor at the
+bottom edge so they sit on the pad consistently. Then scale each family so its
+largest tier fills the slot. Within a station the upgrade visibly grows; across
+stations every Lv3 reads at the same nominal size.
+
+**This is the same defect the user raised about enemy sprites** — *"the size
+shouldn't variate, uniform fit model to be adopted"* — appearing again on the
+tower side, and it needs the same answer.
+
+---
+
+📝 **A stale flag retracted.** An earlier draft of this section reported a naming
+discrepancy — props `40–42` called *Stovetop* in
+[SpriteIndex.md](SpriteIndex.md) §6.17/§6.18 but aliased `prop-stock-pot`. The
+files on disk are `40-Stock pot(Level1)` … `42-Stock pot(Level3)`, **ascending and
+correctly named**. SpriteIndex's warning about descending Stovetop tiers describes
+a state that was already fixed. No discrepancy exists; the doc section is just out
+of date.
 
 ⚠️ **Payload must be measured, not assumed** — 12 prop PNGs enter `critical` as
 256 KB of tower art leaves. Round G's net was a win; this one needs checking.
@@ -339,3 +421,58 @@ mockup already labels them LVL 1 / 2 / 3 — this makes the sprite match the bad
    the build sidebar *displays tower art* — building those cards around sprites
    we're about to replace means laying them out twice.
 4. **Round B** — Warrior achievements, once station naming is final.
+
+---
+
+## 11. 🔒 HUD nomenclature — the long-owed rename
+
+Set by the user Sep 10 2026 via the `002` schematic. **This closes the
+nomenclature brief owed since the Sep 10 playtest**, where the ask was recorded as
+*"Rush 30 Overtime nomenclature needs to be modified."*
+
+| Now (`Hud.tsx`) | Becomes | Why |
+|---|---|---|
+| `🚪 10` | ❤️🏃 **ESCAPES LEFT: 10** | Names what a lost life *is* — a customer walking out. `🚪` named nothing. |
+| `💵 26599` | 💰 **CASH: 27,166** | Same reason; the icon alone was ambiguous. |
+| `Rush 83 · Overtime` (:214) | **WAVE 84** large, **RUSH: OVERTIME** beneath | 🔥 **They stop being the same counter.** WAVE is the absolute level; **RUSH is the block label** (§5a). So level 34 reads `WAVE 34 / RUSH: SOUTH INDIAN`, and the old string's redundancy disappears. |
+
+⚠️ **Prices are NOT rescaled.** The `$900–$2500` chips in the `002`/`004`
+schematics are the source image's furniture. Our towers stay **60–110**
+(decided Sep 10) — the consumable sink (§12) absorbs late-game cash instead.
+
+---
+
+## 12. 🔒 The coin sink — non-tower consumables
+
+**The problem, measured:** 10 slots × 3 tower levels caps total possible spend at a
+few thousand coins, against a player holding **27,166 at wave 84**. Round H cut
+income; income was never the issue. **A ceiling cannot be fixed by a rate.**
+
+🔒 **Decided Sep 10 2026: a non-tower sink**, chosen over more upgrade tiers, more
+pads, or a wave re-roll.
+
+✅ **It needs no new engine system.** [status.ts](../../jam-entry/src/game/data/status.ts)
+already defines **slow, frozen, poison, burn and knockback**, and the engine applies
+all five — a board-wide, one-wave effect bought in the build phase reuses that
+pipeline whole. Only an application site and a button are new.
+
+🔴 **Price must scale with level**, or a 27,000-coin bank buys the whole system out
+at rush 30. Something of the form `base × threat(level) / threat(10)` keeps a
+purchase costing a comparable share of income at level 20 and at level 80.
+
+---
+
+## 13. Round sequencing
+
+🔒 Decided Sep 10 2026.
+
+| # | Round | Contents | Depends on |
+|---|---|---|---|
+| 1 | **Balance** | splash falloff · sim runs full meta · restore `hpMult`/`speedMult` · concurrent spawn entries · uniform enemy size · glow tiers · belt geometry + 10 slots · all nine blocks' data · the ladder · Overtime loops · the sink | — |
+| 2 | **Art generation** | the nine backdrops (§7), regenerated from the `003`/`004` thumbnails | runs in parallel with 1 |
+| 3 | **Visual** | tower reskin (§10) · backdrops · build sidebar · ghost slots · HUD relabel (§11) · wave roster panel (§8) | 1 and 2 |
+| 4 | **Round B** | Warrior achievements, GDD §10.11b | 3 — station naming must be final |
+
+✅ **The tower reskin sits in round 3, not earlier**, because the build sidebar
+*displays tower art*: laying those cards out around sprites we are about to replace
+means doing it twice.

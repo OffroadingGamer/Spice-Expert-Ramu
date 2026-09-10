@@ -5,13 +5,14 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 9 2026, 20:00 IST
+**Last updated:** Sep 10 2026, evening IST
 **Live:** **v1.7.0 public** · <https://w.run/puneetmakes/spice-expert-ramu> — went public Sep 5 2026 with the full audio layer; was v1.2.3 from Sep 4
 **LIVE: v1.42.0 public** since Sep 9 — Challenge Mode only; the belt is gated behind `?test=1`. ✅ **The scripted FTUE, the visible win condition, the readable HUD and the hard-lock fix are all in front of real players.** Approval took well under an hour ([Specs.md](Specs.md) §9a).
-**Private:** **v1.42.0** — **27 belt rounds + Challenge rounds A, A2, C, D and E landed**, `366e77d`. [GDD.md](GDD.md) §10.11c–e · [Specs.md](Specs.md) §8d
+**Private:** **v1.44.0** — Round G (dish sprites, `797142c`) and Round H (80-level curve, pad-0 bonus stripped, FTUE early exit, `004c4b8`) both landed. 🔴 **v1.43.0's dish sprites have never reached public** — every live player still sees the Sep 4 insect art. Promotion is deliberately held until the level build lands, so marketing starts from that point ([LevelBlocks.md](LevelBlocks.md)). [GDD.md](GDD.md) §10.11c–e · [Specs.md](Specs.md) §8d
 ✅ **The v1.42.0 hotfix is LIVE** — the wave-2 hard-lock is closed in production. 🔒 **We never promote directly**: the public tag rejects creator writes (400); RUN publishes on approving the review tag. [Specs.md](Specs.md) §9a
 🔴 **Rank #4, down from #2 in a day** — $600 → $200. SHIFT (3 days old) passed us by **3 DUP**, 371 vs 368, gaining +69 to our +9. ➕ **The two entries above it have stalled** (+2 and +9), so **third place is three plays away**. 🔥 **Our plays/user (1.37) beats every entry ahead of us** — a distribution gap, not a quality or retention one. [Marketing Strategy.md](Marketing%20Strategy.md) §7.
-⏸️ **Next rounds:** dish-sprite enemy reskin (gates the promo video) · tower prop reskin · wave-curve rebalance · Round F · **Round B** (GDD §10.11b) still **awaiting approval to write**.
+✅ **The Challenge Mode level design is CLOSED** — nine blocks, one belt, every parameter decided: [LevelBlocks.md](LevelBlocks.md). 🔴 **But the game currently cannot be lost** — a maxed board survives all 120 levels at full lives and nothing passes 14% of the belt ([Plan.md](Plan.md) item 62).
+⏸️ **Round queue, decided Sep 10:** **1· Balance** (splash falloff · sim runs full meta · restore `hpMult` · concurrent spawns · belt geometry + 10 slots · all nine blocks · the coin sink) — handover to be written · **2· Art generation** (nine backdrops, parallel) · **3· Visual** (tower reskin · backdrops · build sidebar · ghost slots · HUD rename · wave roster panel) · **4· Round B** (GDD §10.11b).
 ✅ **PROMOTABLE:** v1.39.0 is the **first public-deploy candidate since v1.7.0**. The Test Mode
 entry is gated behind `?test=1` (`jam-entry/src/state/devMode.ts`), so Challenge Mode is the only
 public route and it now has a scripted FTUE, stated win/lose and audio sliders.

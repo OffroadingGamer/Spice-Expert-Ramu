@@ -2301,3 +2301,27 @@ uniques are the score; the trend matters more than any single day.
     past this project: when work has been explicitly delegated, tracking it is not
     diligence, it is interference.** A status list that includes another agent's open
     tasks reads as a to-do list to whoever receives it, whatever caveat is attached.
+88. **Verify against the artefact, not against the document that describes it. Three
+    times in one session I asserted from prose when the thing itself was one command
+    away.** 🔴 **(1)** I wrote that the four stations still draw *"the Sep 4 insect
+    kit's animal PNGs"* — reasoning from the kit ids `fox`/`owl`/`bear`/`squirrel`.
+    Opening `public/images/tower-bear.png` shows a **clay tandoor with glowing coals**;
+    [Plan.md](Plan.md) §1b records all four as generated on Sep 4 already depicting the
+    right subjects. The claim reached a committed doc and a commit message before I
+    checked. 🔴 **(2)** I proposed `prop-stock-pot` / `prop-sauce-pot` for the Tandoor
+    when **three documents** already defined it — [RecipeList.md](RecipeList.md) §7.5,
+    [SpriteIndex.md](SpriteIndex.md) §6.18 and [PropList.md](PropList.md) §8.2 all say
+    Tandoor is *not a family*, it is Cooktop L4/L5. I had read §7.5 earlier in the same
+    session. 🔴 **(3)** I then reported a live naming discrepancy — props 40–42 called
+    *Stovetop* in SpriteIndex but aliased `prop-stock-pot` — from a doc section that was
+    **already stale**; the files on disk are `40-Stock pot(Level1)` ascending, correctly
+    named. ⚠️ **The common shape: a document is a claim about an artefact, and claims
+    age.** Each of these was a `ls`, a `Read` or a `grep` away, and in every case I had
+    the path already. 🔥 **The tell is the word "still"** — "the towers *still* draw the
+    kit art", "40–42 is *still* called Stovetop". Any sentence asserting the present
+    state of a file from memory or from prose is a sentence that has not been checked.
+    ✅ **Rule: before a fact about a file's current contents enters a doc, a commit
+    message, or a brief — open the file.** This is the same failure the standing note
+    *"carried claims need re-verification"* already names, arriving through a new door:
+    not a claim carried across a compaction, but one inferred from a neighbouring
+    document in the same breath.
