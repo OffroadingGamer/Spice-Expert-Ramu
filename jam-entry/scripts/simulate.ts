@@ -180,9 +180,24 @@ function waveShape(wave: Wave): { units: number; spawnSecs: number } {
     return { units, spawnSecs };
 }
 
-function run(strategy: Strategy): { lastPurchaseLevel: number } {
+/** Round J Task 5: per-level participation — which pads ever fired a shot,
+ *  and the most enemies simultaneously alive. Cooldown only ever moves in
+ *  two directions: it counts DOWN every step (t.cooldown -= dt) and jumps
+ *  UP to 1/fireRate the instant a tower fires (engine.ts:528-532) — so
+ *  sampling it before/after a step and looking for a RISE catches every
+ *  shot without needing to touch the sealed engine. */
+interface ParticipationRow {
+    level: number;
+    firedPads: number;
+    totalPads: number;
+    peakAlive: number;
+    deepestPct: number;
+}
+
+function run(strategy: Strategy): { lastPurchaseLevel: number; participation: ParticipationRow[] } {
     const e = createEngine(strategy.meta ?? {});
     const rows: string[] = [];
+    const participation: ParticipationRow[] = [];
     let lastPurchaseLevel = 0;
     while (e.state.phase === 'build' && e.state.waveIndex < MAX_WAVES) {
         const level = e.state.waveIndex + 1;
@@ -197,15 +212,23 @@ function run(strategy: Strategy): { lastPurchaseLevel: number } {
         const coinsBefore = e.state.coins;
         const shape = waveShape(waveAt(level - 1));
         e.startWave();
+        const firedPads = new Set<number>();
+        let peakAlive = 0;
         let t = 0;
         while (e.state.phase === 'wave' && t < MAX_WAVE_SECONDS) {
+            const before = new Map(e.state.towers.map((tw) => [tw.padIndex, tw.cooldown]));
             e.step(DT);
+            for (const tw of e.state.towers) {
+                if (tw.cooldown > (before.get(tw.padIndex) ?? -Infinity)) firedPads.add(tw.padIndex);
+            }
+            if (e.state.enemies.length > peakAlive) peakAlive = e.state.enemies.length;
             t += DT;
         }
         if (t >= MAX_WAVE_SECONDS) {
             rows.push(`  level ${level}: STALLED after ${MAX_WAVE_SECONDS}s (bug or unkillable enemy?)`);
             break;
         }
+        participation.push({ level, firedPads: firedPads.size, totalPads: towerCount, peakAlive, deepestPct: e.state.deepestFrac * 100 });
         const leaked = livesBefore - e.state.lives;
         rows.push(
             `  level ${String(level).padStart(3)}: ` +
@@ -214,7 +237,8 @@ function run(strategy: Strategy): { lastPurchaseLevel: number } {
             `coins ${coinsBefore}->${e.state.coins} ` +
             `cleared in ${t.toFixed(0)}s ` +
             `deepest ${(e.state.deepestFrac * 100).toFixed(0)}% ` +
-            `units ${shape.units} spawn ${shape.spawnSecs.toFixed(0)}s`
+            `units ${shape.units} spawn ${shape.spawnSecs.toFixed(0)}s ` +
+            `fired ${firedPads.size}/${towerCount} peakAlive ${peakAlive}`
         );
         if (e.state.phase === 'lost') break;
     }
@@ -224,17 +248,39 @@ function run(strategy: Strategy): { lastPurchaseLevel: number } {
             : `SURVIVED to the sim cap (level ${MAX_WAVES}) with ${e.state.lives}/${CONFIG.economy.startLives} lives`;
     console.log(`\n${strategy.name}: ${outcome}`);
     for (const r of rows) console.log(r);
-    return { lastPurchaseLevel };
+    return { lastPurchaseLevel, participation };
 }
 
 console.log(`Balance simulation — ${WAVES.length} authored levels + Overtime, dt=${DT.toFixed(3)}s, MAX_WAVES=${MAX_WAVES}`);
-const results: Record<string, { lastPurchaseLevel: number }> = {};
+const results: Record<string, { lastPurchaseLevel: number; participation: ParticipationRow[] }> = {};
 for (const s of STRATEGIES) results[s.name] = run(s);
 
 console.log('\nReading the results:');
 console.log('  - maxed-meta is the PRIMARY case (10 maxed Tandoors, full meta): must lose somewhere in levels 85-110, not at the cap, not before 85.');
 console.log('  - pad0-rush/fox-spam/balanced/miser are floor cases carried from Round H — miser must still lose, ideally around levels 4-8.');
 console.log(`  - balanced stopped making any purchase after level ${results['balanced'].lastPurchaseLevel} (Acceptance Criterion 7 — coins as a live constraint).`);
+
+// ---------------------------------------------------------------------------
+// Round J Task 5: maxed-meta's participation table (criteria 2, 3, 4).
+// ---------------------------------------------------------------------------
+console.log('\nmaxed-meta participation (criteria 2-4: >=8/10 fired, >=40 peak alive, >=60% depth, all at level 40):');
+console.log('  level  towers-fired  idle  peak-alive  depth');
+for (const p of results['maxed-meta'].participation) {
+    if (p.level % 10 === 0 || p.level === 40) {
+        console.log(`  L${String(p.level).padStart(3)}   ${String(p.firedPads).padStart(2)}/${p.totalPads}         ${String(p.totalPads - p.firedPads).padStart(2)}    ${String(p.peakAlive).padStart(3)}         ${p.deepestPct.toFixed(0)}%`);
+    }
+}
+const l40 = results['maxed-meta'].participation.find((p) => p.level === 40);
+if (l40) {
+    const c2 = l40.firedPads >= 8;
+    const c3 = l40.peakAlive >= 40;
+    const c4 = l40.deepestPct >= 60;
+    console.log(`  Criterion 2 (>=8/10 fired @ L40): ${c2 ? 'MET' : 'NOT MET'} (${l40.firedPads}/${l40.totalPads})`);
+    console.log(`  Criterion 3 (>=40 peak alive @ L40): ${c3 ? 'MET' : 'NOT MET'} (${l40.peakAlive})`);
+    console.log(`  Criterion 4 (>=60% depth @ L40): ${c4 ? 'MET' : 'NOT MET'} (${l40.deepestPct.toFixed(0)}%)`);
+} else {
+    console.log('  maxed-meta never reached level 40 (lost earlier) — criteria 2-4 not measurable.');
+}
 
 // ---------------------------------------------------------------------------
 // Round I Task 7: the four required proofs.
@@ -266,6 +312,20 @@ for (let i = 1; i < levelRows.length; i++) {
 console.log(monotonic
     ? '  PROVEN: threat is strictly increasing across every level 1-120.'
     : '  NOT PROVEN: see failures above.');
+
+// Round J Task 5's own criterion (5): no entry's hpMult may exceed 8x anywhere 1-120.
+let maxHpMult = 0;
+let maxHpMultAt = '';
+for (let level = 1; level <= 120; level++) {
+    for (const entry of waveAt(level - 1).entries) {
+        const m = entry.hpMult ?? 1;
+        if (m > maxHpMult) { maxHpMult = m; maxHpMultAt = `level ${level} (${entry.enemy})`; }
+    }
+}
+console.log(`\nHighest hpMult anywhere in levels 1-120: ${maxHpMult.toFixed(2)}x at ${maxHpMultAt}.`);
+console.log(maxHpMult <= 8
+    ? '  PROVEN: no entry\'s hpMult exceeds 8x anywhere in 1-120.'
+    : '  NOT PROVEN: exceeds the 8x ceiling.');
 
 // 2) Task 7's 120-unit / 90-second ceiling, every level 1-120 (the 291-snail test).
 let shapeOk = true;

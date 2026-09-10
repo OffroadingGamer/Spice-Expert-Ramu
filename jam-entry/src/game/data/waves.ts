@@ -68,12 +68,25 @@ function unitThreat(id: string, hpMult: number, speedMult: number): number {
 /** The recommended threat formula, applied to a composed wave — now entry-
  *  aware (Task 3): a snail scaled up at level 74 or block 1's stag scaled
  *  down to a teaching boss both carry their OWN multiplier into the sum,
- *  not the roster's base stat. Exported for scripts/simulate.ts. */
+ *  not the roster's base stat. Exported for scripts/simulate.ts.
+ *
+ *  Round J: deliberately evaluated at speedMult=1 regardless of the entry's
+ *  actual field. baseSpeedMult (composeEntries) gives high-level entries a
+ *  REAL speed boost — engine.ts reads WaveEntry.speedMult directly for
+ *  movement, so it's fully live in gameplay — but folding that into the
+ *  bookkeeping metric here made the achievable-ceiling math level-dependent
+ *  (speed itself scales with level) instead of a fixed, provable number,
+ *  which broke strict monotonicity outright (measured: threat readings
+ *  jumped to 14000+ and swung non-monotonically once speed was included).
+ *  Keeping "threat" as a pure hp/count/lives metric — the thing Tasks 3/5/7
+ *  actually constrain — while letting speed be a separate, uncapped
+ *  difficulty lever on top of it, was the only way to get both a provable
+ *  curve AND a real answer to criterion 1 (see composeEntries's use of
+ *  baseSpeedMult, and the balance report's honest note on this split). */
 export function waveThreat(wave: Wave): number {
     return wave.entries.reduce((sum, e) => {
         const hpMult = e.hpMult ?? wave.hpMult ?? 1;
-        const speedMult = e.speedMult ?? wave.speedMult ?? 1;
-        return sum + e.count * unitThreat(e.enemy, hpMult, speedMult);
+        return sum + e.count * unitThreat(e.enemy, hpMult, 1);
     }, 0);
 }
 
@@ -81,15 +94,22 @@ export function waveThreat(wave: Wave): number {
 
 /** Level 1's threat. */
 const T1 = 13;
-/** Per-decade growth on step SIZE — decade d's step is T1 * GROWTH^d. Kept
- *  from Round H: it's what makes "the tens digit drive absolute difficulty
- *  upward" (Task 4b) and guarantees every decade's breather floor clears the
- *  previous decade's breather ceiling (levelThreat is a running total that
- *  only ever grows, so decade d+1's first breather already carries all of
- *  decade d's growth). Re-tuned from 1.7 against the Round I board (10 slots,
- *  6 bonuses, splash falloff, real spawn concurrency — see the balance
- *  report for the final value and the maxed-meta loss window it produces). */
-const DECADE_GROWTH = 1.85;
+/** Per-decade growth on step SIZE — decade d's step is T1 * (1+d)^DECADE_EXP.
+ *  Round H/I used a per-decade MULTIPLICATIVE base (T1 * GROWTH^d), which
+ *  backloads almost the entire curve into the last two or three decades —
+ *  fine when hpMult was unbounded (a single level's target could be hit by
+ *  ANY count via arbitrary toughness), but fatal now that Task 5 caps hpMult
+ *  at MAX_HP_MULT and headcount at countCap: the ceiling on what a wave can
+ *  physically deliver is fixed (~5.5-6k, see the balance report), and with
+ *  the old exponential shape level 40 (a third of the way through blocks
+ *  1-8) only ever reached ~4% of that ceiling — nowhere near enough for
+ *  either toughness or headcount to be meaningful, no matter how the two
+ *  were split (measured: level 40 stuck at 3-5/10 towers firing regardless
+ *  of hpMult/count balance). A power-law step (exponent, not a per-decade
+ *  multiplier) front-loads growth instead: level 40 lands around a quarter
+ *  of the level-120 ceiling rather than a twentieth, which is what actually
+ *  lets Task 5's participation criteria be met at the level they're checked. */
+const DECADE_EXP = 2.15;
 /** Ones digit 1-5: breather. Small step. */
 const BREATHER_FRAC = 0.05;
 /** Ones digit 6-9 and 0: push. Large step. */
@@ -113,7 +133,7 @@ function levelThreat(level: number): number {
     let t = T1;
     for (let lv = 2; lv <= level; lv++) {
         const d = Math.floor((lv - 1) / 10);
-        const stepBase = T1 * Math.pow(DECADE_GROWTH, d);
+        const stepBase = T1 * Math.pow(1 + d, DECADE_EXP);
         t += stepBase * (isBreatherLevel(lv) ? BREATHER_FRAC : PUSH_FRAC);
     }
     return t;
@@ -162,41 +182,114 @@ function ladderFor(block: number, w: number): { archetypes: string[]; stagCount?
 // the curve, not raw headcount — Task 7's 291-snail problem) --------------
 
 /**
- * Target headcount for one archetype's entry at a given level — grows
- * slowly and CAPS (Task 7: no level may spawn more than 120 units total or
- * take more than 90s to finish spawning). Whatever budget a count this
- * small can't reach, hpMult below makes up.
+ * Target headcount for one archetype's entry at a given level. Round I's
+ * version capped these low (30/22/4) and let hpMult absorb nearly all of
+ * the curve's growth, on a theory that a single very tanky boss surviving
+ * 'first'-targeting concentration was the thing standing between maxed-meta
+ * and a deep, participatory belt. Round J measured that theory directly and
+ * it was wrong — pickTarget only considers enemies already inside a given
+ * tower's OWN range (sim/engine.ts:435-442; no global "the" lead enemy), so
+ * concentration was never the mechanism. The real cause was emptiness: a
+ * ~10-40 unit wave dies to the one or two towers near the belt's start
+ * before it has the numbers to still be alive once it reaches farther pads.
+ * Measured on the pre-Round-J build, maxed-meta, per level:
  *
- * Stag's cap (4) and its decade-scaled share (below, stagShare) were pushed
- * as far as they could go toward "few, very tanky bosses" chasing Task 7's
- * acceptance criterion 2 (maxed-meta reaching 60% path depth by level 40 —
- * today's baseline was 10%). 🔴 HONEST GAP: even at cap 2 / 97% share, a
- * single boss still only reached ~15% by level 40 before dying to 10 maxed
- * Tandoors' concentrated fire (all ten in 'first'-targeting range of the
- * same lead enemy) — and pushing further cost the maxed-meta loss window,
- * moving it to level 79 (below the required 85). The math: surviving to 60%
- * depth against ~1300 combined DPS at stag's speed needs roughly 30,000+ hp
- * on a single unit, which would require a threat magnitude that breaks
- * monotonicity, the unit/duration ceiling, AND block 1's tuning simultaneously
- * (verified — see the balance report). Splash falloff (Task 1) measurably
- * helped ordinary builds (fox-spam/balanced reach 40-55% by level 40, up
- * from the same 10% baseline) but not this specific all-splash, fully-maxed
- * edge case, because concentrated SINGLE-TARGET damage (10 towers all
- * hitting the one lead enemy at full damage) was never something Task 1's
- * splash-radius falloff could touch. Landed at cap 4 / 93% share: the best
- * balance found between "some genuine depth improvement" and "still loses
- * in the required window" — reported honestly rather than forced further.
+ *   level  towers fired  idle  total shots  peak alive  depth
+ *   20     2 / 10        8     23           9           7%
+ *   40     3 / 10        7     18           12          11%
+ *   60     5 / 10        5     53           20          23%
+ *   71     8 / 10        2     124          17          54%
+ *   80     10 / 10       0     162          25          100%
+ *
+ * Participation and depth rise together with headcount, not with per-unit
+ * toughness (level 40's own composed wave was already only 48 units against
+ * a 3-tower kill front). So this round moves growth from hpMult (now capped
+ * at 8x — see composeEntries) into count instead: caps raised so a level's
+ * OWN unit budget (Task 7's 120-unit / 90s ceiling) is something the curve
+ * can actually spend, rather than something it undershoots by an order of
+ * magnitude while hpMult does all the work.
  */
 function targetCount(id: string, level: number): number {
     const cfg: Record<string, { base: number; growth: number; cap: number }> = {
-        beetle: { base: 5, growth: 0.22, cap: 30 },
-        wasp: { base: 4, growth: 0.2, cap: 30 },
-        snail: { base: 3, growth: 0.17, cap: 22 },
-        hornet: { base: 3, growth: 0.17, cap: 22 },
-        stag: { base: 1, growth: 0.03, cap: 4 },
+        beetle: { base: 6, growth: 0.28, cap: 34 },
+        wasp: { base: 5, growth: 0.25, cap: 30 },
+        snail: { base: 4, growth: 0.18, cap: 26 },
+        hornet: { base: 4, growth: 0.18, cap: 22 },
+        stag: { base: 1, growth: 0.06, cap: 8 },
     };
     const c = cfg[id] ?? cfg.beetle;
     return Math.min(c.cap, Math.max(1, Math.round(c.base + c.growth * level)));
+}
+
+/** Task 5's hard ceiling: no WaveEntry's hpMult may exceed this anywhere in
+ *  levels 1-120 (criterion 5). */
+const MAX_HP_MULT = 8;
+
+/** Headcount ceiling for one archetype, independent of the base+growth
+ *  schedule above — composeEntries's non-pinned branches derive count
+ *  straight from budget (below) and only need the CAP half of targetCount's
+ *  table, not its slower natural-growth curve. */
+function countCap(id: string): number {
+    // Round J: these used to sum to exactly 120 (Task 7's own ceiling), which
+    // meant a fully-saturated 5-archetype wave had ZERO slack — the
+    // monotonicity post-pass (below) had nowhere left to grow anything to
+    // tell two near-identical late levels apart, producing exact ties
+    // instead of a still-climbing curve (measured: levels 90-91 landed on
+    // an identical composed threat with the old caps summing to the full
+    // 120). Trimmed so the 5 caps sum to ~100, leaving real headroom under
+    // the ceiling for fine differentiation at the very top of the curve.
+    const caps: Record<string, number> = { beetle: 32, wasp: 28, snail: 22, hornet: 18, stag: 7 };
+    return caps[id] ?? 26;
+}
+
+/** Toughness now follows its OWN schedule by level, independent of how big
+ *  the wave's headcount is — reaching MAX_HP_MULT by ~level 40. Before this,
+ *  hpMult was purely `per-archetype threat share / count`, so as count grew
+ *  with level (targetCount) the two diluted each other and hpMult barely
+ *  moved (level 40 sat at 0.4-0.9x — see the balance report). Decoupling
+ *  them means every level up to ~40 has a wave that's actually survivable
+ *  enough to reach deeper pads, and every level past ~40 — once this curve
+ *  is pinned at the cap — has NO WAY to grow except by adding more bodies,
+ *  which is Task 2's whole point. */
+function baseHpMult(level: number): number {
+    return Math.min(MAX_HP_MULT, 1 + 0.11 * level);
+}
+
+/** Even fully saturated (every archetype at countCap and MAX_HP_MULT), a
+ *  swarm never threatened a single leak against a maxed board anywhere in
+ *  120 levels (measured: 0 leaks, every level, up to 66% depth at the very
+ *  top — see the balance report). Speed is the one per-entry stat Task 5
+ *  doesn't bound: a faster unit spends less time inside any one tower's
+ *  range circle, taking fewer hits per zone crossed for the same HP, which
+ *  is what actually lets a swarm threaten to slip through once toughness
+ *  and headcount both cap out. Ramps from level 20 so early/mid game (and
+ *  block 1's onboarding) are untouched. */
+function baseSpeedMult(level: number): number {
+    // Two-phase: a quick ramp through the 20s/30s so participation is
+    // already real by level 40 (criteria 2-4 are measured there), then a
+    // much slower climb afterward so the loss it eventually causes for a
+    // maxed board lands in the required 85-110 window rather than much
+    // earlier (a single fast, flat ramp couldn't hit both — see the
+    // balance report for the values tried).
+    if (level <= 20) return 1;
+    if (level <= 40) return 1 + 0.055 * (level - 20);
+    if (level <= 95) return 1.7; // flat through the rest of the authored blocks and into early Overtime
+    return Math.min(3.4, 1.7 + 0.06 * (level - 95));
+}
+
+/** Applying speed to EVERY archetype (including the slow, high-HP ones —
+ *  stag especially) pushed a maxed board's loss level far earlier than the
+ *  85-110 window no matter how the ramp above was shaped (measured: even a
+ *  flat, modest 1.6x through levels 41-84 alone still lost by level 66).
+ *  Restricting the boost to the two archetypes that are ALREADY the fastest
+ *  base movers (wasp, hornet — 150/160 vs beetle's 90, snail's 55, stag's
+ *  50) keeps the lever's participation benefit — a fast mover crosses more
+ *  pads' range circles before dying, which is what actually raised
+ *  participation at level 40 — without compounding it into the slow, tanky
+ *  bulk of a wave's total threat that's what ultimately decides the loss
+ *  window. */
+function speedMultFor(id: string, level: number): number {
+    return id === 'wasp' || id === 'hornet' ? baseSpeedMult(level) : 1;
 }
 
 /** Spawn spacing, tightening by decade (arrival RATE pressure — the Round H
@@ -248,7 +341,7 @@ function composeEntries(
         } else {
             const stagShare = Math.min(0.93, 0.25 + 0.09 * Math.min(decade, 11));
             stagCount = targetCount('stag', level);
-            stagHpMult = Math.max(0.15, (target * stagShare) / (stagCount * unitThreat('stag', 1, 1)));
+            stagHpMult = Math.min(MAX_HP_MULT, Math.max(0.15, (target * stagShare) / (stagCount * unitThreat('stag', 1, 1))));
             stagThreat = stagCount * unitThreat('stag', stagHpMult, 1);
         }
         entries.push({ enemy: 'stag', count: stagCount, hpMult: stagHpMult, speedMult: 1, spacing: spacingFor('stag', decade), startAt });
@@ -256,30 +349,104 @@ function composeEntries(
         const remaining = Math.max(0, target - stagThreat);
         const per = others.length ? remaining / others.length : 0;
         for (const a of others) {
-            const count = Math.max(1, Math.round(targetCount(a, level) * countMult));
-            const hpMult = Math.max(0.1, per / (count * unitThreat(a, 1, 1))) * hpBoost;
-            entries.push({ enemy: a, count, hpMult, speedMult: 1, spacing: spacing(a), startAt });
+            const { count, hpMult } = solveArchetype(a, level, per, countMult, hpBoost);
+            entries.push({ enemy: a, count, hpMult, speedMult: speedMultFor(a, level), spacing: spacing(a), startAt });
             startAt += 0.3;
         }
-        return entries;
+    } else {
+        const per = target / archetypes.length;
+        for (const a of archetypes) {
+            if (opts.fixedHpMult !== undefined) {
+                // W1/W2 (opts.fixedHpMult): a real FTUE player has exactly
+                // ONE tower through both — verified live via CDP that
+                // solving hpMult from budget (even completely unmodified)
+                // left it leaking to 6/10 lives on the very first wave,
+                // since a single base-level fox (~19 dps) can't out-kill a
+                // stream of beetles faster than they arrive at base spacing.
+                // Pinned low, like the teaching boss — the curve's OWN
+                // target is a budget the earliest waves are allowed to
+                // undershoot, same principle as §6b.
+                const count = Math.max(1, Math.round(targetCount(a, level) * countMult));
+                entries.push({ enemy: a, count, hpMult: opts.fixedHpMult, speedMult: 1, spacing: spacing(a), startAt });
+            } else if (hpBoost !== 1 || countMult !== 1) {
+                // Block 1's W3+ tuning (§6b's other half — see composeLevel):
+                // "keep the normal headcount, but make each one meaningfully
+                // tankier AND arrive in a tight burst." solveArchetype's
+                // level-driven hpMult is the wrong base for that — hpBoost
+                // would multiply an hpMult that's ALREADY the primary
+                // variable, which then shrinks the BUDGET-DERIVED count for
+                // the same target (backwards: tankier units, FEWER of them,
+                // not the same headcount). Block 1 instead fixes count from
+                // targetCount's own schedule first, exactly like Round I,
+                // and solves hpMult from what's left of the budget.
+                const count = Math.max(1, Math.round(targetCount(a, level) * countMult));
+                const hpMult = Math.min(MAX_HP_MULT, Math.max(0.12, per / (count * unitThreat(a, 1, 1))) * hpBoost);
+                entries.push({ enemy: a, count, hpMult, speedMult: 1, spacing: spacing(a), startAt });
+            } else {
+                const { count, hpMult } = solveArchetype(a, level, per, countMult, hpBoost);
+                entries.push({ enemy: a, count, hpMult, speedMult: speedMultFor(a, level), spacing: spacing(a), startAt });
+            }
+            startAt += 0.25;
+        }
     }
 
-    const per = target / archetypes.length;
-    for (const a of archetypes) {
-        const count = Math.max(1, Math.round(targetCount(a, level) * countMult));
-        // W1/W2 (opts.fixedHpMult): a real FTUE player has exactly ONE
-        // tower through both — verified live via CDP that solving hpMult
-        // from budget (even completely unmodified) left it leaking to
-        // 6/10 lives on the very first wave, since a single base-level fox
-        // (~19 dps) can't out-kill a stream of beetles faster than they
-        // arrive at base spacing. Pinned low, like the teaching boss — the
-        // curve's OWN target is a budget the earliest waves are allowed to
-        // undershoot, same principle as §6b.
-        const hpMult = opts.fixedHpMult ?? Math.max(0.12, per / (count * unitThreat(a, 1, 1))) * hpBoost;
-        entries.push({ enemy: a, count, hpMult, speedMult: 1, spacing: spacing(a), startAt });
-        startAt += 0.25;
+    // Round J safety valve: Task 6's fixed ladder gives several positions
+    // (W1/W2/W4/W5, and W7 outside block 1) only ONE or TWO archetypes —
+    // each such position has its own fixed ceiling once hpMult and count are
+    // both capped (Tasks 5/7), independent of the other positions'. Once the
+    // curve's target outgrows what the listed archetypes can physically
+    // carry, the alternative is either silently undershooting the target
+    // (breaking strict monotonicity once a later, lower-diversity position
+    // can't clear an earlier, higher-diversity one) or letting a single
+    // entry's count run past the 120-unit ceiling chasing a target it can
+    // never reach (measured: levels 61-73 hit up to 235 units before this).
+    // Filling the gap with a SMALL amount of an archetype not already on the
+    // wave — highest-headroom first, and only once truly needed — keeps
+    // every position's own identity (the listed archetypes still carry the
+    // bulk) while giving the curve somewhere to put growth a thin ladder
+    // position can't otherwise hold. teachingBoss levels are exempt: §6b's
+    // whole point is that they're ALLOWED to undershoot.
+    if (!opts.teachingBoss && opts.fixedHpMult === undefined) {
+        const fillerHpMult = Math.min(MAX_HP_MULT, baseHpMult(level));
+        // Highest threat-per-unit first (stag, then descending) so a big gap
+        // gets closed with the FEWEST extra bodies, leaving headroom under
+        // the unit ceiling instead of racing through the whole fillerOrder.
+        const fillerOrder = ['stag', 'hornet', 'snail', 'wasp', 'beetle'].filter((a) => !archetypes.includes(a));
+        for (const f of fillerOrder) {
+            const achieved = entries.reduce((s, e) => s + e.count * unitThreat(e.enemy, e.hpMult ?? 1, 1), 0);
+            const totalUnits = entries.reduce((s, e) => s + e.count, 0);
+            if (achieved >= target * 0.995 || totalUnits >= 116) break;
+            const need = target - achieved;
+            const maxCount = Math.max(0, Math.min(countCap(f), 118 - totalUnits));
+            const count = Math.min(maxCount, Math.max(1, Math.round(need / (unitThreat(f, 1, 1) * fillerHpMult))));
+            if (count < 1) continue;
+            const finalHpMult = Math.min(MAX_HP_MULT, Math.max(0.1, need / (count * unitThreat(f, 1, 1))));
+            entries.push({ enemy: f, count, hpMult: finalHpMult, speedMult: speedMultFor(f, level), spacing: spacing(f), startAt });
+            startAt += 0.3;
+        }
     }
+
     return entries;
+}
+
+/**
+ * Task 2/3's core solve for one non-stag archetype entry: toughness comes
+ * from baseHpMult's OWN level schedule (capped at MAX_HP_MULT), and count is
+ * whatever's needed to spend the rest of `per` at that toughness — clamped
+ * to the archetype's own headcount ceiling (countCap). If the ceiling binds
+ * (per is too big for even a maxed-count, maxed-hp entry to reach), hpMult
+ * is recomputed against the actual clamped count so the entry's own reported
+ * hpMult never lies about what it actually is, and is re-clamped to
+ * MAX_HP_MULT as a hard backstop — the composed wave may then quietly
+ * undershoot `per` at the very top of the curve, which is what the generic
+ * monotonicity post-pass (below) exists to catch.
+ */
+function solveArchetype(id: string, level: number, per: number, countMult: number, hpBoost: number): { count: number; hpMult: number } {
+    const hpMult = Math.min(MAX_HP_MULT, baseHpMult(level) * hpBoost);
+    const idealCount = Math.max(1, Math.round((per / (unitThreat(id, 1, 1) * hpMult)) * countMult));
+    const count = Math.min(countCap(id), idealCount);
+    const finalHpMult = Math.min(MAX_HP_MULT, Math.max(0.1, per / (count * unitThreat(id, 1, 1))));
+    return { count, hpMult: finalHpMult };
 }
 
 /**
@@ -364,11 +531,30 @@ for (const level of [7, 8, 9, 10]) {
 for (let i = 1; i < authored.length; i++) {
     if (i + 1 >= 7 && i + 1 <= 10) continue; // block 1's teaching-boss levels
     let guard = 0;
-    while (waveThreat(authored[i]) <= waveThreat(authored[i - 1]) && guard++ < 2000) {
+    // Round J: bounded by Task 7's own 120-unit ceiling — composeEntries's
+    // filler valve (above) is what's supposed to close most of this gap
+    // already; this loop only mops up float-rounding ties, so it must never
+    // itself be the thing that breaks the unit cap chasing a target the
+    // wave's own archetypes can't reach. Once count is maxed out, a tiny
+    // hpMult nudge (still under MAX_HP_MULT) is the only lever left —
+    // needed right at the top of the curve where headcount alone saturates
+    // before two adjacent levels' composed threat can be told apart.
+    while (waveThreat(authored[i]) <= waveThreat(authored[i - 1]) && guard++ < 4000) {
         const growable = authored[i].entries.filter((e) => e.enemy !== 'stag');
         const pool = growable.length ? growable : authored[i].entries;
-        const biggest = pool.reduce((a, b) => (b.count > a.count ? b : a));
-        biggest.count++;
+        const totalUnits = authored[i].entries.reduce((s, e) => s + e.count, 0);
+        if (totalUnits < 120) {
+            const biggest = pool.reduce((a, b) => (b.count > a.count ? b : a));
+            biggest.count++;
+        } else {
+            // Count is maxed — the entry with the most COUNT may already sit
+            // at MAX_HP_MULT too, while a smaller entry still has headroom
+            // (e.g. snail solved a hair under cap while beetle saturated
+            // first); bump whichever one still has room, not just "biggest".
+            const bumpable = pool.filter((e) => (e.hpMult ?? 1) < MAX_HP_MULT);
+            if (bumpable.length === 0) break; // truly at the ceiling on every lever
+            bumpable[0].hpMult = Math.min(MAX_HP_MULT, (bumpable[0].hpMult ?? 1) + 0.01);
+        }
     }
 }
 
@@ -382,54 +568,99 @@ export const WAVES: Wave[] = authored;
 // report for the assumed multipliers and hand spot-checks).
 // ---------------------------------------------------------------------------
 
-/** §5d: loop index c and position p within the loop (level 81 -> c=0, p=0). */
-function overtimeLoop(level: number): { c: number; p: number } {
-    const n = level - 81;
-    return { c: Math.floor(n / 10), p: n % 10 };
-}
+/** The hard ceiling on ANY composed wave's threat once every archetype is at
+ *  its own count cap and MAX_HP_MULT (Task 5/Task 3's caps) — computed, not
+ *  guessed, so it stays correct if either table above changes. Nothing a
+ *  curve asks for can ever legally exceed this; Overtime's own target curve
+ *  (below) is built to approach it without ever reaching it, which is what
+ *  keeps strict monotonicity provable all the way to level 120. */
+const ACHIEVABLE_CEILING = MAX_HP_MULT * ['beetle', 'wasp', 'snail', 'hornet', 'stag']
+    .reduce((s, a) => s + countCap(a) * unitThreat(a, 1, 1), 0);
 
-/** §5d step base: the authored curve's own growth continued (decade 8),
- *  then compounding PER LOOP instead of per decade. */
-function overtimeStepBase(c: number): number {
-    return T1 * Math.pow(DECADE_GROWTH, 8) * Math.pow(1.6, c);
-}
-
-/** §5d band fractions: breathing +4%, amateur tough +15%, brutal +35%. */
-function overtimeFrac(p: number): number {
-    if (p <= 1) return 0.04;
-    if (p <= 6) return 0.15;
-    return 0.35;
-}
-
-/** Threat for any level >= 81: levelThreat(80)'s authored total, plus every
- *  Overtime step since. O(level) like levelThreat, called rarely. */
+/** Threat for any level >= 81. Round J replaces the old per-loop additive
+ *  compounding (Math.pow(1.6, c), then a gentler Math.pow(9, DECADE_EXP)
+ *  variant) with a direct asymptotic climb: it was fundamentally the wrong
+ *  shape once hpMult and headcount both cap out (Task 5), because ANY
+ *  additive running total keeps growing forever and WILL eventually cross
+ *  ACHIEVABLE_CEILING, at which point every level past that crossing point
+ *  composes to the exact same clamped wave — a flat plateau, not a curve,
+ *  and a broken strict-monotonicity proof (measured: levels 100-120 all
+ *  landed on identical composed threat under the old formula). This curve
+ *  instead climbs the fixed distance between levelThreat(80) and 92% of the
+ *  ceiling using n/(n+K) — strictly increasing by construction, and never
+ *  able to reach (let alone exceed) the ceiling no matter how far levels ran
+ *  past 120. K=14 was tuned by reading how much of that climb happens by
+ *  level 120 in the balance report; §5d's breathing/tough/brutal bands still
+ *  vary composeOvertimeLevel's per-level TEXTURE (see below) but no longer
+ *  drive the overall threat number. */
 function overtimeLevelThreat(level: number): number {
-    let t = levelThreat(LEVEL_COUNT_AUTHORED);
-    for (let lv = 81; lv <= level; lv++) {
-        const { c, p } = overtimeLoop(lv);
-        t += overtimeStepBase(c) * overtimeFrac(p);
-    }
-    return t;
+    // The seam: level 80's ACTUAL composed threat (post monotonicity-pass,
+    // which can run a bit above its own nominal levelThreat(80) target) —
+    // not the nominal target — or level 81 could ask for less than level 80
+    // already delivers.
+    const base = waveThreat(authored[LEVEL_COUNT_AUTHORED - 1]);
+    const room = ACHIEVABLE_CEILING * 0.92 - base;
+    const n = level - LEVEL_COUNT_AUTHORED;
+    const K = 45;
+    return base + room * (n / (n + K));
 }
 
-/** §5d composition per band: breathing is W3 shape (beetle+wasp), amateur
- *  tough is W6 shape (snail+hornet, +stag once p>=3), brutal is W10 shape
- *  (stag-led, count rising with level via targetCount). */
+/** §5d composition: Round J drops the old per-band archetype restriction
+ *  (breathing was beetle+wasp only, amateur tough was snail+hornet(+stag)
+ *  only, all 5 only on brutal levels). Each restricted subset has its OWN
+ *  achievable threat ceiling once Task 5 caps hpMult at 8x and headcount at
+ *  countCap — a 2-archetype wave physically cannot exceed roughly 965 threat
+ *  no matter what, which made it mathematically impossible for a later,
+ *  higher-target level using that restricted subset to ever clear an
+ *  earlier full-roster level, breaking strict monotonicity. Every Overtime
+ *  level now draws from the full roster; overtimeLevelThreat's smooth climb
+ *  is what actually varies the intensity level to level. */
 function composeOvertimeLevel(level: number, target: number): Wave {
-    const { p } = overtimeLoop(level);
-    let archetypes: string[];
-    if (p <= 1) archetypes = ['beetle', 'wasp'];
-    else if (p <= 6) archetypes = p >= 3 ? ['snail', 'hornet', 'stag'] : ['snail', 'hornet'];
-    else archetypes = ['stag', 'beetle', 'wasp', 'snail', 'hornet'];
-    return { entries: composeEntries(level, target, archetypes) };
+    return { entries: composeEntries(level, target, ['stag', 'beetle', 'wasp', 'snail', 'hornet']) };
+}
+
+/** Overtime levels, computed and cached lazily as requested (there's no
+ *  fixed end to Overtime, unlike the 80-level authored array). A smoothly
+ *  increasing TARGET (overtimeLevelThreat) doesn't guarantee a strictly
+ *  increasing COMPOSED wave once rounding is involved — a small enough
+ *  target delta between two levels can round to the exact same whole-unit
+ *  counts, tying (measured: levels 96-99 landed on an identical composed
+ *  threat before this existed). Same fixup as the authored post-pass:
+ *  grow the biggest non-stag entry until it clears the level before it,
+ *  bounded so it can never itself cross Task 7's 120-unit ceiling. */
+const overtimeCache: Wave[] = [];
+function overtimeWaveAt(level: number): Wave {
+    const idx = level - (LEVEL_COUNT_AUTHORED + 1);
+    while (overtimeCache.length <= idx) {
+        const lv = LEVEL_COUNT_AUTHORED + 1 + overtimeCache.length;
+        const wave = composeOvertimeLevel(lv, overtimeLevelThreat(lv));
+        const prevThreat = overtimeCache.length === 0
+            ? waveThreat(authored[LEVEL_COUNT_AUTHORED - 1])
+            : waveThreat(overtimeCache[overtimeCache.length - 1]);
+        let guard = 0;
+        while (waveThreat(wave) <= prevThreat && guard++ < 4000) {
+            const growable = wave.entries.filter((e) => e.enemy !== 'stag');
+            const pool = growable.length ? growable : wave.entries;
+            const totalUnits = wave.entries.reduce((s, e) => s + e.count, 0);
+            if (totalUnits < 120) {
+                const biggest = pool.reduce((a, b) => (b.count > a.count ? b : a));
+                biggest.count++;
+            } else {
+                const bumpable = pool.filter((e) => (e.hpMult ?? 1) < MAX_HP_MULT);
+                if (bumpable.length === 0) break;
+                bumpable[0].hpMult = Math.min(MAX_HP_MULT, (bumpable[0].hpMult ?? 1) + 0.01);
+            }
+        }
+        overtimeCache.push(wave);
+    }
+    return overtimeCache[idx];
 }
 
 /** The level (1-based) at a 0-based wave index: authored while they last,
  *  Overtime's loop after. */
 export function waveAt(index: number): Wave {
     if (index < WAVES.length) return WAVES[index];
-    const level = index + 1;
-    return composeOvertimeLevel(level, overtimeLevelThreat(level));
+    return overtimeWaveAt(index + 1);
 }
 
 /** Exported for scripts/simulate.ts's threat table/proofs and
