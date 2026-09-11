@@ -10,7 +10,7 @@ import { useStore } from '../state/store.ts';
 import LoadingScreen from './LoadingScreen.tsx';
 import MainMenu from './MainMenu.tsx';
 import Hud from './Hud.tsx';
-import BuildSheet from './BuildSheet.tsx';
+import StationRail from './StationRail.tsx';
 import EndScreen from './EndScreen.tsx';
 import MetaUpgrades from './MetaUpgrades.tsx';
 import Leaderboard from './Leaderboard.tsx';
@@ -33,7 +33,7 @@ export default function App() {
                     {/* keyed on runId: each run is a fresh engine + scene */}
                     <GameCanvas key={runId} />
                     <Hud />
-                    <BuildSheet />
+                    <StationRail />
                     <EndScreen />
                 </div>
             )}

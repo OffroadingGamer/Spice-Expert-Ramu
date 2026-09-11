@@ -9,12 +9,17 @@
  *   row 1        lives chip + coins chip left, hamburger right — this is
  *                stage.ts's reserved TOP_BAND; keep row 1+2 within it
  *   row 2        rush counter left, speed buttons right, both nowrap
- *   bottom       "Ready!" centred, hidden while the build sheet is open
- *                (BuildSheet is also inset-x-0 bottom-0, so they must never
- *                coexist) and hidden while the shift menu is open — this is
- *                stage.ts's reserved BOTTOM_BAND
+ *   bottom       "Ready!" centred, hidden while a pad is selected (the rail
+ *                shows its build/manage panel instead) and hidden while the
+ *                shift menu is open — this is stage.ts's reserved BOTTOM_BAND
  * Every edge uses px-3 plus safe-area padding: nothing touches a screen
  * edge, and the speed row shrinks rather than overflowing.
+ *
+ * Final round Tier 2, task 2: StationRail.tsx (was BuildSheet.tsx, a bottom
+ * sheet) is now a PERSISTENT right-edge rail, so this whole HUD's own
+ * content is padded clear of it — useRailWidthPx() (exported from
+ * StationRail.tsx, backed by stage.ts's getFit()) sizes that padding, so it
+ * tracks the same board scale the rail itself is sized against.
  *
  * The hamburger opens the shift menu, which pauses the run (store.paused
  * stops the Pixi ticker) and offers continuous music/sound sliders plus
@@ -33,8 +38,8 @@
  *     transform stage.ts and towerScene.ts use internally, read here but
  *     never written, and never re-derived by hand (round C, task 2).
  *   - The Upgrade-button arrow (forced-upgrade beat) is a DOM cue anchored
- *     to BuildSheet's own button by getBoundingClientRect() instead — it
- *     lives in BuildSheet.tsx, not here.
+ *     to StationRail's own button by getBoundingClientRect() instead — it
+ *     lives in StationRail.tsx, not here.
  *
  * Round E: the picker-beat arrow's pad is store.ftueBeatPad, not a
  * hardcoded pad — see store.ts/towerScene.ts. The empty-pad pulse
@@ -50,6 +55,7 @@ import { designToScreen } from '../game/stage.ts';
 import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import Slider from './Slider.tsx';
+import { useRailWidthPx } from './StationRail.tsx';
 
 /** Live screen positions of a set of pads, tracking the canvas's own
  *  contain-fit + board-centering transform — stage.ts's designToScreen() is
@@ -109,7 +115,7 @@ export default function Hud() {
     const [showMilestone, setShowMilestone] = useState(false);
     const [showGrant, setShowGrant] = useState(false);
     // The picker beats (place0/place2) get the canvas arrow; the
-    // forced-upgrade beat's cue lives inside BuildSheet instead (its own
+    // forced-upgrade beat's cue lives inside StationRail instead (its own
     // Upgrade button, not a pad) — never both cue kinds at once. Round E:
     // place2's target is ftueBeatPad, not a hardcoded pad 2 (store.ts) — it
     // may be any empty pad once the board isn't wide open.
@@ -169,9 +175,10 @@ export default function Hud() {
 
     const openMenu = () => { sfx.click(); store.patch({ paused: true }); setMenuOpen(true); };
     const closeMenu = () => { sfx.click(); store.patch({ paused: false }); setMenuOpen(false); };
+    const railPx = useRailWidthPx();
 
     return (
-        <div className="pointer-events-none absolute inset-0 pt-safe-top">
+        <div className="pointer-events-none absolute inset-0 pt-safe-top" style={{ paddingRight: railPx || undefined }}>
             <div className="flex flex-col gap-2 px-3">
                 {/* row 1: status + hamburger */}
                 <div className="flex items-center justify-between gap-2">
@@ -265,7 +272,7 @@ export default function Hud() {
                 once per run, then fades — tap to dismiss early. Suppressed
                 for as long as ANY forced FTUE beat is active — ftueBeat is
                 the single source for this, covering all three cue kinds
-                (canvas arrow, the pulse, AND BuildSheet's own Upgrade-button
+                (canvas arrow, the pulse, AND StationRail's own Upgrade-button
                 arrow, which Hud.tsx has no other visibility into) — plus
                 the milestone banner and (round E) the general post-wave
                 pulse, which by definition fires with ftueBeat already null,
@@ -382,7 +389,7 @@ export default function Hud() {
             {/* FTUE canvas arrow cue: points at the pad the script just
                 forced a selection onto (pad 0 at run start, pad 2 after the
                 wave-2 pulse). The forced-upgrade beat's cue is inside
-                BuildSheet instead — see this file's header comment. */}
+                StationRail instead — see this file's header comment. */}
             {arrowPos && (
                 <div
                     className="pointer-events-none absolute z-10 flex flex-col items-center"

@@ -93,8 +93,25 @@ export interface Stage {
  * would keep pointing at the OLD, unscaled pad positions). Deriving scale,
  * offsetX, designHeight and boardY all from the same reduced number, in one
  * place both consumers call, is what keeps them from drifting apart.
+ *
+ * Final round Tier 2, task 3: dropped 0.85 -> 0.80 and offsetX went from
+ * centering to left-aligning (below) to free a consistent strip of real
+ * screen space along the right edge for StationRail.tsx — the belt's right
+ * leg was already pulled in from x610 to x540 (Round I) specifically so
+ * nothing gameplay-relevant lives past design x~540-580, so shrinking
+ * further and hugging left doesn't cost the board anything it was using.
  */
-const BOARD_SCALE = 0.85;
+const BOARD_SCALE = 0.80;
+
+/**
+ * Final round Tier 2, task 2: the right-edge rail's width, in the SAME
+ * design units as everything else getFit() governs — RAIL_WIDTH_UNITS *
+ * getFit()'s own scale is StationRail.tsx's (and Hud.tsx's clearance
+ * padding's) only source for its pixel width, so it shrinks/grows in step
+ * with the board on every device instead of being a second, independently
+ * guessed number.
+ */
+export const RAIL_WIDTH_UNITS = 140;
 
 /**
  * Pure contain-fit math: given a screen size (CSS px, e.g. #app-frame's
@@ -106,7 +123,11 @@ const BOARD_SCALE = 0.85;
  */
 export function getFit(screenW: number, screenH: number) {
     const scale = Math.min(screenW / DESIGN_WIDTH, screenH / FIT_HEIGHT) * BOARD_SCALE;
-    const offsetX = (screenW - DESIGN_WIDTH * scale) / 2;
+    // Final round Tier 2, task 3: left-aligned (was centered) so the freed
+    // screen-space gap this smaller scale creates lands consistently on the
+    // right, where StationRail.tsx lives, instead of splitting into two
+    // letterbox bars.
+    const offsetX = 0;
     const designHeight = screenH / scale;
     const boardY = Math.max(0, (designHeight - PLAYFIELD_HEIGHT) / 2);
     return { scale, offsetX, designHeight, boardY };

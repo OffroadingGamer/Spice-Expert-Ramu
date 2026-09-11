@@ -189,6 +189,16 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     const GLOW_PAD = 1.15;
 
     /**
+     * Final round Tier 2, task 1: the block-1 cup glow read too loose even
+     * after Tier 1's ellipse fit — this halves it on both axes, chai/coffee
+     * only. Everything else stays at the Tier 1 ellipse (implicit 1 here).
+     * A separate knob from GLOW_PAD/DISH_SIZE_MULT on purpose: it's a
+     * per-dish visual correction, not a re-tune of the general glow-fit
+     * formula or the sprite's own drawn size.
+     */
+    const DISH_GLOW_MULT: Record<string, number> = { chai: 0.5, coffee: 0.5 };
+
+    /**
      * Dish-art race fix (handover, addendum to Round J — this file is the
      * only one it touches). Bug: textures.ts's artSquare() falls back to the
      * drawn archetype silhouette whenever Assets.cache misses, and
@@ -400,7 +410,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     registerEngine(engine); // also fires the run_start funnel step + event (actions.ts)
     // GDD §10.11's pre-start beat pre-selects pad 0 (set by MainMenu.tsx /
     // EndScreen.tsx's Retry BEFORE this scene mounts) — this reset must not
-    // clobber it, or the FTUE's opening BuildSheet never opens.
+    // clobber it, or the FTUE's opening StationRail never opens.
     store.patch({
         selectedPad: store.get().ftueActive ? 0 : null,
         waveCount: WAVES.length,
@@ -454,7 +464,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
      * already drains here — no new engine hook.
      *
      * Wave 1 end forces pad 0's tower view open with the Upgrade button
-     * cued (BuildSheet.tsx); wave 2 end pulses every empty pad, then
+     * cued (StationRail.tsx); wave 2 end pulses every empty pad, then
      * auto-selects one of them (preferring pad 2) with the picker cued
      * (Hud.tsx). Wave 3 STARTING (not clearing — see actions.ts's
      * startWave) retires the script for good. A run that never reaches
@@ -582,7 +592,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         // canvas tap — re-tapping the forced pad, tapping empty board, or
         // tapping any other pad would all otherwise change/clear
         // selectedPad (see the hit/deselect logic below) and escape the
-        // script. BuildSheet's own buttons (not gated by this listener)
+        // script. StationRail's own buttons (not gated by this listener)
         // remain the only way through.
         if (store.get().ftueBeat !== null) return;
         // convert through boardRoot so pad hit-tests track the vertical offset
@@ -635,8 +645,9 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                     const glow = new Sprite(tex.glow[tier]);
                     glow.anchor.set(0.5);
                     const ext = dishContentExtent(app.renderer, dish);
-                    glow.width = size * ext.w * GLOW_PAD;
-                    glow.height = size * ext.h * GLOW_PAD;
+                    const glowMult = DISH_GLOW_MULT[dish] ?? 1;
+                    glow.width = size * ext.w * GLOW_PAD * glowMult;
+                    glow.height = size * ext.h * GLOW_PAD * glowMult;
                     node.addChild(glow);
                 }
                 const shadow = new Graphics();
