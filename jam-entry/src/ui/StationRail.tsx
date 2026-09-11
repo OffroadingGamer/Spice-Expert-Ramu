@@ -20,6 +20,14 @@
  * below — it no longer feeds getFit() itself, since the board doesn't
  * reserve space for it.
  *
+ * Final round: the panel is content-height, not h-full — it used to stretch
+ * the full viewport, leaving a large empty column below its (short)
+ * contents with Close stranded at the bottom. It's now vertically centred
+ * on the right edge (inset-y-3 + items-center) and sized to its own
+ * content, for both the station picker and the (taller) occupied-tower
+ * panel. max-h-full + overflow-y-auto is a backstop for a screen too short
+ * to fit either state — it scrolls inside itself; the page never does.
+ *
  * Round D (FTUE walls, GDD §10.11): Close is hidden for the duration of a
  * forced beat (store.ftueBeat !== null — actions.ts is the real gate, this
  * is just the display rule), and Sell stays disabled for the whole
@@ -122,15 +130,23 @@ export default function StationRail() {
     return (
         <>
             <div
-                className="pointer-events-none absolute inset-y-0 right-0"
+                className="pointer-events-none absolute inset-y-3 right-3 flex items-center"
                 style={{ width: railPx || undefined }}
             >
                 {/* Visual round, task 5 (carried from the old sheet): opaque
                     bg-surface, not a see-through tint — the belt and D-row
                     pads must not read straight through the panel. Only
                     mounted while a pad is selected (the guard above), so
-                    this overlays the board rather than sitting empty. */}
-                <div className="pointer-events-auto flex h-full flex-col gap-1.5 overflow-y-auto bg-surface px-1.5 pt-safe-top pb-safe-bottom">
+                    this overlays the board rather than sitting empty.
+                    Final round: content-height, not h-full — the panel used
+                    to stretch the whole viewport, leaving a large empty dark
+                    column below four station cards (or below the shorter
+                    Sell/Upgrade/Target panel) with Close stranded at the
+                    bottom. max-h-full caps it against the inset-y-3 parent
+                    (so it's always short of the real viewport) and
+                    overflow-y-auto only engages if content genuinely doesn't
+                    fit on a short screen — the page itself never scrolls. */}
+                <div className="pointer-events-auto flex max-h-full w-full flex-col gap-1.5 overflow-y-auto rounded-2xl bg-surface p-1.5">
                     {selectedPad !== null && !tower && (
                         <div className="flex flex-col gap-1.5 pt-1">
                             {TOWERS.map((def) => {
@@ -267,10 +283,14 @@ export default function StationRail() {
                         the real gate is the canvas tap-wall (towerScene.ts's onTap)
                         and startWave()'s own guard; this only keeps the escape
                         hatch out of sight. */}
+                    {/* Final round: no longer mt-auto -- the panel is content-height
+                        now, so this sits directly under the content above it
+                        (the parent's own gap-1.5) rather than being pushed to
+                        a viewport bottom that no longer exists. */}
                     {selectedPad !== null && !ftueBeat && (
                         <button
                             type="button"
-                            className="mt-auto mb-1 w-full rounded-lg bg-white/10 py-2 text-[0.62rem] font-semibold text-white/70 transition-transform active:scale-95"
+                            className="w-full rounded-lg bg-white/10 py-2 text-[0.62rem] font-semibold text-white/70 transition-transform active:scale-95"
                             onClick={() => { sfx.click(); store.patch({ selectedPad: null }); }}
                         >
                             Close
