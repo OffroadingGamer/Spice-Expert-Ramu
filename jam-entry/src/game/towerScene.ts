@@ -20,11 +20,12 @@ import { CONFIG } from './config.ts';
 import { WAVES } from './data/waves.ts';
 import { BLOCKS, blockForLevel, type Block } from './data/blocks.ts';
 import { MANIFEST } from '../assets/manifest.ts';
-import { createEngine, type EngineEvent } from './sim/engine.ts';
+import { createEngine, posAt, PATH_LENGTH, type EngineEvent } from './sim/engine.ts';
 import { registerEngine, syncStore, getTowersPlacedThisRun, grantFtueShortfall, retireFtue } from './actions.ts';
 import { TOWERS } from './data/towers.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
 import {
+    dishContentExtent,
     freeTexture,
     makeBurrowTexture,
     makeEnemyTexture,
@@ -182,6 +183,10 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
      * 64 * 1.375 = 88, the same on-screen size as the old 44 * 2.
      */
     const DISH_SIZE_MULT: Record<string, number> = { chai: 1.375, coffee: 1.375 };
+
+    /** Final round Tier 1, task 2: single retune knob for the ellipse glow's
+     *  padding over the dish's measured content extent. */
+    const GLOW_PAD = 1.15;
 
     /**
      * Dish-art race fix (handover, addendum to Round J — this file is the
@@ -596,7 +601,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     app.stage.on('pointertap', onTap);
 
     // ---- sprite pools synced from engine state -----------------------------
-    interface EnemyView { node: Container; sprite: Sprite; hpBar: Graphics; ice: Sprite; lastHp: number; size: number }
+    interface EnemyView { node: Container; sprite: Sprite; hpBar: Graphics; ice: Sprite; lastHp: number; size: number; distOffset: number }
     const enemyViews = new Map<number, EnemyView>();
     const projViews = new Map<number, Sprite>();
     const towerViews = new Map<number, Container>(); // by padIndex
@@ -615,20 +620,23 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 // §6a glow tier, behind everything else, so a poisoned/
                 // burning stag's tint (below) never fights it.
                 //
-                // Final round, task 6/7: the glow, shadow, and ice overlay
-                // all used to derive from `size` (baseSize * the per-dish
-                // multiplier), so doubling chai/coffee doubled every
-                // decoration drawn with them too — not just the sprite the
-                // multiplier is meant for. Deriving these three from
-                // baseSize instead means they stay constant regardless of
-                // which dish this enemy happens to be serving, satisfying
-                // "smaller, exclusively for block 1" by construction.
+                // Final round, task 6/7: shadow and ice derive from
+                // baseSize (not size = baseSize * the per-dish multiplier),
+                // so they stay constant regardless of which dish this enemy
+                // happens to be serving, satisfying "smaller, exclusively
+                // for block 1" by construction.
+                //
+                // Tier 1 task 2: the glow, unlike shadow/ice, DOES derive
+                // from `size` — it's now an ellipse fit to the dish's actual
+                // drawn content (dishContentExtent), so it needs the real
+                // drawn size to size against, not the archetype-constant one.
                 const tier = GLOW_TIER[e.def.id] ?? null;
                 if (tier) {
                     const glow = new Sprite(tex.glow[tier]);
                     glow.anchor.set(0.5);
-                    glow.width = baseSize * 1.2;
-                    glow.height = baseSize * 1.2;
+                    const ext = dishContentExtent(app.renderer, dish);
+                    glow.width = size * ext.w * GLOW_PAD;
+                    glow.height = size * ext.h * GLOW_PAD;
                     node.addChild(glow);
                 }
                 const shadow = new Graphics();
@@ -647,10 +655,13 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 ice.visible = false;
                 node.addChild(shadow, sprite, ice, hpBar);
                 world.addChild(node);
-                v = { node, sprite, hpBar, ice, lastHp: -1, size };
+                v = { node, sprite, hpBar, ice, lastHp: -1, size, distOffset: 0 };
                 enemyViews.set(e.uid, v);
             }
-            v.node.position.set(e.x, e.y);
+            // Position is set below by relaxEnemyPositions(), which runs once
+            // for every enemy after this loop (including brand-new ones —
+            // distOffset starts at 0, so posAt(e.dist) matches e.x/e.y exactly
+            // until a collision nudges it).
             v.node.zIndex = e.y;
             // status visuals: ice cube while frozen; green tint for poison,
             // orange for burn (the two never coexist — one DoT slot)
@@ -683,50 +694,71 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     }
 
     /**
-     * Final round, task 9: enemies take engine coordinates verbatim, so two
-     * of the same archetype at the same sim `dist` land on identical pixels
-     * — nothing in the sim itself ever separates them. This is a RENDER-ONLY
-     * fix, run after every enemy node is positioned from engine state: a
-     * short relaxation pass pushes same-archetype sprites that are closer
-     * than their combined radii apart, along the line between them, split
-     * evenly and clamped so a dense cluster can't shove one off the belt.
-     * Grouping by archetype (not comparing every pair) is also what makes
-     * different archetypes pass through each other for free — they're never
-     * compared at all. `e.x`/`e.y`/`dist` are never touched, only the
-     * already-drawn node's screen position, so this cannot move balance.
+     * Final round, task 9 / Tier 1 task 1: enemies take engine coordinates
+     * verbatim, so two of the same archetype at the same sim `dist` land on
+     * identical pixels — nothing in the sim itself ever separates them. This
+     * is a RENDER-ONLY fix: `e.dist`/`e.x`/`e.y` are never written, only a
+     * per-enemy `distOffset` and the node's drawn screen position.
+     *
+     * v1.55.0 shipped this as free 2D separation, which was unsatisfiable on
+     * the belt — block 1's 88-wide sprites against a 72-wide path meant the
+     * push ran outward forever, walking dishes onto the floorboards, and the
+     * push being a 2D vector (mostly perpendicular to the belt near a
+     * corner) made it worse there. Separating in 1D along the path instead
+     * — via a small offset added to `e.dist` before calling `posAt` — makes
+     * leaving the belt structurally impossible: every position still comes
+     * from `posAt`, which by construction lies on the path.
+     *
+     * Every frame: decay each offset toward zero so a dish returns to its
+     * true position once its cluster clears, then relax same-archetype
+     * pairs along the path (grouping by archetype is what lets different
+     * archetypes pass through each other — they're never compared), then
+     * clamp the accumulated offset and position every node from it. The
+     * clamps (6 units/pair/iteration, 2 iterations, ±20 accumulated) keep
+     * the render lie small — targeting/splash/the spawn safe zone all read
+     * the untouched `e.dist`, so a big offset would visibly desync sprites
+     * from what towers actually shoot.
      */
     function relaxEnemyPositions(): void {
-        const byArchetype = new Map<string, EnemyView[]>();
+        const DIST_DECAY = 0.88;
+        const PUSH_CLAMP = 6;
+        const MAX_OFFSET = 20;
+        const ITERATIONS = 2;
+        const byArchetype = new Map<string, { dist: number; v: EnemyView }[]>();
         for (const e of engine.state.enemies) {
             const v = enemyViews.get(e.uid);
             if (!v) continue;
+            v.distOffset *= DIST_DECAY;
+            const entry = { dist: e.dist, v };
             const group = byArchetype.get(e.def.id);
-            if (group) group.push(v);
-            else byArchetype.set(e.def.id, [v]);
+            if (group) group.push(entry);
+            else byArchetype.set(e.def.id, [entry]);
         }
-        const ITERATIONS = 2;
         for (let iter = 0; iter < ITERATIONS; iter++) {
             for (const group of byArchetype.values()) {
                 for (let i = 0; i < group.length; i++) {
                     for (let j = i + 1; j < group.length; j++) {
                         const a = group[i];
                         const b = group[j];
-                        const dx = b.node.x - a.node.x;
-                        const dy = b.node.y - a.node.y;
-                        const dist = Math.hypot(dx, dy);
-                        const minSep = (a.size + b.size) * 0.5;
-                        if (dist >= minSep || dist < 0.0001) continue;
-                        const shortfall = minSep - dist;
-                        const push = Math.min(shortfall / 2, Math.min(a.size, b.size) * 0.35);
-                        const nx = dx / dist;
-                        const ny = dy / dist;
-                        a.node.x -= nx * push;
-                        a.node.y -= ny * push;
-                        b.node.x += nx * push;
-                        b.node.y += ny * push;
+                        const sep = (b.dist + b.v.distOffset) - (a.dist + a.v.distOffset);
+                        const minSep = (a.v.size + b.v.size) * 0.5 * 0.8;
+                        const mag = Math.abs(sep);
+                        if (mag >= minSep) continue;
+                        const push = Math.min((minSep - mag) / 2, PUSH_CLAMP);
+                        const dir = sep >= 0 ? 1 : -1;
+                        a.v.distOffset -= dir * push;
+                        b.v.distOffset += dir * push;
                     }
                 }
             }
+        }
+        for (const e of engine.state.enemies) {
+            const v = enemyViews.get(e.uid);
+            if (!v) continue;
+            v.distOffset = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, v.distOffset));
+            const d = Math.max(0, Math.min(PATH_LENGTH, e.dist + v.distOffset));
+            const p = posAt(d);
+            v.node.position.set(p.x, p.y);
         }
     }
 

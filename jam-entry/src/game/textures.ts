@@ -130,6 +130,24 @@ function artSquare(renderer: Renderer, alias: string, size: number, fallback: ()
     return tex;
 }
 
+/**
+ * Final round Tier 1, task 2: normalised content extent for a dish alias —
+ * the larger of width/height is 1, the other is its ratio to it. artSquare
+ * already measures this (via alphaContentBBox) to fit the sprite; exposing
+ * it lets towerScene.ts size a dish's glow as an ellipse matching its actual
+ * proportions instead of a fixed circle. Falls back to a square extent when
+ * the alias isn't loaded — the same case artSquare falls back to a drawn
+ * placeholder for.
+ */
+export function dishContentExtent(renderer: Renderer, dishSlug: string): { w: number; h: number } {
+    const alias = `dish-${dishSlug}`;
+    if (!Assets.cache.has(alias)) return { w: 1, h: 1 };
+    const src = Assets.get<Texture>(alias);
+    const bbox = alphaContentBBox(renderer, alias, src);
+    const m = Math.max(bbox.w, bbox.h);
+    return { w: bbox.w / m, h: bbox.h / m };
+}
+
 function gen(renderer: Renderer, draw: (g: Graphics) => void): Texture {
     const g = new Graphics();
     draw(g);
@@ -441,6 +459,7 @@ export function makeGlowTexture(renderer: Renderer, color: number): Texture {
         const cx = s / 2;
         const cy = s / 2;
         const steps = 10;
+        const strokeWidth = cx / steps + 1;
         // Final round, task 7: the old falloff filled concentric DISCS,
         // largest first with smaller ones stacked on top — alpha blending
         // means the centre always ends up the most painted-over region no
@@ -450,11 +469,16 @@ export function makeGlowTexture(renderer: Renderer, color: number): Texture {
         // alpha independently: the peak sits near the outer edge (a
         // gaussian bump at ~82% of the radius) and falls off toward both
         // the transparent centre and the true edge, reading as a rim-light.
+        //
+        // Final round Tier 1, task 2: the outermost ring sat at exactly
+        // r = cx, so half its stroke fell outside the 128px canvas — a hard
+        // cut at alpha ~0.32 right at the texture boundary. Pulling it in by
+        // half a stroke width keeps the whole ring inside the texture.
         for (let i = 1; i <= steps; i++) {
             const t = i / steps;
-            const r = cx * t;
+            const r = i === steps ? cx - strokeWidth / 2 : cx * t;
             const rim = Math.exp(-((t - 0.82) ** 2) / (2 * 0.16 ** 2));
-            g.circle(cx, cy, r).stroke({ width: cx / steps + 1, color, alpha: 0.6 * rim });
+            g.circle(cx, cy, r).stroke({ width: strokeWidth, color, alpha: 0.6 * rim });
         }
     });
 }
