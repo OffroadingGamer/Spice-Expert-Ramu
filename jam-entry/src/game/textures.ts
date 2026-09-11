@@ -202,15 +202,20 @@ const STATION_FALLBACK: Record<string, (g: Graphics) => void> = {
  * fixed tower-*.png silhouette Round G drew at every level. The mapping is
  * set by the user, not derived: Grill/fox -> stock pot, Prep Board/owl ->
  * pressure cooker, Tandoor/bear -> cooktop (indices 2/3/5, deliberately
- * skipping 1 and 4), Fryer/squirrel -> fry pan (indices 2/3/4, skipping 1
- * and 5) — §10's own table is the source of truth if this ever needs
- * re-deriving.
+ * skipping 1 and 4), Fryer/squirrel -> sauce pot (indices 1/2/3) — §10's
+ * own table is the source of truth if this ever needs re-deriving.
+ *
+ * Fryer/squirrel was REMAPPED in visual round part 2: the original choice,
+ * fry pan (indices 2/3/4), isn't fry-pan art at all — every fry-pan tier
+ * renders a bowl of FINISHED FOOD, the same category of object as the
+ * enemies, so the tower looked like the dish it shoots at. Sauce pot is
+ * genuine equipment with a consistent silhouette across all three tiers.
  */
 const TOWER_PROP_LEVELS: Record<string, [string, string, string]> = {
     fox: ['prop-stock-pot-l1', 'prop-stock-pot-l2', 'prop-stock-pot-l3'],
     owl: ['prop-pressure-cooker-l1', 'prop-pressure-cooker-l2', 'prop-pressure-cooker-l3'],
     bear: ['prop-cooktop-l2', 'prop-cooktop-l3', 'prop-cooktop-l5'],
-    squirrel: ['prop-fry-pan-l2', 'prop-fry-pan-l3', 'prop-fry-pan-l4'],
+    squirrel: ['prop-sauce-pot-l1', 'prop-sauce-pot-l2', 'prop-sauce-pot-l3'],
 };
 
 /**

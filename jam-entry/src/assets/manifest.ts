@@ -61,9 +61,18 @@ export const MANIFEST: Manifest = {
                 { alias: 'prop-cooktop-l2', src: 'images/prop-cooktop-l2.png' },
                 { alias: 'prop-cooktop-l3', src: 'images/prop-cooktop-l3.png' },
                 { alias: 'prop-cooktop-l5', src: 'images/prop-cooktop-l5.png' },
-                { alias: 'prop-fry-pan-l2', src: 'images/prop-fry-pan-l2.png' },
-                { alias: 'prop-fry-pan-l3', src: 'images/prop-fry-pan-l3.png' },
-                { alias: 'prop-fry-pan-l4', src: 'images/prop-fry-pan-l4.png' },
+                // Visual round part 2, task 1 (docs/LevelBlocks.md §10,
+                // "REMAPPED Sep 11"): the Fryer's prop-fry-pan-l2/l3/l4 were
+                // never fry-pan art — all five fry-pan tiers render bowls of
+                // FINISHED FOOD, the same category as the enemies, so the
+                // Fryer looked like the dish it shoots at. Sauce pot is
+                // equipment with a consistent silhouette and near-identical
+                // dimensions (107x117/99x117/98x118), so the per-family fit
+                // lands clean; the other two 3-tier candidates (sauce pan,
+                // rice cooker) were opened and rejected — see §10.
+                { alias: 'prop-sauce-pot-l1', src: 'images/prop-sauce-pot-l1.png' },
+                { alias: 'prop-sauce-pot-l2', src: 'images/prop-sauce-pot-l2.png' },
+                { alias: 'prop-sauce-pot-l3', src: 'images/prop-sauce-pot-l3.png' },
                 { alias: 'proj-fox', src: 'images/proj-fox.png' },
                 { alias: 'proj-owl', src: 'images/proj-owl.png' },
                 { alias: 'proj-bear', src: 'images/proj-bear.png' },
@@ -140,7 +149,14 @@ export const MANIFEST: Manifest = {
                 { alias: 'prop-dough-counter-l2', src: 'images/prop-dough-counter-l2.png' },
                 { alias: 'prop-dough-counter-l3', src: 'images/prop-dough-counter-l3.png' },
                 { alias: 'prop-fry-pan-l1', src: 'images/prop-fry-pan-l1.png' },
-                // prop-fry-pan-l2/l3/l4 moved to 'critical' (the Fryer tower's three levels).
+                // Visual round part 2: fry-pan-l2/l3/l4 moved back here from
+                // 'critical' — the Fryer no longer uses this family (§10,
+                // "REMAPPED Sep 11": the art renders bowls of food, not a
+                // pan). Ordinary unused-by-a-tower catalogue entries again,
+                // same as l1/l5 always were.
+                { alias: 'prop-fry-pan-l2', src: 'images/prop-fry-pan-l2.png' },
+                { alias: 'prop-fry-pan-l3', src: 'images/prop-fry-pan-l3.png' },
+                { alias: 'prop-fry-pan-l4', src: 'images/prop-fry-pan-l4.png' },
                 { alias: 'prop-fry-pan-l5', src: 'images/prop-fry-pan-l5.png' },
                 { alias: 'prop-kettle-l2', src: 'images/prop-kettle-l2.png' },
                 { alias: 'prop-kettle-l3', src: 'images/prop-kettle-l3.png' },
@@ -151,9 +167,8 @@ export const MANIFEST: Manifest = {
                 { alias: 'prop-sauce-pan-l1', src: 'images/prop-sauce-pan-l1.png' },
                 { alias: 'prop-sauce-pan-l2', src: 'images/prop-sauce-pan-l2.png' },
                 { alias: 'prop-sauce-pan-l3', src: 'images/prop-sauce-pan-l3.png' },
-                { alias: 'prop-sauce-pot-l1', src: 'images/prop-sauce-pot-l1.png' },
-                { alias: 'prop-sauce-pot-l2', src: 'images/prop-sauce-pot-l2.png' },
-                { alias: 'prop-sauce-pot-l3', src: 'images/prop-sauce-pot-l3.png' },
+                // prop-sauce-pot-l1/l2/l3 moved to 'critical' (Visual round
+                // part 2 — the Fryer tower's three levels, replacing fry-pan).
                 { alias: 'prop-spice-grinder-l1', src: 'images/prop-spice-grinder-l1.png' },
                 { alias: 'prop-spice-grinder-l2', src: 'images/prop-spice-grinder-l2.png' },
                 { alias: 'prop-spice-grinder-l3', src: 'images/prop-spice-grinder-l3.png' },
