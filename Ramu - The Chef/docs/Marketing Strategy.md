@@ -1,6 +1,6 @@
 # Marketing Strategy
 
-**Last updated:** Sep 10 2026, 11:00 IST
+**Last updated:** Sep 11 2026, 12:00 IST
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)
 
@@ -621,3 +621,57 @@ spent as **genuine participation** — real comments on other threads — than
 karma farming, since r/SoloDevelopment and r/GameDevelopersOfIndia both
 explicitly want genuine context over promo-only accounts, and a visibly
 farmed karma history is its own red flag to a moderator reviewing a Modmail.
+
+## 10. Finance re-check — Sep 11 2026, credit expiry vs. spend pace
+
+**New standing rule this round (direct user instruction):** the paid ad plan
+only executes on a handover *from* the central agent, and this agent asks
+permission *before* drafting any handover — including the one that would ask
+the central agent for its requirements. Not drafted yet; permission asked in
+chat, not assumed.
+
+**Fresh Finances screenshot (user-supplied).** Balance reconciles cleanly this
+time — no repeat of §6's Sep 9 "100 credits short" gap:
+
+| Lot | Amount | Expires | Days left (from Sep 11) |
+|---|---|---|---|
+| FEEDBACK05 (event) | 7,820 | Sep 13, 2026 | **2** |
+| BACK-TO-WORK (event) | 92,047 | Sep 15, 2026 | **4** |
+| Starter | 25,000 | Aug 2029 | ~3 yrs |
+| Quest rewards (6 items) | 12,200 | Dec 3–6, 2026 | ~3 months |
+| Grant | 15,000 | Dec 8, 2026 | ~3 months |
+| **Sum of dated lots** | **152,067** | — | matches the Finances page's "152,067 converted & granted" exactly |
+| Daily free credits | +100/day | resets daily | not a pool |
+
+**152,167 available now = 152,067 in lots + today's 100 daily.** Durable pool
+(Starter + Quest + Grant) is still **52,200**, unchanged from §6.
+
+🔴 **99,867 credits — 65.6% of the current balance — expire inside the next 4
+days.** FEEDBACK05 has dropped 10,000→7,820 since the Sep 9 check (2,180 drawn
+down since then); BACK-TO-WORK is untouched at 92,047.
+
+**This month's usage pace, for scale:** studio-side (dev tooling) 10,633
+credits / 89 calls + runtime AI (in-game features, players) 7,498 credits /
+70 calls = **18,131 credits total this period.** Burning the remaining 99,867
+organically in 2–4 days would need roughly **5.5× this month's entire usage
+rate, in a quarter of the time** — not realistic without a deliberate spend
+decision.
+
+**Three ways this plays out — not this agent's call which:**
+
+1. The `--network run` campaign already proposed in §6/§7.4/§7.5 ($70–90,
+   sized specifically to land inside the BACK-TO-WORK window) — this is the
+   marketing ad plan now gated behind a central-agent handover per this
+   round's new rule. If it's going to run, the approval-and-flight window
+   before Sep 13/15 is closing.
+2. Central/implementation-side deliberate spend on `rundot generate
+   image/music/sfx` for remaining asset needs — outside this agent's remit,
+   their call to make.
+3. Let it lapse — keep the durable $52,200 for later, accept ~$92–100
+   (FEEDBACK05 + most of BACK-TO-WORK) going unused.
+
+**Board note (same user-supplied screenshot, `run.world/jams/september-2026-jam`,
+top of list this time):** Spice Expert: Ramu is now **3rd place, $300 tier**
+— 577 total plays / 410 DUP, up from 4th (375 DUP) at the §9 pull. SHIFT, the
+entry that was closing fast in §9, no longer appears in the top 12. Cushion to
+4th (The Good Life, 358 DUP) is now +52, not a deficit.

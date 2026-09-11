@@ -814,10 +814,16 @@ bumps. Tags are clean, so this cost nothing but numbers.
 
 ---
 
-### 📋 QUEUED — the final round, to dispatch once the polish round returns
+### 2026-09-11 — The final round — gem economy, sprite scale, decorations, mobile overlay, bumping
 
-🔴 **Confirmed by the user Sep 11 2026.** Not yet handed over — waits on the in-flight
-polish round returning and being verified. **Freeze: end of Sep 13.**
+**Status:** ✅ **TIER A RETURNED, VERIFIED FROM SOURCE, DEPLOYED** — commit `f7b1344`,
+private **v1.55.0**, Sep 11 2026. 🔴 **Tier B (tasks 1–2) HANDED BACK, not dropped** —
+the user queued it as the **next and final round**, to be attempted after playtesting
+v1.55.0. **Freeze: end of Sep 13.**
+
+⚠️ The round was dispatched as two tiers under a standing *"stop cleanly at a finished
+tier"* instruction: **Tier A = tasks 3–11** (independent, shippable alone), **Tier B =
+tasks 1–2** (the build rail and the board re-anchor, one architecture change).
 
 #### For the implementation agent
 
@@ -868,3 +874,72 @@ safe lever.
 - **Regenerating the other eight backdrops.** Every one was generated before the
   generator was told where the belt enters and exits; block 9 is simply where it shows,
   being the only backdrop with explicit entry/exit furniture.
+
+#### Return — Tier A, verified from source Sep 11 2026 · commit `f7b1344` · private **v1.55.0**
+
+✅ **Seven files changed, none of them sealed:** `config.ts`, `data/towers.ts`,
+`textures.ts`, `towerScene.ts`, `state/save.ts`, `styles/app.css`, `ui/EndScreen.tsx`.
+
+| Check | Result |
+|---|---|
+| `enemies.ts` / `waves.ts` / `sim/engine.ts` untouched | ✅ absent from the changed-file list |
+| `save.ts` diff is the payout formula only | ✅ the loop → `n * gemsPerWave`, plus its doc comment |
+| `gemsPerWave` 1 → 4 contained | ✅ **exactly one consumer** (`save.ts:197`); `config.ts` was never sealed, so in scope |
+| Balance unmoved | ✅ re-run independently: **35 / 34 / 6 / 4 / 90** |
+| End-screen copy | ✅ matches this record's proposed wording **verbatim**, both lines |
+| Last stale `desc` | ✅ gone; remaining "Fryer"/"Tandoor" hits are code comments, not player-facing |
+| Dishes 44 → 64, `DISH_SIZE_MULT` 2 → 1.375 | ✅ block 1 holds at its approved 88 units |
+| Shadow / glow / ice from `baseSize` | ✅ — and `sprite.width` / `hpBar` correctly **still** follow `size` |
+| Landscape branch on `100dvw` | ✅ both branches now agree |
+| Bumping is render-only | ✅ grouped by archetype, nodes re-set from engine state every frame, no drift |
+
+✅ **The glow was re-implemented, not re-tuned, and the agent's reason is correct.**
+Nested filled discs composite brightest at the centre no matter how each ring's alpha is
+weighted, because every smaller disc paints over every larger one — that shape *cannot*
+become a rim-light by tuning alpha. Stroked thin rings let each radius carry its own
+alpha; the peak now sits at ~82% of the radius.
+
+#### 🔴 Four findings the return report did not raise
+
+1. **The ice overlay is now smaller than the chai/coffee sprite** — ice `64 × 1.25` =
+   **80** against an **88**-unit sprite, where it was 110 vs 88 before. A frozen block-1
+   dish may show its edges outside the frost. Task 8 named *the shadow* and merely said
+   *"consider the same for `ice`"*; the agent applied it. Defensible, but it is the one
+   change here that trades a working behaviour for consistency.
+2. **Enemy textures now rasterise at 64, not 44** — `textures.ts:425` also reads
+   `CONFIG.sizes.enemy`. This is a **quality gain** (chai was a 44 px texture upscaled
+   ×2; now 64 px upscaled ×1.375) at a small runtime VRAM cost. No bundle bytes. Not a
+   defect — an uncosted consequence.
+3. **Perfectly coincident pairs never separate** — the guard is
+   `dist >= minSep || dist < 0.0001`, so sprites on *identical* pixels are skipped.
+   Near-overlap, the actual photographed symptom, is handled. Low severity.
+4. **The glow's outermost ring is clipped at the texture edge** — it sits at exactly
+   `r = cx` with a ~7.4 px stroke, so half falls outside the 128 px texture, leaving a
+   hard circular cut at alpha ≈ 0.32 outside the bright rim (alpha 0.6, r ≈ 52).
+
+⚠️ **Unverifiable from here, and shipped deliberately unresolved for the user's device
+playtest:** all four above plus FTUE cue alignment in both orientations. The agent
+root-caused the tab-visibility rAF throttling that blocked automated runs
+(`Page.setWebLifecycleState` + `Emulation.setFocusEmulationEnabled`) and cleared waves
+1–3 end-to-end at 390×844 — real tooling progress — but a resized desktop browser still
+cannot reproduce mobile Chrome's address-bar collapse, **which is the entire symptom the
+`dvw` fix targets**.
+
+#### ⚠️ A verification hazard found while checking this round
+
+Twice, a `git diff -- <pathspec>` of mine matched **nothing** and returned "0 lines",
+which reads identically to "no changes" — a **false pass on the sealed-file check**. The
+cause: `jam-entry/` is a **sibling** of `Ramu - The Chef` at the repository root, not a
+child of it, and the repo root is the parent `September GameJam` folder. 🔥 **A check
+whose failure mode is silent success is not a check.** The zeros recorded above instead
+come from the changed-file list, which cannot fail that way. ✅ **Rule: when a
+verification passes by returning nothing, first prove it can return something.**
+
+#### Deploy — verified independently Sep 11 2026
+
+`rundot whoami` → **offroadinggamedev@gmail.com**. `rundot game list-tags` → **Private
+1.55.0 · Review 1.42.0 · Public 1.42.0**. No `set-public` / `set-private` / `update-tag`
+run. ✅ **The changelog cleared moderation on the first attempt** — the "Stockpot" /
+"Saucepot" one-word workaround holds.
+
+#### Verdict — ⏳ Tier A accepted from source; **awaiting the user's device playtest**
