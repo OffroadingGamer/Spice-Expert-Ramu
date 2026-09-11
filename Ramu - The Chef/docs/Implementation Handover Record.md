@@ -544,3 +544,48 @@ Plays counts. Proposed as the last pre-freeze task.
 
 #### Verdict — ✅ ACCEPTED, Sep 11 2026. Tiers 3–4 (build sidebar, wave roster panel) are
 **dropped** — no room before the freeze.
+
+---
+
+### 2026-09-11 — Playtest round — sprite fit, prop scale, bare pads, and a spawn safe zone
+
+**Status:** 📤 **HANDED OVER, not yet returned.** From a device playtest of v1.48.0.
+
+🔴 **Last round before the freeze.** Effective code freeze **end of Sep 13**; CP8 is
+*deploy verified **public*** at Sep 14 23:30 IST.
+
+#### Tasks
+
+| # | Task | Files |
+|---|---|---|
+| 1 | **Chai and coffee render ~a third the size of every other dish.** Every dish file is 212×141, but chai/coffee's *content* bbox is **75×55 (35% of canvas)** against 205×134 (97%) for all 28 others. `artSquare` scales by the **file** bounds, so identical scale → wildly different apparent size. Fit on the **alpha content bbox** instead. ✅ `artSquare` has exactly one caller (`makeEnemyTexture`) — no blast radius. | `textures.ts` |
+| 2 | **Station props +1.25×** on the board, and the build-menu icons with them. | `textures.ts` / `towerScene.ts` / `BuildSheet.tsx` |
+| 3 | **Remove the solid pad decal under a PLACED tower** — `makePadTexture`'s ellipse reads as an odd table beneath the prop. Ghost slots stay on empty pads. Pairs with task 2: losing the decal is what makes room for bigger props. | `towerScene.ts` |
+| 4 | 🔴 **Spawn safe zone** — towers may not damage anything still on the **first vertical leg**: `(170,90)→(170,330)`, **240 units, 9.8%** of the 2440-unit path. Exclude from **both** `pickTarget` and splash victim selection. Derive the threshold from `CONFIG.path`'s first segment, never a literal. | ⚠️ **`sim/engine.ts` — UNSEALED for this task only** |
+| 5 | **Palette-quantise the `critical` PNGs.** The 12 props are RGBA truecolour and were never quantised, unlike the dish trays. Measured at 128 colours: **540,704 → ~138,469 B, a 74% cut**, indistinguishable at board scale. | assets + `manifest.ts` |
+
+#### ⚠️ Task 4 changes the balance, and Round J was tuned without it
+
+Every enemy becomes invulnerable for the first 9.8% of its journey, so the pads nearest
+spawn lose most of their value and the whole defence weakens. Round J's numbers —
+`maxed-meta` 105, `balanced` 35, `fox-spam` 35 — **will move earlier**.
+
+🔴 **`data/waves.ts` stays sealed. Do not re-tune the curve to compensate.** Run
+`npm run balance` and **report the new loss levels**. If `maxed-meta` leaves 85–110, or
+`balanced` drops below ~25, say so and stop — that is a decision for the user, not a
+tuning exercise to be absorbed silently one day before the freeze.
+
+#### Acceptance criteria
+
+1. Chai and coffee render at the same apparent size as every other dish, measured not eyeballed.
+2. No dish is clipped or distorted by the new fit; all 22 block dishes checked.
+3. Props are visibly larger; nothing overflows its slot or collides with a neighbour.
+4. No table-like decal under a placed tower; ghost slots still mark empty pads and still distinguish bonused from plain.
+5. Nothing takes damage on the first vertical leg — including splash. Verified in play, not only in code.
+6. `npm run balance` re-run and the five strategies' loss levels reported against Round J's.
+7. If task 5 lands: `critical` before/after, and a visual check of each changed asset.
+8. 🛑 `data/enemies.ts`, `data/towers.ts`, `data/waves.ts` diffs **empty**. `SAVE_KEY` unchanged. `tsc` and build clean.
+
+#### Return
+
+_Pending._
