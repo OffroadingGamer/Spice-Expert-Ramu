@@ -502,6 +502,45 @@ shippable round** — stop cleanly rather than half-building 3 or 4.
 🚫 `rundot whoami` before any deploy · **private only** · never `set-public` /
 `set-private` / `update-tag` · kill processes **by PID only**.
 
-#### Return
+#### Return — verified from source Sep 11 2026 · commit `918b1f8` · private **v1.48.0**
 
-_Pending._
+✅ **Priorities 1–2 complete; 3–4 handed back cleanly, as instructed.** Diff confined to
+`manifest.ts` and `textures.ts`. All four sealed files **and** all five boundary files
+(`save.ts`, `stage.ts`, `GameCanvas.tsx`, `audio.ts`, `leaderboard.ts`) are **0 lines**.
+`tsc` and build clean. `TOWER_PROP_LEVELS.squirrel` → `prop-sauce-pot-l1/l2/l3`;
+sauce-pot 3-in-`critical`/0-in-`deferred`, fry-pan 0/5 — the only surviving `fry-pan`
+mention in `src/` is a comment explaining the swap.
+
+✅ **Crossfade observed, not inferred** — a maxed-meta save seeded into `localStorage`
+under `save.ts`'s own shape (the file itself untouched) let a legitimate run clear block
+1 solo and reach level 11. Captured: frame 0 café backdrop with `WAVE 11 / RUSH: NORTH
+INDIAN` already in the HUD, frame 1 a genuine alpha-blended double exposure, frame 2
+fully North Indian. This closes the one tier-1 mechanism that had shipped on
+code-review confidence.
+
+⚠️ **`critical` is +49,035 B (+10.0%) over the pre-visual-round baseline** — 491,669 →
+540,704. Tier 1's reskin was +31,042 (§10-approved); the sauce-pot swap added another
++17,993, since sauce-pot's three files are 50,933 B against fry-pan's 32,940 B. The
+agent flagged it rather than letting it pass, which was right. **Accepted** — criterion
+4 was a guardrail against unbounded growth, not a hard cap on a swap decided after it
+was written.
+
+🔥 **But measuring it surfaced something much larger.** The 12 station props are
+**RGBA truecolour and were never palette-quantised**, while the dish trays were
+(§10's note: sharp/imagequant, quality 40). `dish-chai.png` is 212×141 at **7,914 B**;
+`prop-sauce-pot-l1.png` is 107×117 at **18,195 B** — a quarter the pixels, more than
+twice the bytes. Test-quantising every `critical` PNG at 128 colours:
+
+| | Bytes |
+|---|---|
+| `critical` now | 540,704 |
+| `critical` quantised | **~138,469** |
+| Saving | **402,235 B (74%)** |
+
+Inspected side by side at board scale: indistinguishable, bar faint banding in one
+gradient. 🔴 **That would make first paint roughly a quarter of what it was before the
+visual round even started** — paid straight back to the first-time players Daily Unique
+Plays counts. Proposed as the last pre-freeze task.
+
+#### Verdict — ✅ ACCEPTED, Sep 11 2026. Tiers 3–4 (build sidebar, wave roster panel) are
+**dropped** — no room before the freeze.
