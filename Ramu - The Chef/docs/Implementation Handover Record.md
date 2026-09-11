@@ -782,7 +782,10 @@ polish round returning and being verified. **Freeze: end of Sep 13.**
 |---|---|
 | 1 | 🔒 **The 140-unit build rail** (`002` schematic) — the four stations for placement **and** the selected-tower panel (Sell / Upgrade / Target), replacing the bottom `BuildSheet`. ✅ **The board is already built for it**: Round I narrowed the belt's right leg x610→x540 precisely to clear 180 units, which is a 140-unit rail plus margin. That reserved strip sitting empty is what makes the current layout read as off-balance. |
 | 2 | **Re-anchor the board** — left-aligned in the remaining **580** units (≈ **0.80**), correcting the polish round's *centred* 0.85. Still via `getFit()` in `stage.ts`, one transform only. |
-| 3 | **Shrink the glow** — `towerScene.ts`'s `glow.width = size * 1.9` → **~1.2**, and re-weight `makeGlowTexture`'s falloff so alpha peaks near the **rim** instead of the centre. Today it's a halo; it should be a rim-light. 🔴 Urgent because ×2 chai/coffee makes block-1 glows **167 units on a 72-unit belt**. |
+| 3 | 🔴 **Deflate the gem economy.** `recordRunEnd` in `state/save.ts` pays the **triangular sum** `N(N+1)/2 × gemsPerWave` — wave 102 pays **5,253**, and the ad placement adds `ceil(×0.5)` = **2,627**. Both match the end screen exactly. 🔥 **The entire meta tree costs 1,968 gems**, so one deep run pays **2.7× everything** (4× with the ad), and the crossover is **wave 62** — a single run that deep buys the whole tree. Even a wave-34 death pays 595, more than one tower's full stat line (520). The tree is exhausted in ~2 runs. **Fix: make the payout linear** — `gemsEarned = N × gemsPerWave` with `gemsPerWave: 4`. Gives 136 gems at wave 34 (≈15 runs to max) and 408 at wave 102 (≈5 runs), so progression lasts the event instead of ending on day one. ⚠️ **`state/save.ts` unsealed for this formula ONLY** — `SAVE_KEY`, the schema and every other function stay untouched. |
+| 4 | **Rework the end-screen copy.** `EndScreen.tsx:75` still reads *"Out of lives — every **bug** that got past you cost one"* — insect-era language the dish reskin left behind, and it contradicts the HUD, which now says **ESCAPES LEFT**. Proposed: *"No escapes left — every dish that slipped past was a customer out the door."* |
+| 5 | **`EndScreen.tsx:83`: "Tickets served" → "Dishes served"** (the `runKills` counter). ✅ Safe: `submitRunScores` sends raw `kills`/`waves` values under fixed mode names, so the label is decoupled from the two live leaderboards and `sdk/leaderboard.ts` is not touched. |
+| 6 | **Shrink the glow** — `towerScene.ts`'s `glow.width = size * 1.9` → **~1.2**, and re-weight `makeGlowTexture`'s falloff so alpha peaks near the **rim** instead of the centre. Today it's a halo; it should be a rim-light. 🔴 Urgent because ×2 chai/coffee makes block-1 glows **167 units on a 72-unit belt**. |
 
 #### For the art agent
 
@@ -796,6 +799,12 @@ twice (720×1280, 121,380 B, q70).
 at the bottom and inverts the lighting gradient against the other eight blocks. In
 isolation that reads wrong; at board scale, under the belt and towers, it reads as a
 corner light fixture. Recorded so nobody "fixes" it later as a bug.
+
+⚠️ **Why the payout and not the costs.** Raising `costBase`/`costStep` would fix the
+ratio too, but the user's standing rule is *"as long as the current leaderboard doesn't
+reset and player earnings aren't reset."* Players hold banked gems: **lowering the payout
+leaves those untouched, while raising costs silently devalues them.** The payout is the
+safe lever.
 
 #### 🚫 Deliberately NOT in this round
 
