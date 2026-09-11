@@ -84,6 +84,19 @@ export interface Stage {
 }
 
 /**
+ * Final polish round, task 1: shrink the whole board render by this factor
+ * after playtesting found it reading too large. Folded into getFit() itself
+ * (below) rather than a second scale on towerScene.ts's boardRoot — Hud.tsx's
+ * FTUE cues (the picker-beat arrow, the empty-pad pulse) are DOM, positioned
+ * via designToScreen(), and never see a Pixi-container-only scale; a factor
+ * applied only inside towerScene.ts would desync the two silently (the cues
+ * would keep pointing at the OLD, unscaled pad positions). Deriving scale,
+ * offsetX, designHeight and boardY all from the same reduced number, in one
+ * place both consumers call, is what keeps them from drifting apart.
+ */
+const BOARD_SCALE = 0.85;
+
+/**
  * Pure contain-fit math: given a screen size (CSS px, e.g. #app-frame's
  * getBoundingClientRect()), returns the design->screen scale, the
  * horizontal letterbox offset, the resulting design-unit screen height, and
@@ -92,7 +105,7 @@ export interface Stage {
  * below and any DOM overlay call this — never re-derive it by hand.
  */
 export function getFit(screenW: number, screenH: number) {
-    const scale = Math.min(screenW / DESIGN_WIDTH, screenH / FIT_HEIGHT);
+    const scale = Math.min(screenW / DESIGN_WIDTH, screenH / FIT_HEIGHT) * BOARD_SCALE;
     const offsetX = (screenW - DESIGN_WIDTH * scale) / 2;
     const designHeight = screenH / scale;
     const boardY = Math.max(0, (designHeight - PLAYFIELD_HEIGHT) / 2);

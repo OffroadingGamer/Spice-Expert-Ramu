@@ -14,7 +14,15 @@
 --------------------------------------------------------------------------- */
 
 :root {
-    --game-w: 100vw;
+    /* Final polish round, task 6: a static 100vw can be computed from a
+       different viewport than what's actually visible once a mobile
+       browser's own chrome (address bar, etc.) settles — the same class of
+       drift the landscape override below already avoids for HEIGHT by using
+       100dvh instead of 100vh. Matching it here keeps #app-frame (and every
+       "inset-0" overlay anchored to it, e.g. Hud's "Shift paused" scrim)
+       from landing narrower than the true viewport on the affected devices,
+       which reads as a sliver of the board showing through on one edge. */
+    --game-w: 100dvw;
     /* The RUN host already pads below its native header, so we deliberately
        do NOT use env(safe-area-inset-top) — it double-pads on Android.
        Consume via the pt-safe-top utility below. */

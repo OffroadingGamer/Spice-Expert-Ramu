@@ -302,12 +302,32 @@ export function makeTowerLevelTextures(renderer: Renderer, stationId: string): [
  */
 const PROP_SCALE_BONUS = 1.25;
 
+/**
+ * Final polish round, task 3: the shared per-family factor is set by
+ * whichever tier has the largest raw dimension — for Tandoor/bear
+ * (118x131 -> 158x261 -> 246x191) that's Lv2's height, so Lv1's own largest
+ * dimension (131) only fills ~50% of the family box, against 96-100% for
+ * every other station (whose Lv1 IS close to the family's largest tier).
+ * Rather than special-case Tandoor, any level whose fill falls under this
+ * floor is scaled up to it individually — generic, so it self-corrects if
+ * future art changes which tier ends up smallest, and levels that already
+ * clear the floor (every level of every other station, and Tandoor's own
+ * Lv2/Lv3) are untouched.
+ */
+const MIN_LEVEL_FILL = 0.63;
+
 export type TowerLevelSize = { w: number; h: number };
 
 export function makeTowerLevelSizes(texes: [Texture, Texture, Texture]): [TowerLevelSize, TowerLevelSize, TowerLevelSize] {
     const bboxMax = Math.max(...texes.flatMap((t) => [t.width, t.height]));
-    const factor = (CONFIG.sizes.tower / bboxMax) * PROP_SCALE_BONUS;
-    return texes.map((t) => ({ w: t.width * factor, h: t.height * factor })) as [TowerLevelSize, TowerLevelSize, TowerLevelSize];
+    const familyBox = CONFIG.sizes.tower * PROP_SCALE_BONUS;
+    const factor = familyBox / bboxMax;
+    return texes.map((t) => {
+        const levelMax = Math.max(t.width, t.height);
+        const fill = levelMax / bboxMax;
+        const levelFactor = fill < MIN_LEVEL_FILL ? (familyBox * MIN_LEVEL_FILL) / levelMax : factor;
+        return { w: t.width * levelFactor, h: t.height * levelFactor };
+    }) as [TowerLevelSize, TowerLevelSize, TowerLevelSize];
 }
 
 /**
@@ -509,7 +529,10 @@ export function makePadGhostTexture(renderer: Renderer): Texture {
     return gen(renderer, (g) => {
         const w = CONFIG.sizes.pad.w * SS;
         const h = CONFIG.sizes.pad.h * SS;
-        drawDashedEllipse(g, w * 0.5, h * 0.5, w * 0.46, h * 0.4, C.pad, 3 * SS);
+        // Final polish round, task 5: shrunk from 0.46/0.4 (~0.48 of pad
+        // width) to ~0.38 — pads 0, 4 and 5 sit only 11-16 design units from
+        // the belt edge, so the old radius visually touched it.
+        drawDashedEllipse(g, w * 0.5, h * 0.5, w * 0.38, h * 0.33, C.pad, 3 * SS);
     });
 }
 
@@ -518,7 +541,7 @@ export function makePadGoldGhostTexture(renderer: Renderer): Texture {
     return gen(renderer, (g) => {
         const w = CONFIG.sizes.pad.w * SS;
         const h = CONFIG.sizes.pad.h * SS;
-        drawDashedEllipse(g, w * 0.5, h * 0.5, w * 0.46, h * 0.4, C.gold, 3 * SS);
+        drawDashedEllipse(g, w * 0.5, h * 0.5, w * 0.38, h * 0.33, C.gold, 3 * SS);
     });
 }
 

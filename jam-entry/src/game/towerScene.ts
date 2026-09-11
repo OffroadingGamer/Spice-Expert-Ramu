@@ -149,8 +149,10 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
 
     /** The texture for one archetype at the CURRENT level, building and
      *  caching it on first use. Dish choice: data/blocks.ts's block for the
-     *  current level, alternating per spawn when the block carries two. */
-    function enemyTextureFor(archetypeId: string): Texture {
+     *  current level, alternating per spawn when the block carries two.
+     *  Also returns the dish itself — syncEnemies below needs it to size the
+     *  sprite (final polish round, task 4: chai/coffee render larger). */
+    function enemyTextureFor(archetypeId: string): { tex: Texture; dish: string } {
         const level = engine.state.waveIndex + 1;
         const block = blockForLevel(level);
         const dishes = block.dishes[archetypeId] ?? ['chai'];
@@ -163,8 +165,19 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             t = makeEnemyTexture(app.renderer, archetypeId, dish);
             tex.enemies.set(key, t);
         }
-        return t;
+        return { tex: t, dish };
     }
+
+    /**
+     * Final polish round, task 4: chai and coffee read too small against the
+     * board — per-DISH, not per-archetype (a beetle/snail/stag serving chai
+     * is bigger than the same archetype serving anything else). Chai/coffee
+     * only appear in block 1 (data/blocks.ts), so this is block-1-only by
+     * construction, not a special case wired to level number. Sizes are
+     * cosmetic — targeting and splash use centre points (e.dist/e.x/e.y),
+     * never sprite bounds — so this can't move `npm run balance`.
+     */
+    const DISH_SIZE_MULT: Record<string, number> = { chai: 2, coffee: 2 };
 
     /**
      * Dish-art race fix (handover, addendum to Round J — this file is the
@@ -592,7 +605,9 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             let v = enemyViews.get(e.uid);
             if (!v) {
                 const node = new Container();
-                const size = SZ.enemy[e.def.id as keyof typeof SZ.enemy] ?? 44;
+                const { tex: enemyTex, dish } = enemyTextureFor(e.def.id);
+                const baseSize = SZ.enemy[e.def.id as keyof typeof SZ.enemy] ?? 44;
+                const size = baseSize * (DISH_SIZE_MULT[dish] ?? 1);
                 // §6a glow tier, behind everything else, so a poisoned/
                 // burning stag's tint (below) never fights it.
                 const tier = GLOW_TIER[e.def.id] ?? null;
@@ -606,7 +621,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 const shadow = new Graphics();
                 shadow.ellipse(0, size * 0.42, size * 0.4, size * 0.14)
                     .fill({ color: CONFIG.colors.shadow, alpha: 0.2 });
-                const sprite = new Sprite(enemyTextureFor(e.def.id));
+                const sprite = new Sprite(enemyTex);
                 sprite.anchor.set(0.5);
                 sprite.width = size;
                 sprite.height = size;

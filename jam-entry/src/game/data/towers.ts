@@ -68,7 +68,7 @@ export interface TowerDef {
 export const TOWERS: TowerDef[] = [
     {
         id: 'fox',
-        name: 'Grill',
+        name: 'Stock Pot',
         cost: 60,
         range: 170,
         fireRate: 1.6,
@@ -89,7 +89,7 @@ export const TOWERS: TowerDef[] = [
     },
     {
         id: 'owl',
-        name: 'Prep Board',
+        name: 'Pressure Cooker',
         cost: 70,
         range: 170,
         fireRate: 0.9,
@@ -114,7 +114,7 @@ export const TOWERS: TowerDef[] = [
     },
     {
         id: 'bear',
-        name: 'Tandoor',
+        name: 'Cooktop',
         cost: 110,
         range: 160,
         fireRate: 0.55,
@@ -130,13 +130,13 @@ export const TOWERS: TowerDef[] = [
             kind: 'splash',
             perLevel: 8,
             maxLevel: 10,
-            name: 'Wider Tandoor',
+            name: 'Wider Burner',
             desc: 'Cooks more of the rail at once',
         },
     },
     {
         id: 'squirrel',
-        name: 'Fryer',
+        name: 'Sauce Pot',
         cost: 100,
         range: 180,
         fireRate: 1.0,
@@ -151,7 +151,7 @@ export const TOWERS: TowerDef[] = [
             kind: 'chains',
             perLevel: 1,
             maxLevel: 3,
-            name: 'Bigger Basket',
+            name: 'Longer Ladle',
             desc: 'Fryer works more tickets at once',
         },
     },

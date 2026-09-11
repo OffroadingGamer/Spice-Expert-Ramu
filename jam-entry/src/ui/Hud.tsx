@@ -343,21 +343,32 @@ export default function Hud() {
                 </div>
             )}
 
+            {/* Round D: the FTUE now scripts every run through wave 3 (not
+                just the first), so ftueActive covers waves 1-2 entirely and
+                this hint's old wave 2-3 range is dead — it can only ever
+                fire once, at wave 4, the first build phase after the script
+                lets go. Kept: it's a real reminder for a genuinely new
+                mechanic (upgrading) at the first moment nothing else is
+                cueing it.
+                Final polish round, task 7: pulled out of the Ready-button
+                column and given its own band ABOVE the Kitchen Actions row
+                (which sits at bottom-24, independent of this toast's own
+                height) — stacking it directly above Ready let its height
+                push up into the actions row whenever both showed at once
+                (wave 4, once the FTUE has let go). A fixed clearance is
+                simpler and safer than measuring the actions row's live
+                height, and the two can never trade places since neither is
+                keyed off the other. */}
+            {tdPhase === 'build' && selectedPad === null && ftueBeat === null && !menuOpen && wave === 4 && (
+                <div className="pointer-events-none absolute inset-x-0 bottom-40 flex justify-center px-3">
+                    <p className="rounded-xl bg-black/55 px-3 py-2 text-lg font-bold">
+                        Tap a cook to upgrade
+                    </p>
+                </div>
+            )}
+
             {tdPhase === 'build' && selectedPad === null && ftueBeat === null && !menuOpen && (
                 <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-3 pb-safe-bottom">
-                    {/* Round D: the FTUE now scripts every run through wave
-                        3 (not just the first), so ftueActive covers waves
-                        1-2 entirely and this hint's old wave 2-3 range is
-                        dead — it can only ever fire once, at wave 4, the
-                        first build phase after the script lets go. Kept:
-                        it's a real reminder for a genuinely new mechanic
-                        (upgrading) at the first moment nothing else is
-                        cueing it. */}
-                    {wave === 4 && (
-                        <p className="mb-2 rounded-xl bg-black/55 px-3 py-2 text-lg font-bold">
-                            Tap a cook to upgrade
-                        </p>
-                    )}
                     <button
                         type="button"
                         className="pointer-events-auto mb-3 rounded-2xl bg-primary px-14 py-4 text-2xl font-bold text-black shadow-lg transition-transform active:scale-95"
