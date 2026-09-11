@@ -229,3 +229,142 @@ show them as *modified tracked files* and they would be committed — redistribu
 in the public repo, which is exactly what must not happen. ✅ **The swap must be:
 `git rm --cached` the three paths, add the ignore rule, then copy the new files in.**
 Verify afterwards with `git status` that the three mp3s appear nowhere.
+---
+
+## ✅ Pixabay loop round — 2026-09-12 — VERIFIED, HELD (not yet swapped)
+
+Three licensed tracks cut to seamless 60 s loops. **No generation** — the MiniMax route is
+abandoned (see the round A7 verdict above). Deliverables in `Audio/_gen/music-pixabay-final/`.
+
+**Agent method:** find the region clear of each track's head/tail fades, search 60 s windows
+inside it, build an equal-power (sqrt) crossfade from a 3 s tail-continuation folded over the
+window start, then select on the join discontinuity **measured with the engine's 0.026 s trim
+already applied** — not the raw file edges — because that is the seam `audio.ts`'s
+`loopStart`/`loopEndTrim` actually plays. ✅ Good instinct, and verified by simulation rather
+than assumed.
+
+### Independent verification — measured from the files
+
+| | service_low | service_high | menu |
+|---|---|---|---|
+| Duration | **60.0000 s** | 60.0000 s | 60.0000 s |
+| Peak | −2.81 | −2.69 | −2.69 dBFS |
+| RMS | −14.46 | −15.77 | −15.49 dBFS |
+| Samples at full scale | **0** | **0** | **0** |
+
+All three 44.1 kHz stereo, **128.1 kbps CBR**, 960,887 B. ✅ **Peaks match the agent's report
+to 0.00 dB**, RMS to within 0.02–0.20 dB.
+
+🔴 **My first pass disagreed by a constant ≈0.45 dB on every RMS — that was my error**,
+not theirs: I measured through librosa's mono downmix `(L+R)/2`. Recorded as
+[Retro.md](Retro.md) lesson 98.
+
+### The seam, checked a different way
+
+Their metric is an RMS delta across the join, which measures **level match** and is
+structurally blind to a click — a click is a sample-level **step**. Measuring the wrap step
+per channel against the distribution of ordinary sample-to-sample steps in the same music:
+
+| | worst channel | vs 99.9th-percentile body step |
+|---|---|---|
+| service_low | exceeds **84.5%** of body steps | body step ~5× larger |
+| service_high | **83.4%** | ~8× larger |
+| menu | **74.4%** | ~12× larger |
+
+✅ **No click mechanism** — the wrap discontinuity sits inside ordinary waveform motion on
+every channel of every file. Two different metrics, same conclusion.
+⚠️ `service_low` has the weakest level match across the join (**2.21 dB** over 50 ms); small,
+but it is the one to listen for.
+
+### The gains, derived from measurement
+
+RMS-matched to `service_low`, which is `audio.ts`'s stated convention:
+
+```ts
+menu:         { path: 'bgm-menu.mp3',         gain: 1.125 },   // was 1.308
+service_low:  { path: 'bgm-service-low.mp3',  gain: 1.000 },   // unchanged
+service_high: { path: 'bgm-service-high.mp3', gain: 1.162 },   // was 1.101
+```
+
+✅ **Nothing clips** — worst post-gain peak **−1.39 dBFS**. (Round A5's menu would have hit
+**+2.07**; this is that failure not recurring.)
+✅ **Effective loudness lands within ~1 dB of what ships today**, so `MUSIC_BASE` needs no
+change. Today's effective levels: low −15.15, high −14.00, menu −15.28 dBFS.
+⚠️ **Payload doubles, 1.44 MB → 2.88 MB** — 60 s loops instead of 30 s. These stream from
+`cdn-assets/`, so it is not bundle size.
+
+🔒 **Sidecars scanned — clean** (no UserId, no game ids), with a **positive control**:
+`Art/_gen/backdrops/bg-block-1-take1.png.json` *does* contain the UserId, so the scanner
+matches. Sidecars still never go into `public/`.
+
+### ⏸ Held, and why
+
+**Nobody has listened.** The agent cannot hear; neither can I. Every one of rounds A4–A7
+passed its measurements and failed on listening — vocals four times running, which no metric
+in play detected. Licensed human recordings remove that specific failure, but the principle
+stands: **measurement has never been what decides this.**
+
+The swap, when approved: `git rm --cached` the three tracked
+`jam-entry/public/cdn-assets/bgm-*.mp3` → add ignore rules → copy the new files (**sidecars
+stay out**) → set the three gains → build → deploy private.
+
+---
+
+## 📤 SFX round — 2026-09-12 — DISPATCHED, pending
+
+Two one-shots. No BGM changes.
+
+### Task 1 — wave-clear service bell
+
+`Audio/Pixabay/SFX/freesound_community-service-bell-ring-14610.mp3` → `wave-clear-bell.mp3`,
+replacing `audio/level-complete.mp3` on the `wave-clear` cue.
+
+| | |
+|---|---|
+| Source | 8.904 s, **24 kHz**, stereo, 160 kbps, 178,080 B |
+| Silence block | **0 → 0.311 s**, RMS −64.5 dBFS — the part to cut |
+| Strike onset | **0.311 s**, peak 0.336 s |
+| Decay | −25 dB at **1.28 s** from onset · −30 dB at **2.09 s** · −40 dB at 7.36 s |
+| Replaces | 1.894 s, mono, peak −0.63, RMS −15.66, gain `0.72` → **effective peak −3.48, RMS −18.51** |
+
+🔴 **The finding: the channels are out of phase — correlation −0.706.**
+
+| over the cue region | RMS | peak |
+|---|---|---|
+| Left only | −20.60 | **−0.50 dBFS** |
+| Right only | −22.13 | −3.03 |
+| **(L+R)/2 — what a phone speaker hears** | **−29.47** | **−11.35 dBFS** |
+
+🔥 **A naive mono downmix costs 8.87 dB** and drops the peak by nearly 11. A phone speaker
+mono-sums, so the bell would sound thin and weak on exactly the devices most players use,
+while sounding fine on headphones — invisible to desktop testing. ✅ **Fix: take the LEFT
+channel as the mono source** (stronger, and it sidesteps the cancellation). Stereo width on
+a 2 s bell on a phone speaker buys nothing. Alternative offered: flip the right channel's
+polarity and keep stereo.
+
+Spec: cut ~10 ms before onset at a zero crossing; **~2.1 s from onset** (matching the 1.894 s
+it replaces); ~120 ms tail fade; **keep 24 kHz** (source is band-limited to 12 kHz, so
+upsampling adds bytes and no information); report measured peak/RMS so the `SAMPLES` gain is
+derived, not guessed.
+
+✅ **Code side is a drop-in.** `audio.ts:106` is the only entry; `sfx.waveClear()`
+(`audio.ts:302`) and its synth fallback are untouched, trigger at `towerScene.ts:919`.
+
+### Task 2 — map-transition sting
+
+`Audio/Pixabay/SFX/grumpynora-bombay-nights-8-sec-edit-551802.mp3` → `bombay-transition.mp3`,
+for the block-change transition (Task 4 of the implementation round).
+
+Measured: 8.777 s, stereo, 44.1 kHz, 256 kbps, 280,868 B, peak **−1.44 dBFS**, **attack at
+0.000 s** (no head silence — it must stay instant). Musical body ends **~4.0 s**; −40 dB
+under peak by 5.8 s; last sample above −60 dBFS at **7.10 s**.
+
+Spec: trim to **~4.6 s** (everything past it is masked under BGM), 150–250 ms fade at the
+cut, **no loop**, 44.1 kHz / 128 kbps (~74 KB, down from 281 KB), peak ≤ −3.0 dBFS.
+⚠️ **Channel correlation to be reported here too** — same cancellation risk as Task 1, not
+to be assumed away.
+
+🔒 **Licence — both files.** Pixabay terms forbid redistributing standalone and the repo
+is **public**. Verified: `jam-entry/public/audio/` is **tracked, not ignored**, so ignore
+rules are needed before either file lands there — the same trap as the three `bgm-*.mp3`.
+`rundot deploy` ships `dist/`, so git was never the delivery path.

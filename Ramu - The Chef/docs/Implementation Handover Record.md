@@ -1160,6 +1160,116 @@ viewport it scrolls **inside the panel**; the page never scrolls.
 stay **35 / 34 / 6 / 4 / 90**. `DISH_GLOW_MULT` and `BOARD_SCALE = 0.85` untouched.
 Deploy private **v1.59.0**.
 
+#### Return — Sep 12 2026, verified from source
+
+✅ **ACCEPTED.** Commit `c1c0ba1`, private **v1.59.0**. One file, `StationRail.tsx`,
++24/−4 — of which only **three lines are functional**; the rest are comments.
+
+| | Before | After |
+|---|---|---|
+| wrapper | `absolute inset-y-0 right-0` | `absolute inset-y-3 right-3 flex items-center` |
+| panel | `flex h-full … px-1.5 pt-safe-top pb-safe-bottom` | `flex max-h-full w-full … rounded-2xl p-1.5` |
+| `Close` | `mt-auto mb-1 w-full …` | `w-full …` |
+
+**Verified independently:** sealed files absent from the changed-file list (with a positive
+control proving the check *can* match — [Retro.md](Retro.md) lesson 93); `npm run balance`
+re-run → **35 / 34 / 6 / 4 / 90**; `tsc --noEmit` exit 0; `BOARD_SCALE 0.85`, centred
+`offsetX`, `DISH_GLOW_MULT {chai: 0.5, coffee: 0.5}` and `GLOW_PAD 1.15` untouched; the
+retract guard intact at `StationRail.tsx:126`; secret scan clean across all 9 unpushed
+commits, positive control matching 40 lines; `rundot whoami` → the entry account; tags read
+back **private 1.59.0 / review 1.42.0 / public 1.42.0**.
+
+⚠️ **The mechanism was verified, not the pixels.** The wrapper is a *row* flex with
+`items-center`, so the cross axis is vertical and the child centres; dropping `h-full` is
+what produces content height; `max-h-full` caps against the `inset-y-3` parent, so
+`overflow-y-auto` can only ever engage *inside* the panel. The live figures
+(370 / 421 / 435 px) are the agent's measurements and were **not** reproduced here.
+
+🔍 **One unreported change, chased and cleared.** The panel lost
+`pt-safe-top pb-safe-bottom`. That is correct rather than an oversight: the padding existed
+because the panel was `inset-y-0 h-full`, flush against the notch. Content-height and
+centred, its top edge sits ~237 px down at 390×844, and `max-h-full` only reaches the
+notch on a portrait viewport under **~460 px tall** — not a real device. ➕ Worth keeping:
+an absolutely positioned child takes its containing block from the **padding box**, so
+`Hud.tsx:180`'s own `pt-safe-top` never offset this wrapper in the first place.
+
+---
+
+### 2026-09-12 — Pushed: 9 commits, `334f54c..c1c0ba1`
+
+Everything through v1.59.0 is on `origin/main`. ⚠️ **The push foreclosed the `67c5452`
+cleanup** described below — it was offered and then made expensive in the same exchange,
+because the two were presented as independent when the ordering mattered.
+
+#### 🟡 Open, user's call — the rename in `67c5452`
+
+`67c5452` ("Record Tier 1's return…") swept in the `BuildSheet.tsx → StationRail.tsx`
+rename (**R100, zero content**) alongside three docs. Now **pushed**, with **4 commits on
+top**, and **3 of their SHAs cited in this file** (`2a05da0` §:953, `78c2be4` §:1082,
+`183343e` §:1112) — a rewrite invalidates all three.
+
+| | Involves | Cost |
+|---|---|---|
+| **A — leave it** | nothing | `git log` shows the rename under a docs commit; `--follow` still traverses |
+| **B — forward-only note** ⭐ | one line in this file | zero risk; history explains itself |
+| **C — rewrite** | `rebase --onto` + cherry-picks (no `-i` in this environment), `push --force-with-lease` **to a public repo**, then patch 3 stale SHAs | 5 new SHAs, a force-push inside the final 48 h, anyone who cloned diverges |
+
+✅ **B recommended.** C buys a cosmetic attribution fix and pays with a force-push to a
+public repo two days from the deadline.
+
+---
+
+### 2026-09-12 📤 Final round — FTUE cues, Ready button, boot flow, map transition
+
+**Status:** 📤 **DISPATCHED Sep 12 2026, not yet returned.** Written at handover time,
+per this file's own rule. Sources: three annotated playtest screenshots plus a flow
+instruction.
+
+| # | Task | Files |
+|---|---|---|
+| 1 | **Point the FTUE placement arrow at the station rail, not the pad.** The selected-pad ring already says *which* pad; the arrow must say *where to tap*. Applies to `place0` and `place2`; **`upgrade0` is already correct.** Reuse `StationRail.tsx:110-124`'s live-`getBoundingClientRect()` anchoring rather than a board-space position. Dead `arrowPos` plumbing to be removed, not orphaned. | `Hud.tsx`, `StationRail.tsx` |
+| 2 | **Ready button: move up, enlarge, add a looping `motion-safe:` scale pulse** whenever available. | `Hud.tsx` |
+| 3 | **Boot straight into Challenge Mode** with the FTUE armed. `main.tsx:73`'s `phase: 'menu'` becomes the scripted-run payload `MainMenu.tsx:88-94` already builds. | `main.tsx`, `audio.ts` |
+| 4 | **Slower backdrop crossfade (~2.5 s) + a transition sting**, with **Ready disabled for the visual transition**. | `towerScene.ts`, `audio.ts` |
+
+⚠️ **Task 2 has a collision the mockup cannot show.** The Kitchen Actions row sits at
+`bottom-24` and the wave-4 "Tap a cook to upgrade" toast at `bottom-40`, but the screenshot
+was taken with `ftueActive` true, which **hides the actions row**. `Hud.tsx:355-368` already
+documents this exact overlap biting once. Must be verified at **wave 4+ with the FTUE
+finished**, not only during it.
+
+🔴 **Task 3's hidden breakage:** `audio.ts:83` hard-codes `switchCue('menu')` in the
+**audio-unlock handler**. Booting into gameplay means the player's first tap starts *menu
+music over Challenge Mode*. It must become phase-aware. ➕ Unavoidable and merely noted:
+autoplay policy needs a gesture, so with no menu tap the BGM stays silent until the first
+in-game tap.
+
+✅ **Task 3 is mostly already true.** `MainMenu.tsx:84` records that the scripted FTUE is
+*persistent* — **every** run enters scripted, and `save.ftue.challengeDone` no longer gates
+entry — so "always starts with FTUE" already holds per run. Only the boot destination was
+missing, and both exits (`Hud.tsx:453`, `EndScreen.tsx:136`) already reach Main Menu.
+⚠️ Consequence accepted by the user: Leaderboard and Meta Upgrades are Main-Menu-only, so
+a first-time player has no gem-spend path until they exit once.
+
+🔴 **Task 4's real design problem.** `updateBackdrop` (`towerScene.ts:283`) fires on
+*"the art became available"*, not *"the map changed"*, and runs **every tick**. Three
+situations reach it and only one may sting:
+
+| | Situation | Required |
+|---|---|---|
+| 1 | Game start — grass fallback → block 1 art | crossfade **silently** |
+| 2 | **Block change, art cached** | ✅ sting + Ready lock |
+| 3 | Late load — art lands mid-wave, arbitrary timing | crossfade **silently** |
+
+So a **tracked block-id change** is required, held separately from the sprite crossfade;
+triggering off `backdropSprites.length > 1` is wrong. There are **9 blocks → 8 transitions
+per run**. The Ready lock covers the **visual** crossfade (~2.5 s), not the sting's full
+length — the tail rings out under the resumed BGM. Both durations are named constants.
+
+🔴 **Sealed:** `enemies.ts`, `data/waves.ts`, `sim/engine.ts`, `data/towers.ts`.
+Balance must stay **35 / 34 / 6 / 4 / 90**; `BOARD_SCALE 0.85` and `DISH_GLOW_MULT`
+untouched.
+
 #### Return
 
 _Pending._

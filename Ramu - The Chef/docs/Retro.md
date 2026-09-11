@@ -2480,3 +2480,35 @@ uniques are the score; the trend matters more than any single day.
     already public on a weaker build is losing score every hour a better one sits private.
     That reframes the whole endgame from "hit the deadline" to "promote as soon as it
     verifies", and it was written nowhere.
+
+98. 🔴 **When your measurement disagrees with someone else's by a *constant* offset,
+    suspect your method before their work.** Sep 12 2026, verifying the audio agent's three
+    Pixabay loops, every RMS I measured came out **~0.45 dB under** what they reported —
+    service_low 0.44, service_high 0.44, menu 0.45. I was one step from writing up a
+    discrepancy. 🔥 **The constancy was the tell.** Real disagreements scatter; a fixed
+    offset across three independent files is a *systematic* difference, which means a
+    methodology difference. I had loaded through `librosa.load(..., mono=True)`, whose
+    `(L+R)/2` downmix lowers RMS whenever the channels are not fully correlated. Re-measured
+    in stereo, **peaks matched to 0.00 dB** and RMS to within 0.02–0.20 dB — their report was
+    simply correct. ✅ **Rule: before reporting a discrepancy against someone else's work,
+    check whether your number and theirs are even the same quantity.** The cost of being
+    wrong here is asymmetric — a false accusation damages a working relationship and sends a
+    correct artefact back for rework, while one extra measurement costs a minute. ➕ Keep the
+    habit that caught it: I printed **both** bases side by side rather than replacing one
+    number with another, which is what made the offset legible as an offset.
+
+99. 🔴 **Measure in the environment the thing is delivered into, not the one your tools
+    default to.** Sep 12 2026, analysing a service-bell SFX for a **portrait mobile** game. It
+    measured beautifully in stereo — peak −0.50 dBFS, a clean strike, a long decay. Then the
+    channel correlation came back **−0.706**: the channels are substantially out of phase.
+    Summed to mono — **which is exactly what a phone's single speaker does** — it loses
+    **8.87 dB** and its peak collapses from −0.50 to **−11.35 dBFS**. 🔥 It would have sounded
+    fine in every check anyone was likely to run on a desktop, and thin and weak for most of
+    the actual players. ⚠️ **This is the fourth face of lesson 94** — the proxy (stereo
+    measurement) did not capture the goal (what a phone speaker reproduces), and would have
+    passed the file precisely because it measured the wrong thing. ✅ **Rule: for anything
+    with a delivery target — mono speakers, small screens, cold caches, slow networks — add
+    one check that simulates the target, and add it *before* the quality checks, since a
+    target failure invalidates them.** ➕ Cheap and general: mono-sum every stereo asset and
+    compare; it is one line and it catches phase problems that no level, spectral or seam
+    metric can see.
