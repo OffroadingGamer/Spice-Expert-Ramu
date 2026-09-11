@@ -586,6 +586,46 @@ tuning exercise to be absorbed silently one day before the freeze.
 7. If task 5 lands: `critical` before/after, and a visual check of each changed asset.
 8. 🛑 `data/enemies.ts`, `data/towers.ts`, `data/waves.ts` diffs **empty**. `SAVE_KEY` unchanged. `tsc` and build clean.
 
-#### Return
+#### Return — verified from source Sep 11 2026 · commit `c9fa483`
 
-_Pending._
+✅ **All four tasks landed, nothing handed back.** Sealed (`enemies.ts`, `towers.ts`,
+`waves.ts`) and all five boundary files **0 lines**. `sim/engine.ts` touched only for
+task 4 (+13). `tsc` and build clean.
+
+✅ **Safe zone derived, not hardcoded** — `SPAWN_SAFE_ZONE_LEN = segLengths[0]`, applied
+in `pickTarget` **and** splash victim selection. Balance re-run and reported rather than
+compensated for, as instructed:
+
+| Strategy | Round J | Now |
+|---|---|---|
+| `maxed-meta` | 105 | **90** — inside 85–110 |
+| `balanced` | 35 | **34** |
+| `fox-spam` | 35 | 35 |
+| `miser` | 6 | 6 |
+| Block 1 `balanced` @L10 | 7/10 | **6/10** — inside 5–8 |
+
+All five `PROVEN` assertions still pass.
+
+🔥 **Unlooked-for win: the safe zone hit the participation target Round J could not.**
+At level 40, `maxed-meta` now fires **8/10 towers** (was 7/10) with **51% depth** (was
+42%) and 20 peak alive. Round J's criterion 2 — ≥ 8/10 firing at L40 — was missed after
+three tuning attempts and is now met as a side effect of letting enemies survive the
+first leg. ⚠️ **Which confirms the Round J diagnosis was right**: the belt was empty
+because the first towers killed everything before it could spread, not because of
+targeting convergence.
+
+🔥 **Payload, measured independently: `critical` 540,704 → 115,885 B (−78.6%).** That
+is **−375,784 B against the pre-visual-round baseline of 491,669** — first paint is now
+under a quarter of what it was *before* this work started, while having gained nine
+backdrops and real per-level station art. `pad`/`pad-gold` retired entirely (0 refs).
+
+🔴 **Outstanding — self-flagged by the agent, confirmed real and NOT theoretical.**
+`fireBeam`'s chain loop iterates `state.enemies` with only a `hit.includes` and distance
+test — **no safe-zone check**. The Fryer's 2nd/3rd hits can therefore reach back into the
+zone. With `chainRange` 120 and combat now starting exactly at the corner, an enemy at
+path distance ~250 sits ~40 units from one still inside the zone, so this fires
+routinely, not at an edge. The handover named `pickTarget` and splash only, so leaving
+it was correct scope discipline — but it defeats the rule's intent and is one line in
+the same loop with the same constant.
+
+#### Verdict — ✅ ACCEPTED, Sep 11 2026. Beam-chain gap outstanding.
