@@ -460,3 +460,48 @@ device test. The crossfade reuses the already-proven `ensureBlockAssets` cache-p
 path, so this is code-review confidence, not observation.
 
 #### Verdict — ✅ TIER 1 ACCEPTED, Sep 11 2026
+
+---
+
+### 2026-09-11 — Visual round, part 2 — the Fryer remap, then whatever else fits
+
+**Status:** 📤 **HANDED OVER, not yet returned.** Written at handover time.
+
+**Scope stamp:** the last build round before the freeze. One decided fix, one carried-over
+verification, then tier 2 and 3 only if they fit.
+
+🔴 **Effective code freeze: end of Sep 13.** CP8 is *deploy verified **public*** at
+Sep 14 23:30 IST, and RUN's approval lead is unmeasured. **Priorities 1–2 alone are a
+shippable round** — stop cleanly rather than half-building 3 or 4.
+
+#### Tasks as authorised
+
+| # | Task |
+|---|---|
+| 1 | **Remap the Fryer to Sauce pot** — `prop-sauce-pot-l1/l2/l3` (32/33/34), replacing `prop-fry-pan-l2/l3/l4`. §10 is updated. Retire the three fry-pan aliases from `critical` if nothing else uses them. |
+| 2 | **Verify the block 1→2 backdrop crossfade**, carried over from tier 1 where the scripted bot could not survive block 1 solo. Seed a save with meta upgrades, or drive the engine directly, so play legitimately reaches level 11. |
+| 3 | **Build sidebar** — the 140-unit vertical rail from the `002` schematic, replacing the bottom sheet. |
+| 4 | **Wave roster panel** — §8. During a wave the Ready space hot-swaps to that wave's named dish list, boss floating and glowing. |
+
+#### Acceptance criteria
+
+1. All four stations draw equipment, none draws food — **no tower resembles an enemy**.
+2. Fryer Lv1→Lv2→Lv3 fits per family, bottom-anchored, consistent with the other three.
+3. The block 1→2 crossfade is **observed**, not reasoned about — screenshot or frame capture.
+4. `critical` does not grow beyond the §10-approved reskin cost; report before/after.
+5. If task 3 lands: no board element visible through the sidebar, and the Ready button still reachable one-handed at 360 px.
+6. If task 4 lands: every dish in the wave is named from `EnemyDef.name` — the field that is currently rendered nowhere.
+7. 🛑 `enemies.ts`, `towers.ts`, `waves.ts`, `sim/engine.ts` diffs **empty**.
+8. `SAVE_KEY` unchanged; `tsc` and `vite build` clean.
+
+#### Boundaries
+
+🛑 Sealed: `enemies.ts` · `towers.ts` · `waves.ts` · `sim/engine.ts`.
+🚫 Not to be touched: `save.ts` · `stage.ts` · `GameCanvas.tsx` · `audio.ts` ·
+`leaderboard.ts`. Outside `jam-entry/` → hand back.
+🚫 `rundot whoami` before any deploy · **private only** · never `set-public` /
+`set-private` / `update-tag` · kill processes **by PID only**.
+
+#### Return
+
+_Pending._
