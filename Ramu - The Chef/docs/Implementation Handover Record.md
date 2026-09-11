@@ -765,9 +765,52 @@ user before dispatch.
 7. 🛑 `enemies.ts` and `waves.ts` diffs empty; `towers.ts` diff is **names only**.
 8. `SAVE_KEY` unchanged; `tsc` and `vite build` clean; deployed **private**.
 
-#### Return
+#### Return — verified from source Sep 11 2026 · commit `99e1530` · private **v1.54.0**
 
-_Pending._
+✅ **All seven landed, nothing handed back.** Sealed `enemies.ts`, `waves.ts` **and**
+`sim/engine.ts` all **0 lines**. `tsc` and build clean. Balance **identical**: 35 / 34 /
+6 / 4 / 90. `game info`: Private **1.54.0**, Review **1.42.0 (Approved)**, Public
+**1.42.0**.
+
+✅ **`towers.ts` is names-only, verified line by line** — the entire diff is six `name:`
+lines. No stat, cost, range or rate moved.
+
+✅ **The board scale went where it had to.** `BOARD_SCALE = 0.85` multiplies inside
+`getFit()` itself, so `scale`, `offsetX`, `designHeight` and `boardY` all derive from one
+reduced number and the Pixi canvas cannot drift from `Hud.tsx`'s DOM cues. The agent's own
+comment states the failure mode it avoids.
+
+✅ **Cooktop Lv1 was solved generically** — a per-level minimum-fill floor, not a
+special case. Checked against all four families' real dimensions: only Cooktop Lv1 crosses
+it (~50% → ~63%); nothing else moves.
+
+⚠️ **Task 6 could not be reproduced.** No left-edge scrim leak at any viewport tried via
+CDP; the scrim rect matched `#app-frame` pixel for pixel. The agent applied the standard
+cause — `--game-w` now uses `100dvw` instead of `100vw`, matching the file's existing
+`100dvh` for height — and said so rather than claiming a fix. **Needs re-checking on the
+real device where it was seen.**
+
+🔴 **Correctly flagged, out of scope, still open:** `towers.ts:155` reads
+`desc: 'Fryer works more tickets at once'` — the only `desc` naming a retired station.
+Outside a names-only diff, so leaving it was right. Queued below.
+
+#### Verdict — ✅ ACCEPTED, Sep 11 2026
+
+---
+
+### 🔴 Operational finding — RUN's profanity filter rejects the word "Pot"
+
+The v1.54.0 changelog was **rejected twice** by RUN's moderation, isolated to the
+standalone word **"Pot"** — almost certainly drug-slang false-positive matching. Deployed
+clean by writing **"Stockpot" / "Saucepot"** as single words.
+
+⚠️ **This will recur**, because two stations are now named *Stock Pot* and *Sauce Pot*
+and every future changelog describing them hits it. ✅ **Workaround: one word in changelog
+prose.** The in-game names are unaffected — moderation applies to submitted release notes,
+not to strings inside the bundle.
+
+➕ It also explains the version jump **1.49.0 → 1.54.0**: the rejected attempts consumed
+bumps. Tags are clean, so this cost nothing but numbers.
 
 ---
 
@@ -785,7 +828,8 @@ polish round returning and being verified. **Freeze: end of Sep 13.**
 | 3 | 🔴 **Deflate the gem economy.** `recordRunEnd` in `state/save.ts` pays the **triangular sum** `N(N+1)/2 × gemsPerWave` — wave 102 pays **5,253**, and the ad placement adds `ceil(×0.5)` = **2,627**. Both match the end screen exactly. 🔥 **The entire meta tree costs 1,968 gems**, so one deep run pays **2.7× everything** (4× with the ad), and the crossover is **wave 62** — a single run that deep buys the whole tree. Even a wave-34 death pays 595, more than one tower's full stat line (520). The tree is exhausted in ~2 runs. **Fix: make the payout linear** — `gemsEarned = N × gemsPerWave` with `gemsPerWave: 4`. Gives 136 gems at wave 34 (≈15 runs to max) and 408 at wave 102 (≈5 runs), so progression lasts the event instead of ending on day one. ⚠️ **`state/save.ts` unsealed for this formula ONLY** — `SAVE_KEY`, the schema and every other function stay untouched. |
 | 4 | **Rework the end-screen copy.** `EndScreen.tsx:75` still reads *"Out of lives — every **bug** that got past you cost one"* — insect-era language the dish reskin left behind, and it contradicts the HUD, which now says **ESCAPES LEFT**. Proposed: *"No escapes left — every dish that slipped past was a customer out the door."* |
 | 5 | **`EndScreen.tsx:83`: "Tickets served" → "Dishes served"** (the `runKills` counter). ✅ Safe: `submitRunScores` sends raw `kills`/`waves` values under fixed mode names, so the label is decoupled from the two live leaderboards and `sdk/leaderboard.ts` is not touched. |
-| 6 | **Shrink the glow** — `towerScene.ts`'s `glow.width = size * 1.9` → **~1.2**, and re-weight `makeGlowTexture`'s falloff so alpha peaks near the **rim** instead of the centre. Today it's a halo; it should be a rim-light. 🔴 Urgent because ×2 chai/coffee makes block-1 glows **167 units on a 72-unit belt**. |
+| 6 | **`towers.ts:155`: `desc: 'Fryer works more tickets at once'`** → rename off the retired station (e.g. *"Serves more tickets at once"*). The last stale station reference; flagged by the agent as outside its names-only scope. |
+| 7 | **Shrink the glow** — `towerScene.ts`'s `glow.width = size * 1.9` → **~1.2**, and re-weight `makeGlowTexture`'s falloff so alpha peaks near the **rim** instead of the centre. Today it's a halo; it should be a rim-light. 🔴 Urgent because ×2 chai/coffee makes block-1 glows **167 units on a 72-unit belt**. |
 
 #### For the art agent
 
