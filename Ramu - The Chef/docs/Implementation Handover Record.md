@@ -629,3 +629,49 @@ it was correct scope discipline — but it defeats the rule's intent and is one 
 the same loop with the same constant.
 
 #### Verdict — ✅ ACCEPTED, Sep 11 2026. Beam-chain gap outstanding.
+
+---
+
+### 2026-09-11 — Beam-chain safe zone — close the last gap, then ship
+
+**Status:** 📤 **HANDED OVER, not yet returned.**
+
+**Scope stamp:** one line, then deploy. 🔴 **The last code change before the freeze.**
+
+#### Task
+
+`fireBeam`'s chain-selection loop ([`sim/engine.ts`](../../jam-entry/src/game/sim/engine.ts))
+iterates `state.enemies` filtering only on `hit.includes(e)` and `chainRange`. It has
+**no safe-zone check**, so the Fryer's 2nd and 3rd hits reach back into the spawn safe
+zone that `pickTarget` and splash both respect.
+
+Add `if (e.dist < SPAWN_SAFE_ZONE_LEN) continue;` to that loop — same constant, same
+shape as the other two sites.
+
+⚠️ **Not an edge case.** `chainRange` is 120 and combat now begins at the first corner,
+so an enemy at path distance ~250 sits ~40 units from one still inside the zone. Any
+Fryer covering that corner chains backwards on most shots.
+
+#### Acceptance criteria
+
+1. Nothing inside the first vertical leg takes damage from **any** source — direct,
+   splash, or beam chain. Verified in play with a Fryer placed to cover the first corner.
+2. `npm run balance` re-run; report whether the five loss levels move from
+   `maxed-meta` 90 / `balanced` 34 / `fox-spam` 35 / `miser` 6 / `pad0-rush` 4.
+3. 🛑 `data/enemies.ts`, `data/towers.ts`, `data/waves.ts` diffs **empty**;
+   `sim/engine.ts` is the only engine file touched.
+4. `SAVE_KEY` unchanged. `tsc --noEmit` and `vite build` clean.
+5. Deployed **private**, with `rundot whoami` confirmed first and `rundot game info`
+   confirming Review and Public still read **1.42.0**.
+
+#### Boundaries
+
+🛑 Sealed: `enemies.ts` · `towers.ts` · `waves.ts`. ⚠️ **Do not re-tune the curve** —
+if the loss levels move, report them.
+🚫 Not to be touched: `save.ts` · `stage.ts` · `GameCanvas.tsx` · `audio.ts` ·
+`leaderboard.ts`. Outside `jam-entry/` → hand back.
+🚫 Never `set-public` / `set-private` / `update-tag`. Kill processes **by PID only**.
+
+#### Return
+
+_Pending._
