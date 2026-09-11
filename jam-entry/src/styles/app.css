@@ -34,7 +34,10 @@
        "portrait"). For a landscape game, drop this override and set
        "orientation": "landscape" in game.config.prod.json instead. */
     :root {
-        --game-w: min(100vw, calc(100dvh * 9 / 16));
+        /* Final round, task 8: this branch still used 100vw, the exact unit
+           the portrait fix above exists to avoid — same mobile-chrome
+           viewport-vs-visible-area drift, just in the other orientation. */
+        --game-w: min(100dvw, calc(100dvh * 9 / 16));
     }
 }
 

@@ -152,7 +152,7 @@ export const TOWERS: TowerDef[] = [
             perLevel: 1,
             maxLevel: 3,
             name: 'Longer Ladle',
-            desc: 'Fryer works more tickets at once',
+            desc: 'Serves more tickets at once',
         },
     },
     // ADAPT: example catalog ends here — these four cover the mechanic

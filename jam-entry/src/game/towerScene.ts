@@ -176,8 +176,12 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
      * construction, not a special case wired to level number. Sizes are
      * cosmetic — targeting and splash use centre points (e.dist/e.x/e.y),
      * never sprite bounds — so this can't move `npm run balance`.
+     *
+     * Final round, task 5: base dish sizes grew (config.ts, 44 -> 64), so
+     * this drops from 2 to 1.375 to hold block 1's already-approved size —
+     * 64 * 1.375 = 88, the same on-screen size as the old 44 * 2.
      */
-    const DISH_SIZE_MULT: Record<string, number> = { chai: 2, coffee: 2 };
+    const DISH_SIZE_MULT: Record<string, number> = { chai: 1.375, coffee: 1.375 };
 
     /**
      * Dish-art race fix (handover, addendum to Round J — this file is the
@@ -592,7 +596,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     app.stage.on('pointertap', onTap);
 
     // ---- sprite pools synced from engine state -----------------------------
-    interface EnemyView { node: Container; sprite: Sprite; hpBar: Graphics; ice: Sprite; lastHp: number }
+    interface EnemyView { node: Container; sprite: Sprite; hpBar: Graphics; ice: Sprite; lastHp: number; size: number }
     const enemyViews = new Map<number, EnemyView>();
     const projViews = new Map<number, Sprite>();
     const towerViews = new Map<number, Container>(); // by padIndex
@@ -610,16 +614,25 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 const size = baseSize * (DISH_SIZE_MULT[dish] ?? 1);
                 // §6a glow tier, behind everything else, so a poisoned/
                 // burning stag's tint (below) never fights it.
+                //
+                // Final round, task 6/7: the glow, shadow, and ice overlay
+                // all used to derive from `size` (baseSize * the per-dish
+                // multiplier), so doubling chai/coffee doubled every
+                // decoration drawn with them too — not just the sprite the
+                // multiplier is meant for. Deriving these three from
+                // baseSize instead means they stay constant regardless of
+                // which dish this enemy happens to be serving, satisfying
+                // "smaller, exclusively for block 1" by construction.
                 const tier = GLOW_TIER[e.def.id] ?? null;
                 if (tier) {
                     const glow = new Sprite(tex.glow[tier]);
                     glow.anchor.set(0.5);
-                    glow.width = size * 1.9;
-                    glow.height = size * 1.9;
+                    glow.width = baseSize * 1.2;
+                    glow.height = baseSize * 1.2;
                     node.addChild(glow);
                 }
                 const shadow = new Graphics();
-                shadow.ellipse(0, size * 0.42, size * 0.4, size * 0.14)
+                shadow.ellipse(0, baseSize * 0.42, baseSize * 0.4, baseSize * 0.14)
                     .fill({ color: CONFIG.colors.shadow, alpha: 0.2 });
                 const sprite = new Sprite(enemyTex);
                 sprite.anchor.set(0.5);
@@ -629,12 +642,12 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 hpBar.y = -size * 0.62;
                 const ice = new Sprite(tex.ice);
                 ice.anchor.set(0.5);
-                ice.width = size * 1.25;
-                ice.height = size * 1.25;
+                ice.width = baseSize * 1.25;
+                ice.height = baseSize * 1.25;
                 ice.visible = false;
                 node.addChild(shadow, sprite, ice, hpBar);
                 world.addChild(node);
-                v = { node, sprite, hpBar, ice, lastHp: -1 };
+                v = { node, sprite, hpBar, ice, lastHp: -1, size };
                 enemyViews.set(e.uid, v);
             }
             v.node.position.set(e.x, e.y);
@@ -664,6 +677,55 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             if (!alive.has(uid)) {
                 v.node.destroy({ children: true });
                 enemyViews.delete(uid);
+            }
+        }
+        relaxEnemyPositions();
+    }
+
+    /**
+     * Final round, task 9: enemies take engine coordinates verbatim, so two
+     * of the same archetype at the same sim `dist` land on identical pixels
+     * — nothing in the sim itself ever separates them. This is a RENDER-ONLY
+     * fix, run after every enemy node is positioned from engine state: a
+     * short relaxation pass pushes same-archetype sprites that are closer
+     * than their combined radii apart, along the line between them, split
+     * evenly and clamped so a dense cluster can't shove one off the belt.
+     * Grouping by archetype (not comparing every pair) is also what makes
+     * different archetypes pass through each other for free — they're never
+     * compared at all. `e.x`/`e.y`/`dist` are never touched, only the
+     * already-drawn node's screen position, so this cannot move balance.
+     */
+    function relaxEnemyPositions(): void {
+        const byArchetype = new Map<string, EnemyView[]>();
+        for (const e of engine.state.enemies) {
+            const v = enemyViews.get(e.uid);
+            if (!v) continue;
+            const group = byArchetype.get(e.def.id);
+            if (group) group.push(v);
+            else byArchetype.set(e.def.id, [v]);
+        }
+        const ITERATIONS = 2;
+        for (let iter = 0; iter < ITERATIONS; iter++) {
+            for (const group of byArchetype.values()) {
+                for (let i = 0; i < group.length; i++) {
+                    for (let j = i + 1; j < group.length; j++) {
+                        const a = group[i];
+                        const b = group[j];
+                        const dx = b.node.x - a.node.x;
+                        const dy = b.node.y - a.node.y;
+                        const dist = Math.hypot(dx, dy);
+                        const minSep = (a.size + b.size) * 0.5;
+                        if (dist >= minSep || dist < 0.0001) continue;
+                        const shortfall = minSep - dist;
+                        const push = Math.min(shortfall / 2, Math.min(a.size, b.size) * 0.35);
+                        const nx = dx / dist;
+                        const ny = dy / dist;
+                        a.node.x -= nx * push;
+                        a.node.y -= ny * push;
+                        b.node.x += nx * push;
+                        b.node.y += ny * push;
+                    }
+                }
             }
         }
     }

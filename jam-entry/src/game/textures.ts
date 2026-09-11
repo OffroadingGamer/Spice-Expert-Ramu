@@ -440,11 +440,21 @@ export function makeGlowTexture(renderer: Renderer, color: number): Texture {
         const s = 128;
         const cx = s / 2;
         const cy = s / 2;
-        const steps = 8;
-        for (let i = steps; i >= 1; i--) {
-            const r = cx * (i / steps);
-            const alpha = Math.min(0.5, 0.05 + 0.055 * (steps - i));
-            g.circle(cx, cy, r).fill({ color, alpha });
+        const steps = 10;
+        // Final round, task 7: the old falloff filled concentric DISCS,
+        // largest first with smaller ones stacked on top — alpha blending
+        // means the centre always ends up the most painted-over region no
+        // matter how each ring's own alpha is weighted, so that shape can
+        // only ever read as a halo. Stroking a series of thin, largely
+        // non-overlapping RINGS instead lets each radius carry its own
+        // alpha independently: the peak sits near the outer edge (a
+        // gaussian bump at ~82% of the radius) and falls off toward both
+        // the transparent centre and the true edge, reading as a rim-light.
+        for (let i = 1; i <= steps; i++) {
+            const t = i / steps;
+            const r = cx * t;
+            const rim = Math.exp(-((t - 0.82) ** 2) / (2 * 0.16 ** 2));
+            g.circle(cx, cy, r).stroke({ width: cx / steps + 1, color, alpha: 0.6 * rim });
         }
     });
 }

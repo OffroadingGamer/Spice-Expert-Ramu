@@ -188,13 +188,13 @@ export function flushSave(): void {
 
 /**
  * A run ended: record the best wave and pay out gems. Clearing wave N pays
- * N * gemsPerWave, so later waves are worth more (a full run pays the
- * triangular sum). Returns the gems earned for the end screen.
+ * N * gemsPerWave — linear, so the meta tree lasts across many runs instead
+ * of being exhausted in two or three. Returns the gems earned for the end
+ * screen.
  */
 export function recordRunEnd(wavesCleared: number): { gemsEarned: number; save: SaveData } {
     const n = Math.max(0, Math.floor(wavesCleared));
-    let gemsEarned = 0;
-    for (let w = 1; w <= n; w++) gemsEarned += w * CONFIG.meta.gemsPerWave;
+    const gemsEarned = n * CONFIG.meta.gemsPerWave;
     data = {
         ...data,
         bestWave: Math.max(data.bestWave, n),

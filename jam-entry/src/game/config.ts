@@ -124,7 +124,7 @@ export const CONFIG = {
      */
     sizes: {
         tower: 64,
-        enemy: { beetle: 44, wasp: 44, snail: 44, hornet: 44, stag: 44 },
+        enemy: { beetle: 64, wasp: 64, snail: 64, hornet: 64, stag: 64 },
         pad: { w: 96, h: 52 },
         projectile: 16,
         pathWidth: 72,
@@ -220,8 +220,8 @@ export const CONFIG = {
      * it verifies the base game a brand-new player faces.
      */
     meta: {
-        /** Gems for clearing wave N = N * this (a full 10-wave run pays 55). */
-        gemsPerWave: 1,
+        /** Gems for clearing wave N = N * this (a full 10-wave run pays 40). */
+        gemsPerWave: 4,
         maxLevel: 10,
         /** Buying INTO level n (1-based) costs costBase + costStep * (n - 1). */
         costBase: 4,

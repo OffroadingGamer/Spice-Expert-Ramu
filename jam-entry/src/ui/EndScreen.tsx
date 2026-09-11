@@ -72,7 +72,7 @@ export default function EndScreen() {
             <h2 className={'text-4xl font-bold ' + (beatCampaign ? 'text-primary' : 'text-red-400')}>
                 Shift's over.
             </h2>
-            <p className="text-[1.1rem] text-white/70">Out of lives — every bug that got past you cost one.</p>
+            <p className="text-[1.1rem] text-white/70">No escapes left — every dish that slipped past was a customer out the door.</p>
             <p className="text-xl text-white/80 tabular-nums">Rushes held: {survived}</p>
             {beatCampaign && (
                 <p className="text-[1.1rem] font-semibold text-primary tabular-nums">
@@ -80,7 +80,7 @@ export default function EndScreen() {
                 </p>
             )}
             {runKills > 0 && (
-                <p className="text-[1.1rem] text-white/60 tabular-nums">Tickets served: {runKills}</p>
+                <p className="text-[1.1rem] text-white/60 tabular-nums">Dishes served: {runKills}</p>
             )}
             {gemsEarned > 0 && (
                 <p className="text-xl font-semibold text-white/85 tabular-nums">
