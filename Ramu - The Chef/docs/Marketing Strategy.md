@@ -1,6 +1,6 @@
 # Marketing Strategy
 
-**Last updated:** Sep 9 2026, 21:10 IST
+**Last updated:** Sep 10 2026, 11:00 IST
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)
 
@@ -95,6 +95,19 @@ back verbally for whoever maintains Plan.md. Strategic read is unchanged either 
 Discord is still the repeatable engine, LinkedIn still gets saved for the Kitchen Mode
 public launch. Private-version-number mismatch (v1.24.0 vs v1.26.0 across docs) noted
 as expected churn during active build — not treated as a discrepancy to chase.
+
+### 2026-09-10 — RUN.creators Discord `#showcase` — Tier 1, channel 2 fired
+**Drafted:** §8.1 block 2 (short, standings-free copy).
+**Posted by user:** ✅ 2026-09-10
+**Outcome:** User posted in their own voice rather than the drafted block —
+substantially longer, first-person post covering today's community-lounge
+playtest, feature-creep self-correction, onboarding/FTUE work, the BGM/SFX
+slider miss, and an open ask for playtests/suggestions. Only the play link
+was included (no vote link) — consistent with §8's policy that RUN-native
+surfaces don't need the play-vs-vote distinction enforced, since votes are as
+frictionless as plays there. First post/application on RUN.creators for this
+account. Not measurable against DUP yet — too soon after posting; check next
+board pull for movement attributable to this channel specifically.
 
 ## 5. Build promotion log — Sep 9 2026
 
@@ -392,3 +405,219 @@ second is a real target if SHIFT's surge is a one-off push rather than a durable
 ⚠️ **Nothing has been posted yet.** The socials packet has read `ready` on X and Reddit for
 hours, eleven free channels are researched and unfired, and the user has 4+ hrs/day
 available. **The plan is not the bottleneck; execution is.**
+
+## 8. Tier 1 ready-to-paste copy + r/Indiangamers Modmail structure — Sep 9 2026
+
+§7 stands and is not restated here. This round pulls the real links via `rundot jam
+promo` and turns Tier 1 into copy the user can paste with no editing, plus a
+guidance structure (not finished prose) for the r/Indiangamers Modmail request.
+
+**Live links, pulled fresh this round (`rundot jam promo --game-id
+PpB5gECS0AMU49mGYAKM`) — do not hand-write these:**
+
+| Link | URL |
+|---|---|
+| Vote (points at the jam entry, one click short of a play) | `https://run.world/jams/september-2026-jam?game=PpB5gECS0AMU49mGYAKM` |
+| **Play** (this is what DUP counts — DUP is Total Unique Daily *Plays*, not votes) | `https://w.run/puneetmakes/spice-expert-ramu` |
+
+Board read at pull time: **rank #4, 507 plays** — consistent with §7.6's evening
+read (368 DUP, +9 gain). No `?k=` key appeared in this output; nothing withheld.
+
+### 8.1 Tier 1 copy blocks — six channels, six different angles
+
+⚠️ Written deliberately different from each other. Several of these communities
+overlap; the same paragraph landing in two of them reads as spam. 🔴 **Corrected
+this round:** DUP is Total Unique Daily *Plays*, not votes — the vote link lands
+on the jam page, one click short of the only action that scores. **§2's rule is
+the correct one and §8 now agrees with it: the play link leads everywhere,
+except RUN-native surfaces (RUN.creators Discord, RUN's own jam Discord), where
+the audience votes as easily as it plays and either link works as the lead.**
+
+---
+
+**1. WhatsApp / Telegram — dev & gamer group chats**
+**Copy:**
+> Hey — entered a game jam this month and made a little arcade game, Spice Expert:
+> Ramu (you play the chef defending the kitchen 🌶️). Would genuinely mean a lot if
+> you gave it a quick play, that's the bit that actually counts for me: [play link]
+> (and if you enjoy it, a vote here helps too: [vote link])
+
+**Why this angle:** this is personal contacts, not an audience. It should read as
+a favour asked of a friend, not copy — no hashtags, no "check out my game," just
+the ask and the link that matters.
+
+---
+
+**2. RUN.creators Discord `#showcase` (1,650 members)**
+**Copy:**
+> Spice Expert: Ramu — my entry for the September Jam. Chef-vs-kitchen arcade
+> action. Vote here (that's what counts toward the board): [vote link]
+> Playable here too: [play link]
+
+**Why this angle:** in-house RUN audience, already jam-literate — no need to
+explain what a jam or a vote link is. Straight to the ask.
+
+---
+
+**3. Funsmith Club Discord `#share-cool-games` (10,842 members)**
+**Copy:**
+> Would love a couple of fresh eyes on this — Spice Expert: Ramu, my entry for
+> RUN's September Jam. Genuinely after feedback on the first few minutes
+> especially: [play link]
+> (If you're up for voting too, that's here: [vote link])
+
+**Why this angle:** this channel's own norm is playtest-and-critique, not
+drop-a-link promo. Leading with a feedback ask fits how the community wants to
+be approached — the vote link rides along as a secondary line, not the headline.
+
+---
+
+**4. Indie Game Academy Discord `#help-each-other` (6,894 members)**
+**Copy:**
+> Sitting in 4th place in RUN's September Jam right now, trying to climb before
+> it ends — my entry is Spice Expert: Ramu. If a play sounds like something
+> you're up for: [play link]
+> (a vote helps too, same entry: [vote link])
+
+**Why this angle:** this is the one channel that explicitly welcomes the
+competition/ranking framing — lead with the standings instead of softening the
+ask, since here that's the actual hook.
+
+---
+
+**5. GameDev India Discord `#games-from-india` (9,794 members)** — 🔒 posted
+template, filled exactly rather than freestyled:
+> **Game Title:** Spice Expert: Ramu
+> **Play Link:** [play link]  (vote: [vote link])
+> **Release Date:** In active development — this build is my entry for RUN's
+> September Jam, submissions open through Sep 19
+> **Art Style:** 2D, illustrated spice-market / kitchen art
+> **Genre:** Arcade / action
+> **Team Info:** Solo developer
+> **Description:** You play the kitchen's chef, defending it in a spice-themed
+> arcade run. Built for RUN's September Jam.
+> **Media:** *(attach one gameplay screenshot or short clip — not supplied here.
+> 🔴 The build now shows real dish sprites as of v1.43.0 — any screenshot taken
+> before tonight still shows insects standing in for dishes and must not be
+> used. Take a fresh one.)*
+
+**Why this angle:** this channel gates on a fixed post format. Matching it
+exactly is the whole point — a post that ignores the template reads as not
+having read the room.
+
+---
+
+**6. Backstage Pass Discord `#Showcase-Your-Game` (318 members)**
+**Copy:**
+> Dropping my jam entry here — Spice Expert: Ramu, a chef-vs-kitchen arcade game
+> for RUN's September Jam. Play here if you're up for it: [play link]
+> (vote too, if you enjoy it: [vote link])
+
+**Why this angle:** small, low-traffic channel — a short drop-in is
+proportionate. No elaborate pitch needed or wanted here.
+
+### 8.2 r/Indiangamers Modmail — structure only, not copy
+
+⚠️ **The user rewrites this in their own words and sends it themselves.** A
+moderator can smell a template; what follows is what each section needs to
+*do*, not sentences to paste. Order matters — this is the order a mod reading
+cold will want the information in.
+
+1. **Who you are.** One or two sentences: Indian, solo/indie developer, this is
+   a personal project. Establishes you're not an outside marketer cold-emailing
+   subreddits.
+2. **What the game is — one line.** Name plus a one-phrase hook. Resist
+   over-selling here; that's not this message's job.
+3. **Why this subreddit specifically.** Say plainly that it's an Indian-food
+   restaurant game and this is an Indian gaming audience — that's the actual
+   reason for asking this sub and not a generic dev-facing one, so name it
+   directly rather than implying it.
+4. **What it is and isn't.** Free, browser-playable, no monetisation, no ads,
+   no signup wall. Pre-empts the mod's likely first question before they have
+   to ask it.
+5. **Honest jam context.** State plainly that it's a game jam entry, made under
+   jam constraints, and that the ask is partly for genuine feedback from real
+   Indian gamers — not only a numbers push.
+6. **The exact ask.** Name precisely what permission is being requested: one
+   promotional post, in one specific place (name the sub's flair/format if one
+   exists), roughly when.
+7. **Defer to their format.** Close by offering to follow whatever structure,
+   flair, or timing the mods prefer, and mean it.
+
+**⚠️ Flagged plainly, not softened:** the account sending this is **15 karma,
+17 days old**. Some subreddits' Modmail filters gate on account age the same
+way post-Automod does — there's a real chance this doesn't reach a human at
+all. **If there's no reply within roughly 24 hours, treat that as a signal that
+it was likely filtered, not as silence to keep waiting on.** Worth having a
+fallback in mind (e.g. a little genuine participation in the sub first to build
+tenure) rather than treating this as the only route to that audience.
+
+## 9. Direct user update — Sep 10 2026
+
+No new handover this round — the user replied directly to the agenda; logged
+per the same pattern as the Sep 9 01:30 IST correction entry.
+
+**Modmail already sent to r/Indiangamers.** Full text as sent (no `?k=` key,
+no UserId — only the public play link):
+
+> Hi mods!
+> I'm a solo game dev from New Delhi India. I'm looking for gamers opinion on a
+> tower defence game that I'm building in a gamejam. My Reddit account is new
+> because I decided to have a new common identity for all social media
+> platforms so that promoting my game becomes easier. I am willing to verify
+> with a photo or something if required.
+> I've learned that playtesting is where the game gets refined. I want this
+> project to eventually outlive the gamejam so I was hoping to get it
+> playtested and possibly reviewed. It's a culinary tower defence game where
+> achievements are kitchen tools and unlocking actual recipes for various
+> cuisines ranging from North Indian to north East Indian recipes.
+> Here's my game's url : Spice Expert: Ramu
+> https://w.run/puneetmakes/spice-expert-ramu
+> I'm currently at graybox stage and wanted to run it by you guys before I
+> plan on posting it as I'll be updating the core loop with first iteration on
+> Polish soon. By then hopefully I'll be ready to get it playtested.
+
+⚠️ **Worth flagging, not correcting (it's sent, not editable):** this asks for
+playtest/feedback permission, not the explicit "may I post promotional content,
+here, in this format" ask that §8.2's structure was built around. If a mod
+replies favourably to *this* message, that may only clear the playtest ask —
+a second, explicit ask for permission to post the jam-promo content itself
+could still be needed before the user posts anything there. Noting this so
+it isn't assumed cleared when the reply lands.
+
+**Status:** awaiting reply. Per §8.2, no reply within ~24h from send time is a
+signal (likely filtered on account age), not silence to keep waiting on.
+
+**Board reread, Sep 10 2026 (user-supplied screenshot, `run.world/jams/september-2026-jam`):**
+
+| Rank | Entry | Total plays | DUP | Prize |
+|---|---|---|---|---|
+| 1 | 9 to Thrive | 1,192 | 767 | $1,000 |
+| 2 | Back That Thing Up! | 602 | 537 | $600 |
+| 3 | SHIFT | 511 | 482 | $300 |
+| 4 | **Spice Expert: Ramu** | **517** | **375** | $200 |
+| 5 | The Good Life | 434 | 323 | $100 |
+
+🔴 **The gap to 3rd has widened, not narrowed.** §7.6 (Sep 9 evening) had SHIFT
+3 DUP ahead of us (371 vs 368); this pull has it **107 DUP ahead** (482 vs
+375). SHIFT is still the entry moving fastest. Nothing in Tiers 1–3 has fired
+publicly yet as of this pull.
+
+**Two items gated on a central-agent handover, per the user — not actioned
+here:**
+- **The paid `--network run` campaign (§7.4/§7.5)** — user's direction: hold
+  until Challenge Mode is "slightly more balanced and polished," and only on
+  an explicit handover from the central agent. Not proposed as ready this
+  round.
+- **The Review/Public tag decision for v1.43.0 (agenda item 7)** — same:
+  waits for a central-agent handover before any tag action is even discussed.
+
+**Reddit karma target (user asked for a safe number before re-attempting
+r/GameDevelopersOfIndia):** there's no documented Automod threshold for these
+specific subs — this is a heuristic, not a confirmed rule. A commonly-cited
+safe buffer on gaming/dev subreddits is roughly **100+ combined karma and
+30+ days account age**; current state is 15 karma / 17 days (now 18). Better
+spent as **genuine participation** — real comments on other threads — than
+karma farming, since r/SoloDevelopment and r/GameDevelopersOfIndia both
+explicitly want genuine context over promo-only accounts, and a visibly
+farmed karma history is its own red flag to a moderator reviewing a Modmail.

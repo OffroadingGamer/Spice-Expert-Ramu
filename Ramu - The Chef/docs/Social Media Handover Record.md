@@ -1,6 +1,6 @@
 # Social Media Handover Record
 
-**Last updated:** Sep 9 2026, 21:10 IST
+**Last updated:** Sep 10 2026, 11:00 IST
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Marketing Strategy.md](Marketing%20Strategy.md)
 
@@ -363,3 +363,173 @@ likely unneeded — the Tier 2 video is being produced for free with the user's 
 gear. Fire with enough runway before the Sep 15 BACK-TO-WORK lot expiry.
 Full reasoning in §7.4 and the still-open questions from the prior round's
 credit analysis in §6.
+
+### 2026-09-09 22:15 IST — Fire Tier 1, and draft the Modmail
+**From:** Central strategy agent (as "Marketing Agent")
+**Status:** ✅ complete — copy blocks and Modmail structure written; nothing
+posted, no tags touched, no campaign submitted or funded
+
+Handover — Marketing Agent · Fire Tier 1, and draft the Modmail
+Scope: Produce ready-to-paste copy for six free channels and a Modmail structure. You do not post. The user posts.
+
+🛑 Hard boundaries
+rundot whoami first — offroadinggamedev@gmail.com. Stop if not.
+🛑 Post nothing, anywhere. You prepare copy; the user publishes.
+🛑 Do not submit, prepare or fund a campaign this round.
+🛑 No tag operations, no deploys, no git, no jam-entry/ edits.
+You may write only docs/Marketing Strategy.md and docs/Social Media Handover Record.md.
+🔒 No ?k= key, no RUN UserId, no unlisted game id in either file — the repo is public.
+
+What changed since your last round
+🔴 We are now 4th, not 3rd. SHIFT passed us by 3 DUP.
+
+#	Entry	Days	DUP	Gain	DUP/day
+1	9 to Thrive	6	752	+9	125
+2	Back That Thing Up!	5	445	+2	89
+3	SHIFT	3	371	+69	124
+4	Spice Expert: Ramu	6	368	+9	61
+🔥 Read the gain column. The two entries above SHIFT have stalled (+2, +9). Only SHIFT is still moving. Third place is three plays away. Your §7 plan is adopted whole — see §7.5 for two amendments I made: don't hold the paid leg 24–48h (--network run is house cross-promo with no retargeting pool to warm), and the promo video waits for tomorrow's dish-sprite round, because enemies are currently insects and the video is evergreen.
+
+Task 1 — Pull the real links
+Run rundot jam promo and use its actual output — the vote link, the play link, and the generated caption. 🔒 The vote link is the one that matters; it points at the jam entry, which is what DUP counts. Do not hand-write URLs.
+
+Task 2 — Ready-to-paste copy for the six Tier-1 channels
+One block per channel, each complete enough to paste with no editing:
+
+WhatsApp/Telegram dev & gamer groups
+RUN.creators Discord #showcase (1,650)
+Funsmith Club Discord #share-cool-games (10,842)
+Indie Game Academy Discord #help-each-other (6,894) — explicitly allows the jam/ranking framing
+GameDev India Discord #games-from-india (9,794) — 🔒 follow the channel's posted template
+Backstage Pass Discord #Showcase-Your-Game (318)
+Write them differently. ⚠️ The same text pasted into six Discords reads as spam to anyone in two of them, and several of these communities overlap heavily. Vary the angle: Funsmith Club wants genuine critique framing; Indie Game Academy tolerates the competition ask; GameDev India has a format to obey; WhatsApp/Telegram are personal and should sound it.
+
+Each block: the platform, the exact channel, the copy, and one line on why that angle suits that community. Keep them short — nobody reads a wall in #showcase.
+
+Task 3 — A Modmail structure for r/Indiangamers
+110k gamer-facing members — the best-converting audience on the whole list, and Rule 8 requires Modmail pre-clearance before any promotional dev post. The approval clock only starts when it is sent.
+
+⚠️ The user will rewrite this in their own words and post it themselves. So give them a structure with guidance per section, not finished prose to copy — a moderator can smell a template, and this one has to read like a person.
+
+Cover, in order: who they are and that they're Indian; what the game is in one line; why it fits that subreddit specifically (an Indian-food restaurant game for an Indian gaming audience); that it's a free browser game with no monetisation; the honest jam context; exactly what they're asking permission to post and where; and a direct offer to follow whatever format the mods prefer.
+
+⚠️ Flag the account risk plainly in your notes: 15 karma, 17 days old. Some subs auto-filter Modmail from new accounts too. If there's no reply within ~24h, that's a signal, not silence.
+
+Reporting
+Write the copy blocks and the Modmail structure into docs/Marketing Strategy.md §8, and log the round in docs/Social Media Handover Record.md. Do not restate §7 — it stands.
+
+---
+
+`whoami` re-confirmed `offroadinggamedev@gmail.com` before proceeding.
+`rundot jam promo --game-id PpB5gECS0AMU49mGYAKM` pulled the real vote link,
+play link, and caption (no `?k=` key in the output). Board read at pull time:
+rank #4, 507 plays. Six Tier-1 copy blocks (each with platform, channel, copy,
+and a one-line rationale for its angle) and the r/Indiangamers Modmail
+structure (guidance per section, not finished prose, plus the account-risk
+flag) are written to
+[Marketing Strategy.md](Marketing%20Strategy.md) §8. No tag touched, nothing
+posted, no campaign prepared or funded.
+
+### 2026-09-10 09:30 IST — Patch §8.1's link policy
+**From:** Central strategy agent (as "Marketing Agent")
+**Status:** ✅ complete
+
+Handover — Marketing Agent · Patch §8.1's link policy
+Scope: Three copy blocks send strangers to a vote page with no way to play. Fix the links and the reasoning. Nothing else in §8 changes.
+
+Boundaries
+rundot whoami first — offroadinggamedev@gmail.com.
+🛑 Post nothing. No tag operations, no deploys, no git, no campaign.
+Write only docs/Marketing Strategy.md (plus the round log in docs/Social Media Handover Record.md).
+🔒 No ?k= key, no RUN UserId, no unlisted game id — the repo is public.
+The defect
+§8's preamble says the vote link "is what DUP counts" and instructs "Lead with the vote link everywhere." 🔴 That is wrong. DUP is Total Unique Daily Plays. A vote is not a play. The vote link lands on the jam page — one click short of the only action that scores.
+
+⚠️ Your own §2 already had this right: "The score is plays, not votes, so the play link wins everywhere except the RUN Discord." §8 contradicts §2, and §2 is correct.
+
+Three of six blocks give a stranger no way to simply play:
+
+#	Channel	As written	Action
+1	WhatsApp / Telegram	vote only	🔴 add play link as the lead
+2	RUN.creators	vote, then play	✅ leave — RUN-native, votes are frictionless there
+3	Funsmith Club	play, then vote	✅ leave
+4	Indie Game Academy	vote only	🔴 add play link as the lead
+5	GameDev India	play, vote in parens	✅ leave
+6	Backstage Pass	vote only	🔴 add play link as the lead
+⚠️ Block 1 matters most — personal contacts are the warmest, highest-converting audience on the list, and it's the one block with no play link at all.
+
+Tasks
+Rewrite blocks 1, 4 and 6 so the play link leads and the vote link follows. Keep each block's existing voice and angle — block 1 stays a favour asked of a friend, block 4 keeps the standings hook, block 6 stays a short drop-in. Do not rewrite them from scratch; they were right apart from the links.
+Correct the §8 preamble: the vote link points at the jam entry, but plays are what DUP counts. State the rule as: play link leads everywhere except RUN-native surfaces, where the audience votes as easily as it plays. Make §8 agree with §2 rather than override it.
+Fill block 5's empty Media: field with a note that a gameplay screenshot should be attached, and flag that the build now shows real dish sprites as of v1.43.0 — any screenshot taken before tonight shows insects and must not be used.
+Acceptance
+All six blocks contain a play link; blocks 2 and 3 keep their existing order.
+§8 and §2 state the same link policy, and neither claims votes are what DUP counts.
+Blocks 2, 3 and 5 are otherwise unchanged, and §8.2's Modmail structure is untouched — it was correct.
+Reporting
+Log the round in docs/Social Media Handover Record.md, noting the §2/§8 contradiction as the cause.
+
+---
+
+`whoami` re-confirmed `offroadinggamedev@gmail.com` before editing. **Root
+cause:** §8's preamble asserted the vote link "is what DUP counts," directly
+contradicting §2's correct rule ("the score is plays, not votes"). DUP is
+Total Unique Daily *Plays* — the vote link is one click short of that action,
+not equal to it. §8's preamble now states the same rule as §2: play link leads
+everywhere except RUN-native surfaces (RUN.creators Discord, RUN's own jam
+Discord), where votes are as frictionless as plays. Blocks 1, 4 and 6 rewritten
+to lead with the play link (voice/angle unchanged — block 1 still a favour
+asked of a friend, block 4 still leads with the 4th-place standing, block 6
+still a short drop-in); blocks 2, 3 untouched (already correctly ordered).
+Block 5's `Media:` field filled with an attach-a-screenshot note plus a flag
+that pre-tonight screenshots show insects, not the real dish sprites live as
+of v1.43.0, and must not be used. §8.2's Modmail structure untouched. No tag
+touched, nothing posted, no campaign prepared or funded.
+
+### 2026-09-10 10:15 IST — Direct user update, no new handover
+**From:** User — direct reply to this agent's Sep 10 agenda
+**Status:** ✅ complete
+
+Modmail to r/Indiangamers already sent by the user (full text logged in
+[Marketing Strategy.md](Marketing%20Strategy.md) §9) — now awaiting reply.
+User will fire the Tier-1 channels; asked how the six copy blocks are meant
+to be used (answered directly, not written to either doc). Vertical-video
+capture deferred to this evening (it was ~3am for the user at reply time).
+GameDev.tv/SoloDevelopment Discord posts (agenda #4) acknowledged, pending
+that video. r/GameDevelopersOfIndia test post held until the Modmail reply
+lands; user will work on karma/tenure in the meantime and asked for a target
+— given as a heuristic (~100+ karma, 30+ days), not a confirmed rule, with a
+preference stated for genuine participation over farming. **Two items
+explicitly gated behind a future central-agent handover, not this agent's
+call:** the paid `--network run` campaign (held until Challenge Mode is more
+polished) and any Review/Public tag move toward v1.43.0. User supplied a
+fresh board screenshot — logged in §9 — showing the gap to 3rd (SHIFT) has
+widened to 107 DUP, not narrowed. No CLI mutation, no post, no tag, no
+campaign action taken this round.
+
+### 2026-09-10 11:00 IST — First Tier 1 channel fired: RUN.creators Discord
+**From:** User — direct report of a post already made
+**Status:** ✅ complete
+
+User posted in RUN.creators Discord `#showcase`, in their own words rather
+than §8.1 block 2's draft. Full text as posted:
+
+> Spice Expert: Ramu — my entry for the September Jam. Chef-vs-kitchen arcade
+> action,
+> I got it play-tested today at the community lounge, working on core
+> features like onboarding, FTUE and achievement based player feedback and
+> most importantly the importance of having sliders next to BGM and SFX
+> options. All great insights that I had overlooked as I went into feature
+> creep mode. Resurfacing from that hellhole, I'm now working towards having
+> a playable fun slice for folks. I've taken some steps towards improving it
+> and will continue to try to deliver the way it can be fun for you guys!!
+> I've tried to take a few onboarding steps and am currently working on
+> rewards system but before that I have a few balancing issues that I need to
+> address, playtests and suggestions are welcome. This is my first time on
+> RUNStudio and first application:
+> Playable at : https://w.run/puneetmakes/spice-expert-ramu
+
+Only the play link was used (no vote link) — fine per §8's RUN-native
+exception. Logged verbatim in
+[Marketing Strategy.md](Marketing%20Strategy.md) §4. No tag touched, no
+campaign action, nothing else posted this round.
