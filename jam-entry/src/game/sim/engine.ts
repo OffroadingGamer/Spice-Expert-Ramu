@@ -470,6 +470,7 @@ export function createEngine(meta: MetaLevels = {}): Engine {
             let bestDist = Infinity;
             for (const e of state.enemies) {
                 if (hit.includes(e)) continue;
+                if (e.dist < SPAWN_SAFE_ZONE_LEN) continue;
                 const d = Math.hypot(e.x - last.x, e.y - last.y);
                 if (d <= chainRange && d < bestDist) {
                     bestDist = d;
