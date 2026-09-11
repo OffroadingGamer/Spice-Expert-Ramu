@@ -768,3 +768,36 @@ user before dispatch.
 #### Return
 
 _Pending._
+
+---
+
+### 📋 QUEUED — the final round, to dispatch once the polish round returns
+
+🔴 **Confirmed by the user Sep 11 2026.** Not yet handed over — waits on the in-flight
+polish round returning and being verified. **Freeze: end of Sep 13.**
+
+#### For the implementation agent
+
+| # | Task |
+|---|---|
+| 1 | 🔒 **The 140-unit build rail** (`002` schematic) — the four stations for placement **and** the selected-tower panel (Sell / Upgrade / Target), replacing the bottom `BuildSheet`. ✅ **The board is already built for it**: Round I narrowed the belt's right leg x610→x540 precisely to clear 180 units, which is a 140-unit rail plus margin. That reserved strip sitting empty is what makes the current layout read as off-balance. |
+| 2 | **Re-anchor the board** — left-aligned in the remaining **580** units (≈ **0.80**), correcting the polish round's *centred* 0.85. Still via `getFit()` in `stage.ts`, one transform only. |
+| 3 | **Shrink the glow** — `towerScene.ts`'s `glow.width = size * 1.9` → **~1.2**, and re-weight `makeGlowTexture`'s falloff so alpha peaks near the **rim** instead of the centre. Today it's a halo; it should be a rim-light. 🔴 Urgent because ×2 chai/coffee makes block-1 glows **167 units on a 72-unit belt**. |
+
+#### For the art agent
+
+| # | Task |
+|---|---|
+| 4 | **Regenerate block 9's backdrop** with the spice station at **top** (belt entry) and the serving pass at **bottom** (belt exit) — currently reversed. ⚠️ **Do NOT flip the existing image**: tested, and it puts the chandelier at the bottom hanging upward and inverts the lighting gradient against all eight other blocks. Amend the retained per-block theme clause, same `--seed 4471`, same pipeline. |
+
+#### 🚫 Deliberately NOT in this round
+
+- **Wave roster panel** (§8) — left out cleanly rather than attempted as a stretch. A
+  half-built panel at the freeze is worse than none. Its unique value is that it is the
+  only thing that would ever render `EnemyDef.name`.
+- **Same-archetype bumping separation** — render-level jostle so dishes nudge rather than
+  overlap. Designed (relaxation pass on drawn positions, `dist` untouched, zero balance
+  risk), held because it is new code on the last day.
+- **Regenerating the other eight backdrops.** Every one was generated before the
+  generator was told where the belt enters and exits; block 9 is simply where it shows,
+  being the only backdrop with explicit entry/exit furniture.
