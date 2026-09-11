@@ -2351,3 +2351,18 @@ uniques are the score; the trend matters more than any single day.
     is an offer they can decline. 🔥 **The general form: a measurement that lives
     only in a message has not been recorded, it has merely been said.** The test is
     not "did I tell the user" but "could the next thread find it".
+90. 🔒 **STANDING RULE — the marketing agent writes its documents; I commit them.**
+    Set by the user Sep 11 2026: *"You handle the git sync of those docs, writing onto
+    them is where marketing agent shines."* ⚠️ **I had been reporting
+    `Marketing Strategy.md` and `Social Media Handover Record.md` as "modified, not mine
+    to commit" for days**, treating [lesson 87](#) — *marketing is that agent's agenda* —
+    as covering the files as well as the agenda. It does not. 87 is about **whose work it
+    is to decide and to do**; this is about **who operates git**, and that agent runs no
+    git at all. The result was two documents sitting uncommitted while I listed them as
+    housekeeping I was declining to touch. ✅ **The split: they author, I sync.**
+    🔴 **And syncing is not rubber-stamping — scan before committing, because the repo
+    is public and I am the last gate.** On the first sync: zero 32-hex strings in either
+    file, and every `?k=` was the security rule being restated or an explicit redaction
+    note. Their discipline held, but the check is mine to run every time, and it extends
+    to anything else I commit on another agent's behalf — screenshots included, where a
+    phone capture can carry a share link in the address bar.
