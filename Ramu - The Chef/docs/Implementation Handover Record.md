@@ -831,7 +831,9 @@ polish round returning and being verified. **Freeze: end of Sep 13.**
 | 6 | **`towers.ts:155`: `desc: 'Fryer works more tickets at once'`** → rename off the retired station (e.g. *"Serves more tickets at once"*). The last stale station reference; flagged by the agent as outside its names-only scope. |
 | 7 | 🆕 **Enlarge ALL dish sprites.** `CONFIG.sizes.enemy` is **44** for every archetype — 61% of the 72-unit belt. Block 1's ×2 landed well, so the rest follow. Proposed base **64** (89% of belt width), with `DISH_SIZE_MULT` for chai/coffee dropping **2 → 1.375** so block 1 stays at its current, approved 88. ✅ Sizes are cosmetic — targeting and splash use centre points — so **no balance impact**. ⚠️ **Trade-off, stated:** at level 80 spacing puts beetles ~43 units apart, so 64-unit sprites overlap more than 44-unit ones. That is the very overlap the held **bumping separation** task exists to fix, so this makes the case for it stronger. |
 | 8 | 🆕 **Shrink block 1's shadow — by deriving it from the BASE size, not the scaled one.** Every decoration in `towerScene.ts` derives from `size = baseSize × DISH_SIZE_MULT`, so doubling chai/coffee doubled the shadow too: `shadow.ellipse(0, size*0.42, size*0.4, size*0.14)` at size 88 is **70.4 units wide on a 72-unit belt — 98% of it**. Deriving the shadow from `baseSize` instead pins it at ~51 units regardless of the dish multiplier. ✅ **That is "smaller, exclusively for block 1" by construction**, since block 1 is the only place a multiplier applies — a rule rather than a special case, and it stays correct when task 7 changes the base. Consider the same for `ice` (currently `size*1.25` → 110 units at block 1). |
-| 9 | **Shrink the glow** — `towerScene.ts`'s `glow.width = size * 1.9` → **~1.2**, and re-weight `makeGlowTexture`'s falloff so alpha peaks near the **rim** instead of the centre. Today it's a halo; it should be a rim-light. 🔴 Urgent because ×2 chai/coffee makes block-1 glows **167 units on a 72-unit belt**. |
+| 9 | 🆕 **Finish the pause-overlay fix, and verify it on a device.** The polish round could not reproduce the left-edge leak headless and shipped the standard cause speculatively — but **only half of it**. `app.css:25` now uses `100dvw` for portrait; `app.css:37`'s landscape branch still reads `min(100vw, calc(100dvh * 9 / 16))` — the exact unit the fix exists to avoid. The agent's "landscape" test was desktop CDP at 900×500, which does not exhibit the mobile-chrome drift that causes this. **Fix the landscape branch too, and verify on a real phone in both orientations.** |
+| 10 | 🆕 **Same-archetype bumping separation.** Enemies take engine coordinates verbatim (`v.node.position.set(e.x, e.y)`), so identical `dist` means identical pixels — overlap is the absence of any separation step, not a bug. 🔴 **Render-level only:** after positioning, run a short relaxation pass — for each pair **of the same archetype** whose sprites are closer than a minimum, push each back along the line between them by half the shortfall. Two iterations is plenty at 120 enemies. ✅ `dist` is never modified, so **zero balance risk**, and "different types can cross" falls out because the pass only compares like with like. ⚠️ Clamp the push (≈ ≤ 0.35 × sprite size) or a dense cluster shoves a dish off the belt edge. 🔥 **More relevant now, not less** — task 7 takes dishes from 44 to 64 while level-80 spacing puts beetles ~43 units apart. |
+| 11 | **Shrink the glow** — `towerScene.ts`'s `glow.width = size * 1.9` → **~1.2**, and re-weight `makeGlowTexture`'s falloff so alpha peaks near the **rim** instead of the centre. Today it's a halo; it should be a rim-light. 🔴 Urgent because ×2 chai/coffee makes block-1 glows **167 units on a 72-unit belt**. |
 
 #### For the art agent
 
@@ -857,9 +859,12 @@ safe lever.
 - **Wave roster panel** (§8) — left out cleanly rather than attempted as a stretch. A
   half-built panel at the freeze is worse than none. Its unique value is that it is the
   only thing that would ever render `EnemyDef.name`.
-- **Same-archetype bumping separation** — render-level jostle so dishes nudge rather than
-  overlap. Designed (relaxation pass on drawn positions, `dist` untouched, zero balance
-  risk), held because it is new code on the last day.
+- ~~Same-archetype bumping separation~~ → ✅ **moved INTO the round, Sep 11.** The user's
+  hold was *"until the current round returns"*; the polish round returned and was
+  accepted, so the condition expired. It is task 10 above. ⚠️ **Recorded because I nearly
+  lost it** — the glow, held under the same sentence, was carried forward while this was
+  left sitting in a "held" list. A conditional hold needs re-checking when its condition
+  is met, not just when someone asks.
 - **Regenerating the other eight backdrops.** Every one was generated before the
   generator was told where the belt enters and exits; block 9 is simply where it shows,
   being the only backdrop with explicit entry/exit furniture.
