@@ -942,4 +942,104 @@ verification passes by returning nothing, first prove it can return something.**
 run. ✅ **The changelog cleared moderation on the first attempt** — the "Stockpot" /
 "Saucepot" one-word workaround holds.
 
-#### Verdict — ⏳ Tier A accepted from source; **awaiting the user's device playtest**
+#### Verdict — ✅ **TIER A ACCEPTED**, Sep 11 2026 — verified from source, then
+playtested on device. 🔴 The playtest found the bumping separation shipped here was
+**pushing dishes off the belt**; that became Tier 1 below.
+
+---
+
+### 2026-09-11 — Final round, Tier 1 — the belt escape and the glow
+
+**Status:** ✅ **RETURNED, VERIFIED, DEPLOYED, PLAYTESTED, ACCEPTED** — commit `2a05da0`,
+private **v1.56.0**, Sep 11–12 2026. Two files: `textures.ts`, `towerScene.ts`.
+
+#### Why
+
+v1.55.0's same-archetype separation was **free 2D**, with `minSep = (a.size + b.size) * 0.5`
+— **88 units for chai/coffee against a 72-unit belt**, which is unsatisfiable, so the pass
+pushed outward every frame until dishes stood on the floorboards. Block 2 at 64 had 4
+units of margin, which a corner ate. 🔥 **Arithmetic, not tuning.** The push being a 2D
+vector made it worst exactly at corners, where it points across the belt rather than along
+it. The jitter had the same cause: the pass recomputed from raw positions every frame and
+was pair-order dependent.
+
+Separately, the glow was a **circle sized from one scalar** while dishes are wide, short
+and differently proportioned per block — chai/coffee draw 88×64.5, block-2 dishes 64×41.8.
+One circle cannot hug both.
+
+#### Return — verified from source
+
+✅ **The belt fix is structurally right, not merely clamped.** Every enemy position now
+comes from `posAt(clamp(e.dist + distOffset, 0, PATH_LENGTH))`, and `relaxEnemyPositions()`
+is the **sole writer** of enemy node positions — nothing else in the file reads or sets
+them, so no hit-testing depends on the old coordinates. On-belt is true **by
+construction**; the agent's 45,066-sample sweep confirms rather than establishes it.
+Separation is 1D along the path, decayed 0.88/frame, clamped 6 units per pair per
+iteration and ±20 accumulated. `e.dist`/`e.x`/`e.y` are never written.
+
+✅ Sealed files absent from the commit. ✅ Balance re-run independently: **35 / 34 / 6 / 4 / 90**.
+✅ Glow ellipse verified against the measured art: block 1 → 101×74, block 2 → 74×48.
+
+#### 🔴 Four findings the return did not raise
+
+1. **The glow's hard outer edge is only half-fixed.** The ring is no longer clipped, but
+   the outermost ring is drawn at `r = cx - strokeWidth/2` with a 7.4-wide stroke, so its
+   outer boundary lands at **exactly `cx` again**, at alpha ≈ 0.32 rather than tapering to
+   zero. ✅ **The user inspected it and accepted it** — `makeGlowTexture` is now closed.
+2. **`zIndex` still derives from `e.y`**, not the relaxed position, so depth order between
+   separated dishes can be marginally wrong. Cosmetic; offsets cap at 20 units.
+3. **Acceptance criterion 6 — "no oscillation" — was unreported.** The 45k sweep proves
+   criterion 4 (on-belt), not convergence. ✅ **Closed by the playtest: no jitter.**
+4. **Enemies within 20 units of the burrow clamp to `d = 0`** and can re-overlap at the
+   mouth. Minor, brief, spawn-only.
+
+#### ⚠️ A property of the 1D fix worth writing down
+
+**Separating along the path does not separate on screen at a corner.** Two dishes 70 units
+apart *along the belt* but straddling a 90° turn can be nearly coincident in straight-line
+distance. Not a defect — the alternative is the 2D scheme that walked dishes off the belt
+— but it is why glows can still visually pile up at a corner, and it is the leading
+explanation for a block-1 halo that measured 1.15× the cup yet photographed much larger.
+
+#### Playtest — v1.56.0, Sep 12 2026
+
+| # | Watched for | Result |
+|---|---|---|
+| 1 | Jitter | ✅ **gone** |
+| 2 | Block-2 glow | screenshot returned; not objected to |
+| 3 | Block-1 cup glow | ❌ **"too loose"** — user requires **at least half** the radius |
+| 4 | Faint hard edge at the glow boundary | ✅ **accepted as-is** |
+| 5 | Dishes leaving the belt | ✅ **"they follow the path properly"** |
+
+#### Verdict — ✅ **ACCEPTED**, Sep 12 2026, with the glow size carried into Tier 2.
+
+---
+
+### 2026-09-12 📤 Final round, Tier 2 — the station rail, the board re-anchor, and the glow
+
+**Status:** 📤 **HANDED OVER Sep 12 2026, not yet returned.** Written at handover time, per
+this file's own rule. 🔴 **Last code round before the freeze — end of Sep 13.**
+
+| # | Task | Files |
+|---|---|---|
+| 1 | **Halve the chai/coffee glow.** A `DISH_GLOW_MULT` beside `DISH_SIZE_MULT`, chai/coffee **0.5**, applied to both axes. Block 2 and later unchanged — the user confirmed those read correctly. | `towerScene.ts` |
+| 2 | 🔒 **The 140-unit station rail** (`002` schematic) — four stations for placement **and** the selected-tower panel (Sell / Upgrade / Target), replacing the bottom `BuildSheet`. ✅ The board is already built for it: Round I narrowed the belt x610→x540 to clear 180 units, and that reserved strip is the empty band in every screenshot. | `BuildSheet.tsx`, `Hud.tsx` |
+| 3 | **Re-anchor the board** — `BOARD_SCALE` 0.85 → **0.80**, `offsetX` left-aligned rather than centred, both in `getFit`. | `stage.ts` |
+
+⚠️ **A prediction recorded before the return, so it can be checked rather than argued.**
+The cup's drawn content measures ~88×64.5 and the glow draws *behind* the sprite, so at
+0.5× (**~51×37**) it may be **fully occluded and effectively invisible**. My arithmetic puts
+the current glow at only **1.15×** the cup, which does not match how large it photographs.
+🔴 **The user reaffirmed "at least half" twice, so it ships as instructed** — and the return
+must report what it actually observes rather than silently choosing a different number.
+If it disappears, that is one constant to retune and it also tells us the size model was
+right and something else explains the photograph (see the corner note above).
+
+✅ **`makeGlowTexture` is explicitly out of scope** — the user accepted its outer edge.
+
+🔴 **Sealed:** `enemies.ts`, `waves.ts`, `sim/engine.ts`, `towers.ts`. Reading `posAt` /
+`PATH_LENGTH` is not a modification. Balance must stay **35 / 34 / 6 / 4 / 90**.
+
+#### Return
+
+_Pending._

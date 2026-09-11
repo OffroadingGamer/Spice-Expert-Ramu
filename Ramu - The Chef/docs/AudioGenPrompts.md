@@ -64,3 +64,67 @@ Log of MusicGen prompts generated for Spice Expert: Ramu. Append-only — a supe
 **Output file:** Audio/BGM/bgm-service-high-take2.mp3 (+ .mp3.json sidecar, generationId c739a5ca-0370-44ec-a86b-0cc7e70738b4)
 **Assumptions:** First attempt hit the same 300s rate limit pattern as every other generation in this batch except take 1 of each cue — no charge, waited out cooldown, succeeded on retry. Batch complete: 6 of 6 planned generations run, 678 credits spent, well under the 10-generation cap.
 ---
+## 🔴 Music regeneration effort — 2026-09-11 to 09-12 — NOT SHIPPED
+
+The three cues live in production are still the **Sep 4 masters** (14 bars, ~30 s,
+480,698 B each). Everything below was generated, measured, and held. Recorded because two
+rounds of it failed in instructive ways.
+
+### Round A4 — `rundot generate music` — REJECTED: seconds of dead air
+
+Three cues at 68.571 s (32 bars @ 112 BPM), 1,548 credits, 6 generations. Bar-exact pair,
+clean measurements, and **unusable**: roughly **four seconds of silence at the head and
+several more at the tail** of both service cues.
+
+🔥 **Two causes, and both were mine.** The prompt I specified asked the generator to
+*"ease back down toward a hush so the very last moment is quiet"* — it requested the
+defect. And seam quality was scored as **RMS in a 5 ms window at each edge**, a proxy that
+**silence maximises**. It rejected the take that was correct: `service_high`'s first
+attempt ended *live* at −31.6 dBFS, which is what a real loop sounds like. ✅ Recorded as
+[Retro.md](Retro.md) lesson 94 — third recurrence of proving a property on a metric that
+excludes or inverts the thing that matters.
+
+### Round A5 — local ComfyUI / MiniMax Music 3 — REJECTED: "too crowded and jumpy"
+
+Route: `MiniMaxMusic3TextEncode` + `EmptyMiniMaxMusic3LatentAudio` + KSampler +
+`VAEDecodeAudio`, then `TrimAudioDuration` and `SaveAudioMP3`. Local, no credits, runs
+parallel to the code rounds. ✅ **`lyrics` left empty is what makes it instrumental.**
+
+✅ **The dead air was fixed, and the method is worth keeping:** generate long, then
+*jointly* search for a quiet 20 ms pocket at both ends of a fixed-length window (not the
+take's own edges), snap to a zero crossing, and cut. Verified by cross-correlating each
+final against its source — which caught a real bug where a one-word caption difference
+silently triggered a fresh generation instead of a cache hit.
+
+| | service_low | service_high | menu |
+|---|---|---|---|
+| Duration | 34.7133 s | 34.7133 s | 18.4192 s |
+| Tempo | 93.96 BPM | 90.67 BPM | ~115–117 |
+| RMS | −18.69 | −17.34 | −20.57 dBFS |
+| Peak | −1.52 | −0.49 | 🔴 **+0.19 dBFS** |
+
+🔴 **The menu is clipped** — peak above full scale. RMS-matching needs gain **1.24** on
+it, which would push it to **+2.07 dBFS**. Not a constant to retune; it cannot ship.
+
+⚠️ **112 BPM is a demonstrated model limit.** Across 12 generations sweeping `cfg_scale`
+2.5–4.5 and `top_k` 50/120, measured tempo ranged **90.7–178.2 BPM** and never landed
+within tolerance. The pair ended **3.6% apart** from each other — and they crossfade
+mid-run, which is the one property that had to hold.
+
+❌ **Rejected by the user on listening: "a bit too crowded and jumpy."** 🔥 **Both traced to
+my prompts, not the execution** — they asked for six simultaneous layers (tabla *and*
+dholak *and* continuous sixteenth shaker *and* sustained lead *and* dense harmonium *and*
+plucked bed) and for a *"pronounced"* sidechain pump. A pump is amplitude modulation; under
+repetition it reads as lurching rather than driving. ✅ **The distinction for next time:
+momentum comes from an even pulse, not from ducking the level.**
+
+### Round A6 — in flight
+
+Corrections: a **hard cap on simultaneous elements** (3 / 4 / 3, counted and reported), **no
+pumping or ducking of any kind**, no sixteenth layers, shakers, fills or syncopation, peak
+**≤ −1.5 dBFS** with zero samples at full scale, the pair **within 1% of each other** rather
+than chasing 112, within-take tempo drift measured, and longer loops (pair ≥ 45 s, menu
+≥ 30 s). Round A5's files are kept as the fallback.
+
+🔴 **Gate: end of Sep 13.** If nothing is chosen and wired by the freeze, the Sep 4
+masters ship unchanged. The new menu is out either way.
