@@ -672,6 +672,34 @@ if the loss levels move, report them.
 `leaderboard.ts`. Outside `jam-entry/` → hand back.
 🚫 Never `set-public` / `set-private` / `update-tag`. Kill processes **by PID only**.
 
-#### Return
+#### Return — verified from source Sep 11 2026 · commit `b3bec13` · private **v1.49.0**
 
-_Pending._
+✅ **Exactly one line**, in `fireBeam`'s chain-hop loop, matching `pickTarget` and splash.
+`enemies.ts` / `towers.ts` / `waves.ts` **0 lines**; `sim/engine.ts` the only file touched.
+`tsc` and build clean. `rundot game info`: Private **1.49.0**, Review **1.42.0
+(Approved)**, Public **1.42.0** — untouched.
+
+✅ **Balance reproduced independently — all five identical**: `fox-spam` 35, `balanced`
+34, `miser` 6, `pad0-rush` 4, `maxed-meta` 90.
+
+🔥 **The verification method deserves recording.** The agent built a harness on the real
+`createEngine`, placed an actual squirrel tower, and seeded two enemies at dist 245 and
+200 — then **reverted the fix and re-ran it** to prove the harness actually reports chain
+damage into the zone without the guard. A test that is never seen to fail proves nothing;
+this one was.
+
+#### Verdict — ✅ ACCEPTED, Sep 11 2026. **Challenge Mode's build is complete.**
+
+---
+
+### 🔴 Standing hazard — `PATH_LENGTH` is stated twice and only one is derived
+
+[`waves.ts:60`](../../jam-entry/src/game/data/waves.ts) holds `const PATH_LENGTH = 2440;`
+**hand-derived**, its own comment warning it *"is NOT frozen … there is no standing
+guarantee this constant can't go stale"*. [`engine.ts:129`](../../jam-entry/src/game/sim/engine.ts)
+**computes** its own from `CONFIG.path`.
+
+⚠️ **So any belt-geometry change must edit a sealed file, or the two silently
+disagree** — every threat number would be wrong while the simulator still printed
+`PROVEN`. This is why the Sep 11 belt-shrink proposal was answered with a render-space
+scale rather than new path coordinates: see [LevelBlocks.md](LevelBlocks.md) §7.
