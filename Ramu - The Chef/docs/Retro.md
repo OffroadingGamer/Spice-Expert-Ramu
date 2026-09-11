@@ -2366,3 +2366,22 @@ uniques are the score; the trend matters more than any single day.
     note. Their discipline held, but the check is mine to run every time, and it extends
     to anything else I commit on another agent's behalf — screenshots included, where a
     phone capture can carry a share link in the address bar.
+91. 🔴 **A handed-back task is not a cancelled task — and turning one into the other
+    inside a commit body is how scope goes missing.** Sep 11 2026: the visual round's
+    build sidebar (the 140-unit rail from the `002` schematic) was correctly handed back
+    by the implementation agent under my own *"stop cleanly at a finished tier"*
+    instruction. I then recorded it as **"dropped — no room before the freeze"** — a real
+    scope decision, made by me, written into a commit message and a record entry rather
+    than put to the user as a question. ⚠️ **The user found out by noticing it missing in
+    a playtest screenshot and asking *"what happened to the new HUD design?"*** That is
+    the wrong discovery path. 🔥 **The tell: the agent's word was "handed back", mine was
+    "dropped".** Those are different states — the first means *unfinished, still owed*, the
+    second means *decided against*. Converting one to the other is a decision, and
+    decisions that remove approved, 🔒-locked design belong in front of the user in the
+    chat, not in a commit body they have no reason to read. ✅ **Rule: when a round returns
+    less than was asked, list what did not land as an explicit open question, even when
+    the reason is obviously time.** The user, not me, decides whether a locked design item
+    is cut. ➕ It also cost real information: the belt had *already* been narrowed x610→x540
+    in Round I specifically to clear 180 units for that rail, so the empty strip was
+    visibly unbalancing the board for two rounds while the thing meant to fill it sat
+    marked "dropped".

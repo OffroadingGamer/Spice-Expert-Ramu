@@ -27,8 +27,8 @@ https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 | Thumbnail | Real, generated, exactly 512×512 JPG |
 | Title | ✅ Fixed — SVG `textLength` + `lengthAdjust`, verified 320/390/430 |
 
-**Content mapping in place (names only, kit IDs untouched):** stations Grill / Prep Board
-/ Tandoor / Fryer (`fox` / `owl` / `bear` / `squirrel`). Renaming an `id` touches
+**Content mapping in place (names only, kit IDs untouched):** stations Stock Pot / Pressure Cooker
+/ Cooktop / Sauce Pot (`fox` / `owl` / `bear` / `squirrel`; renamed Sep 11 2026). Renaming an `id` touches
 `textures.ts`, `towerScene.ts`, `towerIcons.ts`, `audio.ts` and `CONFIG.sizes` — a
 deliberate multi-file operation, not a rename-in-place.
 

@@ -384,7 +384,7 @@ backdrops unless the wiring awaits them.
    game's UI — branding blacked out, but its tower names (*Dart Gun, Spike Trap,
    Bomb Pot, Workbench*) and price chips remain legible. `003`/`004` are original.
    The user was told and chose to commit. **Nothing shipped derives from them** —
-   our towers stay Grill / Prep Board / Tandoor / Fryer at 60–110.
+   our towers stay Stock Pot / Pressure Cooker / Cooktop / Sauce Pot at 60–110.
 
 ---
 
@@ -420,10 +420,10 @@ are already deployed in `public/images/`.
 
 | Station | id | Lv1 | Lv2 | Lv3 |
 |---|---|---|---|---|
-| **Grill** | `fox` | `prop-stock-pot-l1` **40** | `-l2` **41** | `-l3` **42** |
-| **Prep Board** | `owl` | `prop-pressure-cooker-l1` **23** | `-l2` **24** | `-l3` **25** |
-| **Tandoor** | `bear` | `prop-cooktop-l2` **07** | `prop-cooktop-l3` **08** | `prop-cooktop-l5` **10** |
-| **Fryer** | `squirrel` | `prop-sauce-pot-l1` **32** | `-l2` **33** | `-l3` **34** | 🔴 **REMAPPED Sep 11** — see below |
+| **Stock Pot** | `fox` | `prop-stock-pot-l1` **40** | `-l2` **41** | `-l3` **42** |
+| **Pressure Cooker** | `owl` | `prop-pressure-cooker-l1` **23** | `-l2` **24** | `-l3` **25** |
+| **Cooktop** | `bear` | `prop-cooktop-l2` **07** | `prop-cooktop-l3` **08** | `prop-cooktop-l5` **10** |
+| **Sauce Pot** | `squirrel` | `prop-sauce-pot-l1` **32** | `-l2` **33** | `-l3` **34** | 🔴 **REMAPPED Sep 11** — see below |
 
 ⚠️ **The props/ numbers are sprite indices, not tier numbers**, so two families do
 not map onto `-l1/-l2/-l3`. The Tandoor takes Cooktop **07/08/10** — *without
@@ -446,14 +446,14 @@ Measured:
 
 | Station | Lv1 | Lv2 | Lv3 |
 |---|---|---|---|
-| Grill | 90×118 | 94×117 | 91×118 |
-| Prep Board | **146×102** | 94×103 | 102×103 |
-| **Tandoor** | **118×131** | **158×261** | **246×191** |
-| Fryer | 66×91 | 80×69 | 99×87 |
+| Stock Pot | 90×118 | 94×117 | 91×118 |
+| Pressure Cooker | **146×102** | 94×103 | 102×103 |
+| **Cooktop** | **118×131** | **158×261** | **246×191** |
+| Sauce Pot | 66×91 | 80×69 | 99×87 |
 
 Under a per-sprite contain-fit into the fixed 64-unit tower slot, the Tandoor
 would appear **tall and narrow at Lv2, then short and wide at Lv3** — the upgrade
-reads as a squash, and Prep Board Lv1 would look bigger than Lv2.
+reads as a squash, and Pressure Cooker Lv1 would look bigger than Lv2.
 
 ✅ **Fix: fit per FAMILY, not per sprite.** Compute one bounding box across a
 station's three sprites, scale all three by that single factor, and anchor at the
@@ -497,7 +497,7 @@ the second asset in this project whose name did not describe its contents.
 ⚠️ **Tandoor's dimensions are non-monotonic** (Lv2 158×261, Lv3 246×191) so no single
 shared factor makes it grow *and* cap. Inspected and **accepted**: it reads as small
 oven → tall range → wide flaming grill, and the flames carry the upgrade even though
-Lv3 is shorter. Same for Prep Board (Lv1 146×102 vs Lv2/3 ~94–102×103).
+Lv3 is shorter. Same for Pressure Cooker (Lv1 146×102 vs Lv2/3 ~94–102×103).
 
 ⚠️ **Payload must be measured, not assumed** — 12 prop PNGs enter `critical` as
 256 KB of tower art leaves. Round G's net was a win; this one needs checking.
@@ -601,3 +601,27 @@ round finishing, and contribute nothing to Daily Unique Plays. There is no room.
 ✅ **The tower reskin sits in round 3, not earlier**, because the build sidebar
 *displays tower art*: laying those cards out around sprites we are about to replace
 means doing it twice.
+---
+
+## 14. 🔒 Station names — renamed to the art, Sep 11 2026
+
+| id | Was | Now |
+|---|---|---|
+| `fox` | Grill | **Stock Pot** |
+| `owl` | Prep Board | **Pressure Cooker** |
+| `bear` | Tandoor | **Cooktop** |
+| `squirrel` | Fryer | **Sauce Pot** |
+
+Meta-upgrade names followed: *Wider Tandoor* → **Wider Burner** (it named a station that
+no longer exists), *Bigger Basket* → **Longer Ladle** (a sauce pot has no basket).
+*Sharp Knife* and *Deep Chill* kept.
+
+✅ **Tower ids are unchanged**, so saves and meta levels are unaffected.
+✅ **This also retires §10's belt-mode ambiguity note** — "Tandoor" now means only the
+Kitchen Mode station, with no Challenge Mode tower of that name to confuse it with.
+⚠️ **Kitchen Mode's own equipment names are NOT affected** — [GDD.md](GDD.md) § counter
+node and [Specs.md](Specs.md)'s node table describe a different system.
+
+🔴 **Operational consequence:** RUN's moderation filter rejects the standalone word
+**"Pot"**, so a changelog naming these stations is refused. Write **"Stockpot"** and
+**"Saucepot"** as single words in release notes. In-game strings are unaffected.

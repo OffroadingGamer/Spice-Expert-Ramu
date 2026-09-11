@@ -563,9 +563,9 @@ renaming needed:
 | Achievement | Tower id | Display name |
 |---|---|---|
 | **Grill Warrior** | `fox` | Grill |
-| **Prep Board Warrior** | `owl` | Prep Board |
+| **Pressure Cooker Warrior** | `owl` | Pressure Cooker |
 | **Tandoor Warrior** | `bear` | Tandoor |
-| **Fryer Warrior** | `squirrel` | Fryer |
+| **Sauce Pot Warrior** | `squirrel` | Sauce Pot |
 
 **Settled by the user, Sep 9:**
 
