@@ -28,16 +28,15 @@ import {
     freeTexture,
     makeBurrowTexture,
     makeEnemyTexture,
-    makeGoldPadTexture,
     makeGlowTexture,
     makeGrassTexture,
     makeIceCubeTexture,
     makePadGhostTexture,
     makePadGoldGhostTexture,
-    makePadTexture,
     makeProjBearTexture,
     makeProjFoxTexture,
     makeProjOwlTexture,
+    makeTowerLevelSizes,
     makeTowerLevelTextures,
 } from './textures.ts';
 import { store } from '../state/store.ts';
@@ -86,8 +85,6 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
 
     const tex = {
         grass: makeGrassTexture(app.renderer),
-        pad: makePadTexture(app.renderer),
-        padGold: makeGoldPadTexture(app.renderer),
         padGhost: makePadGhostTexture(app.renderer),
         padGhostGold: makePadGoldGhostTexture(app.renderer),
         burrow: makeBurrowTexture(app.renderer),
@@ -124,19 +121,17 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
      * instead of normalizing them away. syncTowers() anchors every sprite at
      * the BOTTOM edge (not center) so tiers of different heights still sit
      * on the pad consistently.
+     *
+     * Playtest round, task 2: the actual per-family factor (incl. the +25%
+     * playtest bonus) now lives in textures.ts's makeTowerLevelSizes, shared
+     * with towerIcons.ts's build-menu icon so both grow together.
      */
     const towerLevelTex: Record<string, [Texture, Texture, Texture]> = {};
     const towerDisplaySize: Record<string, [{ w: number; h: number }, { w: number; h: number }, { w: number; h: number }]> = {};
     for (const def of TOWERS) {
         const texes = makeTowerLevelTextures(app.renderer, def.id);
         towerLevelTex[def.id] = texes;
-        const bboxMax = Math.max(...texes.flatMap((t) => [t.width, t.height]));
-        const factor = SZ.tower / bboxMax;
-        towerDisplaySize[def.id] = texes.map((t) => ({ w: t.width * factor, h: t.height * factor })) as [
-            { w: number; h: number },
-            { w: number; h: number },
-            { w: number; h: number },
-        ];
+        towerDisplaySize[def.id] = makeTowerLevelSizes(texes);
     }
 
     /** Glow tier per archetype (docs/LevelBlocks.md §6a). */
@@ -690,18 +685,20 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         }
     }
 
-    /** Empty pad -> dotted ghost decal; occupied pad -> the solid stone
-     *  decal (gold/plain, same distinction either way). docs/LevelBlocks.md
-     *  §9's "002" schematic: an empty slot must read unambiguously as empty
-     *  against a placed tower, which a permanently-solid decal did not. */
+    /** Empty pad -> dotted ghost decal (gold/plain keeps the bonus
+     *  distinction alive); occupied pad -> NO decal at all. Playtest round,
+     *  task 3: the solid stone decal under a placed tower read as an odd
+     *  "table" under the prop, and dropping it is also what makes room for
+     *  task 2's larger props without crowding the pad. */
     function syncPads(): void {
         const occupied = new Set(engine.state.towers.map((t) => t.padIndex));
         for (let i = 0; i < CONFIG.pads.length; i++) {
             const pad = CONFIG.pads[i];
-            const want = occupied.has(i)
-                ? (pad.bonus ? tex.padGold : tex.pad)
-                : (pad.bonus ? tex.padGhostGold : tex.padGhost);
-            if (padViews[i].texture !== want) padViews[i].texture = want;
+            padViews[i].visible = !occupied.has(i);
+            if (!occupied.has(i)) {
+                const want = pad.bonus ? tex.padGhostGold : tex.padGhost;
+                if (padViews[i].texture !== want) padViews[i].texture = want;
+            }
         }
     }
 
@@ -901,8 +898,6 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             backdropLayer.destroy({ children: true });
             boardRoot.destroy({ children: true });
             freeTexture(tex.grass);
-            freeTexture(tex.pad);
-            freeTexture(tex.padGold);
             freeTexture(tex.padGhost);
             freeTexture(tex.padGhostGold);
             freeTexture(tex.burrow);

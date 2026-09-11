@@ -76,8 +76,13 @@ export const MANIFEST: Manifest = {
                 { alias: 'proj-fox', src: 'images/proj-fox.png' },
                 { alias: 'proj-owl', src: 'images/proj-owl.png' },
                 { alias: 'proj-bear', src: 'images/proj-bear.png' },
-                { alias: 'pad', src: 'images/pad.png' },
-                { alias: 'pad-gold', src: 'images/pad-gold.png' },
+                // pad / pad-gold RETIRED (playtest round, task 3): the solid
+                // decal they drew was only ever shown under a PLACED tower,
+                // which is now decal-less (towerScene.ts's syncPads) —
+                // nothing loads these aliases anymore. Same treatment the
+                // Fryer's stale fry-pan aliases got in the visual round's
+                // part 2: no callers left, remove the alias, not just the
+                // call site.
                 { alias: 'burrow', src: 'images/burrow.png' },
             ],
         },

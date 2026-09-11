@@ -128,6 +128,17 @@ for (let i = 0; i < PATH.length - 1; i++) {
 }
 export const PATH_LENGTH = cumLengths[cumLengths.length - 1];
 
+// ---- Playtest round, task 4: spawn safe zone -------------------------------
+
+/**
+ * Enemies still on the path's FIRST leg (the vertical drop straight out of
+ * the burrow) can't be targeted or splash-damaged — a device playtest found
+ * towers camping the spawn point trivializing the run. Derived from
+ * CONFIG.path's own first segment length, never a hardcoded distance: the
+ * belt geometry has already moved once this project (Round I Task 7).
+ */
+const SPAWN_SAFE_ZONE_LEN = segLengths[0];
+
 // ---- Round I Task 1: splash distance falloff -------------------------------
 
 /** Linear falloff from the impact point: 1 (100%) at dist=0, down to
@@ -435,6 +446,7 @@ export function createEngine(meta: MetaLevels = {}): Engine {
     function pickTarget(t: TowerInst, enemies: EnemyInst[]): EnemyInst | null {
         let best: EnemyInst | null = null;
         for (const e of enemies) {
+            if (e.dist < SPAWN_SAFE_ZONE_LEN) continue;
             if (Math.hypot(e.x - t.x, e.y - t.y) > t.range) continue;
             if (!best || beats(t.targeting, t, e, best)) best = e;
         }
@@ -582,6 +594,7 @@ export function createEngine(meta: MetaLevels = {}): Engine {
                 // this just avoids float noise).
                 if (p.splash > 0) {
                     for (const v of state.enemies) {
+                        if (v.dist < SPAWN_SAFE_ZONE_LEN) continue;
                         const d = Math.hypot(v.x - target.x, v.y - target.y);
                         if (d > p.splash) continue;
                         const factor = v === target ? 1 : Math.max(0, 1 - SPLASH_FALLOFF * (d / p.splash));

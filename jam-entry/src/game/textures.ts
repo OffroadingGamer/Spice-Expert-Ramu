@@ -52,25 +52,77 @@ function art(alias: string, fallback: () => Texture): Texture {
 }
 
 /**
+ * The alpha content bounding box of a texture, in that texture's own pixel
+ * space — cached per alias (renderer.extract.pixels is a GPU readback, and
+ * every dish alias only needs scanning once for the run). A fully
+ * transparent source (shouldn't happen for real art) falls back to the
+ * whole-texture box rather than degenerately fitting a zero-size region.
+ */
+const contentBBoxCache = new Map<string, { x: number; y: number; w: number; h: number }>();
+function alphaContentBBox(renderer: Renderer, alias: string, tex: Texture): { x: number; y: number; w: number; h: number } {
+    const cached = contentBBoxCache.get(alias);
+    if (cached) return cached;
+    const { pixels, width, height } = renderer.extract.pixels(tex);
+    let minX = width;
+    let minY = height;
+    let maxX = -1;
+    let maxY = -1;
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            if (pixels[(y * width + x) * 4 + 3] > 0) {
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+            }
+        }
+    }
+    const box = maxX >= minX
+        ? { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 }
+        : { x: 0, y: 0, w: width, h: height };
+    contentBBoxCache.set(alias, box);
+    return box;
+}
+
+/**
  * Same resolution rule as art(), but for sprites (like the dish trays) whose
- * natural aspect ratio isn't square: the loaded art is uniformly scaled to
- * CONTAIN within a `size` x `size` square (centered, transparent letterbox)
- * and baked into a new square texture. Callers that force sprite.width ===
- * sprite.height (towerScene.ts's enemy sprites do) would otherwise stretch a
- * landscape tray non-uniformly. The baked texture is a fresh render, so it's
- * tracked in `generated` like gen()'s output for freeTexture() to reclaim.
+ * natural aspect ratio isn't square: the loaded art is uniformly scaled so
+ * its ALPHA CONTENT (not the file's raw canvas bounds) fits a `size` x
+ * `size` square, centered, transparent letterbox around it, baked into a new
+ * square texture. Callers that force sprite.width === sprite.height
+ * (towerScene.ts's enemy sprites do) would otherwise stretch a landscape
+ * tray non-uniformly.
+ *
+ * Playtest round, task 1: every dish file shares one 212x141 canvas, but
+ * chai/coffee's actual art only fills a 75x55 corner of it against
+ * 205x134 for the other 28 — scaling by the FILE bounds (the old behaviour)
+ * gave every dish the same factor, so chai/coffee rendered at roughly a
+ * third the apparent size of the rest. Fitting on the content box instead
+ * makes every dish read at the same size regardless of how much transparent
+ * margin its canvas carries.
+ *
+ * The baked texture is a fresh render, so it's tracked in `generated` like
+ * gen()'s output for freeTexture() to reclaim.
  */
 function artSquare(renderer: Renderer, alias: string, size: number, fallback: () => Texture): Texture {
     if (!Assets.cache.has(alias)) return fallback();
     const src = Assets.get<Texture>(alias);
+    const bbox = alphaContentBBox(renderer, alias, src);
     const box = new Container();
     const bg = new Graphics().rect(0, 0, size, size).fill({ color: 0xffffff, alpha: 0 });
     const sprite = new Sprite(src);
-    const scale = size / Math.max(src.width, src.height);
+    const scale = size / Math.max(bbox.w, bbox.h);
     sprite.width = src.width * scale;
     sprite.height = src.height * scale;
     sprite.anchor.set(0.5);
-    sprite.position.set(size / 2, size / 2);
+    // Center the CONTENT box on the square's center, not the whole (possibly
+    // padded) source image — offset from the source's own center to the
+    // content box's center, scaled the same as the sprite itself.
+    const contentCx = bbox.x + bbox.w / 2;
+    const contentCy = bbox.y + bbox.h / 2;
+    const offsetX = (contentCx - src.width / 2) * scale;
+    const offsetY = (contentCy - src.height / 2) * scale;
+    sprite.position.set(size / 2 + offsetX, size / 2 + offsetY);
     box.addChild(bg, sprite);
     const tex = renderer.generateTexture({ target: box, resolution: 1 });
     box.destroy({ children: true });
@@ -239,6 +291,51 @@ export function makeTowerLevelTextures(renderer: Renderer, stationId: string): [
     return [art(aliases[0], fallback), art(aliases[1], fallback), art(aliases[2], fallback)];
 }
 
+/**
+ * Playtest round, task 2: a device playtest found the stations reading too
+ * small against the board. §10's per-family fit (one bounding box across a
+ * station's 3 tiers, one shared factor so the largest raw dimension fills
+ * SZ.tower) stays exactly as designed — this only scales the RESULT by a
+ * flat bonus. Pulled out as the one place both consumers of that fit
+ * (towerScene.ts's board sprites and towerIcons.ts's build-menu icon) derive
+ * their size from, so the two can't drift out of sync with each other.
+ */
+const PROP_SCALE_BONUS = 1.25;
+
+export type TowerLevelSize = { w: number; h: number };
+
+export function makeTowerLevelSizes(texes: [Texture, Texture, Texture]): [TowerLevelSize, TowerLevelSize, TowerLevelSize] {
+    const bboxMax = Math.max(...texes.flatMap((t) => [t.width, t.height]));
+    const factor = (CONFIG.sizes.tower / bboxMax) * PROP_SCALE_BONUS;
+    return texes.map((t) => ({ w: t.width * factor, h: t.height * factor })) as [TowerLevelSize, TowerLevelSize, TowerLevelSize];
+}
+
+/**
+ * Bakes ONE texture into a size x size square (transparent letterbox,
+ * top-left of the content free to sit off-center — only used for the
+ * build-menu icon, which centers via CSS anyway) at an explicit w x h,
+ * rather than a uniform scale — towerIcons.ts uses this to render a
+ * station's level-1 art at the SAME per-family (+bonus) size the board
+ * uses, so BuildSheet.tsx's object-contain <img> shows it at a
+ * correspondingly larger fraction of its fixed 48px box instead of the
+ * raw, un-scaled source dimensions.
+ */
+export function bakeTowerIcon(renderer: Renderer, tex: Texture, w: number, h: number): Texture {
+    const size = Math.max(w, h);
+    const box = new Container();
+    const bg = new Graphics().rect(0, 0, size, size).fill({ color: 0xffffff, alpha: 0 });
+    const sprite = new Sprite(tex);
+    sprite.width = w;
+    sprite.height = h;
+    sprite.anchor.set(0.5);
+    sprite.position.set(size / 2, size / 2);
+    box.addChild(bg, sprite);
+    const out = renderer.generateTexture({ target: box, resolution: 1 });
+    box.destroy({ children: true });
+    generated.add(out);
+    return out;
+}
+
 function bugBase(g: Graphics, w: number, h: number, body: number, dark: number): void {
     g.ellipse(w * 0.5, h * 0.55, w * 0.42, h * 0.38).fill(body);
     g.ellipse(w * 0.5, h * 0.3, w * 0.24, h * 0.2).fill(dark);
@@ -368,38 +465,14 @@ export function makeIceCubeTexture(renderer: Renderer): Texture {
     }));
 }
 
-/** Stone build pad: flat 3/4 ellipse. */
-export function makePadTexture(renderer: Renderer): Texture {
-    return art('pad', () => gen(renderer, (g) => {
-        const w = CONFIG.sizes.pad.w * SS;
-        const h = CONFIG.sizes.pad.h * SS;
-        g.ellipse(w * 0.5, h * 0.55, w * 0.48, h * 0.42).fill(C.padDark);
-        g.ellipse(w * 0.5, h * 0.48, w * 0.44, h * 0.36).fill(C.pad);
-        g.ellipse(w * 0.36, h * 0.4, w * 0.09, h * 0.09).fill(C.padDark);
-        g.ellipse(w * 0.62, h * 0.55, w * 0.07, h * 0.08).fill(C.padDark);
-    }));
-}
-
-/** GOLD build pad: a bonus spot (config pads with a `bonus`). */
-export function makeGoldPadTexture(renderer: Renderer): Texture {
-    return art('pad-gold', () => gen(renderer, (g) => {
-        const w = CONFIG.sizes.pad.w * SS;
-        const h = CONFIG.sizes.pad.h * SS;
-        g.ellipse(w * 0.5, h * 0.55, w * 0.48, h * 0.42).fill(C.goldDark);
-        g.ellipse(w * 0.5, h * 0.48, w * 0.44, h * 0.36).fill(C.gold);
-        // star etched into the stone
-        const cx = w * 0.5;
-        const cy = h * 0.48;
-        const pts: number[] = [];
-        for (let i = 0; i < 10; i++) {
-            const r = i % 2 === 0 ? w * 0.11 : w * 0.045;
-            const a = -Math.PI / 2 + (i * Math.PI) / 5;
-            pts.push(cx + Math.cos(a) * r, cy + Math.sin(a) * r * 0.8);
-        }
-        g.poly(pts).fill(C.goldShine);
-        g.ellipse(w * 0.34, h * 0.36, w * 0.06, h * 0.07).fill(C.goldShine);
-    }));
-}
+/**
+ * Playtest round, task 3: the solid stone pad/gold-pad decal (formerly shown
+ * under a PLACED tower) was retired — an occupied pad now shows no decal at
+ * all (see towerScene.ts's syncPads). The 'pad'/'pad-gold' manifest aliases
+ * these two functions resolved are retired alongside them (manifest.ts) —
+ * same "no callers left, remove the alias" treatment the Fryer's stale
+ * fry-pan aliases got in the visual round's part 2.
+ */
 
 /** Draws a dashed ring (no filled interior) around an ellipse — used for the
  *  ghost/empty build-slot decals below. Pixi's Graphics has no native dash
