@@ -419,7 +419,7 @@ are already deployed in `public/images/`.
 | **Grill** | `fox` | `prop-stock-pot-l1` **40** | `-l2` **41** | `-l3` **42** |
 | **Prep Board** | `owl` | `prop-pressure-cooker-l1` **23** | `-l2` **24** | `-l3` **25** |
 | **Tandoor** | `bear` | `prop-cooktop-l2` **07** | `prop-cooktop-l3` **08** | `prop-cooktop-l5` **10** |
-| **Fryer** | `squirrel` | `prop-fry-pan-l2` **15** | `-l3` **16** | `-l4` **17** |
+| **Fryer** | `squirrel` | `prop-sauce-pot-l1` **32** | `-l2` **33** | `-l3` **34** | 🔴 **REMAPPED Sep 11** — see below |
 
 ⚠️ **The props/ numbers are sprite indices, not tier numbers**, so two families do
 not map onto `-l1/-l2/-l3`. The Tandoor takes Cooktop **07/08/10** — *without
@@ -470,6 +470,30 @@ files on disk are `40-Stock pot(Level1)` … `42-Stock pot(Level3)`, **ascending
 correctly named**. SpriteIndex's warning about descending Stovetop tiers describes
 a state that was already fixed. No discrepancy exists; the doc section is just out
 of date.
+
+🔴 **The Fryer was remapped Sep 11 2026 — the Fry pan art is not a fry pan.**
+Opened during verification of the visual round: `prop-fry-pan-l2/l3/l4` (and `l1`/`l5`)
+render **bowls of finished food** — greens in a bowl, a stew, an orange soup with a
+spoon. 🔥 **That is the same category of object as the enemies**, so a Fryer tower
+would have looked like the dishes it shoots at. A readability bug, not a naming quibble.
+
+The three other untaken 3-tier families were opened rather than chosen by name:
+
+| Family | Verdict |
+|---|---|
+| Sauce pan **29/30/31** | Three near-identical red pots that *shrink* (84×83 → 79×81 → 75×81). No upgrade read. |
+| Rice cooker **26/27/28** | Covered pot → tan cooker → green box. Three different objects; reads as substitution. |
+| **Sauce pot 32/33/34** | ✅ **Chosen.** Equipment, consistent silhouette, consistent size (107×117 / 99×117 / 98×118) so the per-family fit lands clean. |
+
+⚠️ Sauce pot's Lv2→Lv3 progression is mild — accepted, because *equipment rather than
+food* is the part that decides readability. ✅ **This is Retro 88 again, and it held:
+every one of these was opened, not inferred from its filename.** The Fry pan family is
+the second asset in this project whose name did not describe its contents.
+
+⚠️ **Tandoor's dimensions are non-monotonic** (Lv2 158×261, Lv3 246×191) so no single
+shared factor makes it grow *and* cap. Inspected and **accepted**: it reads as small
+oven → tall range → wide flaming grill, and the flames carry the upgrade even though
+Lv3 is shorter. Same for Prep Board (Lv1 146×102 vs Lv2/3 ~94–102×103).
 
 ⚠️ **Payload must be measured, not assumed** — 12 prop PNGs enter `critical` as
 256 KB of tower art leaves. Round G's net was a win; this one needs checking.

@@ -429,6 +429,34 @@ public* at Sep 14 23:30 IST, and RUN's approval lead is unmeasured).
 🚫 `rundot whoami` before any deploy; **private only**; never `set-public` /
 `set-private` / `update-tag`. Kill processes **by PID only**.
 
-#### Return
+#### Return — tier 1, verified from source Sep 11 2026 · commit `45cb996`
 
-_Pending._
+✅ **Tier 1 complete; tiers 2 and 3 not started — stopped cleanly at a shipped tier, as
+instructed.** Sealed diffs (`enemies.ts`, `towers.ts`, `waves.ts`, `sim/engine.ts`) are
+**0 lines** each; changed files are exactly `manifest.ts`, `textures.ts`,
+`towerIcons.ts`, `towerScene.ts`, `BuildSheet.tsx`, `Hud.tsx`. `tsc` and build clean.
+
+| Bundle | Before | After | Backdrop bytes |
+|---|---|---|---|
+| `critical` | 15 files / 491,669 B | 23 files / **522,711 B** | **0** |
+| `deferred` | 88 files / 1,676,409 B | 85 files / 2,486,460 B | 1,095,341 |
+
+⚠️ **Acceptance criterion 3 was mis-written by the planning agent**, not violated.
+It said *"`critical` unchanged"*; §10 explicitly costs the reskin at **+31 KB**, and the
+round landed **+31,042 B** — to the byte. The criterion was stricter than the document it
+existed to enforce. Its intent, no backdrop bytes in `critical`, is met exactly.
+
+✅ `bg-surface` was checked rather than assumed — `#14141a`, opaque, rule present in the
+built CSS. A class that failed to resolve would have left the sheet *fully* transparent,
+worse than the original bug.
+
+🔴 **The Fryer art finding is correct and understated** — see §10's remap note. Acted
+on Sep 11: Fryer moves to Sauce pot 32/33/34.
+
+⚠️ **Two criteria could not be verified and are disclosed as such:** the block-boundary
+crossfade (needs a real playthrough to level 11; the scripted bot could not survive
+block 1 solo) and real-device FTUE (headless Chrome only). Both fall to the user's
+device test. The crossfade reuses the already-proven `ensureBlockAssets` cache-poll
+path, so this is code-review confidence, not observation.
+
+#### Verdict — ✅ TIER 1 ACCEPTED, Sep 11 2026
