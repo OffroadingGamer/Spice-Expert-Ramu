@@ -128,3 +128,104 @@ than chasing 112, within-take tempo drift measured, and longer loops (pair ≥ 4
 
 🔴 **Gate: end of Sep 13.** If nothing is chosen and wired by the freeze, the Sep 4
 masters ship unchanged. The new menu is out either way.
+### Round A7 — local ComfyUI — REJECTED: vocals, again
+
+✅ **The best-measured round by far**, and still unusable. `service_low` and
+`service_high` landed at **161.499 BPM each — an exact tempo match**, the property two
+earlier rounds hunted for and never got (round 2: 3.5% apart; round 3: 5.0% after 51
+generations). Density fell 46% on `service_high`. Peaks, live edges, lengths and
+within-take stability all passed.
+
+✅ **The 2×2 vocal probe is worth keeping as a finding.** One cue, one seed, four takes
+crossing {caption mentions voice / doesn't} × {`lyrics` empty / `[instrumental]`}, scored on
+formant-band concentration, voiced fraction and vibrato energy:
+
+| variant | formant ratio | voiced fraction |
+|---|---|---|
+| **A — neutral caption, `lyrics` empty** | **0.457** ✅ | 0.763 |
+| B — negated caption, `lyrics` empty | 0.626 | 0.701 |
+| C — neutral caption, `lyrics` = `[instrumental]` | **0.991** 🔴 | 0.914 |
+| D — negated caption, `[instrumental]` | 0.634 | 0.801 |
+
+🔥 **Putting `[instrumental]` in the `lyrics` field makes vocalisation WORSE, not
+better** — the worst variant on two of three metrics. Empty is correct. ⚠️ Writing
+*"no vocals"* into the caption also scored worse than not mentioning voice at all: a
+negation puts the token into the positive conditioning.
+
+❌ **The user still heard vocals.** Variant A was used for every final take.
+
+### 🔴 VERDICT — MiniMax Music 3 is unusable for instrumental game BGM
+
+Four rounds, four rejections on the same defect. **The empty `lyrics` field does not gate
+vocalisation**, and no caption phrasing tested suppresses it. ✅ **Do not spend another
+round on it.** If generation is ever revisited, `SoniloTextToMusic` is installed as a
+different provider (a *partner* node, so it likely bills rather than running locally).
+
+✅ **Two things learned that outlive the model**, both verified in `audio/audio.ts` source:
+
+1. **`MUSIC.fadeSeconds` (1.2 s) does NOT cover the loop seam.** It appears only inside
+   `startCueBuffer` — it is a gain ramp applied when a cue *starts or switches*. Playback
+   is `src.loop = true` on the buffer, so **the wrap is heard raw, every cycle.** A round
+   report claiming the crossfade masks a wrap discontinuity was wrong on this point.
+2. **The engine loops between `0.026 s` and `duration − 0.026 s`** — it never plays the
+   file's first or last sample. A wrap discontinuity measured at the file's edges
+   describes a join the player never hears. 🔥 Both rounds measured the wrong points.
+3. ✅ **ComfyUI's encoder padding matches the tuned `loopStart`/`loopEndTrim = 0.026`
+   constants** — confirmed by ear: no tick at the loop point on round A7's files.
+
+---
+
+## 🔒 Licensed source tracks — Pixabay, Sep 11 2026 — the shipping plan
+
+Generation abandoned. The user selected three tracks by ear from Pixabay, all by the same
+creator (`alex-morgan`), all verified vocal-free by listening.
+
+`Ramu - The Chef/Audio/Pixabay/` — all 48 kHz stereo, ~256 kbps:
+
+| cue | file | duration | size | peak | body RMS | tempo (est.) |
+|---|---|---|---|---|---|---|
+| `bgm-menu` | `...indian-classical-raga-537491` | 274.8 s | 8.79 MB | **+0.00 dBFS** | −12.11 | 140.6 |
+| `bgm-service-high` | `...sitar-indian-instrumental-music-583288` | 195.0 s | 6.24 MB | **+0.14 dBFS** | −12.34 | 187.5 |
+| `bgm-service-low` | `...india-drums-tabla-sitar-ethnic-mood-587419` | 173.5 s | 5.55 MB | **+0.01 dBFS** | −11.23 | 130.8 |
+
+🔴 **All three fade in and out** — heads and tails measure 30–57 dB below body level, so
+looped as-is the player hears a hole every cycle. **All three are at or above full scale.**
+Total payload 20.6 MB against 1.4 MB today.
+
+#### The processing contract
+
+1. Cut an **interior window** (~60 s) with edges at body level — no intro, no outro, no rest.
+2. **Bake an equal-power crossfade (≥ 1 s) across the wrap into the file itself**, since the
+   engine does a hard loop. ⚠️ Account for the 26 ms trim at each end — the seam played is
+   `duration − 0.026` → `0.026`, not the file edges.
+3. Attenuate to peak **≤ −1.5 dBFS**, attenuation only.
+4. Resample **44.1 kHz**, encode **128 kbps CBR**, gameplay pair identical in length.
+5. Measure RMS per file → the `CUES` gain table.
+
+⚠️ The two gameplay tracks are different compositions at different tempos and will not
+beat-match at a cue switch. **Accepted; do not time-stretch.**
+
+#### 🔒 Licence position — decided by the user, Sep 12 2026
+
+Pixabay Content License, licensee **PuneetMakes**, certificates on file for two of the
+three. ✅ **The third has no certificate available; all three are the same creator on the
+same platform, and the user's decision is to treat them as the same licence.**
+
+🔴 **Correction I owe the record:** I told the user Pixabay content could be
+redistributed. **That was wrong, and they acted on it.** The licence permits use in
+projects — including commercial ones — and needs no attribution, but it restricts
+redistributing the files **as standalone assets**, and committing an `.mp3` to a public
+GitHub repository does exactly that.
+
+✅ **Resolution, costing nothing:** the three files are **gitignored**. `rundot deploy`
+ships the built `dist/`, and Vite copies `public/` into it — **git is not the delivery
+path**. The game ships identically; the public repo simply does not host the raw assets.
+The same pattern already governs `Art/` and `Audio/`.
+
+⚠️ **One operational trap for whoever performs the swap.** The three current
+`jam-entry/public/cdn-assets/bgm-*.mp3` are **already tracked by git**, and `.gitignore`
+does not untrack a tracked file. Overwriting them with the Pixabay-derived loops would
+show them as *modified tracked files* and they would be committed — redistributing them
+in the public repo, which is exactly what must not happen. ✅ **The swap must be:
+`git rm --cached` the three paths, add the ignore rule, then copy the new files in.**
+Verify afterwards with `git status` that the three mp3s appear nowhere.

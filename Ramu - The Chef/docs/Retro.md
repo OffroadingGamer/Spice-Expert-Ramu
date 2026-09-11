@@ -2445,3 +2445,38 @@ uniques are the score; the trend matters more than any single day.
     from source and briefed, the user approves, and *only then* is the commit pushed.
     Deploys keep their own separate gate — `rundot whoami` first, and `set-public` /
     `set-private` / `update-tag` never.
+96. 🔴 **`git add <paths>` does not scope a commit — the index may already hold another
+    agent's staged work.** Sep 12 2026: I staged two documentation files and committed,
+    and the commit swept in a `BuildSheet.tsx → StationRail.tsx` rename the implementation
+    agent had already staged mid-round. The commit message stated the rename had been
+    *"deliberately left untouched"*, which was then false. 🔥 **The tell was in
+    `git status`'s FIRST column: the line read `RM`, and the `R` is an *index* state, not a
+    worktree one.** I read the second column and missed the first. ✅ **Rule: when another
+    agent is working in the same repo, check whether the index is already dirty before
+    committing** — `git diff --cached --name-only` says exactly what a commit will carry,
+    and it is the only honest basis for a message claiming what was left alone. ➕ Not
+    rewritten at the time, deliberately: the fix needs `reset --soft` or `--amend`, both of
+    which touch an index another agent was actively using, and the swept change was a
+    zero-content rename on an unpushed branch. ➕ Same family as [93] — a check that looked
+    like it passed because I read the wrong field.
+97. 🔴 **A safety margin recorded as a checkpoint gets mistaken for the constraint
+    itself — and then "correcting" it deletes the margin.** Sep 12 2026, two days out, the
+    user asked whether I was accounting for time zones. I had been saying for days that
+    *"the build deadline is CP8, Sep 14 23:30 IST."* I re-derived from the jam's own page,
+    found **"submissions close September 14 at noon PT"**, converted it (September is PDT,
+    UTC−7) to **Sep 15 00:30 IST**, concluded our documents were an hour wrong, and
+    rewrote four of them. 🔥 **They were not wrong.** [Plan.md](Plan.md) defines CP8 as
+    **Sep 14, 11:00 PT** — an hour of deliberate margin before the jam's close — and
+    11:00 PT → 23:30 IST is correct. My "fix" would have silently removed the buffer while
+    presenting itself as an accuracy improvement. Caught only because a wider `grep` found
+    the same time in `Plan.md` *paired with its own PT source*, which made the arithmetic
+    checkable. ⚠️ **Two distinct errors, in opposite directions**: for days I called an
+    internal checkpoint "the deadline", which understates the time available; then I
+    treated the external deadline as the checkpoint, which would have overstated it. ✅
+    **Rule: a date is not a fact until you know *whose* date it is.** Before correcting a
+    time, find where it is defined and what it is a deadline *for* — ours or theirs — and
+    keep both, with the gap between them named as margin. ➕ The genuinely new finding
+    survived: the metric counts unique plays **from the moment you publish**, so an entry
+    already public on a weaker build is losing score every hour a better one sits private.
+    That reframes the whole endgame from "hit the deadline" to "promote as soon as it
+    verifies", and it was written nowhere.

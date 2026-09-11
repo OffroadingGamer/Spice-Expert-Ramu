@@ -1040,6 +1040,126 @@ right and something else explains the photograph (see the corner note above).
 🔴 **Sealed:** `enemies.ts`, `waves.ts`, `sim/engine.ts`, `towers.ts`. Reading `posAt` /
 `PATH_LENGTH` is not a modification. Balance must stay **35 / 34 / 6 / 4 / 90**.
 
+---
+
+### 🔒 The two deadlines — CP8 is OUR gate, not the jam's, Sep 12 2026
+
+⚠️ **These are different instants and I had been collapsing them into one.**
+
+| | Published (PT) | **IST** | What it is |
+|---|---|---|---|
+| **CP8 — final deploy verified public** | Sep 14, **11:00 PT** | **Sep 14, 23:30** | 🔒 **Ours.** [Plan.md](Plan.md) § Deadlines |
+| **Jam submissions close** | Sep 14, **12:00 PT** | **Sep 15, 00:30** | 🔴 **Theirs.** The hard stop |
+| Judging closes / scoring ends | Sep 18, 12:00 PT | Sep 19, 00:30 | 🔴 Theirs |
+
+✅ **The hour between CP8 and the jam's close is deliberate margin**, and it exists
+because shipping is not on our clock: only RUN writes the public tag, by approving
+`review`, with **no CLI to request approval** and a lead time measured at a sample of one.
+
+🔴 **I spent days telling the user "the build deadline is CP8, Sep 14 23:30 IST."** CP8 is
+not the build deadline — it is an internal checkpoint holding an hour in reserve. Then,
+asked to re-derive it from the jam's own page, I found *noon PT*, concluded the documents
+were an hour wrong, and **very nearly rewrote four accurate references** — which would have
+deleted the margin while appearing to be a correction. `Plan.md` had recorded CP8 as
+**11:00 PT** the whole time; 11:00 PT → 23:30 IST is correct arithmetic. Recorded as
+[Retro.md](Retro.md) lesson 97.
+
+#### 🔥 And the deadline is the wrong thing to optimise for anyway
+
+Quoted from the jam page: the metric is *"total unique plays per player, counted from the
+moment you publish through judging closes September 18 at noon PT"*, and — explicitly —
+**"Publishing earlier gives your entry more time on the board."**
+
+🔴 **The entry has been public at v1.42.0, the Sep 4 build, the entire time**, while every
+improvement since sits in `private`. This is not a deadline to hit; it is a race to get the
+better build in front of players. **Promote as soon as a build verifies, not when the clock
+runs out.**
+
+---
+
+### 2026-09-12 — Final round Tier 2 — returned, then REJECTED on playtest
+
+**Status:** ❌ **REJECTED** — commit `78c2be4`, private **v1.57.0**. Superseded by the
+retract round below. Tasks 1–3 all landed and verified; the *design* was wrong.
+
+✅ **Verified from source:** `DISH_GLOW_MULT` applied on both axes; `RAIL_WIDTH_UNITS = 140`
+exported from `stage.ts` and run through `getFit()`'s own scale with `Hud.tsx` consuming
+the same hook; `BOARD_SCALE` 0.80 and `offsetX = 0` inside `getFit` only. Balance
+**35 / 34 / 6 / 4 / 90**. Sealed files absent.
+
+✅ **A prediction recorded before the return, and it FAILED — marked rather than
+forgotten.** The Tier 2 entry predicted the halved cup glow might be fully occluded behind
+the 88-wide sprite. It was not: it renders as a visible tight ring. 🔥 **My size model
+said the glow was only 1.15× the cup, which never matched how large it photographed — the
+model was wrong somewhere and the failed prediction is the evidence.**
+
+🔴 **Why it was rejected:** the rail was built as a **persistent column that permanently
+reserved screen width**. Three things made it so — `StationRail.tsx` returned null only on
+`lost`/no-engine; `Hud.tsx` applied `paddingRight: railPx` unconditionally; and `getFit`
+reserved the strip via `BOARD_SCALE 0.80` + `offsetX = 0`. The user's verdict: the reserved
+area *"shouldn't exist"*, and the board *"breaks away"* — `offsetX = 0` pinned it flush to
+the left edge with no margin where it had been centred.
+
+➕ **Quantified, and it argued against the design too:** because `FIT_HEIGHT` is 1650,
+**height binds on real phones**, leaving 38 px (390×844) to 52 px (360×740) of dead space
+past the rail — 10–14% of screen width doing nothing beside a rail whose buttons measured
+38–45 px, under the ~44 px touch-target guideline.
+
+---
+
+### 2026-09-12 — Retract the rail, restore the centred board
+
+**Status:** ✅ **RETURNED, VERIFIED, DEPLOYED, ACCEPTED** — commit `183343e`, private
+**v1.58.0**. Three files: `stage.ts`, `Hud.tsx`, `StationRail.tsx`.
+
+The user's design, and it is **simpler** than what it replaced: the panel **retracts when
+not required and expands on prop placement or upgrade**, overlaying the board rather than
+reserving layout. All three tasks were reverts.
+
+| # | Task | Verified in source |
+|---|---|---|
+| 1 | `BOARD_SCALE` → **0.85**, `offsetX` → centred | ✅ `stage.ts:105`, `:124` — the exact v1.56.0 fit |
+| 2 | Panel conditional again | ✅ `StationRail.tsx:118` — `selectedPad === null` guard restored |
+| 3 | HUD padding removed | ✅ no `paddingRight`/`railPx` left in `Hud.tsx` |
+
+✅ Balance **35 / 34 / 6 / 4 / 90**. Sealed files absent. `DISH_GLOW_MULT` untouched.
+Board measured centred with equal margins (38.48/38.48 px at 390×844; 42.76/42.76 at
+360×740).
+
+🔥 **The FTUE ran end to end for the first time** — place0 → wave 1 → upgrade0 with Sell
+disabled → wave 2 → place2 with the empty-pad pulse → wave 3 → retired, zero runtime
+errors, Upgrade arrow measured on the button's own rect. That was the outstanding gap from
+two rounds running, and it is now closed.
+
+#### Verdict — ✅ **ACCEPTED**, Sep 12 2026, with one follow-up: the panel is too tall.
+
+---
+
+### 2026-09-12 📤 Panel height — content-height, vertically centred
+
+**Status:** 📤 **HANDED OVER Sep 12 2026, not yet returned.** Written at handover time.
+🔴 **Final round before the freeze.**
+
+The panel retracts correctly but **fills the entire viewport height**, leaving a large dead
+dark column between the four station cards and a `Close` button pinned to the very bottom.
+User's words: *"it retracts but it's too long."*
+
+| # | Task |
+|---|---|
+| 1 | Height **`auto`** — no `h-full`, no `inset-y-0`, no `bottom-0` stretch. |
+| 2 | **Vertically centred** on the right edge, roughly a third of the viewport tall. |
+| 3 | `Close` sits **directly beneath the content**, inside the panel. |
+| 4 | Inset from the right edge, rounded corners, background stays **opaque** (`bg-surface`). |
+| 5 | Width unchanged. |
+
+⚠️ The occupied-pad panel (Sell / Upgrade / Target) is taller than the station picker —
+auto height must hold for both, both stay centred. If content ever exceeds a short
+viewport it scrolls **inside the panel**; the page never scrolls.
+
+🔴 Sealed: `enemies.ts`, `data/waves.ts`, `sim/engine.ts`, `data/towers.ts`. Balance must
+stay **35 / 34 / 6 / 4 / 90**. `DISH_GLOW_MULT` and `BOARD_SCALE = 0.85` untouched.
+Deploy private **v1.59.0**.
+
 #### Return
 
 _Pending._
