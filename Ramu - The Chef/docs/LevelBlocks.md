@@ -307,6 +307,10 @@ stanza plus a per-block theme clause. Sources and full prompts are retained in t
 faint belt/pad-shaped ghost outlines, fixed by negative-prompting them).
 Verified: **117.6–119.5 KB each, 1,095,341 B for the nine.**
 
+🔒 **Block 9 ships VERTICALLY FLIPPED, decided Sep 11 2026.** The belt enters top-left and exits bottom-right, but the generated Overtime scene put the **serving table at the top and the spice station at the bottom** — dishes arriving where they should be served and leaving where they should be prepped. The flip puts spices at the entry and the serving pass at the exit. ⚠️ **Known and accepted cost:** the chandelier ends up at the bottom and the lighting gradient runs opposite to the other eight blocks. Regenerating from the retained prompt was offered and declined; at board scale, beneath the belt and towers, the chandelier reads as a corner fixture. **Do not 'correct' this later.** Re-derived from `bg-block-9-take1.png` with the flip applied so the JPEG is encoded once, not twice.
+
+➕ **The general point, for any future backdrop work:** all nine were generated before the generator was told where the belt enters and exits. Block 9 is only where it became visible, being the one scene with explicit entry/exit furniture.
+
 ✅ **The composition brief held** — low contrast through the belt corridor, detail at
 the edges. Measured greyscale stdev, centre band vs left edge, is lower in **all nine**
 (block 3: 21.2 vs 51.8; block 9: 33.3 vs 65.8).

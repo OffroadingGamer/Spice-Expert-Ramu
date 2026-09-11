@@ -786,9 +786,16 @@ polish round returning and being verified. **Freeze: end of Sep 13.**
 
 #### For the art agent
 
-| # | Task |
-|---|---|
-| 4 | **Regenerate block 9's backdrop** with the spice station at **top** (belt entry) and the serving pass at **bottom** (belt exit) — currently reversed. ⚠️ **Do NOT flip the existing image**: tested, and it puts the chandelier at the bottom hanging upward and inverts the lighting gradient against all eight other blocks. Amend the retained per-block theme clause, same `--seed 4471`, same pipeline. |
+✅ **Nothing — block 9 is already done.** Entry/exit were reversed (dishes arrived at the
+serving table and left at the spices). 🔒 **The user chose a vertical flip over
+regeneration, Sep 11**, and it shipped that way: re-derived from the retained
+`bg-block-9-take1.png` with the flip applied, so the JPEG is encoded once rather than
+twice (720×1280, 121,380 B, q70).
+
+⚠️ **The trade-off was measured and accepted, not missed.** A flip puts the chandelier
+at the bottom and inverts the lighting gradient against the other eight blocks. In
+isolation that reads wrong; at board scale, under the belt and towers, it reads as a
+corner light fixture. Recorded so nobody "fixes" it later as a bug.
 
 #### 🚫 Deliberately NOT in this round
 
