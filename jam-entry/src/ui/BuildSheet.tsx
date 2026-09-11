@@ -99,7 +99,12 @@ export default function BuildSheet() {
     return (
         <>
             <div className="absolute inset-x-0 bottom-0 pb-safe-bottom">
-                <div className="mx-3 mb-3 rounded-2xl bg-black/80 p-4">
+                {/* Visual round, task 5: was bg-black/80 (20% see-through) with
+                    no scrim behind it, so the belt and the D-row pads read
+                    straight through the sheet — not a z-order bug, the panel
+                    let the board through by construction. bg-surface is the
+                    same fully-opaque dark the rest of the HUD's chips use. */}
+                <div className="mx-3 mb-3 rounded-2xl bg-surface p-4">
                     {!tower ? (
                         <div className="grid grid-cols-3 gap-2">
                             {TOWERS.map((def) => {
@@ -120,7 +125,9 @@ export default function BuildSheet() {
                                         }}
                                     >
                                         {towerIcons[def.id] && (
-                                            <img src={towerIcons[def.id]} alt="" className="h-12 w-12" />
+                                            // object-contain: real prop art (Round 3) isn't square like
+                                            // the old procedural icons — never stretch it to fill the box.
+                                            <img src={towerIcons[def.id]} alt="" className="h-12 w-12 object-contain" />
                                         )}
                                         <span className="text-xl font-bold">{def.name}</span>
                                         <span className="text-[1.1rem] text-white/70 tabular-nums">🪙 {def.cost}</span>

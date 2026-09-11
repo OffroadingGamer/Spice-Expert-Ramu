@@ -11,7 +11,6 @@ import {
     Container,
     Graphics,
     Sprite,
-    TilingSprite,
     type Application,
     type FederatedPointerEvent,
     type Texture,
@@ -27,20 +26,19 @@ import { TOWERS } from './data/towers.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
 import {
     freeTexture,
-    makeBearTexture,
     makeBurrowTexture,
     makeEnemyTexture,
-    makeFoxTexture,
     makeGoldPadTexture,
     makeGlowTexture,
     makeGrassTexture,
     makeIceCubeTexture,
-    makeOwlTexture,
+    makePadGhostTexture,
+    makePadGoldGhostTexture,
     makePadTexture,
     makeProjBearTexture,
     makeProjFoxTexture,
     makeProjOwlTexture,
-    makeSquirrelTexture,
+    makeTowerLevelTextures,
 } from './textures.ts';
 import { store } from '../state/store.ts';
 import { getSave, recordRunEnd } from '../state/save.ts';
@@ -58,11 +56,19 @@ export interface Scene {
 // Same rule/pattern as kitchenScene.ts's MANIFEST_ALIASES.
 const MANIFEST_ALIASES = new Set(MANIFEST.bundles.flatMap((b) => b.assets).map((a) => a.alias as string));
 
-/** The dish-* aliases one block's enemies can render, filtered through
- *  MANIFEST_ALIASES so a not-yet-registered dish is silently skipped
- *  (falls back to the archetype silhouette, same as today) instead of
- *  throwing. */
-function dishAliasesForBlock(block: Block): string[] {
+/** This block's backdrop alias (docs/LevelBlocks.md §7). */
+function backdropAliasForBlock(blockId: number): string {
+    return `bg-block-${blockId}`;
+}
+
+/** Every asset one block needs before it can play — its enemies' dish-*
+ *  aliases AND its backdrop — filtered through MANIFEST_ALIASES so a
+ *  not-yet-registered asset is silently skipped (falls back to the
+ *  archetype silhouette / procedural backdrop, same as today) instead of
+ *  throwing. Visual round, task 1: the backdrop rides in the SAME
+ *  Assets.load() batch as the dishes (ensureBlockAssets below) — same race,
+ *  same fix, not a second mechanism. */
+function blockAssetAliases(block: Block): string[] {
     const aliases = new Set<string>();
     for (const slugs of Object.values(block.dishes)) {
         for (const slug of slugs) {
@@ -70,6 +76,8 @@ function dishAliasesForBlock(block: Block): string[] {
             if (MANIFEST_ALIASES.has(alias)) aliases.add(alias);
         }
     }
+    const bgAlias = backdropAliasForBlock(block.id);
+    if (MANIFEST_ALIASES.has(bgAlias)) aliases.add(bgAlias);
     return [...aliases];
 }
 
@@ -80,16 +88,10 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         grass: makeGrassTexture(app.renderer),
         pad: makePadTexture(app.renderer),
         padGold: makeGoldPadTexture(app.renderer),
+        padGhost: makePadGhostTexture(app.renderer),
+        padGhostGold: makePadGoldGhostTexture(app.renderer),
         burrow: makeBurrowTexture(app.renderer),
         ice: makeIceCubeTexture(app.renderer),
-        towers: {
-            fox: makeFoxTexture(app.renderer),
-            owl: makeOwlTexture(app.renderer),
-            bear: makeBearTexture(app.renderer),
-            squirrel: makeSquirrelTexture(app.renderer),
-            // ADAPT: register your new tower's texture maker here (and its
-            // projectile below, unless it is a beam tower)
-        } as Record<string, Texture>,
         // Round I Task 6: no longer a fixed 5 — every (archetype, dish) pair
         // actually spawned this run gets its own texture, built on first use
         // (see enemyTextureFor below) and cached here for the run's life.
@@ -106,6 +108,36 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             bear: makeProjBearTexture(app.renderer),
         } as Record<string, Texture>,
     };
+
+    /**
+     * Visual round, task 2 (docs/LevelBlocks.md §10): each station's three
+     * level textures, plus the on-screen (design-unit) size to render each
+     * one at — computed ONCE per station here, not per sprite, because the
+     * source art's raw pixel sizes are wildly inconsistent (e.g. the
+     * Tandoor's three tiers are 118x131 / 158x261 / 246x191). Fitting each
+     * tier independently into the 64-unit slot would make the upgrade read
+     * as a squash (tall-narrow at Lv2, short-wide at Lv3) and let Prep Board
+     * Lv1 outsize Lv2. Fix: one bounding box across the family (its largest
+     * raw dimension across all 3 tiers), one shared scale factor derived
+     * from it so that dimension exactly fills SZ.tower — every other tier
+     * scales by the SAME factor, preserving their real relative sizes
+     * instead of normalizing them away. syncTowers() anchors every sprite at
+     * the BOTTOM edge (not center) so tiers of different heights still sit
+     * on the pad consistently.
+     */
+    const towerLevelTex: Record<string, [Texture, Texture, Texture]> = {};
+    const towerDisplaySize: Record<string, [{ w: number; h: number }, { w: number; h: number }, { w: number; h: number }]> = {};
+    for (const def of TOWERS) {
+        const texes = makeTowerLevelTextures(app.renderer, def.id);
+        towerLevelTex[def.id] = texes;
+        const bboxMax = Math.max(...texes.flatMap((t) => [t.width, t.height]));
+        const factor = SZ.tower / bboxMax;
+        towerDisplaySize[def.id] = texes.map((t) => ({ w: t.width * factor, h: t.height * factor })) as [
+            { w: number; h: number },
+            { w: number; h: number },
+            { w: number; h: number },
+        ];
+    }
 
     /** Glow tier per archetype (docs/LevelBlocks.md §6a). */
     const GLOW_TIER: Record<string, 'red' | 'gold' | null> = {
@@ -165,7 +197,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         if (blockId < 1 || blockId > BLOCKS.length) return;
         if (readyBlocks.has(blockId) || loadingBlocks.has(blockId)) return;
         loadingBlocks.add(blockId);
-        const aliases = dishAliasesForBlock(BLOCKS[blockId - 1]);
+        const aliases = blockAssetAliases(BLOCKS[blockId - 1]);
         const settle = () => {
             loadingBlocks.delete(blockId);
             readyBlocks.add(blockId);
@@ -184,8 +216,69 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     }
 
     // ---- static board ------------------------------------------------------
-    const grass = new TilingSprite({ texture: tex.grass, width: stage.width, height: stage.designHeight() });
-    grass.tileScale.set(0.5);
+    // Visual round, task 1 (docs/LevelBlocks.md §7): a full-field illustrated
+    // backdrop per block, replacing the old tileable grass floor. Kept as a
+    // stack of Sprites (not one) so a block change can CROSSFADE: the
+    // incoming backdrop fades in over BACKDROP_FADE_S while the outgoing one
+    // is still visible underneath, then the old one(s) are dropped once it's
+    // fully opaque. tex.grass (still made above) is the immediate fallback —
+    // shown until the current block's real art is in Assets.cache — so the
+    // board is never a blank field while a cold cache is still loading it.
+    const BACKDROP_FADE_S = 0.5;
+    const backdropLayer = new Container();
+    const backdropSprites: Sprite[] = [];
+    let currentBackdropAlias: string | null = null;
+
+    /** Cover-fit (aspect preserved, overflow cropped) a backdrop sprite
+     *  against the full visible screen box — never contain-fit: the source
+     *  images are already the board's exact 9:16 ratio (docs/LevelBlocks.md
+     *  §7's own corrected note), so cover is what avoids letterbox bars on
+     *  a screen taller/shorter than that ratio without ever distorting it. */
+    function fitBackdropSprite(sprite: Sprite): void {
+        const dh = stage.designHeight();
+        const fullDesignW = app.screen.width / stage.scale();
+        const scale = Math.max(fullDesignW / sprite.texture.width, dh / sprite.texture.height);
+        sprite.anchor.set(0.5);
+        sprite.width = sprite.texture.width * scale;
+        sprite.height = sprite.texture.height * scale;
+        sprite.position.set(stage.width / 2, dh / 2);
+    }
+
+    const fallbackBackdrop = new Sprite(tex.grass);
+    backdropLayer.addChild(fallbackBackdrop);
+    backdropSprites.push(fallbackBackdrop);
+
+    /** Called every tick with the CURRENT block id: swaps in that block's
+     *  real backdrop (crossfading) the moment it's in Assets.cache — no
+     *  extra promise plumbing, same cache-check pattern textures.ts's art()
+     *  already uses, so this naturally recovers whenever the load finishes,
+     *  whether that's before or after the block boundary was crossed. */
+    function updateBackdrop(blockId: number): void {
+        const alias = backdropAliasForBlock(blockId);
+        if (alias === currentBackdropAlias || !Assets.cache.has(alias)) return;
+        currentBackdropAlias = alias;
+        const sprite = new Sprite(Assets.get<Texture>(alias));
+        sprite.alpha = 0;
+        fitBackdropSprite(sprite);
+        backdropLayer.addChild(sprite);
+        backdropSprites.push(sprite);
+    }
+
+    /** Advances the crossfade; once the newest backdrop is fully opaque,
+     *  every older one is dropped (they're plain Sprites over shared,
+     *  Assets-cache-owned textures — destroy() here never touches the
+     *  texture itself, see destroy() below). */
+    function fadeBackdrop(dt: number): void {
+        if (backdropSprites.length <= 1) return;
+        const top = backdropSprites[backdropSprites.length - 1];
+        top.alpha = Math.min(1, top.alpha + dt / BACKDROP_FADE_S);
+        if (top.alpha >= 1) {
+            for (let i = 0; i < backdropSprites.length - 1; i++) backdropSprites[i].destroy();
+            backdropSprites.length = 0;
+            backdropSprites.push(top);
+        }
+    }
+
     // boardRoot carries EVERYTHING gameplay-positioned. stage.ts's contain-fit
     // (FIT_HEIGHT) guarantees at least PLAYFIELD_HEIGHT units of vertical
     // room; on taller/wider-fit aspects boardRoot is offset so the extra
@@ -197,7 +290,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     const world = new Container(); // towers, enemies, projectiles (y-sorted)
     world.sortableChildren = true;
     boardRoot.addChild(board, world);
-    stage.root.addChild(grass, boardRoot);
+    stage.root.addChild(backdropLayer, boardRoot);
 
     // the bugs' road: fat rounded polyline, edge stroke first for a border
     const road = new Graphics();
@@ -221,14 +314,19 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         board.addChild(hole);
     }
 
+    // Visual round, task 4: every pad STARTS as a dotted ghost slot (gold vs
+    // plain keeps the bonus distinction alive while empty) and flips to the
+    // solid decal the instant a tower is placed there — see syncPads() below,
+    // called every tick alongside syncTowers().
+    const padViews: Sprite[] = [];
     for (const pad of CONFIG.pads) {
-        // gold stone for bonus pads, plain stone otherwise
-        const p = new Sprite(pad.bonus ? tex.padGold : tex.pad);
+        const p = new Sprite(pad.bonus ? tex.padGhostGold : tex.padGhost);
         p.anchor.set(0.5);
         p.width = SZ.pad.w;
         p.height = SZ.pad.h;
         p.position.set(pad.x, pad.y);
         board.addChild(p);
+        padViews.push(p);
     }
 
     // selection highlight + range preview for the selected pad
@@ -263,18 +361,13 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
 
     const anchorBoard = () => {
         const dh = stage.designHeight();
-        grass.height = dh;
-        // Contain-fit (stage.ts, round C) can letterbox horizontally: the
-        // content column (DESIGN_WIDTH wide, centered by stage.root's own
-        // x-offset) no longer always spans the full screen. Re-derive the
-        // grass floor's true design-unit width from the live screen/scale
-        // and recenter it around the column's own center (DESIGN_WIDTH / 2
-        // maps to screen-center regardless of scale/offset) so it covers
-        // the whole screen instead of leaving bare margins outside the
-        // column.
-        const fullDesignW = app.screen.width / stage.scale();
-        grass.width = fullDesignW;
-        grass.x = stage.width / 2 - fullDesignW / 2;
+        // Re-fit every live backdrop sprite (usually one, briefly two mid-
+        // crossfade) against the current screen box — cover-fit, so this
+        // also handles contain-fit's horizontal letterboxing (stage.ts,
+        // round C): the content column no longer always spans the full
+        // screen width, and fitBackdropSprite re-derives the true visible
+        // design-unit box from the live screen/scale on every call.
+        for (const sprite of backdropSprites) fitBackdropSprite(sprite);
         // Centre against the playfield's real extent (PLAYFIELD_HEIGHT,
         // derived from CONFIG.path — see stage.ts), not the nominal
         // CONFIG.boardHeight: boardHeight undercounts the path's actual
@@ -597,6 +690,21 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         }
     }
 
+    /** Empty pad -> dotted ghost decal; occupied pad -> the solid stone
+     *  decal (gold/plain, same distinction either way). docs/LevelBlocks.md
+     *  §9's "002" schematic: an empty slot must read unambiguously as empty
+     *  against a placed tower, which a permanently-solid decal did not. */
+    function syncPads(): void {
+        const occupied = new Set(engine.state.towers.map((t) => t.padIndex));
+        for (let i = 0; i < CONFIG.pads.length; i++) {
+            const pad = CONFIG.pads[i];
+            const want = occupied.has(i)
+                ? (pad.bonus ? tex.padGold : tex.pad)
+                : (pad.bonus ? tex.padGhostGold : tex.padGhost);
+            if (padViews[i].texture !== want) padViews[i].texture = want;
+        }
+    }
+
     function syncTowers(): void {
         // sold towers: drop their sprites
         const occupied = new Set(engine.state.towers.map((t) => t.padIndex));
@@ -611,24 +719,35 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             let node = towerViews.get(t.padIndex);
             if (!node) {
                 node = new Container();
+                // §10's per-family fit: sprite is BOTTOM-anchored (not
+                // centered) at the node's own local origin, so every tier —
+                // whatever its own height — sits on the same "foot" point
+                // instead of growing/shrinking around a shared center.
                 const shadow = new Graphics();
-                shadow.ellipse(0, SZ.tower * 0.42, SZ.tower * 0.42, SZ.tower * 0.15)
+                shadow.ellipse(0, -SZ.tower * 0.08, SZ.tower * 0.42, SZ.tower * 0.15)
                     .fill({ color: CONFIG.colors.shadow, alpha: 0.22 });
-                const sprite = new Sprite(tex.towers[t.def.id]);
-                sprite.anchor.set(0.5);
-                sprite.width = SZ.tower;
-                sprite.height = SZ.tower;
+                const sprite = new Sprite();
+                sprite.anchor.set(0.5, 1);
                 const pips = new Graphics();
-                pips.y = SZ.tower * 0.58;
+                pips.y = SZ.tower * 0.08;
                 node.addChild(shadow, sprite, pips);
-                node.position.set(t.x, t.y - 14); // tower stands on the pad
+                // Old center-anchored sprites sat with their visual bottom
+                // edge at (t.y - 14) + SZ.tower/2 — shift the node's origin
+                // there so the new bottom-anchored foot lands in the same
+                // spot the tower always has.
+                node.position.set(t.x, t.y - 14 + SZ.tower / 2);
                 node.zIndex = t.y;
                 world.addChild(node);
                 towerViews.set(t.padIndex, node);
-                towerLevels.set(t.padIndex, 0);
+                towerLevels.set(t.padIndex, 0); // forces the texture apply below on first sync
             }
             if (towerLevels.get(t.padIndex) !== t.level) {
                 towerLevels.set(t.padIndex, t.level);
+                const sprite = node.children[1] as Sprite;
+                const size = towerDisplaySize[t.def.id][t.level - 1];
+                sprite.texture = towerLevelTex[t.def.id][t.level - 1];
+                sprite.width = size.w;
+                sprite.height = size.h;
                 const pips = node.children[2] as Graphics;
                 pips.clear();
                 for (let i = 0; i < t.level; i++) {
@@ -723,6 +842,12 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             ensureBlockAssets(block.id);
             ensureBlockAssets(block.id + 1);
         }
+        // Polled every tick (not only at the boundary above) so the swap
+        // fires the instant the backdrop lands in Assets.cache, whether
+        // that's before the boundary (prefetch already warmed it — the
+        // common case) or after (a cold block 1 load, or a slow network).
+        updateBackdrop(block.id);
+        fadeBackdrop(dt);
         // Speed-up runs MORE substeps of the same dt (never one bigger step),
         // so 4x is exactly 4 seconds of identical simulation per second.
         // Drained per substep (not once after the loop) so a leak can be
@@ -752,6 +877,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         syncEnemies();
         syncProjectiles();
         syncTowers();
+        syncPads();
         drawBeams(dt);
         drawSelection();
         checkEnd();
@@ -769,14 +895,19 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             app.stage.off('pointertap', onTap);
             offResize();
             registerEngine(null);
-            grass.destroy();
+            // Sprite.destroy() (default options) never touches the texture
+            // itself — safe for both the Assets-cache-owned backdrop
+            // textures and tex.grass's generated fallback (freed below).
+            backdropLayer.destroy({ children: true });
             boardRoot.destroy({ children: true });
             freeTexture(tex.grass);
             freeTexture(tex.pad);
             freeTexture(tex.padGold);
+            freeTexture(tex.padGhost);
+            freeTexture(tex.padGhostGold);
             freeTexture(tex.burrow);
             freeTexture(tex.ice);
-            for (const t of Object.values(tex.towers)) freeTexture(t);
+            for (const texes of Object.values(towerLevelTex)) for (const t of texes) freeTexture(t);
             for (const t of tex.enemies.values()) freeTexture(t);
             freeTexture(tex.glow.red);
             freeTexture(tex.glow.gold);

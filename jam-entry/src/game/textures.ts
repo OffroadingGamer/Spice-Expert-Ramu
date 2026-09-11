@@ -11,14 +11,21 @@
  * changes anywhere else.
  *
  * Aliases (display sizes live in CONFIG.sizes; author real art at 2x them):
- *   'tower-fox' / 'tower-owl' / 'tower-bear' / 'tower-squirrel'
- *                                              the towers, front-facing
  *   'proj-fox' / 'proj-owl' / 'proj-bear'      projectiles (beams draw as lines)
  *   'fx-ice'                                   translucent cube over frozen enemies
- *   'pad'                                      stone build spot (flat 3/4 ellipse)
- *   'pad-gold'                                 bonus build spot (gold, star etched)
+ *   'pad' / 'pad-gold'                         occupied build spot (plain / bonused)
  *   'burrow'                                   hole the bugs enter/exit through
- *   'grass-tile'                               ground, must tile on BOTH axes
+ *   'grass-tile'                               fallback ground, tiles on both axes
+ *
+ * The four towers (fox/owl/bear/squirrel) are a second exception, alongside
+ * the enemies below: each draws from ITS OWN THREE per-level `prop-*`
+ * aliases (see TOWER_PROP_LEVELS and makeTowerLevelTextures), not a single
+ * fixed `tower-*` alias — Round G's tower-fox.png etc. were retired in the
+ * visual round (docs/LevelBlocks.md §10) once the stations got real
+ * per-level Kitchen Essentials art instead of one fixed silhouette.
+ * The empty-slot ghost decals ('pad'/'pad-gold's counterpart) have no art of
+ * their own — makePadGhostTexture/makePadGoldGhostTexture are always
+ * procedural, there being no ghost-slot PNG to swap in.
  *
  * The five enemies (beetle/wasp/snail/hornet/stag) are the exception: they
  * draw from the dish-* aliases already registered for the recipe game (see
@@ -92,99 +99,139 @@ export function freeTexture(tex: Texture): void {
 const T = CONFIG.sizes.tower * SS;
 
 /** Fox: orange, pointed ears, white muzzle. */
-export function makeFoxTexture(renderer: Renderer): Texture {
-    return art('tower-fox', () => gen(renderer, (g) => {
-        const w = T;
-        const h = T;
-        // ears
-        g.poly([w * 0.14, h * 0.3, w * 0.24, h * 0.02, w * 0.4, h * 0.24]).fill(C.fox);
-        g.poly([w * 0.86, h * 0.3, w * 0.76, h * 0.02, w * 0.6, h * 0.24]).fill(C.fox);
-        g.poly([w * 0.19, h * 0.24, w * 0.25, h * 0.08, w * 0.34, h * 0.22]).fill(C.foxDark);
-        g.poly([w * 0.81, h * 0.24, w * 0.75, h * 0.08, w * 0.66, h * 0.22]).fill(C.foxDark);
-        // head/body
-        g.roundRect(w * 0.08, h * 0.18, w * 0.84, h * 0.78, w * 0.3).fill(C.fox);
-        // muzzle
-        g.ellipse(w * 0.5, h * 0.68, w * 0.26, h * 0.2).fill(C.belly);
-        g.ellipse(w * 0.5, h * 0.58, w * 0.07, h * 0.05).fill(C.eyePupil);
-        // eyes
-        g.circle(w * 0.33, h * 0.46, w * 0.08).fill(C.eyeWhite);
-        g.circle(w * 0.67, h * 0.46, w * 0.08).fill(C.eyeWhite);
-        g.circle(w * 0.33, h * 0.475, w * 0.04).fill(C.eyePupil);
-        g.circle(w * 0.67, h * 0.475, w * 0.04).fill(C.eyePupil);
-    }));
+function drawFoxFallback(g: Graphics): void {
+    const w = T;
+    const h = T;
+    // ears
+    g.poly([w * 0.14, h * 0.3, w * 0.24, h * 0.02, w * 0.4, h * 0.24]).fill(C.fox);
+    g.poly([w * 0.86, h * 0.3, w * 0.76, h * 0.02, w * 0.6, h * 0.24]).fill(C.fox);
+    g.poly([w * 0.19, h * 0.24, w * 0.25, h * 0.08, w * 0.34, h * 0.22]).fill(C.foxDark);
+    g.poly([w * 0.81, h * 0.24, w * 0.75, h * 0.08, w * 0.66, h * 0.22]).fill(C.foxDark);
+    // head/body
+    g.roundRect(w * 0.08, h * 0.18, w * 0.84, h * 0.78, w * 0.3).fill(C.fox);
+    // muzzle
+    g.ellipse(w * 0.5, h * 0.68, w * 0.26, h * 0.2).fill(C.belly);
+    g.ellipse(w * 0.5, h * 0.58, w * 0.07, h * 0.05).fill(C.eyePupil);
+    // eyes
+    g.circle(w * 0.33, h * 0.46, w * 0.08).fill(C.eyeWhite);
+    g.circle(w * 0.67, h * 0.46, w * 0.08).fill(C.eyeWhite);
+    g.circle(w * 0.33, h * 0.475, w * 0.04).fill(C.eyePupil);
+    g.circle(w * 0.67, h * 0.475, w * 0.04).fill(C.eyePupil);
 }
 
 /** Owl: violet-grey, huge eyes, tufts. */
-export function makeOwlTexture(renderer: Renderer): Texture {
-    return art('tower-owl', () => gen(renderer, (g) => {
-        const w = T;
-        const h = T;
-        // tufts
-        g.poly([w * 0.2, h * 0.22, w * 0.14, h * 0.02, w * 0.36, h * 0.14]).fill(C.owlDark);
-        g.poly([w * 0.8, h * 0.22, w * 0.86, h * 0.02, w * 0.64, h * 0.14]).fill(C.owlDark);
-        // body
-        g.roundRect(w * 0.08, h * 0.1, w * 0.84, h * 0.86, w * 0.36).fill(C.owl);
-        // belly feathers
-        g.ellipse(w * 0.5, h * 0.76, w * 0.28, h * 0.18).fill(C.belly);
-        // eye discs
-        g.circle(w * 0.33, h * 0.4, w * 0.17).fill(C.belly);
-        g.circle(w * 0.67, h * 0.4, w * 0.17).fill(C.belly);
-        g.circle(w * 0.33, h * 0.4, w * 0.09).fill(C.eyePupil);
-        g.circle(w * 0.67, h * 0.4, w * 0.09).fill(C.eyePupil);
-        g.circle(w * 0.36, h * 0.37, w * 0.03).fill(C.eyeWhite);
-        g.circle(w * 0.7, h * 0.37, w * 0.03).fill(C.eyeWhite);
-        // beak
-        g.poly([w * 0.5, h * 0.48, w * 0.44, h * 0.58, w * 0.56, h * 0.58]).fill(C.wasp);
-    }));
+function drawOwlFallback(g: Graphics): void {
+    const w = T;
+    const h = T;
+    // tufts
+    g.poly([w * 0.2, h * 0.22, w * 0.14, h * 0.02, w * 0.36, h * 0.14]).fill(C.owlDark);
+    g.poly([w * 0.8, h * 0.22, w * 0.86, h * 0.02, w * 0.64, h * 0.14]).fill(C.owlDark);
+    // body
+    g.roundRect(w * 0.08, h * 0.1, w * 0.84, h * 0.86, w * 0.36).fill(C.owl);
+    // belly feathers
+    g.ellipse(w * 0.5, h * 0.76, w * 0.28, h * 0.18).fill(C.belly);
+    // eye discs
+    g.circle(w * 0.33, h * 0.4, w * 0.17).fill(C.belly);
+    g.circle(w * 0.67, h * 0.4, w * 0.17).fill(C.belly);
+    g.circle(w * 0.33, h * 0.4, w * 0.09).fill(C.eyePupil);
+    g.circle(w * 0.67, h * 0.4, w * 0.09).fill(C.eyePupil);
+    g.circle(w * 0.36, h * 0.37, w * 0.03).fill(C.eyeWhite);
+    g.circle(w * 0.7, h * 0.37, w * 0.03).fill(C.eyeWhite);
+    // beak
+    g.poly([w * 0.5, h * 0.48, w * 0.44, h * 0.58, w * 0.56, h * 0.58]).fill(C.wasp);
 }
 
 /** Bear: big, brown, round ears. */
-export function makeBearTexture(renderer: Renderer): Texture {
-    return art('tower-bear', () => gen(renderer, (g) => {
-        const w = T;
-        const h = T;
-        // ears
-        g.circle(w * 0.22, h * 0.14, w * 0.13).fill(C.bear);
-        g.circle(w * 0.78, h * 0.14, w * 0.13).fill(C.bear);
-        g.circle(w * 0.22, h * 0.14, w * 0.06).fill(C.bearDark);
-        g.circle(w * 0.78, h * 0.14, w * 0.06).fill(C.bearDark);
-        // body
-        g.roundRect(w * 0.04, h * 0.1, w * 0.92, h * 0.86, w * 0.32).fill(C.bear);
-        // muzzle
-        g.ellipse(w * 0.5, h * 0.62, w * 0.24, h * 0.18).fill(C.belly);
-        g.ellipse(w * 0.5, h * 0.55, w * 0.08, h * 0.055).fill(C.eyePupil);
-        // eyes
-        g.circle(w * 0.32, h * 0.4, w * 0.055).fill(C.eyePupil);
-        g.circle(w * 0.68, h * 0.4, w * 0.055).fill(C.eyePupil);
-    }));
+function drawBearFallback(g: Graphics): void {
+    const w = T;
+    const h = T;
+    // ears
+    g.circle(w * 0.22, h * 0.14, w * 0.13).fill(C.bear);
+    g.circle(w * 0.78, h * 0.14, w * 0.13).fill(C.bear);
+    g.circle(w * 0.22, h * 0.14, w * 0.06).fill(C.bearDark);
+    g.circle(w * 0.78, h * 0.14, w * 0.06).fill(C.bearDark);
+    // body
+    g.roundRect(w * 0.04, h * 0.1, w * 0.92, h * 0.86, w * 0.32).fill(C.bear);
+    // muzzle
+    g.ellipse(w * 0.5, h * 0.62, w * 0.24, h * 0.18).fill(C.belly);
+    g.ellipse(w * 0.5, h * 0.55, w * 0.08, h * 0.055).fill(C.eyePupil);
+    // eyes
+    g.circle(w * 0.32, h * 0.4, w * 0.055).fill(C.eyePupil);
+    g.circle(w * 0.68, h * 0.4, w * 0.055).fill(C.eyePupil);
 }
 
 /** Squirrel: russet, big tail arcing behind, tufted ears. */
-export function makeSquirrelTexture(renderer: Renderer): Texture {
-    return art('tower-squirrel', () => gen(renderer, (g) => {
-        const w = T;
-        const h = T;
-        // the tail, arcing up behind the body
-        g.ellipse(w * 0.82, h * 0.42, w * 0.2, h * 0.4).fill(C.squirrelDark);
-        g.ellipse(w * 0.78, h * 0.3, w * 0.13, h * 0.2).fill(C.squirrel);
-        // ears
-        g.poly([w * 0.18, h * 0.28, w * 0.26, h * 0.04, w * 0.38, h * 0.24]).fill(C.squirrel);
-        g.poly([w * 0.62, h * 0.24, w * 0.72, h * 0.04, w * 0.8, h * 0.26]).fill(C.squirrel);
-        // body
-        g.roundRect(w * 0.06, h * 0.18, w * 0.7, h * 0.78, w * 0.26).fill(C.squirrel);
-        // belly
-        g.ellipse(w * 0.41, h * 0.72, w * 0.22, h * 0.2).fill(C.belly);
-        // eyes
-        g.circle(w * 0.26, h * 0.42, w * 0.07).fill(C.eyeWhite);
-        g.circle(w * 0.54, h * 0.42, w * 0.07).fill(C.eyeWhite);
-        g.circle(w * 0.27, h * 0.435, w * 0.035).fill(C.eyePupil);
-        g.circle(w * 0.55, h * 0.435, w * 0.035).fill(C.eyePupil);
-        // static spark above the head
-        g.poly([
-            w * 0.46, h * 0.02, w * 0.4, h * 0.14, w * 0.46, h * 0.14,
-            w * 0.4, h * 0.26, w * 0.52, h * 0.12, w * 0.46, h * 0.12,
-        ]).fill(C.lightning);
-    }));
+function drawSquirrelFallback(g: Graphics): void {
+    const w = T;
+    const h = T;
+    // the tail, arcing up behind the body
+    g.ellipse(w * 0.82, h * 0.42, w * 0.2, h * 0.4).fill(C.squirrelDark);
+    g.ellipse(w * 0.78, h * 0.3, w * 0.13, h * 0.2).fill(C.squirrel);
+    // ears
+    g.poly([w * 0.18, h * 0.28, w * 0.26, h * 0.04, w * 0.38, h * 0.24]).fill(C.squirrel);
+    g.poly([w * 0.62, h * 0.24, w * 0.72, h * 0.04, w * 0.8, h * 0.26]).fill(C.squirrel);
+    // body
+    g.roundRect(w * 0.06, h * 0.18, w * 0.7, h * 0.78, w * 0.26).fill(C.squirrel);
+    // belly
+    g.ellipse(w * 0.41, h * 0.72, w * 0.22, h * 0.2).fill(C.belly);
+    // eyes
+    g.circle(w * 0.26, h * 0.42, w * 0.07).fill(C.eyeWhite);
+    g.circle(w * 0.54, h * 0.42, w * 0.07).fill(C.eyeWhite);
+    g.circle(w * 0.27, h * 0.435, w * 0.035).fill(C.eyePupil);
+    g.circle(w * 0.55, h * 0.435, w * 0.035).fill(C.eyePupil);
+    // static spark above the head
+    g.poly([
+        w * 0.46, h * 0.02, w * 0.4, h * 0.14, w * 0.46, h * 0.14,
+        w * 0.4, h * 0.26, w * 0.52, h * 0.12, w * 0.46, h * 0.12,
+    ]).fill(C.lightning);
+}
+
+/** Station id -> its draw function (the identical-at-every-level silhouette
+ *  used only when a station has no registered prop art at all). */
+const STATION_FALLBACK: Record<string, (g: Graphics) => void> = {
+    fox: drawFoxFallback,
+    owl: drawOwlFallback,
+    bear: drawBearFallback,
+    squirrel: drawSquirrelFallback,
+};
+
+/**
+ * Visual round, task 2 (docs/LevelBlocks.md §10): each station's three tower
+ * LEVELS are now real kitchen-prop art (Kitchen Essentials pack, already
+ * deployed for Kitchen Mode), one alias per level, replacing the single
+ * fixed tower-*.png silhouette Round G drew at every level. The mapping is
+ * set by the user, not derived: Grill/fox -> stock pot, Prep Board/owl ->
+ * pressure cooker, Tandoor/bear -> cooktop (indices 2/3/5, deliberately
+ * skipping 1 and 4), Fryer/squirrel -> fry pan (indices 2/3/4, skipping 1
+ * and 5) — §10's own table is the source of truth if this ever needs
+ * re-deriving.
+ */
+const TOWER_PROP_LEVELS: Record<string, [string, string, string]> = {
+    fox: ['prop-stock-pot-l1', 'prop-stock-pot-l2', 'prop-stock-pot-l3'],
+    owl: ['prop-pressure-cooker-l1', 'prop-pressure-cooker-l2', 'prop-pressure-cooker-l3'],
+    bear: ['prop-cooktop-l2', 'prop-cooktop-l3', 'prop-cooktop-l5'],
+    squirrel: ['prop-fry-pan-l2', 'prop-fry-pan-l3', 'prop-fry-pan-l4'],
+};
+
+/**
+ * The three level textures for one station: real prop art where the manifest
+ * has it, the ORIGINAL procedural silhouette (same drawing at all 3 levels,
+ * as before this round) as a per-texture fallback otherwise — so a missing
+ * PNG degrades one tier gracefully instead of the whole station.
+ *
+ * Deliberately returns each tier's RAW (un-square-baked) texture, unlike
+ * enemies' artSquare(): towerScene.ts needs each tier's true aspect ratio
+ * and native pixel size to compute the per-family uniform fit (§10's "fit
+ * per FAMILY, not per sprite" — the sizes are wildly inconsistent, e.g. the
+ * Tandoor's three are 118x131 / 158x261 / 246x191, and independently
+ * square-fitting each would make the Lv2->Lv3 upgrade read as a squash).
+ */
+export function makeTowerLevelTextures(renderer: Renderer, stationId: string): [Texture, Texture, Texture] {
+    const aliases = TOWER_PROP_LEVELS[stationId];
+    const fallbackDraw = STATION_FALLBACK[stationId];
+    const fallback = () => gen(renderer, (g) => fallbackDraw(g));
+    if (!aliases || !fallbackDraw) return [fallback(), fallback(), fallback()];
+    return [art(aliases[0], fallback), art(aliases[1], fallback), art(aliases[2], fallback)];
 }
 
 function bugBase(g: Graphics, w: number, h: number, body: number, dark: number): void {
@@ -347,6 +394,54 @@ export function makeGoldPadTexture(renderer: Renderer): Texture {
         g.poly(pts).fill(C.goldShine);
         g.ellipse(w * 0.34, h * 0.36, w * 0.06, h * 0.07).fill(C.goldShine);
     }));
+}
+
+/** Draws a dashed ring (no filled interior) around an ellipse — used for the
+ *  ghost/empty build-slot decals below. Pixi's Graphics has no native dash
+ *  support, so each dash is drawn as its own short polyline segment with a
+ *  gap after it. */
+function drawDashedEllipse(g: Graphics, cx: number, cy: number, rx: number, ry: number, color: number, strokeWidth: number): void {
+    const dashCount = 14;
+    const dashFraction = 0.55; // fraction of each segment that's ink, rest is gap
+    for (let i = 0; i < dashCount; i++) {
+        const a0 = (i / dashCount) * Math.PI * 2;
+        const a1 = a0 + ((Math.PI * 2) / dashCount) * dashFraction;
+        g.moveTo(cx + Math.cos(a0) * rx, cy + Math.sin(a0) * ry);
+        const steps = 3; // a few line segments per dash so the ellipse curve still reads
+        for (let s = 1; s <= steps; s++) {
+            const a = a0 + (a1 - a0) * (s / steps);
+            g.lineTo(cx + Math.cos(a) * rx, cy + Math.sin(a) * ry);
+        }
+    }
+    g.stroke({ width: strokeWidth, color, alpha: 0.9 });
+}
+
+/**
+ * Visual round, task 4 (docs/LevelBlocks.md §9's "002" schematic): an EMPTY
+ * build slot reads as a dotted outline, not a filled stone disc — the solid
+ * pad.png/pad-gold.png decal read ambiguously against a placed tower
+ * (flagged in a v1.47.0 playtest, and the same "ugly sprites... causing
+ * ambiguity" complaint the 002 schematic recorded). No ghost-slot art was
+ * delivered, so this is procedural like every other placeholder in this
+ * file. Gold vs plain keeps the bonus-pad distinction alive while empty
+ * (towerScene.ts's syncPads swaps back to the solid pad/pad-gold decal the
+ * moment a tower is placed there).
+ */
+export function makePadGhostTexture(renderer: Renderer): Texture {
+    return gen(renderer, (g) => {
+        const w = CONFIG.sizes.pad.w * SS;
+        const h = CONFIG.sizes.pad.h * SS;
+        drawDashedEllipse(g, w * 0.5, h * 0.5, w * 0.46, h * 0.4, C.pad, 3 * SS);
+    });
+}
+
+/** Gold counterpart of makePadGhostTexture, for bonused-but-empty slots. */
+export function makePadGoldGhostTexture(renderer: Renderer): Texture {
+    return gen(renderer, (g) => {
+        const w = CONFIG.sizes.pad.w * SS;
+        const h = CONFIG.sizes.pad.h * SS;
+        drawDashedEllipse(g, w * 0.5, h * 0.5, w * 0.46, h * 0.4, C.gold, 3 * SS);
+    });
 }
 
 /** Burrow: the dark hole bugs crawl out of (path start) and escape into (path end). */

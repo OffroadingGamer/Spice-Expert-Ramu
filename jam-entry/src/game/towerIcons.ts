@@ -5,26 +5,12 @@
  * tiny throwaway renderer and extract a PNG data URL. Generated
  * fire-and-forget at boot (main.tsx step 8) into store.towerIcons.
  */
-import { autoDetectRenderer, type Renderer, type Texture } from 'pixi.js';
+import { autoDetectRenderer, type Renderer } from 'pixi.js';
 import { TOWERS } from './data/towers.ts';
-import {
-    freeTexture,
-    makeBearTexture,
-    makeFoxTexture,
-    makeOwlTexture,
-    makeSquirrelTexture,
-} from './textures.ts';
+import { freeTexture, makeTowerLevelTextures } from './textures.ts';
 
-// ADAPT: register your new tower's texture maker here too, or the
-// upgrades screen shows its name without a portrait.
-const MAKERS: Record<string, (renderer: Renderer) => Texture> = {
-    fox: makeFoxTexture,
-    owl: makeOwlTexture,
-    bear: makeBearTexture,
-    squirrel: makeSquirrelTexture,
-};
-
-/** Render every tower's texture to a data URL. Never throws; may be empty. */
+/** Render every tower's LEVEL 1 texture (the build card shows the base
+ *  station, before any upgrade) to a data URL. Never throws; may be empty. */
 export async function generateTowerIcons(): Promise<Record<string, string>> {
     try {
         const renderer = (await autoDetectRenderer({
@@ -34,11 +20,9 @@ export async function generateTowerIcons(): Promise<Record<string, string>> {
         })) as Renderer;
         const icons: Record<string, string> = {};
         for (const t of TOWERS) {
-            const maker = MAKERS[t.id];
-            if (!maker) continue; // new tower type without an icon maker: no icon, no crash
-            const tex = maker(renderer);
-            icons[t.id] = await renderer.extract.base64(tex);
-            freeTexture(tex); // frees procedural placeholders; manifest art survives
+            const [level1] = makeTowerLevelTextures(renderer, t.id);
+            icons[t.id] = await renderer.extract.base64(level1);
+            freeTexture(level1); // frees procedural placeholders; manifest art survives
         }
         renderer.destroy();
         return icons;

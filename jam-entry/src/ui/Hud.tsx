@@ -22,8 +22,8 @@
  * so the two overlays never stack.
  *
  * Round A (Challenge-mode FTUE, GDD §10.11): an objective banner fires per
- * run (keyed on runId — Retry counts as a new run), and the 🚪 chip is
- * labelled.
+ * run (keyed on runId — Retry counts as a new run), and the lives chip is
+ * labelled (Round 3: relabelled again, ESCAPES LEFT — see docs/LevelBlocks.md §11).
  *
  * Round D: the FTUE is a persistent, walled script through wave 3
  * (store.ftueBeat drives the walls — see actions.ts/towerScene.ts). Two
@@ -44,6 +44,7 @@
 import { useEffect, useState } from 'react';
 import { setMusicVolume, setSfxVolume, sfx, switchCue } from '../audio/audio.ts';
 import { buyKitchenAction, getEngine, kitchenActionPrice, startWave } from '../game/actions.ts';
+import { blockForLevel } from '../game/data/blocks.ts';
 import { CONFIG } from '../game/config.ts';
 import { designToScreen } from '../game/stage.ts';
 import { setAudioVolumes } from '../state/save.ts';
@@ -175,23 +176,31 @@ export default function Hud() {
                 {/* row 1: status + hamburger */}
                 <div className="flex items-center justify-between gap-2">
                     <div className="flex min-w-0 gap-2">
-                        {/* Two opaque chips, not one translucent pill: the
-                            number the player most needs (lives) was losing
-                            to the board behind it. Lives turn red and pulse
-                            below LIVES_DANGER; motion-safe: respects
-                            prefers-reduced-motion for free. */}
+                        {/* Round 3 HUD relabel (docs/LevelBlocks.md §11): 🚪 10
+                            named nothing; ESCAPES LEFT names what a lost life
+                            IS — a customer walking out. Label stacked above
+                            the number (not inline) so the longer text stays
+                            on one line at 360px wide. Two opaque chips, not
+                            one translucent pill: the number the player most
+                            needs (lives) was losing to the board behind it.
+                            Lives turn red and pulse below LIVES_DANGER;
+                            motion-safe: respects prefers-reduced-motion. */}
                         <div
                             className={
-                                'rounded-xl px-3 py-2 text-xl font-bold tabular-nums whitespace-nowrap ' +
+                                'flex flex-col items-start rounded-xl px-3 py-1.5 leading-tight whitespace-nowrap ' +
                                 (lives <= LIVES_DANGER
                                     ? 'bg-red-900 text-red-200 motion-safe:animate-pulse'
                                     : 'bg-surface text-white')
                             }
                         >
-                            🚪 {lives}
+                            <span className="text-[0.62rem] font-bold uppercase tracking-wide opacity-80">
+                                ❤️🏃 Escapes left
+                            </span>
+                            <span className="text-xl font-bold tabular-nums">{lives}</span>
                         </div>
-                        <div className="rounded-xl bg-surface px-3 py-2 text-xl font-bold tabular-nums whitespace-nowrap text-white">
-                            💵 {coins}
+                        <div className="flex flex-col items-start rounded-xl bg-surface px-3 py-1.5 leading-tight text-white whitespace-nowrap">
+                            <span className="text-[0.62rem] font-bold uppercase tracking-wide opacity-80">💰 Cash</span>
+                            <span className="text-xl font-bold tabular-nums">{coins.toLocaleString()}</span>
                         </div>
                     </div>
                     <button
@@ -209,10 +218,20 @@ export default function Hud() {
                     </button>
                 </div>
 
-                {/* row 2: rush counter + speed, both shrink-proof */}
+                {/* row 2: wave/rush + speed, both shrink-proof. Round 3 HUD
+                    relabel (docs/LevelBlocks.md §11): WAVE and RUSH stop
+                    being the same counter — WAVE is the absolute level,
+                    RUSH is the block label (data/blocks.ts), so level 34
+                    reads "WAVE 34 / RUSH: SOUTH INDIAN". `wave` already IS
+                    the absolute level (this chip's old ternary only existed
+                    to spell "Overtime" by hand — block 9's own label already
+                    says OVERTIME, so blockForLevel needs no special case). */}
                 <div className="flex items-center justify-between gap-2">
-                    <div className="rounded-xl bg-black/55 px-3 py-1.5 text-[1.1rem] font-semibold tabular-nums whitespace-nowrap">
-                        {wave > waveCount ? `Rush ${wave} · Overtime` : `Rush ${wave}/${waveCount}`}
+                    <div className="flex flex-col items-start rounded-xl bg-black/55 px-3 py-1 leading-tight whitespace-nowrap">
+                        <span className="text-lg font-bold tabular-nums">WAVE {wave}</span>
+                        <span className="text-[0.68rem] font-semibold text-white/70">
+                            RUSH: {blockForLevel(wave).label}
+                        </span>
                     </div>
                     <div className="pointer-events-auto flex shrink-0 overflow-hidden rounded-xl bg-black/55">
                         {([1, 2, 3, 4] as const).map((s) => (
@@ -264,7 +283,7 @@ export default function Hud() {
                     onClick={() => setShowObjective(false)}
                 >
                     <p className="max-w-xs rounded-xl bg-black/70 px-4 py-2 text-center text-[1.05rem] font-semibold leading-snug">
-                        Survive {waveCount} rushes. Run out of lives (🚪) and the shift ends.
+                        Survive {waveCount} rushes. Run out of lives (❤️🏃) and the shift ends.
                     </p>
                 </div>
             )}

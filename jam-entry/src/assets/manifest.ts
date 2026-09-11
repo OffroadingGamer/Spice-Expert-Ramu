@@ -43,10 +43,27 @@ export const MANIFEST: Manifest = {
                 { alias: 'dish-rajma', src: 'images/dish-rajma.png' },
                 { alias: 'dish-beans-poriyal', src: 'images/dish-beans-poriyal.png' },
                 { alias: 'dish-ooti', src: 'images/dish-ooti.png' },
-                { alias: 'tower-fox', src: 'images/tower-fox.png' },
-                { alias: 'tower-owl', src: 'images/tower-owl.png' },
-                { alias: 'tower-bear', src: 'images/tower-bear.png' },
-                { alias: 'tower-squirrel', src: 'images/tower-squirrel.png' },
+                // Visual round, task 2 (docs/LevelBlocks.md §10): the four
+                // tower-*.png silhouettes are retired — the four stations now
+                // draw real kitchen-prop art, one alias per tower LEVEL (see
+                // textures.ts's makeTowerLevelTextures), moved here from
+                // 'deferred' for the same reason the five dish textures
+                // above were: the towers are visible from the first frame of
+                // play, so their art can't race a background load. Measured
+                // Sep 11: +31 KB net (12 props @ 285 KB in, 4 tower-*.png @
+                // 254 KB out).
+                { alias: 'prop-stock-pot-l1', src: 'images/prop-stock-pot-l1.png' },
+                { alias: 'prop-stock-pot-l2', src: 'images/prop-stock-pot-l2.png' },
+                { alias: 'prop-stock-pot-l3', src: 'images/prop-stock-pot-l3.png' },
+                { alias: 'prop-pressure-cooker-l1', src: 'images/prop-pressure-cooker-l1.png' },
+                { alias: 'prop-pressure-cooker-l2', src: 'images/prop-pressure-cooker-l2.png' },
+                { alias: 'prop-pressure-cooker-l3', src: 'images/prop-pressure-cooker-l3.png' },
+                { alias: 'prop-cooktop-l2', src: 'images/prop-cooktop-l2.png' },
+                { alias: 'prop-cooktop-l3', src: 'images/prop-cooktop-l3.png' },
+                { alias: 'prop-cooktop-l5', src: 'images/prop-cooktop-l5.png' },
+                { alias: 'prop-fry-pan-l2', src: 'images/prop-fry-pan-l2.png' },
+                { alias: 'prop-fry-pan-l3', src: 'images/prop-fry-pan-l3.png' },
+                { alias: 'prop-fry-pan-l4', src: 'images/prop-fry-pan-l4.png' },
                 { alias: 'proj-fox', src: 'images/proj-fox.png' },
                 { alias: 'proj-owl', src: 'images/proj-owl.png' },
                 { alias: 'proj-bear', src: 'images/proj-bear.png' },
@@ -116,23 +133,18 @@ export const MANIFEST: Manifest = {
                 { alias: 'prop-cast-iron-skillet-l1', src: 'images/prop-cast-iron-skillet-l1.png' },
                 { alias: 'prop-cast-iron-skillet-l2', src: 'images/prop-cast-iron-skillet-l2.png' },
                 { alias: 'prop-cooktop-l1', src: 'images/prop-cooktop-l1.png' },
-                { alias: 'prop-cooktop-l2', src: 'images/prop-cooktop-l2.png' },
-                { alias: 'prop-cooktop-l3', src: 'images/prop-cooktop-l3.png' },
+                // prop-cooktop-l2/l3/l5 moved to 'critical' (Visual round,
+                // task 2 — the Tandoor tower's three levels).
                 { alias: 'prop-cooktop-l4', src: 'images/prop-cooktop-l4.png' },
-                { alias: 'prop-cooktop-l5', src: 'images/prop-cooktop-l5.png' },
                 { alias: 'prop-dough-counter-l1', src: 'images/prop-dough-counter-l1.png' },
                 { alias: 'prop-dough-counter-l2', src: 'images/prop-dough-counter-l2.png' },
                 { alias: 'prop-dough-counter-l3', src: 'images/prop-dough-counter-l3.png' },
                 { alias: 'prop-fry-pan-l1', src: 'images/prop-fry-pan-l1.png' },
-                { alias: 'prop-fry-pan-l2', src: 'images/prop-fry-pan-l2.png' },
-                { alias: 'prop-fry-pan-l3', src: 'images/prop-fry-pan-l3.png' },
-                { alias: 'prop-fry-pan-l4', src: 'images/prop-fry-pan-l4.png' },
+                // prop-fry-pan-l2/l3/l4 moved to 'critical' (the Fryer tower's three levels).
                 { alias: 'prop-fry-pan-l5', src: 'images/prop-fry-pan-l5.png' },
                 { alias: 'prop-kettle-l2', src: 'images/prop-kettle-l2.png' },
                 { alias: 'prop-kettle-l3', src: 'images/prop-kettle-l3.png' },
-                { alias: 'prop-pressure-cooker-l1', src: 'images/prop-pressure-cooker-l1.png' },
-                { alias: 'prop-pressure-cooker-l2', src: 'images/prop-pressure-cooker-l2.png' },
-                { alias: 'prop-pressure-cooker-l3', src: 'images/prop-pressure-cooker-l3.png' },
+                // prop-pressure-cooker-l1/l2/l3 moved to 'critical' (the Prep Board tower's three levels).
                 { alias: 'prop-rice-cooker-l1', src: 'images/prop-rice-cooker-l1.png' },
                 { alias: 'prop-rice-cooker-l2', src: 'images/prop-rice-cooker-l2.png' },
                 { alias: 'prop-rice-cooker-l3', src: 'images/prop-rice-cooker-l3.png' },
@@ -147,9 +159,7 @@ export const MANIFEST: Manifest = {
                 { alias: 'prop-spice-grinder-l3', src: 'images/prop-spice-grinder-l3.png' },
                 { alias: 'prop-spice-grinder-l4', src: 'images/prop-spice-grinder-l4.png' },
                 { alias: 'prop-steam-cooktop-l1', src: 'images/prop-steam-cooktop-l1.png' },
-                { alias: 'prop-stock-pot-l1', src: 'images/prop-stock-pot-l1.png' },
-                { alias: 'prop-stock-pot-l2', src: 'images/prop-stock-pot-l2.png' },
-                { alias: 'prop-stock-pot-l3', src: 'images/prop-stock-pot-l3.png' },
+                // prop-stock-pot-l1/l2/l3 moved to 'critical' (the Grill tower's three levels).
                 { alias: 'prop-water-dispenser-l2', src: 'images/prop-water-dispenser-l2.png' },
                 // Round 26: dish trays (Art/_gen/dishes-final/), palette-
                 // quantized via sharp/imagequant (quality:40) — same
@@ -189,6 +199,23 @@ export const MANIFEST: Manifest = {
                 { alias: 'ing-cream', src: 'images/ing-cream.png' },
                 { alias: 'ing-rice', src: 'images/ing-rice.png' },
                 { alias: 'ing-ghee', src: 'images/ing-ghee.png' },
+                // Visual round, task 1 (docs/LevelBlocks.md §7): the nine
+                // Challenge Mode backdrops, 720x1280 each (~120 KB). MUST
+                // stay deferred — one promoted to critical would add ~120 KB
+                // (~25%) to first paint, paid by exactly the first-time
+                // players Daily Unique Plays counts. towerScene.ts's
+                // ensureBlockAssets loads the current+next block's backdrop
+                // in the same Assets.load() batch as that block's dishes —
+                // same race, same fix, not a second mechanism.
+                { alias: 'bg-block-1', src: 'images/bg-block-1.jpg' },
+                { alias: 'bg-block-2', src: 'images/bg-block-2.jpg' },
+                { alias: 'bg-block-3', src: 'images/bg-block-3.jpg' },
+                { alias: 'bg-block-4', src: 'images/bg-block-4.jpg' },
+                { alias: 'bg-block-5', src: 'images/bg-block-5.jpg' },
+                { alias: 'bg-block-6', src: 'images/bg-block-6.jpg' },
+                { alias: 'bg-block-7', src: 'images/bg-block-7.jpg' },
+                { alias: 'bg-block-8', src: 'images/bg-block-8.jpg' },
+                { alias: 'bg-block-9', src: 'images/bg-block-9.jpg' },
             ],
         },
     ],
