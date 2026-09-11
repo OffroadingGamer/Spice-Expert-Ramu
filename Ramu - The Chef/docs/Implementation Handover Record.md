@@ -703,3 +703,68 @@ guarantee this constant can't go stale"*. [`engine.ts:129`](../../jam-entry/src/
 disagree** — every threat number would be wrong while the simulator still printed
 `PROVEN`. This is why the Sep 11 belt-shrink proposal was answered with a render-space
 scale rather than new path coordinates: see [LevelBlocks.md](LevelBlocks.md) §7.
+
+---
+
+### 2026-09-11 — Final polish round — board scale, station renames, sprite sizes, overlaps
+
+**Status:** 📤 **HANDED OVER, not yet returned.** 🔴 **Last code change before the
+freeze (end of Sep 13).** Seven items from four playtest screenshots, audited with the
+user before dispatch.
+
+#### Decisions taken at audit
+
+| Question | Answer |
+|---|---|
+| Station naming | **Literal prop names** — Stock Pot / Pressure Cooker / Cooktop / Sauce Pot |
+| Chai & coffee size | **×2, block 1 only**, first pass; scale the rest later only if it feels right |
+| Pad–belt overlap | **Shrink the ghost ellipse** (not move pads — pad moves have a balance effect) |
+| Board scale | **0.85** |
+| 🔴 Unseal `stage.ts` | **Approved** — see below |
+
+#### 🔴 Audit findings that changed the plan
+
+1. **The board scale cannot live in `towerScene`.** `Hud.tsx:70` positions the FTUE
+   picker-beat arrow and empty-pad pulse via `designToScreen()`, which reads `getFit()`
+   in `stage.ts`. Those cues are **DOM, outside `boardRoot`** — so a scale applied only
+   to `boardRoot` desyncs them and the FTUE points at the wrong pads. ⚠️ `Hud.tsx:56`
+   records that *"a hand-rolled second copy of this formula here caused a near-miss
+   review"* in round C. ✅ **`stage.ts` unsealed for this one change**, user-approved, so
+   board and overlay keep a single transform.
+2. **"Wider Tandoor" breaks under the rename** — it names a station that would no longer
+   exist. → **"Wider Burner"**. "Bigger Basket" on a sauce pot → **"Longer Ladle"**.
+   "Sharp Knife" and "Deep Chill" stay.
+3. **×2 chai/coffee = 88 units on a 72-unit belt**, overhanging ~8 units each side.
+   Confirmed chai and coffee appear **only** in block 1, so this is block-1-only by
+   construction. Sizes are cosmetic — targeting and splash use centre points — so **no
+   balance impact**. Disclosed to the user, who chose to see it on device first.
+4. **Board scale does NOT fix the pad-on-belt look** — pads and belt are both inside
+   `boardRoot` and scale together. It *does* fix pad-vs-backdrop collision, since the
+   backdrop is a sibling layer that stays full-bleed. The user's note assumed the former;
+   corrected before dispatch.
+
+#### Tasks
+
+1. Board to **0.85**, factored into `getFit()` in `stage.ts`; re-centre both axes.
+2. Rename the four stations + two meta upgrades (`towers.ts`, **`name` fields only**).
+3. Tandoor Lv1 ×1.25 via a per-family minimum (it fills 48% of its box; others 96–100%).
+4. Chai/coffee enemy sprites ×2, per-dish not per-archetype.
+5. Ghost ellipse `0.48` → ~`0.38` of pad width.
+6. Pause overlay full-bleed.
+7. "Tap a cook to upgrade" moved clear of the Kitchen Actions row.
+
+#### Acceptance criteria
+
+1. 🔴 **FTUE plays end to end with cues landing on the correct pads at 0.85** — the one
+   that can break silently.
+2. No ghost slot visually touches the belt.
+3. Tandoor Lv1 clearly larger; upgrades still visibly grow within every station.
+4. Chai/coffee visibly larger than other blocks' dishes.
+5. No pause-overlay edge leak; toast never overlaps the actions row.
+6. `npm run balance` **unchanged: 35 / 34 / 6 / 4 / 90**.
+7. 🛑 `enemies.ts` and `waves.ts` diffs empty; `towers.ts` diff is **names only**.
+8. `SAVE_KEY` unchanged; `tsc` and `vite build` clean; deployed **private**.
+
+#### Return
+
+_Pending._
