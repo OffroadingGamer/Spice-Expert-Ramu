@@ -75,3 +75,23 @@ Ramu - The Chef/UI/
 # key in a tracked doc is a published key. Created Sep 7 2026 at the
 # user's request, deliberately outside version control.
 Ramu - The Chef/docs/private build keys.md
+
+# ── Licensed Pixabay audio: must NOT be redistributed ────────
+# Three BGM loops (alex morgan) + two SFX one-shots (grumpynora,
+# freesound_community), sourced Sep 12 from Pixabay. The Pixabay Content
+# Licence permits use *inside* a game but not redistribution of the files
+# standalone -- and this repo is PUBLIC, which is exactly that. User's
+# position, Sep 12: the third BGM track has no licence file of its own, but
+# all three come from the same artist on the same platform, so they are
+# treated as the same licence.
+#
+# These are therefore the first files under jam-entry/public/ deliberately
+# left untracked. `rundot deploy` ships dist/, which Vite builds from the
+# local public/ folder, so git was never the delivery path. A fresh clone
+# builds and runs; it just boots silent until these are restored from
+# Ramu - The Chef/Audio/_gen/music-pixabay-final/ and /sfx-pixabay-final/.
+jam-entry/public/cdn-assets/bgm-menu.mp3
+jam-entry/public/cdn-assets/bgm-service-low.mp3
+jam-entry/public/cdn-assets/bgm-service-high.mp3
+jam-entry/public/audio/wave-clear-bell.mp3
+jam-entry/public/audio/bombay-transition.mp3
