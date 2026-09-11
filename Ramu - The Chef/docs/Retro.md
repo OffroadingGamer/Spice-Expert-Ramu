@@ -2385,3 +2385,63 @@ uniques are the score; the trend matters more than any single day.
     in Round I specifically to clear 180 units for that rail, so the empty strip was
     visibly unbalancing the board for two rounds while the thing meant to fill it sat
     marked "dropped".
+92. 🔴 **A conditional hold expires when its condition is met — re-check it then, not
+    when someone happens to ask.** Sep 11 2026: the user held two items *"until the
+    current round returns."* That round returned and was accepted. The glow, held in the
+    same sentence, was carried forward into the next handover; the **bumping separation
+    was left sitting in a "held" list** and was recovered only because the user asked
+    *"does the above handover have everything I mentioned?"* 🔥 **The tell: two items
+    held by a single sentence ended up in two different states.** Nothing cancelled the
+    second one — it simply was not looked at again, because nothing in my process said to
+    look. ✅ **Rule: when a hold's condition is met, sweep the held list as an explicit
+    step, before drafting whatever comes next.** A hold is a deferral with a trigger, and
+    the trigger firing is my event to notice, not the user's to remind me of. ➕ Same
+    family as [91]: held, handed back, and cancelled are three different states, and
+    drift between them is always silent.
+93. 🔴 **A check whose failure mode is silent success is not a check.** Sep 11 2026,
+    verifying the final round: `git diff <commit> -- jam-entry/src/game/sim/engine.ts`
+    returned **0 lines**, and I read that as *"sealed file untouched."* It returned zero
+    because the **pathspec matched nothing** — `jam-entry/` is a **sibling** of
+    `Ramu - The Chef` at the repository root, not a child of it, and the repo root is the
+    parent `September GameJam` folder. It happened **twice in the same session**, on the
+    single criterion that mattered most. 🔥 **The tell: a passing result that is
+    byte-identical to an unrun one.** Zero diff lines, an empty grep, "no matches found"
+    — each reads as *clean*, and each is also exactly what a misaddressed query returns.
+    ✅ **Rule: before trusting a check that passes by returning nothing, prove it can
+    return something** — run it against a known positive control. ➕ Applying this the
+    same day is what made the music-sidecar scan trustworthy: the identical grep pulled
+    the UserId out of an art sidecar, so the empty result on the music sidecars carried
+    real information. ➕ The sealed-file zeros finally reported came from the
+    **changed-file list** instead, which cannot fail this way.
+94. 🔴 **A proxy that does not capture the goal will actively select *against* the goal
+    — third recurrence of the same pattern.** Sep 11 2026: the music brief asked for an
+    inaudible loop seam, and the audio agent measured seam quality as **RMS in a 5 ms
+    window at each edge**. 🔥 **Silence scores perfectly on that proxy.** The delivered
+    tracks faded to literal silence at both ends — roughly four seconds of dead air at the
+    head and several more at the tail, every loop — and the measurement pronounced them
+    clean. Worse, it **rejected the take that was right**: `service_high`'s first attempt
+    ended *live* at −31.6 dBFS, which is what a correct loop sounds like, and was
+    discarded for exactly that. The user found it by listening, in seconds. ⚠️ **The
+    prompt was mine** — it asked the generator to ease "toward a hush so the very last
+    moment is quiet", so the brief and the metric agreed with each other and both were
+    wrong. ⚠️ Round J proved *"strictly increasing threat"* on a `waveThreat` that
+    hardcodes `speedMult = 1`, excluding the lever doing the work; Round H before it
+    proved the same property with HP scaling deleted. ✅ **Rule: before accepting a proxy,
+    ask what a perfect score on it would look like.** If the answer is a degenerate
+    artefact — silence, an empty belt, a wave with no enemies — the proxy is measuring the
+    wrong thing, and no amount of tuning against it will recover the goal.
+95. 🔴 **A standing instruction that lives only in chat is one compaction away from
+    gone.** Sep 11 2026 the user set a push cadence — **push on approval of a round's
+    return handover, not on its arrival** — and it was written into no document at all; a
+    `grep` across `docs/*.md` found only an unrelated line about `git push` being
+    irreversible. It survived solely because it was restated by hand in a compaction note.
+    ⚠️ **Three further rules were in the same position at the same moment** — the ones now
+    recorded as [92], [93] and [94] — all surfaced by the audit that *"prepare to compact"*
+    and *"write a handover"* trigger. 🔥 **The tell: I can state a rule confidently and
+    cannot cite a file for it.** ✅ **Rule: when the user sets a standing instruction,
+    write it down in the same turn.** The compaction audit is a safety net, not the
+    mechanism — relying on it means every rule set between audits is running on memory.
+    ➕ **The cadence itself, recorded here so it has a home:** a round's return is verified
+    from source and briefed, the user approves, and *only then* is the commit pushed.
+    Deploys keep their own separate gate — `rundot whoami` first, and `set-public` /
+    `set-private` / `update-tag` never.
