@@ -15,11 +15,12 @@
  * Every edge uses px-3 plus safe-area padding: nothing touches a screen
  * edge, and the speed row shrinks rather than overflowing.
  *
- * Final round Tier 2, task 2: StationRail.tsx (was BuildSheet.tsx, a bottom
- * sheet) is now a PERSISTENT right-edge rail, so this whole HUD's own
- * content is padded clear of it — useRailWidthPx() (exported from
- * StationRail.tsx, backed by stage.ts's getFit()) sizes that padding, so it
- * tracks the same board scale the rail itself is sized against.
+ * StationRail.tsx (was BuildSheet.tsx, a bottom sheet) is a right-edge
+ * panel that overlays the board only while a pad is selected — it mounts
+ * nothing and claims no screen space otherwise, so this HUD needs no
+ * clearance padding for it. Ready! and the rail can't overlap because
+ * they're mutually exclusive on the same selectedPad flag: Ready shows
+ * only while selectedPad is null, which is exactly when the rail unmounts.
  *
  * The hamburger opens the shift menu, which pauses the run (store.paused
  * stops the Pixi ticker) and offers continuous music/sound sliders plus
@@ -55,7 +56,6 @@ import { designToScreen } from '../game/stage.ts';
 import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import Slider from './Slider.tsx';
-import { useRailWidthPx } from './StationRail.tsx';
 
 /** Live screen positions of a set of pads, tracking the canvas's own
  *  contain-fit + board-centering transform — stage.ts's designToScreen() is
@@ -175,10 +175,9 @@ export default function Hud() {
 
     const openMenu = () => { sfx.click(); store.patch({ paused: true }); setMenuOpen(true); };
     const closeMenu = () => { sfx.click(); store.patch({ paused: false }); setMenuOpen(false); };
-    const railPx = useRailWidthPx();
 
     return (
-        <div className="pointer-events-none absolute inset-0 pt-safe-top" style={{ paddingRight: railPx || undefined }}>
+        <div className="pointer-events-none absolute inset-0 pt-safe-top">
             <div className="flex flex-col gap-2 px-3">
                 {/* row 1: status + hamburger */}
                 <div className="flex items-center justify-between gap-2">

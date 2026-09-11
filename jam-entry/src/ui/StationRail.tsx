@@ -1,23 +1,24 @@
 /**
- * Final round Tier 2, task 2: right-edge rail for the selected pad —
- * replaces BuildSheet.tsx's bottom sheet. Same two jobs, same engine calls,
- * relocated: pick a tower for an empty pad, or manage the one standing
- * there (upgrade, sell with confirmation, Target row). Engine state is read
- * synchronously via actions.getEngine(); re-renders ride on store changes
- * (coins, selection, padVersion). Selling keeps the pad selected, so the
- * rail flips straight back to build options.
+ * Right-edge rail for the selected pad — replaces BuildSheet.tsx's bottom
+ * sheet. Same two jobs, same engine calls, relocated: pick a tower for an
+ * empty pad, or manage the one standing there (upgrade, sell with
+ * confirmation, Target row). Engine state is read synchronously via
+ * actions.getEngine(); re-renders ride on store changes (coins, selection,
+ * padVersion). Selling keeps the pad selected, so the rail flips straight
+ * back to build options.
  *
- * "Persistent": the rail's own panel renders whenever tdPhase isn't 'lost',
- * whether or not a pad is selected — task 3's board re-anchor freed this
- * strip specifically so it reads as a fixed part of the screen, not a modal
- * that pops up over the board. With nothing selected it's just empty (the
- * "reserved strip" the handover already calls the accepted normal look).
+ * Retractable, not persistent: the rail renders nothing (returns null)
+ * while no pad is selected. A first attempt made this panel a permanent
+ * fixture that reserved a strip of screen width even when empty — reverted
+ * in the final round because that reservation had no purpose to serve most
+ * of the time. Selecting a pad now overlays the panel on the right edge of
+ * the board (absolutely positioned, above the canvas, outside layout flow)
+ * instead of occupying space the board had to shrink to make room for.
  *
- * Width: RAIL_WIDTH_UNITS (stage.ts) run through getFit()'s own scale, via
- * useRailWidthPx() below — the same design-unit system as everything else
- * getFit() governs, so the rail grows/shrinks with the board instead of
- * being a second, independently guessed number. Hud.tsx imports the same
- * hook to pad its own content clear of the rail.
+ * Width: RAIL_WIDTH_UNITS (stage.ts) is this panel's own overlay width in
+ * design units, run through getFit()'s own scale via useRailWidthPx()
+ * below — it no longer feeds getFit() itself, since the board doesn't
+ * reserve space for it.
  *
  * Round D (FTUE walls, GDD §10.11): Close is hidden for the duration of a
  * forced beat (store.ftueBeat !== null — actions.ts is the real gate, this
@@ -36,11 +37,10 @@ import { TARGETING_DESCRIPTIONS, TARGETING_LABELS, TARGETING_MODES } from '../ga
 import { TOWERS } from '../game/data/towers.ts';
 import { store, useStore } from '../state/store.ts';
 
-/** Final round Tier 2, task 2: the rail's own width in CSS px, tracking
- *  #app-frame's size the same way Hud.tsx's usePadsScreenPos does — read by
- *  both StationRail.tsx (its own width) and Hud.tsx (clearance padding), so
- *  there is exactly one place this arithmetic happens. */
-export function useRailWidthPx(): number {
+/** The rail's own overlay width in CSS px, tracking #app-frame's size the
+ *  same way Hud.tsx's usePadsScreenPos does. Only StationRail.tsx itself
+ *  needs this now — the board no longer reserves layout space for it. */
+function useRailWidthPx(): number {
     const [px, setPx] = useState(0);
     useEffect(() => {
         const frame = document.getElementById('app-frame');
@@ -115,7 +115,7 @@ export default function StationRail() {
         return () => window.removeEventListener('resize', compute);
     }, [showUpgradeArrow, tower?.level]);
 
-    if (tdPhase === 'lost' || !engine) return null;
+    if (selectedPad === null || tdPhase === 'lost' || !engine) return null;
 
     const refund = tower ? Math.floor(tower.spent * CONFIG.economy.sellRefund) : 0;
 
@@ -127,9 +127,9 @@ export default function StationRail() {
             >
                 {/* Visual round, task 5 (carried from the old sheet): opaque
                     bg-surface, not a see-through tint — the belt and D-row
-                    pads must not read straight through the panel. Persistent
-                    per this task's own framing: the panel renders whether or
-                    not a pad is selected, reserving the strip at all times. */}
+                    pads must not read straight through the panel. Only
+                    mounted while a pad is selected (the guard above), so
+                    this overlays the board rather than sitting empty. */}
                 <div className="pointer-events-auto flex h-full flex-col gap-1.5 overflow-y-auto bg-surface px-1.5 pt-safe-top pb-safe-bottom">
                     {selectedPad !== null && !tower && (
                         <div className="flex flex-col gap-1.5 pt-1">
