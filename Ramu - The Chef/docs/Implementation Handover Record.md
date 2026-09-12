@@ -1270,6 +1270,95 @@ length — the tail rings out under the resumed BGM. Both durations are named co
 Balance must stay **35 / 34 / 6 / 4 / 90**; `BOARD_SCALE 0.85` and `DISH_GLOW_MULT`
 untouched.
 
+#### Return — v1.60.0, Sep 12 2026 — ⚠️ ACCEPTED WITH TWO REGRESSIONS
+
+Commit `a507e51`, 10 files. All four tasks landed and the agent reported honestly, including
+two bugs it found and fixed while wiring task 1 (an `!!engine` effect-deps omission that made
+the arrow never appear on a fresh run's first render, and a 68 px drift once `towerIcons`
+resolved async — fixed with a `ResizeObserver`, matching `useRailWidthPx`'s own precedent).
+
+✅ **Verified from source:** sealed files absent from the changed-file list (control:
+10 files); balance **35 / 34 / 6 / 4 / 90**; `tsc` exit 0; `BOARD_SCALE 0.85` and
+`DISH_GLOW_MULT` untouched; `__verify_hooks.ts` scaffold cleaned up by the agent itself.
+The backdrop trigger was checked **in the code, not the commit message**: `trackedBlockId`
+starts at 0, `priorBlockId > 0` excludes the game-start swap, and `Assets.cache.has()` is
+tested **at the boundary tick**, held apart from the per-tick poll that performs the
+crossfade — so a late load cannot retroactively qualify. The Ready lock is a **real gate**
+(`actions.ts:224` early-returns), not just a `disabled` attribute.
+
+#### 🔴 The playtest found two regressions the harness could not
+
+| # | Finding | Outcome |
+|---|---|---|
+| 1 | **No FTUE arrow at all** — `place0` *and* `upgrade0`, on the deployed build | 🔴 still open, see v1.61.0 |
+| 4 | **Music: menu track carried into gameplay**; FTUE played the synth, not a cue | ✅ fixed in v1.61.0 |
+
+🔥 **Finding 4's root cause, found by reading rather than guessing.** `fetchCueBuffer`
+stored its in-flight promise in `cueFetches` and **never removed it when that promise
+resolved `null`** — so one failed fetch poisoned that cue for the whole session. The new
+boot flow then *systematically caused* that first failure: `registerEngine()` called
+`switchCue('service_low')` at mount, **before any user gesture**, when `ctx` was still null.
+One defect explained all three of the user's observations exactly — synth during FTUE
+(service_low poisoned), correct menu track (fresh id, `ctx` now exists), and the menu track
+continuing into Challenge Mode (cached null promise returned, so no switch happened). A
+second, independent blocker sat behind it: `switchCue` assigns `activeCue = id` *before*
+fetching, so the unlock handler's own call hit `if (activeCue === id) return` and could never
+recover it.
+
+⚠️ **The new BGM had therefore never actually played in-game** at the point the user
+approved it — the approval was on the files and on the menu cue only.
+
+---
+
+### 2026-09-12 — Delivered audio wired; two regressions, coin popups, burrow holes
+
+**Status:** ✅ **RETURNED, VERIFIED, SOUND-CHECKED** — commit `1816ef1`, private **v1.61.0**.
+Four files, +200/−17.
+
+| # | Task | Outcome |
+|---|---|---|
+| 1 | Wire all five delivered audio entries | ✅ — confirmed by ear |
+| 2 | 🔴 Music never switches back to gameplay | ✅ — confirmed by ear |
+| 3 | 🔴 FTUE arrow missing | ⚠️ **NOT REPRODUCED; instrumented instead** |
+| 4 | Coin popup per kill | ✅ |
+| 5 | Entry/exit holes enlarged | ✅ |
+
+✅ **Verified from source:** sealed clean (control: 4 files); balance **35 / 34 / 6 / 4 / 90**;
+`tsc` exit 0. Both music defects genuinely closed —
+`p.then((buffer) => { if (!buffer) cueFetches.delete(id); })` stops the poisoning, and
+`if (isAudioUnlocked()) switchCue('service_low')` stops causing it. ➕ The assumption the
+second fix rests on was checked rather than taken on trust: `ctx` is only ever created
+inside `ensureCtx()`, which is called from the unlock handler, so `isAudioUnlocked()` is
+genuinely false before the first gesture.
+
+✅ **The leak exclusion is stricter than the handover asked for**, and right:
+`if (leakCount !== 0 || missing.length !== deathCount) return;` — it credits **nothing** when
+any leak occurred in the substep, or when the missing-uid count doesn't exactly match the
+death count. It errs toward showing nothing over showing something wrong. ⚠️ Trade-off: a
+kill coinciding with a leak in one frame shows no popup. Correct direction.
+
+✅ **The burrow was sized from measurement:** a round line cap extends the stroke half its
+width past each endpoint, `(pathWidth + 14) / 2 = 43` units, against the old hole's 32 — an
+11-unit protrusion at both ends. Height `86`, width `147.8`, original aspect preserved.
+
+#### ✅ Sound check PASSED — Sep 12 2026
+
+User, on device: *"All BGMs are smoothly transitioned. SFX works properly as well."* This is
+the acceptance that could not be reached from any agent environment, and it closes the audio
+thread that began at round A4 — see [AudioGenPrompts.md](AudioGenPrompts.md).
+
+#### 🔴 BLOCKER — debug instrumentation must be stripped before the `review` tag
+
+`StationRail.tsx`'s `logArrow()` calls `RundotGameAPI.log()` **and** `console.log()` on every
+effect run, **ungated** — no `import.meta.env.DEV`, no debug flag. Correct for a private
+diagnostic build; unacceptable in a shipped one, where every player's FTUE would write into
+RUN's host-side support log and any judge opening devtools sees `[ftue-arrow]` spam. It leaks
+nothing sensitive — this is noise and polish, not security.
+
+🔥 **Consequence for the endgame: v1.61.0 cannot be the promoted build.** Either the
+arrow log reveals the cause and one round fixes it *and* strips the logging, or the arrow
+behaves on device and a one-line strip is the only thing between this and `review`.
+
 #### Return
 
-_Pending._
+_Pending — arrow status on device._

@@ -2512,3 +2512,22 @@ uniques are the score; the trend matters more than any single day.
     target failure invalidates them.** ➕ Cheap and general: mono-sum every stereo asset and
     compare; it is one line and it catches phase problems that no level, spectral or seam
     metric can see.
+
+100. ✅ **"I could not reproduce it" is a finding, not a failure — and a bug report that
+     survives a passing test indicts the test.** Sep 12 2026, the FTUE arrow was reported
+     missing on the deployed build for both beats. The previous round had verified that
+     exact feature "live" and passed. 🔥 **The verification was structurally incapable of
+     seeing the bug:** it ran against `vite dev`, whose React build carries StrictMode's
+     double-effect behaviour, not the `react.production.min.js` the RUN host actually
+     serves. The agent that found this refused to declare a fix from an environment that
+     had already failed to reproduce the report, left the code untouched, and shipped
+     **permanent instrumentation** so the next real-device run would answer the question
+     instead of another desktop guess. ✅ **That was the right call**, and worth saying
+     plainly, because the tempting move — change something, re-run the same passing test,
+     report it fixed — would have burned a round and taught us nothing. ⚠️ **Rule: when a
+     field report contradicts a passing check, the first suspect is the check's
+     environment, not the report.** 🔴 **The cost to watch:** instrumentation left in must
+     be gated (`import.meta.env.DEV`, a debug flag) or it ships — this one calls
+     `RundotGameAPI.log()` on every effect run with no gate, which is fine in a private
+     build and unacceptable in a public one. Diagnostic scaffolding is a deliberate
+     temporary debt; write down when it must be paid.

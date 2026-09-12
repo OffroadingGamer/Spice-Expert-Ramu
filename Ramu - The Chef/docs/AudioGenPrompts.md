@@ -368,3 +368,35 @@ to be assumed away.
 is **public**. Verified: `jam-entry/public/audio/` is **tracked, not ignored**, so ignore
 rules are needed before either file lands there — the same trap as the three `bgm-*.mp3`.
 `rundot deploy` ships `dist/`, so git was never the delivery path.
+---
+
+## ✅ AUDIO THREAD CLOSED — 2026-09-12
+
+**User, on device, after v1.61.0:** *"Sound check passed. All BGMs are smoothly transitioned.
+SFX works properly as well."*
+
+Shipping: three 60 s Pixabay loops at gains **1.125 / 1.000 / 1.162**, a service-bell
+wave-clear cue, and a map-transition sting. All five files gitignored under
+`jam-entry/public/`, placed from `Audio/_gen/` — `rundot deploy` ships `dist/`, so git was
+never the delivery path.
+
+### What this arc cost, and what it taught
+
+| Round | Route | Outcome |
+|---|---|---|
+| A4 | `rundot generate music` | ❌ dead air — **my prompt asked for a "hush"**, and the seam metric *rewarded silence* |
+| A5 | ComfyUI / MiniMax Music 3 | ❌ "crowded and jumpy" — **my prompt** asked for six layers and a "pronounced" pump |
+| A6 | ComfyUI, corrected prompt | ❌ vocals |
+| A7 | ComfyUI, 2×2 vocal probe | ❌ vocals again — verdict: **MiniMax Music 3 unusable for instrumental BGM** |
+| Pixabay | licensed human recordings | ✅ **shipped** |
+
+🔥 **Four rounds passed their measurements and failed on listening.** Every one. The
+metrics were real and the analysis was sound; none of it could hear a voice. ✅ The lesson
+that actually generalises is not "our metrics were wrong" — it is that **for anything whose
+acceptance is perceptual, measurement narrows the field and a human closes it**, and the
+schedule has to budget for the human step rather than treat it as a formality.
+
+➕ Two findings outlive the arc, both still true of `audio.ts`:
+`fadeSeconds` covers cue *switching* only and never the loop seam, and the engine loops
+between `0.026 s` and `duration − 0.026 s`, so it never plays the file's first or last
+sample — which is why the loop cut had to be measured with that trim already applied.
