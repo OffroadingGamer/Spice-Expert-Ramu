@@ -1359,6 +1359,245 @@ nothing sensitive — this is noise and polish, not security.
 arrow log reveals the cause and one round fixes it *and* strips the logging, or the arrow
 behaves on device and a one-line strip is the only thing between this and `review`.
 
-#### Return
+#### Return — ❌ the arrow was still missing on device
 
-_Pending — arrow status on device._
+The instrumentation round did its job: it proved the arrow was not the only thing wrong.
+The playtest that followed found a **second, fatal symptom of the same underlying defect**
+— returning to the main menu and starting Challenge Mode left the player unable to select
+any prop. See v1.62.0 below.
+
+---
+
+### 2026-09-13 — v1.62.0 🔴 BLOCKER: engine readiness was not store state
+
+**Status:** ✅ **FIXED AT THE ROOT**, commit `763899b`.
+
+**Repro:** cold boot → FTUE → **place nothing** → Main Menu → Challenge Mode → the station
+rail never appears. Unplayable. ⚠️ Placing a tower first *hid* the bug, which is what made
+it look intermittent.
+
+🔥 **Mechanism.** `StationRail` read the engine via `getEngine()` — a plain module call,
+**not a store subscription** — and gated its entire render on it. `createPixiApp` is
+`async`, so `registerEngine()` **always** lands after the first render; the first render
+therefore always returned `null`. Recovery depended on a later re-render, which requires a
+**subscribed value to actually change**, because `useStore` is `useSyncExternalStore` and
+bails on `Object.is`-equal snapshots. On the no-placement Menu → Challenge path,
+`coins`/`lives`/`wave`/`tdPhase`/`selectedPad` were **all already at the values the new run
+re-establishes**, so `syncStore()`'s diff guard failed, nothing was patched, and the
+component never re-rendered. Placing a tower first spent coins — which made `coins` differ,
+which forced a re-render, which fixed it by accident.
+
+✅ **Fix:** `store.engineReady`, patched in `registerEngine()` and nowhere else. ➕ The
+subtlety that matters, and that the implementing agent called out unprompted: it is patched
+**unconditionally on BOTH registration and teardown**. The teardown half is what guarantees
+the next registration is a genuine `false → true` transition rather than a no-op re-patch of
+an already-true value that a freshly mounted component would never observe.
+
+⚠️ A second non-reactive `getEngine()` render-path read was found in `Hud.tsx`'s Kitchen
+Actions row by the requested audit — not the reported repro, same latent class, fixed too.
+
+---
+
+### 2026-09-13 — v1.63.0 — the arrow, by deletion; and music ducking
+
+**Status:** ✅ **ACCEPTED**, commit `8c9920d`.
+
+🔥 **The FTUE arrow was fixed by deleting the approach, not debugging it.** Three rounds
+had failed on device using `getBoundingClientRect()` → viewport coords → `position: fixed`
+→ `ResizeObserver`. The user's own reframing — *a sideways arrow pointing at the panel* —
+made the measuring unnecessary: the arrow is now laid out **inside the rail panel's own box**
+(`absolute`, `right-full`), so nothing measures anything and there is nothing to go stale,
+land off-screen, or be clipped. ✅ **Confirmed working on device at all three beats** after
+three consecutive failures. The lesson generalises: when a positioning bug survives three
+fixes, the positioning *strategy* is the bug.
+
+✅ **Music ducking** under the transition sting: a dedicated `duckGain` node between every
+music source and `musicBus`. `musicBus` stays the volume-slider master, so the duck and the
+slider multiply independently and cannot fight — which the literal "measure the current
+volume and restore it" approach would have done the moment a player moved the slider
+mid-duck. The envelope is scheduled up front and **self-restoring**, and `resetMusicDuck()`
+runs at both run start and scene destroy, so it can never latch ducked.
+
+⚠️ The agent could not verify the audible curve: headless Chrome's `AudioContext` never
+leaves `suspended` and `currentTime` stays frozen at 0, so scheduled ramps never execute.
+It verified call ordering instead and said which was which. Confirmed by ear by the user.
+
+---
+
+### 2026-09-13 — v1.64.0 — sting level, and what `set-keywords` actually does
+
+**Status:** ✅ **ACCEPTED**, commits `df66c31` (gain) + `f047888` (keywords config).
+
+Sting gain **0.5 → 0.75** (the top of the user's 1.25–1.5× range). Chosen at the top on
+purpose: the failure mode is asymmetric — too quiet means it still cannot be heard and costs
+another deploy cycle, too loud is merely less pleasant and is the same one-line change back.
+Headroom checked through the whole chain rather than assumed: the file peaks at
+**−3.148 dBFS**, so with `SFX_BASE 0.6` at maximum slider the output peaks at
+**−10.08 dBFS**. Nothing in 0.5–0.75 approaches full scale.
+
+🔴 **`rundot game set-keywords` does not write to the server.** It edits
+`jam-entry/game.config.prod.json`, and the **deploy's own "Syncing keywords" step** is what
+ships it. Reading the server back showed `Keywords:` empty through several attempts — the
+value was on disk the whole time. ⚠️ Two consequences worth keeping:
+
+1. It mutates a **tracked file**. Git still held `"keywords": null`, so a deploy from a clean
+   checkout would have silently wiped all eight. It must be committed.
+2. The CLI's success echo proves only that it parsed the input, not that anything persisted
+   — a check whose failure mode is silent success ([Retro.md](Retro.md) lesson 93 again).
+
+Keywords now live: `tower-defense, cooking, chef, kitchen, indian, strategy, cozy,
+back-to-work`.
+
+---
+
+### 2026-09-13 — v1.65.0 — three mobile-only layout defects
+
+**Status:** ✅ **ACCEPTED**, commit `ee6e291`.
+
+All three only appeared on an iPhone, never in desktop emulation, and they shared a cause:
+**HUD elements are sized in fixed CSS units while the board scales via `getFit()`.** The PC
+screenshots were taken at a ~739 CSS px viewport and the phone is ~403 — so the same fixed
+sizing is proportionally ~1.8× larger against the same board.
+
+🔥 **The Ready/Kitchen-Actions overlap had an exact, nameable cause.** The actions row was
+`bottom-0 pb-safe-bottom`, i.e. `padding-bottom: calc(0.5rem + env(safe-area-inset-bottom))`.
+On a device with a home indicator that inset is **~34px**, so the row's *content* sits 34px
+higher than in any desktop test. Ready sat at `bottom-16` with **no safe-area handling** and
+did not move. The previous round had measured a **16.0px** gap at 390×844 — in a desktop
+browser, where that inset is **0**. 16 − 34 = **−18px**. ⚠️ And Ready rendered later in the
+DOM, so it painted on top: the Kitchen Actions were **partially untappable on iPhone**, a
+functional loss of the coin sink, not merely an ugly overlap.
+
+✅ **Fixed structurally, not with another number.** Ready, the Kitchen Actions row and the
+wave-4 toast are now **one bottom-anchored flex column** with `gap-2` and `pb-safe-bottom`
+applied exactly once. They are flex siblings, so they stack — overlap is impossible at any
+viewport, inset or text scale. That pair had collided **three times** under independent
+anchors. The container is `pointer-events-none` with `pointer-events-auto` on exactly the two
+interactive children, so gaps do not swallow board taps.
+
+Also: the wave-4 toast got `z-20` against the pad pulses' `z-10` (same parent, so an
+unambiguous comparison), and the rail's `Upgrade`/`Sell`/`Max` labels got `text-center`,
+`px-1` and a smaller size.
+
+---
+
+### 2026-09-13 — v1.66.0 🔴 BLOCKER: mobile cold boot rendered no game
+
+**Status:** ✅ **FIXED**, commit `5d67bfb`. Confirmed on device by the user.
+
+**Repro:** open the private link **on a phone**, cold. UI and music load; the game area is
+black. Exiting to Main Menu and entering Challenge Mode fixes it for that session.
+
+🔥 **Severity: this was the whole funnel.** The entry boots straight into Challenge Mode, so
+every mobile player opening the link would have seen a black screen and bounced — on an
+entry scored by unique plays.
+
+🔴 **Two independent root causes, both real, both fixed:**
+
+**1. The async init IIFE in `GameCanvas.tsx` had no `.catch()`.** A rejected `app.init()`
+vanished as an unhandled rejection: no scene, no `registerEngine()`, no error anywhere.
+✅ **The diagnosis came from the screenshot, not from guessing** — `CASH 0`, `ESCAPES 0` and
+**no Ready button** prove `syncStore()` never ran and `tdPhase` was never set, i.e.
+`createTowerScene` never *completed*. A merely zero-sized canvas would still have shown
+cash 140. That single observation ruled out the whole "it rendered small" family.
+
+**2. `stage.ts`'s `layout()` had no zero-size guard.** `getFit(0, 0)` yields `scale = 0`, and
+committing that leaves the board permanently invisible. ⚠️ **Pixi's `resizeTo` only responds
+to WINDOW resize events**, never to the host element's own later resize — so a host that
+sizes itself after init (an iframe in the RUN host, `dvw`/`dvh` settling on mobile) would
+never recover on its own.
+
+✅ **Fixes:** retry with a growing delay, `console.error` + `track('error_occurred')`, and a
+visible **"The kitchen didn't load." + Try Again** affordance when retries are exhausted; a
+`ResizeObserver` **on the host element** driving `app.resize()`; and `layout()` now declines
+to commit a non-finite or non-positive scale rather than guessing a fallback size.
+
+🔥 **The agent caught its own false-negative repro, and this is the most valuable part of
+the round.** Its first attempt resized an iframe — which fires a resize event *inside that
+iframe's own window*, which Pixi already handles. The test therefore exercised a path that
+was never broken and "passed". It re-ran the repro against the mechanism the handover
+actually named — resizing the host `<div>` with **no** window resize event of any kind — and
+reproduced it directly: pre-fix the canvas stayed at a stale 390×844 regardless of the host;
+post-fix it tracked exactly. It also forced `createPixiApp` to reject via a temporary hook
+(reverted, verified 0-diff) to exercise the failure path end to end.
+
+⚠️ **It never reproduced the original device trigger, and said so plainly.** Recorded as
+[Retro.md](Retro.md) lessons 101 and 102 — the fix is defensive, and its real value is that
+the same failure can no longer be silent.
+
+Also this round: the objective banner became **"Don't miss an order — you only have
+`{lives}` ❤️🏃 before you lose."** using the live count, moved into the flex column so the
+`top-20` magic number is gone; and rail label font sizes began deriving from `getFit()`'s own
+scale instead of a fixed rem.
+
+---
+
+### 2026-09-13 — v1.67.0 — the rail was too narrow, and a flex-wrapping trap
+
+**Status:** ✅ **ACCEPTED**, commit `137b067`. One file.
+
+🔥 **The label kept breaking because the font size was never the problem.** `railPx` was
+`getFit().scale × RAIL_WIDTH_UNITS`, and on a tall phone `scale` is driven by **height**
+(740/1650), not width:
+
+| Viewport | scale | board width | **rail width** | text budget |
+|---|---|---|---|---|
+| **403×740 (the phone)** | 0.381 | 274 px | **53.4 px** | **33 px** |
+| 390×844 | 0.435 | 313 px | 60.9 px | 41 px |
+| 739×1318 (desktop) | 0.679 | 489 px | **95.1 px** | 75 px |
+
+Fitting "Upgrade" on one line in 33 px needs a font of **≤ 8.7 px** — unreadable. **No font
+size was both legible and narrow enough.** ⚠️ The rail is a *screen-space overlay*; tying its
+width to the *board's zoom* was the mistake, and desktop's 95 px is why it always looked fine
+there.
+
+✅ **Fix:** `RAIL_MIN_PX = 88` floors the rail's CSS width independent of board zoom (→ ~68 px
+text budget), labels got `whitespace-nowrap`, and the scale-derived font is clamped to
+**11–18 px**. The rail now legitimately overlaps the board on narrow phones, by design — it
+is an opaque panel that only mounts while a pad is selected.
+
+#### ➕ The flex-wrapping trap, worth keeping
+
+Applying `whitespace-nowrap` to the **station names** as well made "Pressure Cooker" overflow
+(83 px of text in a ~64–76 px box). The agent's finding:
+
+> *a flex child with no definite width never wraps regardless of `white-space` — which is
+> why it hadn't overflowed visibly in earlier testing that only used shorter names*
+
+Correct and non-obvious: a flex item shrink-to-fits to its **max-content** size, so
+`white-space` never gets a chance to act. ✅ The fix was `w-full` to give it a definite width
+— **not** forcing `nowrap` on it. ✅ And the right judgement call was made alongside it: a
+mid-word break (`Upgra/de`) is a defect, a two-word station name occupying two lines is
+ordinary typography. The rule was applied where it belonged and not where it didn't.
+
+Verified with real `scrollWidth`/`clientWidth` comparisons — a check that can actually fail —
+across **360, 390, 403 and 739 px**, in both panel states. 403 is the width that had been
+slipping through while the tested ones passed.
+
+---
+
+### 🔒 Pre-public readiness check — Sep 13 2026
+
+Run before preparing the `review` tag, since going public is hard to undo:
+
+| Check | Result |
+|---|---|
+| Account | ✅ `offroadinggamedev@gmail.com` |
+| Private / Review / Public | 1.67.0 / 1.42.0 (Approved) / 1.42.0 |
+| Balance · sealed · tsc/build | ✅ 35/34/6/4/90 · 0 diff · clean |
+| Debug instrumentation in `src/` | ✅ none |
+| Keywords | ✅ 8, live, including `back-to-work` |
+| Licensed audio on GitHub | ✅ none — only the 5 CC0 SFX |
+| **Unfinished Kitchen Mode** | ✅ **gated behind `?test=1`** (`devMode.ts`) |
+
+⚠️ **`store.ts`'s comment claiming the build must stay private until Kitchen Mode is done is
+STALE.** Round A2 task 4 gated that mode behind `devModeEnabled()`, which requires an explicit
+`?test=1` and latches to localStorage. Public players cannot reach it, and Challenge Mode
+takes the primary CTA when it is hidden.
+
+🔒 **The release sequence — and why the order matters.** `private` and `review` are
+creator-writable; **`public` is written by RUN** on approving a review tag, so the public tag
+cannot be set directly. Separately, `set-public` controls **Explore-page visibility**.
+Running `set-public` before RUN approves the new version would send Explore traffic to
+whatever is *currently* public. Correct order: `update-tag review` → wait for RUN →
+`set-public`.

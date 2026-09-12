@@ -2531,3 +2531,33 @@ uniques are the score; the trend matters more than any single day.
      `RundotGameAPI.log()` on every effect run with no gate, which is fine in a private
      build and unacceptable in a public one. Diagnostic scaffolding is a deliberate
      temporary debt; write down when it must be paid.
+
+101. 🔴 **A failed reproduction attempt is only as good as your model of the mechanism —
+     a repro that exercises the wrong path "passes" and tells you nothing.** Sep 13 2026,
+     chasing a mobile cold-boot black screen. The named mechanism was *"Pixi's `resizeTo`
+     only responds to WINDOW resize events, never to the host element's own later resize."*
+     The obvious repro — resize an iframe, like the RUN host does — came back clean. 🔥 **It
+     was a false negative:** resizing an iframe fires a resize event *inside that iframe's
+     own window*, which Pixi already handles, so the test exercised a path that was never
+     broken. The agent noticed the mismatch between its repro and the stated mechanism,
+     re-ran it by resizing the host `<div>` directly with no window event of any kind, and
+     reproduced the fault immediately. ✅ **Rule: when a repro comes back clean, check that
+     it actually exercised the mechanism you named before concluding the bug is not there.**
+     A clean result is evidence about your test first, and about the code second. ➕ Related
+     to lesson 99 but distinct: 99 is "measure in the delivery environment"; this is "a
+     negative result is a claim about your instrument."
+
+102. ✅ **Converting a silent failure into a loud one changes the shipping decision, even
+     when the root cause is still unknown.** Sep 13 2026. The cold-boot failure could not be
+     reproduced on the reporting device, and the agent said so rather than claiming a fix.
+     But the fixes shipped anyway, and the reason is worth recording: the original failure
+     was a **black screen with `CASH 0` and no error anywhere** — an unhandled promise
+     rejection from an async IIFE with no `.catch()`. After the round, the same failure
+     retries, logs to telemetry, and finally shows *"The kitchen didn't load."* with a
+     working Try Again. 🔥 **A bug that announces itself and offers recovery is a different
+     class of risk from one that silently eats the entire mobile funnel**, and that
+     difference was what justified shipping without a confirmed root cause. ✅ **Rule: when
+     you cannot fix what you cannot reproduce, at minimum make it impossible for that
+     failure to be silent** — then the next occurrence arrives as a report instead of a
+     bounce. ⚠️ The corollary: an unhandled rejection in a boot path is not a style issue,
+     it is a category of outage that cannot be diagnosed after the fact.
