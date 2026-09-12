@@ -151,7 +151,78 @@ the player sees between runs, and the same art direction serves both.
 
 ---
 
-## 3. Previously held, still parked
+## 3. Prop game feel — proposed Sep 13 2026, no option chosen yet
+
+User: *"Props are lacking game feel, propose ideas that can be implemented that would make
+them feel more robust and functioning."* Six proposals were put to the user; **none has been
+selected**, so this is a menu, not a plan.
+
+| # | Idea | Cost | Why it works |
+|---|---|---|---|
+| 1 | **Fire recoil** — a brief scale/offset punch away from the target on each `shot` event | Low | The single biggest "is this thing alive" signal; props currently fire with no body movement at all |
+| 2 | **Muzzle puff** — a steam/sizzle wisp at the fire point, fading over ~200 ms | Low | The cooking-native version of a muzzle flash; sells *kitchen* rather than *turret* |
+| 3 | **Idle simmer** — a slow 2–3 px bob or drifting steam when not firing | Low | Static sprites read as scenery; motion at rest reads as staffed |
+| 4 | **Placement thunk** — squash-and-settle plus a dust/flour ring on place | Low | `sfx.place()` already fires with no visual partner |
+| 5 | **Upgrade surge** — a one-off flare and a held brighter tint as the level pips increment | Medium | Upgrades currently change numbers more than they change the object |
+| 6 | **Target-lock tell** — the prop leans/turns toward its current target | Med–High | Strongest "it's thinking" cue, but needs facing art or rotation that may fight the top-down look |
+
+✅ **Recommendation: 1, 2 and 4 first.** All cheap, all hooked to events that already fire
+(`{ type: 'shot' }`, placement), and together they cover the three moments a player actually
+looks at a prop. **3** is the best value after that. ⚠️ **Hold 6** — it risks fighting the
+top-down illustration style, which is a bigger conversation than a polish round.
+
+---
+
+## 4. Progressive pad unlocking — 🔴 CHANGES THE BALANCE BASELINE
+
+User's rule, Sep 13 2026: rows 3 and 4 locked until the block-1 boss clears → row 3 unlocks
+→ row 4 stays locked until wave 20 clears → everything open from wave 21. Must reset on
+retry / loss / exit / win so no state leaks between runs.
+
+**The pad rows, from `config.ts`'s `PADS` array** (this mapping is not written down anywhere
+else):
+
+| Row | y | Pad indices | Bonuses | User's rule |
+|---|---|---|---|---|
+| A | 195 | **0, 1** | none | always open |
+| B | 485 | **2, 3, 4** | fireRate / range / damage | always open |
+| **C** | 795 | **5, 6, 7** | damage / range / fireRate | locked until wave 10 |
+| **D** | 1090 | **8, 9** | none | locked until wave 20 |
+
+🔴 **Why this is not a UI change.** `scripts/simulate.ts:29` states its own build priority:
+*"the six bonused center pads (B/C rows) first"* — so **every profile places on row C from
+wave 1**, and `maxed-meta` (the primary case, all ten pads, which must lose between levels
+85–110) would have 5 pads for waves 1–10 and 8 for 11–20. It will lose **earlier**. The
+**35 / 34 / 6 / 4 / 90** baseline becomes invalid and must be re-derived, not re-asserted.
+
+✅ **`sim/engine.ts` does NOT need unsealing.** Put the unlock rule in `config.ts` and enforce
+it in the two non-sealed callers — `actions.ts::placeTower` and `simulate.ts::nextFreePad`.
+One rule, two consumers, so the simulator and the game cannot drift apart. ⚠️ A UI-only lock
+would be worse than nothing: the sim would then be validating a game nobody plays.
+
+⚠️ **Budget tuning iterations for this, not a single round.** It was deliberately held back
+from the launch build for exactly that reason.
+
+---
+
+## 5. Small hardening debts — carried from the launch rounds
+
+- 🔴 **`registerEngine(null)` sits late inside `towerScene.ts`'s `destroy()`** — after
+  `trackRunEnd`, two `clearTimeout`s, a `store.patch` and `app.ticker.remove`. `GameCanvas`'s
+  cleanup wraps `scene.destroy()` in `try/catch`, so **if anything above that line throws,
+  `engineReady` stays `true`**, the next registration is a `true → true` no-op rather than a
+  real transition, and **the v1.62.0 blocker returns**. Moving the call to the top of
+  `destroy()` makes the teardown half unconditional. Cheap; worth doing.
+- **`store.ts`'s phase comment is stale** — it still claims the build must stay private until
+  Kitchen Mode is complete. Round A2 gated that mode behind `devModeEnabled()` (`?test=1`),
+  and the game shipped public on Sep 13 regardless.
+- ✅ **`67c5452`'s swept-in rename is CLOSED, no action.** The zero-content
+  `BuildSheet → StationRail` rename riding in a docs commit was left as-is. Rewriting
+  published history after launch has no upside, and `git log --follow` traverses it correctly.
+
+---
+
+## 6. Previously held, still parked
 
 - **Wave roster panel** (GDD §8) — held.
 - **Regenerating the other eight backdrops** — held.
