@@ -114,6 +114,13 @@ export default function Hud() {
     const backdropTransitioning = useStore((s) => s.backdropTransitioning);
     const ftueGrantAmount = useStore((s) => s.ftueGrantAmount);
     const ftueGrantNonce = useStore((s) => s.ftueGrantNonce);
+    // Blocker round audit: the Kitchen Actions row below reads getEngine()
+    // during render, same non-reactive-read shape StationRail.tsx's own doc
+    // comment describes in full. Not the reported repro path (this row only
+    // shows post-FTUE, by which point the engine has been alive for many
+    // renders already), but the same latent bug class — subscribing here is
+    // what makes it safe regardless, rather than relying on that timing.
+    useStore((s) => s.engineReady);
     const [menuOpen, setMenuOpen] = useState(false);
     const [showObjective, setShowObjective] = useState(true);
     const [showMilestone, setShowMilestone] = useState(false);

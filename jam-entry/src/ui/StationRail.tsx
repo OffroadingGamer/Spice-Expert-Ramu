@@ -4,8 +4,22 @@
  * empty pad, or manage the one standing there (upgrade, sell with
  * confirmation, Target row). Engine state is read synchronously via
  * actions.getEngine(); re-renders ride on store changes (coins, selection,
- * padVersion). Selling keeps the pad selected, so the rail flips straight
- * back to build options.
+ * padVersion, engineReady). Selling keeps the pad selected, so the rail
+ * flips straight back to build options.
+ *
+ * Blocker round: getEngine() is a plain module read, not store state — by
+ * itself it's invisible to React. createTowerScene's setup is async
+ * (createPixiApp awaits), so this component's FIRST render after mounting
+ * always sees engine === null; recovering requires an actual re-render,
+ * which useSyncExternalStore only grants when a SUBSCRIBED value changes.
+ * On Main Menu -> Challenge Mode with no tower ever placed, every other
+ * field this component reads (coins/selectedPad/tdPhase/...) is already
+ * back at the exact value the new run re-establishes, so nothing else was
+ * forcing that re-render — the rail simply never appeared and no prop
+ * could be selected. store.engineReady (set only by registerEngine(), see
+ * its own doc) exists specifically to make "the engine became ready" a
+ * real, subscribed transition; `useStore((s) => s.engineReady)` below is
+ * why `getEngine()` is safe to call plainly the rest of this component.
  *
  * Retractable, not persistent: the rail renders nothing (returns null)
  * while no pad is selected. A first attempt made this panel a permanent
@@ -44,7 +58,6 @@
  * rail, not the board.
  */
 import { useEffect, useRef, useState } from 'react';
-import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
 import { sfx } from '../audio/audio.ts';
 import { getEngine, placeTower, sellTower, setTargeting, upgradeTower } from '../game/actions.ts';
 import { CONFIG } from '../game/config.ts';
@@ -52,25 +65,6 @@ import { getFit, RAIL_WIDTH_UNITS } from '../game/stage.ts';
 import { TARGETING_DESCRIPTIONS, TARGETING_LABELS, TARGETING_MODES } from '../game/data/targeting.ts';
 import { TOWERS } from '../game/data/towers.ts';
 import { store, useStore } from '../state/store.ts';
-
-/** Delivered-audio round, task 3: the FTUE arrow was reported invisible on
- *  the deployed build (place0 and upgrade0 both), but a from-scratch
- *  reproduction against the ACTUAL production React bundle (vite preview,
- *  the same react.production.min.js the RUN host serves — not vite dev's
- *  StrictMode-affected build, which is all earlier verification used) shows
- *  it firing and rendering correctly, every time, at every beat: the effect
- *  runs once with el null (registerEngine() hasn't fired yet), then again
- *  with el present and the correct rect, exactly as designed. Unable to
- *  reproduce the failure locally despite this — same posture as
- *  engagement.ts's own log() (RundotGameAPI.log + console.log, so this is
- *  visible in RUN's host-side support log on a real device, not only a
- *  local devtools console), kept permanently rather than stripped, so the
- *  next real-device check can see exactly what el/showArrow/rect actually
- *  are there instead of guessing again from a desktop reproduction attempt. */
-function logArrow(message: string): void {
-    try { RundotGameAPI.log(`[ftue-arrow] ${message}`); } catch { /* no host */ }
-    console.log(`[ftue-arrow] ${message}`);
-}
 
 /** The rail's own overlay width in CSS px, tracking #app-frame's size the
  *  same way Hud.tsx's usePadsScreenPos does. Only StationRail.tsx itself
@@ -117,6 +111,7 @@ export default function StationRail() {
     const towerIcons = useStore((s) => s.towerIcons);
     const ftueActive = useStore((s) => s.ftueActive);
     const ftueBeat = useStore((s) => s.ftueBeat);
+    const engineReady = useStore((s) => s.engineReady);
     useStore((s) => s.padVersion); // re-render on coin-free engine mutations
     const [confirmSell, setConfirmSell] = useState(false);
     const [showTargetHelp, setShowTargetHelp] = useState(false);
@@ -143,13 +138,13 @@ export default function StationRail() {
     // viewport (fixed) coords, no stage.ts transform, since these are
     // normal DOM layout inside the rail, never something positioned on the
     // canvas. One mechanism, two possible targets, since the two beats are
-    // mutually exclusive (never both at once). `!!engine` is in the deps
+    // mutually exclusive (never both at once). `engineReady` is in the deps
     // for a real race, not paranoia: on the very FIRST render of a fresh
     // run (final round, task 3 — cold boot can now land here before
     // GameCanvas's effect has called registerEngine()), `engine` is still
     // null, the early return below fires, and the ref never attaches to a
     // DOM node THIS render. showPlaceArrow was already true on that same
-    // render (it doesn't depend on engine), so without `!!engine` here the
+    // render (it doesn't depend on engine), so without `engineReady` here the
     // effect's inputs look unchanged on the very next render — the first
     // one where the ref'd element actually exists — and never re-fires.
     //
@@ -165,13 +160,10 @@ export default function StationRail() {
     // steady once switched to ResizeObserver).
     useEffect(() => {
         if (!showUpgradeArrow && !showPlaceArrow) { setFtueArrowPos(null); return; }
-        const beat = showUpgradeArrow ? 'upgrade0' : 'place0/place2';
         const el = showUpgradeArrow ? upgradeBtnRef.current : stationListRef.current;
-        logArrow(`${beat}: engine=${!!engine} el=${el ? 'present' : 'NULL'}`);
         if (!el) { setFtueArrowPos(null); return; }
         const compute = () => {
             const r = el.getBoundingClientRect();
-            logArrow(`${beat}: rect left=${r.left.toFixed(1)} top=${r.top.toFixed(1)} w=${r.width.toFixed(1)} h=${r.height.toFixed(1)}`);
             setFtueArrowPos({ x: r.left + r.width / 2, y: r.top });
         };
         compute();
@@ -179,9 +171,9 @@ export default function StationRail() {
         ro.observe(el);
         window.addEventListener('resize', compute);
         return () => { ro.disconnect(); window.removeEventListener('resize', compute); };
-    }, [showUpgradeArrow, showPlaceArrow, tower?.level, !!engine]);
+    }, [showUpgradeArrow, showPlaceArrow, tower?.level, engineReady]);
 
-    if (selectedPad === null || tdPhase === 'lost' || !engine) return null;
+    if (selectedPad === null || tdPhase === 'lost' || !engineReady) return null;
 
     const refund = tower ? Math.floor(tower.spent * CONFIG.economy.sellRefund) : 0;
 

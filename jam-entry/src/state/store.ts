@@ -106,6 +106,20 @@ export interface AppState {
      *  Ready reads this to lock itself for the crossfade's duration; reset
      *  at both run start and scene teardown so it can never latch locked. */
     backdropTransitioning: boolean;
+    /** Blocker round: whether actions.getEngine() currently returns a live
+     *  engine. getEngine() itself is a plain module read, not store state —
+     *  reading it during render (StationRail.tsx, Hud.tsx) is invisible to
+     *  React, so a component that mounts before createTowerScene's async
+     *  createPixiApp resolves sees engine === null on its first render and
+     *  has no guaranteed later render to recover on: useStore is
+     *  useSyncExternalStore, which bails whenever a subscribed snapshot is
+     *  unchanged, and on a re-entry with no tower placed, every OTHER field
+     *  a component might subscribe to (coins/lives/wave/tdPhase/selectedPad)
+     *  is already back at the exact values the new run re-establishes, so
+     *  nothing forces a re-render. This field exists so "the engine became
+     *  ready" is itself a real, subscribable state transition — set (both
+     *  ways) by registerEngine() only, nowhere else. */
+    engineReady: boolean;
     /** Platform engagement prompts: capability-gated by the host at boot */
     likeAvailable: boolean;
     commentsAvailable: boolean;
@@ -144,6 +158,7 @@ const INITIAL: AppState = {
     ftueGrantNonce: 0,
     towerIcons: {},
     backdropTransitioning: false,
+    engineReady: false,
     likeAvailable: false,
     commentsAvailable: false,
     isLiked: false,

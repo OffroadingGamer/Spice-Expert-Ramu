@@ -41,6 +41,16 @@ export function getTowersPlacedThisRun(): number {
 
 export function registerEngine(e: Engine | null): void {
     slot.current = e;
+    // Blocker round: the ONLY place engineReady is ever set — this is what
+    // makes "the engine became ready" a real, subscribable store transition
+    // instead of a plain module read that render-time getEngine() callers
+    // could see stale forever (store.ts's own doc on this field has the
+    // full mechanism). Patched unconditionally, on BOTH registration (e
+    // truthy) and teardown (e null, from the scene's destroy()) — the
+    // teardown half is what guarantees the NEXT registration is a genuine
+    // false -> true transition, not a no-op re-patch of an already-true
+    // value that a freshly remounted component would never observe change.
+    store.patch({ engineReady: e !== null });
     if (e) {
         runStartedAt = performance.now();
         runAnalytics = { towersPlaced: 0, firstTowerPlaced: false, firstWaveStarted: false };
