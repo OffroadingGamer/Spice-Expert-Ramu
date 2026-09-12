@@ -7,7 +7,7 @@ import { loadSave, flushSave } from './state/save.ts';
 import { initSdk, registerLifecycles, sdkReady } from './sdk/runSdk.ts';
 import { track } from './sdk/analytics.ts';
 import { refreshEngagement } from './sdk/engagement.ts';
-import { generateTowerIcons } from './game/towerIcons.ts';
+import { generateTowerIconsWhenSafe } from './game/towerIcons.ts';
 import { scriptedRunStart } from './game/actions.ts';
 import { initAudio, resumeAudio, suspendAudio } from './audio/audio.ts';
 import { refreshServerTime } from './shared/serverTime.ts';
@@ -121,7 +121,16 @@ async function boot() {
     //    refresh. None of it should block or throw into this function.
     void refreshServerTime(); // trusted clock for the daily ad cap
     refreshEngagement(); // Like/Comments availability for the menu buttons
-    generateTowerIcons().then((icons) => store.patch({ towerIcons: icons })).catch(() => {});
+    // WebGLRenderer race round: generateTowerIconsWhenSafe() itself waits
+    // for GameCanvas's app.init() to have already claimed the renderer
+    // chunk (see towerIcons.ts) before touching it a second time — this is
+    // no longer a plain fire-and-forget call to generateTowerIcons().
+    generateTowerIconsWhenSafe()
+        .then((icons) => store.patch({ towerIcons: icons }))
+        .catch((err) => {
+            console.warn('[Main] tower icon generation failed', err);
+            track('error_occurred', { source: 'tower_icons' });
+        });
     if (sdkReady()) {
         try {
             RundotGameAPI.analytics.recordCustomEvent('game_loaded').catch(() => {});
