@@ -124,7 +124,34 @@ says the thing without stating it.
 
 ---
 
-## 2. Previously held, still parked
+## 2. Main menu revamp — background art + clean UI behaviours
+
+User request, Sep 13 2026. Same gate as everything else in this file: **after the build is
+live and stable.**
+
+The menu is now a screen players reach **after** a run rather than before one — the entry
+boots straight into Challenge Mode (`main.tsx`), and Main Menu is only reachable by exiting,
+winning or losing. That changes what it is for: it is no longer a front door, it is the
+**between-runs hub**, and it is where Leaderboard and Meta Upgrades live (they are reachable
+from nowhere else, so a first-time player has no gem-spend path until they exit once).
+
+- **Background art** — the nine block backdrops already exist at 720×1280 under
+  `jam-entry/public/` (`bg-block-*`). A menu treatment could reuse one rather than commission
+  new art, which also visually promises the cuisines the player has not reached yet.
+- **Clean UI behaviours** — the current menu is a plain vertical button stack. Worth
+  revisiting: entry/exit transitions, what the primary action should be for a returning
+  player (Retry the last run? Continue? Meta Upgrades?), and surfacing gems earned so the
+  spend path is discoverable.
+- ⚠️ **Do not regress the boot flow.** Booting straight into Challenge Mode exists to remove
+  friction before the first tap, which is the jam metric's whole funnel. Any menu work must
+  leave that path untouched.
+
+➕ Sensible pairing with §1's dialogue pass — both are presentation-layer work on screens
+the player sees between runs, and the same art direction serves both.
+
+---
+
+## 3. Previously held, still parked
 
 - **Wave roster panel** (GDD §8) — held.
 - **Regenerating the other eight backdrops** — held.
