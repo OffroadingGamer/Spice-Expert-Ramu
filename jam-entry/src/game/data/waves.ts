@@ -450,22 +450,27 @@ function solveArchetype(id: string, level: number, per: number, countMult: numbe
 }
 
 /**
- * Block 1 tuning (§6b's other half — "balanced leaks at least once across
- * W4-W10 and finishes level 10 with 5-8/10 lives; miser still dies"): the
- * teaching boss (W7-10) is capped low BY DESIGN, so it can't be the lever
- * that makes onboarding a real test — the only levers are W4/W5/W6/W10's
- * support entries. Found empirically against `npm run balance` (see the
- * balance report), not derived analytically:
- *   - MORE, weaker units (high countMult, tiny spacing) failed — hpMult hit
- *     its floor, so a 'first'-targeting tower one-shot every arrival
- *     regardless of how many showed up at once.
- *   - FEWER, tougher units (reduced countMult) failed too — with only one
- *     or two on the field, a still-modest board's COMBINED dps focuses them
- *     down before they cover meaningful ground.
- *   - What works: keep the normal headcount, but make each one meaningfully
- *     tankier (hpBoost) AND arrive in a tight burst (spacingMult) — enough
- *     simultaneous targets that 'first'-targeting can't clear the group
- *     before some of it closes real distance.
+ * Block 1 tuning (§6b's other half): block 1 IS the FTUE and the first ten
+ * levels every player ever sees with zero meta upgrades — it must be
+ * clearable by three un-upgraded starting props, not "a real test" of a
+ * built-up board. An earlier round tuned W4-W10's support entries (tight
+ * spacingMult + high hpBoost — five tanky units inside one second) to make
+ * onboarding harder, and validated it only against maxed-meta, where the
+ * effect is invisible: a full board eats a tight burst for free. Against the
+ * actual opening (balanced: 3 props, miser: 2, pad0-rush: 1 — see
+ * scripts/simulate.ts's stock profiles), that same burst leaked lives on
+ * literally every level from 4 through 10 (confirmed in the balance report:
+ * the failure was in the per-level trace since before launch, missed because
+ * only the summary line was read).
+ *
+ * Retuned here against the STOCK profiles, not maxed-meta: spacingMult
+ * widened from 0.15 to 0.45 (arrivals spread out enough for two or three
+ * un-upgraded props to actually clear the group between spawns) and hpBoost
+ * lowered from 2.1 to 1.35 (still tankier than the base curve, just not
+ * enough to eat a full 4-shot volley per unit). countMult stays 1 — this was
+ * never a headcount problem. The criterion this must hold: balanced shows
+ * zero leaks anywhere in block 1 (levels 1-11); miser still dies (that's its
+ * contract); maxed-meta is unaffected because it was never the constraint.
  */
 function composeLevel(level: number): Wave {
     const block = blockForLevel(level).id;
@@ -490,8 +495,8 @@ function composeLevel(level: number): Wave {
             spacingMult = 0.5;
         } else {
             countMult = 1;
-            spacingMult = 0.15;
-            hpBoost = 2.1;
+            spacingMult = 0.45;
+            hpBoost = 1.35;
         }
     }
     return { entries: composeEntries(level, target, archetypes, { teachingBoss: block === 1, stagCount, countMult, spacingMult, hpBoost, fixedHpMult }) };

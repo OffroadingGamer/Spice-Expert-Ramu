@@ -166,9 +166,9 @@ export const CONFIG = {
     padTapRadius: 58,
 
     economy: {
-        startCoins: 140,   // two cheap towers, or one mid + savings
+        startCoins: 200,   // three cheap towers — the intended opening
         startLives: 10,
-        waveBonus: 15,     // flat build-phase income per cleared wave, levels 1-10
+        waveBonus: 25,     // flat build-phase income per cleared wave, levels 1-10
         /**
          * Round H Task 5: levels 1-10 keep the economy above exactly as-is
          * (onboarding stays generous). From level 11 (sim/engine.ts checks

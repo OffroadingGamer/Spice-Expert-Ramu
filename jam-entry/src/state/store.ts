@@ -56,40 +56,47 @@ export interface AppState {
     sfxVol: number;
     /** Bugs squashed in the run that just ended (end screen) */
     runKills: number;
-    /** True from the moment a Challenge run starts until wave 3 begins
-     *  (GDD §10.11, round D: persistent — every run, not just the first).
-     *  Gates the "Tap a cook to upgrade" hint (the cues below replace it)
-     *  and keeps Sell disabled for the whole onboarding, not just the
-     *  forced beats themselves. */
+    /** True from the moment a Challenge run starts until wave 4 begins
+     *  (GDD §10.11, round D: persistent — every run, not just the first;
+     *  onboarding-balance round: extended from wave 3 to wave 4 to cover the
+     *  third forced placement, 'place3' below). Gates the "Tap a cook to
+     *  upgrade" hint (the cues below replace it) and keeps Sell disabled for
+     *  the whole onboarding, not just the forced beats themselves. */
     ftueActive: boolean;
     /** Which forced FTUE beat currently walls the UI (Ready blocked, Close
      *  hidden, canvas taps locked to the beat's own pad) — null during free
-     *  play within waves 1-2, and for the rest of the run once wave 3
-     *  starts. 'place0' (run start) and 'place2' (post-wave-2) are picker
-     *  beats with a canvas arrow cue; 'upgrade0' (post-wave-1, pad 0) is a
-     *  tower-view beat with a DOM cue anchored to BuildSheet's own Upgrade
-     *  button instead (never both at once — one voice). Round E: 'place2'
-     *  no longer literally means "pad 2" — see ftueBeatPad below — the
-     *  label only says which KIND of beat this is; towerScene.ts's
-     *  applyFtueWaveEnd never sets a beat whose target can't be resolved
-     *  (occupied pad / already-max tower), and actions.ts's syncStore
-     *  keeps checking that live, in case something changes that later. */
-    ftueBeat: 'place0' | 'upgrade0' | 'place2' | null;
-    /** The pad ftueBeat's forced action targets. Always 0 for 'place0' and
-     *  'upgrade0' (hardcoded — never buggy, pad 0 is always the pre-start
-     *  pad); for 'place2' this is the real, dynamically-chosen target
-     *  (prefers pad 2, falls back to the nearest empty pad) — the round E
-     *  fix for the hard-lock a hardcoded pad 2 caused when it was occupied
-     *  or the board was full. Stale/unused whenever ftueBeat isn't
-     *  'place2'. */
+     *  play within waves 1-3, and for the rest of the run once wave 4
+     *  starts. 'placeFirst' (run start), 'place2' (post-wave-2) and 'place3'
+     *  (post-wave-3) are picker beats with a canvas arrow cue; 'upgrade0'
+     *  (post-wave-1, FTUE_FIRST_PAD) is a tower-view beat with a DOM cue
+     *  anchored to BuildSheet's own Upgrade button instead (never both at
+     *  once — one voice). Onboarding-balance round: 'place0' renamed
+     *  'placeFirst' — its target moved off pad 0 (the worst opening in the
+     *  game, bonus: null) onto FTUE_FIRST_PAD (actions.ts), a bonused pad,
+     *  so the name no longer describes a literal pad index either. Round E:
+     *  'place2'/'place3' don't literally mean "pad 2"/"pad 3" — see
+     *  ftueBeatPad below — the label only says which KIND of beat this is;
+     *  towerScene.ts's applyFtueWaveEnd never sets a beat whose target can't
+     *  be resolved (occupied pad / already-max tower), and actions.ts's
+     *  syncStore keeps checking that live, in case something changes that
+     *  later. */
+    ftueBeat: 'placeFirst' | 'upgrade0' | 'place2' | 'place3' | null;
+    /** The pad ftueBeat's forced action targets. Always FTUE_FIRST_PAD
+     *  (actions.ts) for 'placeFirst' and 'upgrade0' (hardcoded — never
+     *  buggy, FTUE_FIRST_PAD is always the pre-start pad); for 'place2' and
+     *  'place3' this is the real, dynamically-chosen target (each prefers
+     *  its own bonused pad, falls back to the nearest empty pad) — the
+     *  round E fix for the hard-lock a hardcoded pad 2 caused when it was
+     *  occupied or the board was full. Stale/unused whenever ftueBeat is
+     *  'placeFirst', 'upgrade0', or null. */
     ftueBeatPad: number;
     /** Empty pad indices currently mid-pulse — round E generalises this
-     *  from the FTUE's own post-wave-2 transition (still used there, just
-     *  before pad 2/its fallback auto-selects) to firing after EVERY wave
-     *  clear once the FTUE is done (persists through the whole build
-     *  phase; actions.ts's startWave() clears it when the next wave
-     *  starts, and placeTower() drops a pad from it the instant that pad
-     *  fills). null when nothing is pulsing. */
+     *  from the FTUE's own post-wave-2/post-wave-3 transitions (still used
+     *  there, just before each beat's target/its fallback auto-selects) to
+     *  firing after EVERY wave clear once the FTUE is done (persists
+     *  through the whole build phase; actions.ts's startWave() clears it
+     *  when the next wave starts, and placeTower() drops a pad from it the
+     *  instant that pad fills). null when nothing is pulsing. */
     pulsePads: number[] | null;
     /** Last FTUE coin top-up (round D, task 3): the exact shortfall granted
      *  so a forced beat's requirement was affordable, shown briefly as a

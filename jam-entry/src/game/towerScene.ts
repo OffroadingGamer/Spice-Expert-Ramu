@@ -23,7 +23,7 @@ import { WAVES } from './data/waves.ts';
 import { BLOCKS, blockForLevel, type Block } from './data/blocks.ts';
 import { MANIFEST } from '../assets/manifest.ts';
 import { createEngine, posAt, PATH_LENGTH, type EngineEvent } from './sim/engine.ts';
-import { registerEngine, syncStore, getTowersPlacedThisRun, grantFtueShortfall, retireFtue } from './actions.ts';
+import { registerEngine, syncStore, getTowersPlacedThisRun, grantFtueShortfall, retireFtue, FTUE_FIRST_PAD } from './actions.ts';
 import { TOWERS } from './data/towers.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
 import {
@@ -485,11 +485,12 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     // ---- engine (with the player's persistent meta upgrades applied) -------
     const engine = createEngine(getSave().meta);
     registerEngine(engine); // also fires the run_start funnel step + event (actions.ts)
-    // GDD §10.11's pre-start beat pre-selects pad 0 (set by MainMenu.tsx /
-    // EndScreen.tsx's Retry BEFORE this scene mounts) — this reset must not
-    // clobber it, or the FTUE's opening StationRail never opens.
+    // GDD §10.11's pre-start beat pre-selects FTUE_FIRST_PAD (set by
+    // MainMenu.tsx / EndScreen.tsx's Retry BEFORE this scene mounts) — this
+    // reset must not clobber it, or the FTUE's opening StationRail never
+    // opens.
     store.patch({
-        selectedPad: store.get().ftueActive ? 0 : null,
+        selectedPad: store.get().ftueActive ? FTUE_FIRST_PAD : null,
         waveCount: WAVES.length,
         tdPhase: 'build',
         wave: 1,
@@ -582,19 +583,22 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     let ftuePulseTimer: ReturnType<typeof setTimeout> | null = null;
 
     /**
-     * GDD §10.11's scripted three-wave FTUE (round D: persistent — every
-     * run, not just the first — and walled: see actions.ts's startWave/
-     * placeTower/upgradeTower for the Ready/Close/Sell gates this beat
-     * state drives). Advanced off the same wave-clear events analytics
-     * already drains here — no new engine hook.
+     * GDD §10.11's scripted FTUE (round D: persistent — every run, not just
+     * the first — and walled: see actions.ts's startWave/placeTower/
+     * upgradeTower for the Ready/Close/Sell gates this beat state drives).
+     * Advanced off the same wave-clear events analytics already drains
+     * here — no new engine hook. Onboarding-balance round: extended from
+     * three forced beats to four — see the third placement below — so the
+     * player opens with THREE placed props, not two, before free play.
      *
-     * Wave 1 end forces pad 0's tower view open with the Upgrade button
-     * cued (StationRail.tsx); wave 2 end pulses every empty pad, then
-     * auto-selects one of them (preferring pad 2) with the picker cued
-     * (Hud.tsx). Wave 3 STARTING (not clearing — see actions.ts's
-     * startWave) retires the script for good. A run that never reaches
-     * wave 3 (e.g. lost on wave 1 or 2) leaves `ftueActive` true, so Retry
-     * restarts the whole script from beat 1 (EndScreen.tsx).
+     * Wave 1 end forces FTUE_FIRST_PAD's tower view open with the Upgrade
+     * button cued (StationRail.tsx); wave 2 end pulses every empty pad, then
+     * auto-selects one of them (preferring B2) with the picker cued
+     * (Hud.tsx); wave 3 end repeats that same pulse-and-select pattern
+     * (preferring B1) for a third placement. Wave 4 STARTING (not clearing —
+     * see actions.ts's startWave) retires the script for good. A run that
+     * never reaches wave 4 (e.g. lost on wave 1-3) leaves `ftueActive` true,
+     * so Retry restarts the whole script from beat 1 (EndScreen.tsx).
      *
      * Round E: neither beat below is ever SET unless its target is
      * actually resolvable — the reported hard-lock was a beat set
@@ -606,18 +610,18 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     function applyFtueWaveEnd(cleared: number): void {
         if (!store.get().ftueActive) return;
         if (cleared === 1) {
-            const t = engine.state.towers.find((tw) => tw.padIndex === 0);
+            const t = engine.state.towers.find((tw) => tw.padIndex === FTUE_FIRST_PAD);
             // Beat 3's requirement: the forced upgrade's own cost — this is
             // the documented trap (Tandoor at beat 1 leaves the upgrade
             // unaffordable with flawless play). Computed from live state,
             // never typed in; grantFtueShortfall no-ops if already affordable.
             if (t && t.level <= t.def.upgrades.length) {
                 grantFtueShortfall(t.def.upgrades[t.level - 1].cost);
-                store.patch({ selectedPad: 0, ftueBeat: 'upgrade0' });
+                store.patch({ selectedPad: FTUE_FIRST_PAD, ftueBeat: 'upgrade0' });
             } else {
-                // Pad 0 has nothing left to upgrade — safe today (level 1
-                // of up to 3 at wave 1 end), guarded in case that changes.
-                // Nothing to force the player into; let the script go.
+                // FTUE_FIRST_PAD has nothing left to upgrade — safe today
+                // (level 1 of up to 3 at wave 1 end), guarded in case that
+                // changes. Nothing to force the player into; let the script go.
                 retireFtue();
             }
         } else if (cleared === 2) {
@@ -660,6 +664,30 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 ftuePulseTimer = null;
                 store.patch({ selectedPad: target, pulsePads: null });
             }, 900);
+        } else if (cleared === 3) {
+            // Onboarding-balance round: the third forced placement — same
+            // shape as cleared === 2 above (a full board / already-occupied
+            // target both retire rather than force anything), pointed at B1
+            // (index 2, fireRate x1.5) so by the time free play starts the
+            // player has one prop on every bonused B-row pad, not just two.
+            const target = 2;
+            if (engine.state.towers.some((tw) => tw.padIndex === target)) {
+                retireFtue();
+                return;
+            }
+            const emptyPads = CONFIG.pads
+                .map((_, i) => i)
+                .filter((i) => !engine.state.towers.some((tw) => tw.padIndex === i));
+            if (emptyPads.length === 0) {
+                retireFtue();
+                return;
+            }
+            grantFtueShortfall(Math.min(...TOWERS.map((def) => def.cost)));
+            store.patch({ selectedPad: null, ftueBeat: 'place3', ftueBeatPad: target, pulsePads: emptyPads });
+            ftuePulseTimer = setTimeout(() => {
+                ftuePulseTimer = null;
+                store.patch({ selectedPad: target, pulsePads: null });
+            }, 900);
         }
     }
 
@@ -693,6 +721,26 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             });
             if (e.cleared === 1) trackFunnelStep(5, 'wave_1_cleared', 'run', 2);
             if (store.get().ftueActive) {
+                // Task F, onboarding-balance round: a practical guarantee
+                // against losing DURING the scripted, walled FTUE, not a
+                // mathematical one — the real floor belongs at the decrement
+                // site in sim/engine.ts (state.lives -= e.def.livesCost),
+                // which is still sealed. Restoring here, once per build
+                // phase, can in principle still be beaten by a single wave
+                // whose total livesCost >= CONFIG.economy.startLives (10) —
+                // level 3 is 17 units at 1 lifeCost each, and stag costs 3 —
+                // so this is a silent net, not a visible mechanic. With
+                // Task C/D's block-1 retune landed, balanced leaks nothing
+                // in block 1, so this should never fire in practice; if it
+                // ever fires VISIBLY (lives jumping back up mid-onboarding
+                // reads as fake), that's a signal C/D need retuning, not
+                // that this restore needs widening. Also invisible to
+                // npm run balance: the simulator drives the engine directly
+                // and has no FTUE, so this line is never exercised there —
+                // C and D are data and stay modelled by the sim; this is
+                // not, and must never become load-bearing for the
+                // acceptance numbers.
+                engine.state.lives = CONFIG.economy.startLives;
                 applyFtueWaveEnd(e.cleared);
             } else {
                 applyPostWavePulse();
@@ -713,8 +761,8 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
 
     // ---- tap-to-select pads ------------------------------------------------
     const onTap = (e: FederatedPointerEvent) => {
-        // Round D: a forced beat (place0/upgrade0/place2) walls every
-        // canvas tap — re-tapping the forced pad, tapping empty board, or
+        // Round D: a forced beat (placeFirst/upgrade0/place2/place3) walls
+        // every canvas tap — re-tapping the forced pad, tapping empty board, or
         // tapping any other pad would all otherwise change/clear
         // selectedPad (see the hit/deselect logic below) and escape the
         // script. StationRail's own buttons (not gated by this listener)

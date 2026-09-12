@@ -47,27 +47,28 @@
  * forced beat (store.ftueBeat !== null — actions.ts is the real gate, this
  * is just the display rule), and Sell stays disabled for the whole
  * onboarding (store.ftueActive), not only inside the forced beats — it
- * returns once wave 3 begins.
+ * returns once wave 4 begins (onboarding-balance round: was wave 3, before
+ * the third forced placement extended the script by one wave).
  *
- * Arrow round: the forced-beat cue (place0, place2, upgrade0) is a sideways
- * arrow pointing at this panel from its left edge — CSS layout only.
- * getBoundingClientRect()/ResizeObserver/refs/fixed-position measuring the
- * real DOM already failed on a real device three separate rounds (each one
- * passed locally first); this rewrite deletes that entire approach rather
- * than debug it a fourth time. The arrow is `position: absolute` against
- * the rail's own outer wrapper (already `position: absolute` itself, so no
- * extra positioning context is needed) — `right-full` puts it just outside
- * the panel's left edge, and vertical placement is plain CSS: centred
- * against the panel for place0/place2 (the station list roughly fills it),
- * nudged up toward the Upgrade button's fixed spot in the occupied-tower
- * panel's content order for upgrade0 (UPGRADE_ARROW_LIFT_PX below — eyeballed
- * against that panel's own fixed layout, never measured at runtime; that
- * panel's content shape doesn't vary while this beat is active, so a fixed
- * offset stays accurate every time it shows).
+ * Arrow round: the forced-beat cue (placeFirst, place2, place3, upgrade0) is
+ * a sideways arrow pointing at this panel from its left edge — CSS layout
+ * only. getBoundingClientRect()/ResizeObserver/refs/fixed-position measuring
+ * the real DOM already failed on a real device three separate rounds (each
+ * one passed locally first); this rewrite deletes that entire approach
+ * rather than debug it a fourth time. The arrow is `position: absolute`
+ * against the rail's own outer wrapper (already `position: absolute` itself,
+ * so no extra positioning context is needed) — `right-full` puts it just
+ * outside the panel's left edge, and vertical placement is plain CSS:
+ * centred against the panel for placeFirst/place2/place3 (the station list
+ * roughly fills it), nudged up toward the Upgrade button's fixed spot in the
+ * occupied-tower panel's content order for upgrade0 (UPGRADE_ARROW_LIFT_PX
+ * below — eyeballed against that panel's own fixed layout, never measured at
+ * runtime; that panel's content shape doesn't vary while this beat is
+ * active, so a fixed offset stays accurate every time it shows).
  */
 import { useEffect, useState } from 'react';
 import { sfx } from '../audio/audio.ts';
-import { getEngine, placeTower, sellTower, setTargeting, upgradeTower } from '../game/actions.ts';
+import { FTUE_FIRST_PAD, getEngine, placeTower, sellTower, setTargeting, upgradeTower } from '../game/actions.ts';
 import { CONFIG } from '../game/config.ts';
 import { getFit, RAIL_WIDTH_UNITS } from '../game/stage.ts';
 import { TARGETING_DESCRIPTIONS, TARGETING_LABELS, TARGETING_MODES } from '../game/data/targeting.ts';
@@ -198,11 +199,11 @@ export default function StationRail() {
 
     const engine = getEngine();
     const tower = selectedPad !== null ? engine?.state.towers.find((t) => t.padIndex === selectedPad) : undefined;
-    const showUpgradeArrow = ftueBeat === 'upgrade0' && selectedPad === 0;
-    // place0/place2 point at the station picker (the buyable cards) — the
-    // selected-pad ring already shows which pad, so the arrow's only job
-    // is "tap here," and "here" is the rail, not the board.
-    const showPlaceArrow = (ftueBeat === 'place0' || ftueBeat === 'place2') && selectedPad !== null && !tower;
+    const showUpgradeArrow = ftueBeat === 'upgrade0' && selectedPad === FTUE_FIRST_PAD;
+    // placeFirst/place2/place3 point at the station picker (the buyable
+    // cards) — the selected-pad ring already shows which pad, so the
+    // arrow's only job is "tap here," and "here" is the rail, not the board.
+    const showPlaceArrow = (ftueBeat === 'placeFirst' || ftueBeat === 'place2' || ftueBeat === 'place3') && selectedPad !== null && !tower;
     const showRailArrow = showUpgradeArrow || showPlaceArrow;
 
     if (selectedPad === null || tdPhase === 'lost' || !engineReady) return null;
@@ -220,7 +221,7 @@ export default function StationRail() {
                     lands it just outside the panel's own left edge (the
                     wrapper shrink-wraps its one child, so its left edge IS
                     the panel's left edge), motion-safe: gated same as every
-                    other Hud.tsx animation. place0/place2 centre against the
+                    other Hud.tsx animation. placeFirst/place2/place3 centre against the
                     wrapper's full height, which is also the panel's own
                     centre (the panel is itself centred in this same
                     wrapper) — correct for the station picker, which fills

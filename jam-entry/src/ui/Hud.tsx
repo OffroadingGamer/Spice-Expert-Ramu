@@ -31,25 +31,26 @@
  * run (keyed on runId — Retry counts as a new run), and the lives chip is
  * labelled (Round 3: relabelled again, ESCAPES LEFT — see docs/LevelBlocks.md §11).
  *
- * Round D: the FTUE is a persistent, walled script through wave 3
- * (store.ftueBeat drives the walls — see actions.ts/towerScene.ts). Two
- * cue kinds, never both at once (one voice):
+ * Round D: the FTUE is a persistent, walled script through wave 4
+ * (onboarding-balance round: was wave 3, before a third forced placement
+ * extended the script by one wave — store.ftueBeat drives the walls, see
+ * actions.ts/towerScene.ts). Two cue kinds, never both at once (one voice):
  *   - The empty-pad pulse is a canvas cue, positioned via stage.ts's
  *     designToScreen() — the same contain-fit transform stage.ts and
  *     towerScene.ts use internally, read here but never written, and never
  *     re-derived by hand (round C, task 2).
- *   - Every forced-beat arrow (upgrade0, and — final round — place0/place2
- *     too) is a DOM cue anchored to a live element inside StationRail.tsx
- *     by getBoundingClientRect() instead, and lives entirely there. Final
- *     round: place0/place2 used to point a canvas arrow at the target pad
- *     here, redundant with the selected-pad ring (which already shows
- *     which pad) and pointing at the wrong place besides — the player
- *     still has to tap a card in the rail, not the pad again.
+ *   - Every forced-beat arrow (upgrade0, and — final round — placeFirst/
+ *     place2/place3 too) is a DOM cue anchored to a live element inside
+ *     StationRail.tsx by getBoundingClientRect() instead, and lives entirely
+ *     there. Final round: the picker beats used to point a canvas arrow at
+ *     the target pad here, redundant with the selected-pad ring (which
+ *     already shows which pad) and pointing at the wrong place besides —
+ *     the player still has to tap a card in the rail, not the pad again.
  *
  * Round E: the picker-beat arrow's pad is store.ftueBeatPad, not a
  * hardcoded pad — see store.ts/towerScene.ts. The empty-pad pulse
  * (store.pulsePads) also stops being FTUE-exclusive: it fires after every
- * wave clear from wave 3 on (towerScene.ts's applyPostWavePulse).
+ * wave clear from wave 4 on (towerScene.ts's applyPostWavePulse).
  */
 import { useEffect, useState } from 'react';
 import { setMusicVolume, setSfxVolume, sfx, switchCue } from '../audio/audio.ts';
@@ -125,8 +126,9 @@ export default function Hud() {
     const [showObjective, setShowObjective] = useState(true);
     const [showMilestone, setShowMilestone] = useState(false);
     const [showGrant, setShowGrant] = useState(false);
-    // Final round, task 1: every forced-beat arrow (place0/place2 included
-    // now) lives inside StationRail.tsx — see this file's header comment.
+    // Final round, task 1: every forced-beat arrow (placeFirst/place2/
+    // place3 included) lives inside StationRail.tsx — see this file's
+    // header comment.
     const pulsePositions = usePadsScreenPos(pulsePads);
 
     // Coin top-up toast (round D, task 3): re-show on every grant, even a
@@ -323,11 +325,15 @@ export default function Hud() {
                 (see its own comment below) in favour of the same flow. */}
             {tdPhase === 'build' && selectedPad === null && ftueBeat === null && !menuOpen && (
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-2 px-3 pb-safe-bottom">
-                    {/* Round D: the FTUE now scripts every run through wave 3
-                        (not just the first), so ftueActive covers waves 1-2
-                        entirely and this hint's old wave 2-3 range is dead —
-                        it can only ever fire once, at wave 4, the first
-                        build phase after the script lets go. Kept: it's a
+                    {/* Round D: the FTUE now scripts every run through wave 4
+                        (onboarding-balance round: was wave 3, before a third
+                        forced placement extended the script by one wave), so
+                        ftueActive covers waves 1-3 entirely and this hint's
+                        old wave 2-3 range is dead — it can only ever fire
+                        once, at wave 4, the first build phase where the
+                        forced beats have all resolved (ftueBeat is null
+                        again, even though ftueActive/Kitchen Actions don't
+                        fully let go until Ready starts wave 4). Kept: it's a
                         real reminder for a genuinely new mechanic (upgrading)
                         at the first moment nothing else is cueing it.
                         Mobile layout round, task 2: used to float at a fixed
@@ -387,7 +393,7 @@ export default function Hud() {
                         Hidden for the same waves Ready still shows on
                         (ftueBeat === null can be true mid-FTUE, between
                         forced beats) — the scripted intro keeps the coin
-                        sink out of the player's hands until wave 3. */}
+                        sink out of the player's hands until wave 4. */}
                     {!ftueActive && (
                         <div className="pointer-events-auto flex justify-center gap-2">
                             {(['freeze', 'heat', 'slow'] as const).map((kind) => {

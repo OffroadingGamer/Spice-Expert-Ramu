@@ -22,6 +22,20 @@ const host = globalThis as typeof globalThis & { __spice_ramu_engine__?: { curre
 const slot = (host.__spice_ramu_engine__ ??= { current: null });
 
 /**
+ * Onboarding-balance round: the FTUE's forced first placement, moved off pad
+ * 0 (A1, bonus: null — the single worst opening in the game; pad0-rush's
+ * whole profile is "start there and nowhere else," and it died by level 4).
+ * Pad 4 is B3 (config.ts), bonus: damage x1.5 — confirmed against
+ * npm run balance as the highest-value opener against block 1's tanky
+ * support entries (data/waves.ts's block-1 tuning), where raw damage clears
+ * a burst faster than extra range or fire rate does at un-upgraded level 1.
+ * Every hardcoded reference to "the first forced pad" (scriptedRunStart,
+ * isFtueBeatResolvable, placeTower, upgradeTower, towerScene.ts,
+ * StationRail.tsx) reads this constant now instead of a literal 0.
+ */
+export const FTUE_FIRST_PAD = 4;
+
+/**
  * Run-scoped analytics bookkeeping. Reset every time a fresh engine is
  * registered (= a new run begins, see registerEngine). Lives here — not in
  * towerScene.ts — because tower placement/upgrade/sell and startWave are
@@ -73,21 +87,22 @@ export function getEngine(): Engine | null {
 }
 
 /**
- * The FTUE script's start payload (GDD §10.11): force pad 0's selection, a
- * fresh runId (remounts GameCanvas into a new engine), and beat 1 armed.
- * Three call sites need exactly this — MainMenu's Challenge Mode button,
- * main.tsx's cold-boot-straight-into-Challenge, and EndScreen's Retry —
- * each layering its own phase transition on top (phase: 'playing' for a
- * fresh mount into 'playing'; tdPhase: 'build' for Retry, which is already
- * on the 'playing' phase and just needs the sim-facing field reset). One
- * function here means the script's shape can't quietly drift between them.
+ * The FTUE script's start payload (GDD §10.11): force FTUE_FIRST_PAD's
+ * selection, a fresh runId (remounts GameCanvas into a new engine), and beat
+ * 1 armed. Three call sites need exactly this — MainMenu's Challenge Mode
+ * button, main.tsx's cold-boot-straight-into-Challenge, and EndScreen's
+ * Retry — each layering its own phase transition on top (phase: 'playing'
+ * for a fresh mount into 'playing'; tdPhase: 'build' for Retry, which is
+ * already on the 'playing' phase and just needs the sim-facing field reset).
+ * One function here means the script's shape can't quietly drift between
+ * them.
  */
 export function scriptedRunStart(): Partial<AppState> {
     return {
-        selectedPad: 0,
+        selectedPad: FTUE_FIRST_PAD,
         runId: store.get().runId + 1,
         ftueActive: true,
-        ftueBeat: 'place0',
+        ftueBeat: 'placeFirst',
         pulsePads: null,
     };
 }
@@ -106,10 +121,10 @@ function isFtueBeatResolvable(): boolean {
     const { ftueBeat, ftueBeatPad } = store.get();
     if (!ftueBeat || !engine) return true;
     if (ftueBeat === 'upgrade0') {
-        const t = engine.state.towers.find((tw) => tw.padIndex === 0);
+        const t = engine.state.towers.find((tw) => tw.padIndex === FTUE_FIRST_PAD);
         return !!t && t.level <= t.def.upgrades.length;
     }
-    const pad = ftueBeat === 'place0' ? 0 : ftueBeatPad;
+    const pad = ftueBeat === 'placeFirst' ? FTUE_FIRST_PAD : ftueBeatPad;
     return !engine.state.towers.some((tw) => tw.padIndex === pad);
 }
 
@@ -149,19 +164,20 @@ export function syncStore(): void {
 
 export function placeTower(padIndex: number, towerId: string): void {
     if (slot.current?.placeTower(padIndex, towerId)) {
-        // Round D: a forced picker beat (place0 at run start, place2 after
-        // wave 2) resolves the instant its own pad gets a tower — release
-        // the walls (Ready/Close/canvas-tap lock) right here, the single
-        // place this can happen, rather than duplicating the check per UI.
-        // Round E: place2's target is ftueBeatPad, not a hardcoded 2 (see
-        // store.ts). This MUST run before syncStore() below: the beat's
-        // target pad becoming occupied is exactly what resolves it, but
-        // it's also exactly what isFtueBeatResolvable() reads as "gone
-        // unresolvable" — releasing the beat first means syncStore() sees
-        // ftueBeat already null and never gets a chance to misread it.
+        // Round D: a forced picker beat (placeFirst at run start, place2
+        // after wave 2, place3 after wave 3) resolves the instant its own
+        // pad gets a tower — release the walls (Ready/Close/canvas-tap lock)
+        // right here, the single place this can happen, rather than
+        // duplicating the check per UI. Round E: place2/place3's target is
+        // ftueBeatPad, not a hardcoded pad number (see store.ts). This MUST
+        // run before syncStore() below: the beat's target pad becoming
+        // occupied is exactly what resolves it, but it's also exactly what
+        // isFtueBeatResolvable() reads as "gone unresolvable" — releasing
+        // the beat first means syncStore() sees ftueBeat already null and
+        // never gets a chance to misread it.
         const beat = store.get().ftueBeat;
-        const beatPad = beat === 'place0' ? 0 : store.get().ftueBeatPad;
-        if ((beat === 'place0' || beat === 'place2') && padIndex === beatPad) {
+        const beatPad = beat === 'placeFirst' ? FTUE_FIRST_PAD : store.get().ftueBeatPad;
+        if ((beat === 'placeFirst' || beat === 'place2' || beat === 'place3') && padIndex === beatPad) {
             store.patch({ ftueBeat: null });
         }
         syncStore();
@@ -176,10 +192,11 @@ export function placeTower(padIndex: number, towerId: string): void {
             runAnalytics.firstTowerPlaced = true;
             trackFunnelStep(3, 'first_tower_placed', 'run', 2);
         }
-        // GDD §10.11 pre-start beat: pad 0 is the only pad the FTUE forces a
-        // selection onto, so whatever lands there is "the tower id placed at
-        // the pre-start beat" — round B turns this into a Warrior achievement.
-        if (padIndex === 0 && store.get().ftueActive) {
+        // GDD §10.11 pre-start beat: FTUE_FIRST_PAD is the only pad the FTUE
+        // forces a selection onto, so whatever lands there is "the tower id
+        // placed at the pre-start beat" — round B turns this into a Warrior
+        // achievement.
+        if (padIndex === FTUE_FIRST_PAD && store.get().ftueActive) {
             setFtueFirstTower(towerId);
         }
         // Round E task 2: a pad that fills stops pulsing, whether it was
@@ -194,14 +211,14 @@ export function placeTower(padIndex: number, towerId: string): void {
 export function upgradeTower(padIndex: number): void {
     const towerId = slot.current?.state.towers.find((t) => t.padIndex === padIndex)?.def.id;
     if (slot.current?.upgradeTower(padIndex)) {
-        // Round D: the forced upgrade beat (pad 0 after wave 1) resolves the
-        // instant it upgrades — mirror placeTower's auto-close so the sheet
-        // doesn't linger, and release the walls. Round E: runs before
-        // syncStore() below for the same reason as placeTower() above — the
-        // level bump that resolves this beat is also what
+        // Round D: the forced upgrade beat (FTUE_FIRST_PAD after wave 1)
+        // resolves the instant it upgrades — mirror placeTower's auto-close
+        // so the sheet doesn't linger, and release the walls. Round E: runs
+        // before syncStore() below for the same reason as placeTower()
+        // above — the level bump that resolves this beat is also what
         // isFtueBeatResolvable() would otherwise have to re-derive from
         // scratch one line later.
-        if (store.get().ftueBeat === 'upgrade0' && padIndex === 0) {
+        if (store.get().ftueBeat === 'upgrade0' && padIndex === FTUE_FIRST_PAD) {
             store.patch({ ftueBeat: null, selectedPad: null });
         }
         syncStore();
@@ -230,9 +247,10 @@ export function setTargeting(padIndex: number, mode: TargetingMode): void {
 }
 
 export function startWave(): void {
-    // Round D: the current forced beat (place0/upgrade0/place2) walls Ready
-    // off entirely — one gate, here, so no UI path can start a wave out
-    // from under an unresolved beat regardless of what the button shows.
+    // Round D: the current forced beat (placeFirst/upgrade0/place2/place3)
+    // walls Ready off entirely — one gate, here, so no UI path can start a
+    // wave out from under an unresolved beat regardless of what the button
+    // shows.
     if (store.get().ftueBeat !== null) return;
     // Final round, task 4: same one-gate posture for the block-transition
     // lock (towerScene.ts) — Hud.tsx's disabled attribute is the visible
@@ -249,10 +267,14 @@ export function startWave(): void {
             runAnalytics.firstWaveStarted = true;
             trackFunnelStep(4, 'first_wave_started', 'run', 2);
         }
-        // The scripted FTUE retires the instant wave 3 BEGINS, not when it
-        // clears (round D changes this from round A's wave-3-clear trigger)
-        // — Sell/Close/full freedom apply for the rest of the run from here.
-        if (store.get().ftueActive && slot.current.state.waveIndex + 1 === 3) {
+        // The scripted FTUE retires the instant wave 4 BEGINS, not when it
+        // clears (round D changes this from round A's wave-3-clear trigger;
+        // onboarding-balance round: extended from wave 3 to wave 4 to make
+        // room for the third forced placement — towerScene.ts's
+        // applyFtueWaveEnd's cleared === 3 branch — which now owns the build
+        // phase between waves 3 and 4) — Sell/Close/full freedom apply for
+        // the rest of the run from here.
+        if (store.get().ftueActive && slot.current.state.waveIndex + 1 === 4) {
             retireFtue();
         }
     }
