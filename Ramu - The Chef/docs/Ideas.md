@@ -79,10 +79,48 @@ CAFE, NORTH INDIAN, SOUTH INDIAN, ITALIAN, NORTH EAST, NE FUSION, ITALIAN FUSION
 DESI FUSION, OVERTIME. Seven lines that each name a real cuisine read as progression;
 seven interchangeable hopeful lines read as filler.
 
-### Chosen dialogue
+### ✅ Chosen dialogue — SELECTED Sep 12 2026
 
-_Pending._ Three variants per beat were drafted Sep 12 2026 and put to the user; the
-selected set gets recorded here once chosen.
+Three voices were drafted per beat — **A warm & plain**, **B wry & light**, **C lyrical**.
+The user selected **A as the spine, with B at two deliberate points and C for the finale**.
+**12 boxes.**
+
+| # | When | Voice | Line |
+|---|---|---|---|
+| 1 | Opening | A | "Some days the tin is empty. Today's one of them." |
+| 2 | Opening | A | "But the stove still lights. That's enough to start." |
+| 3 | Wave 1 cleared | A | "They came back for seconds. Did you see that?" |
+| 4 | First upgrade bought | **B** | "New gear, same nerves. Let's find out." |
+| 5 | → Block 2 NORTH INDIAN | A | "A real dhaba. Tandoor and all. I'm not dreaming?" |
+| 6 | → Block 3 SOUTH INDIAN | A | "They want dosa now. My wrist is ready." |
+| 7 | → Block 4 ITALIAN | **B** | "They want Italian. I watched one video. We're fine." |
+| 8 | → Block 5 NORTH EAST | **B** | "Smoked chilli. I'll cry through this whole shift." |
+| 9 | → Block 6 NE FUSION | A | "I stopped copying recipes. I'm writing them." |
+| 10 | → Block 7 ITALIAN FUSION | A | "Two kitchens, one plate. Nobody taught me this." |
+| 11 | → Block 8 DESI FUSION | A | "This one's mine. Every bit of it." |
+| 12 | → Overtime (level 81) | **C** | "Every plate tonight had two pairs of hands. Thank you." |
+
+Box 5 fires after the boss at level 10, box 6 after 20, and so on to box 11 after level 70;
+box 12 follows the level-80 boss.
+
+#### 🔴 The tonal breaks are deliberate — do not normalise them
+
+⚠️ **Rows 7 and 8 are wry on purpose, sitting among warm ones.** Seven earnest boxes in a
+row is exactly where sincerity curdles into syrup, and blocks 4–5 (Italian, North East) are
+where Ramu is most plainly out of his depth — so the self-deprecation is *characterisation*
+at the one moment it's true, not an inconsistency. Anyone later "fixing" 7 and 8 to match
+the surrounding voice will flatten the arc. Same for **row 4**: "same nerves" keeps him human
+at the beat where he could tip into triumphant, immediately after his first win.
+
+✅ **The A-voice arc is doing work across rows 9–11**: *copying* recipes → *writing* them →
+*owning* the menu. Those three must stay in that order even if individual wording changes.
+
+✅ **Row 3 turns to the player** — "did you see that?" — which is what makes row 12's
+thank-you land 80 levels later. They are a matched pair; changing one without the other
+costs the payoff.
+
+➕ Row 12 is the only line reaching for something, and it earns it: "two pairs of hands"
+says the thing without stating it.
 
 ---
 
