@@ -1595,9 +1595,39 @@ STALE.** Round A2 task 4 gated that mode behind `devModeEnabled()`, which requir
 `?test=1` and latches to localStorage. Public players cannot reach it, and Challenge Mode
 takes the primary CTA when it is hidden.
 
-🔒 **The release sequence — and why the order matters.** `private` and `review` are
-creator-writable; **`public` is written by RUN** on approving a review tag, so the public tag
-cannot be set directly. Separately, `set-public` controls **Explore-page visibility**.
-Running `set-public` before RUN approves the new version would send Explore traffic to
-whatever is *currently* public. Correct order: `update-tag review` → wait for RUN →
-`set-public`.
+🔒 **The release sequence.** `private` and `review` are creator-writable; **`public` is
+written by RUN** on approving a review tag, so the public tag cannot be set directly.
+
+✅ **SHIPPED Sep 13 2026.** `update-tag review --version 1.67.0` at **16:44:21 IST**; RUN
+moved Public to 1.67.0 by **16:56:09 IST** — **11 m 48 s**. ➕ That is the second measurement
+of RUN's approval latency (the first was only "under an hour"), and it is the number to plan
+with until a third contradicts it.
+
+### 🔴 CORRECTION — what `rundot game set-public` actually is
+
+⚠️ **An earlier version of this section described `set-public` as a separate "Explore-page
+visibility" toggle to run AFTER RUN moves the public tag. That was wrong, and following it
+produced a guaranteed failure.** The real behaviour, from the command itself:
+
+- it accepts **`--version <version>`**, defaulting to `latest`;
+- its own output line is **"Submitting game for review..."**;
+- run with Public already at 1.67.0 it returns **400**:
+  `"Version 1.67.0 is not newer than the public version 1.67.0. Bump the version, deploy it,
+  and submit that one for review."`
+
+🔥 So it is a **version-submission** command requiring a version **strictly newer than the
+current public version** — not a visibility switch. Running it after the public tag has
+already moved is precisely the state in which it cannot succeed. The most parsimonious
+reading of that error is that `set-public` and the `update-tag review` → RUN → public route
+are **two paths to the same destination**, and taking one closes the other.
+
+⚠️ **Unverified, deliberately:** whether the game is Explore-listed could not be confirmed
+from the CLI — `rundot game info` exposes no visibility field. The authoritative surface is
+RUN's own web UI / Explore page. 🔴 **Do not bump-and-deploy to satisfy `set-public`
+speculatively**: the public tag is currently correct, that is the valuable state, and a
+speculative bump risks it to buy something that may already be true.
+
+➕ The root mistake was asserting a command's semantics from its **help text** (*"Sets your
+game visible in the `explore` page"*) rather than from its behaviour. The help text is not
+wrong about the destination; it says nothing about the precondition, and the precondition is
+what mattered.
