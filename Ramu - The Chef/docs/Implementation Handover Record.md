@@ -1631,3 +1631,126 @@ speculative bump risks it to buy something that may already be true.
 game visible in the `explore` page"*) rather than from its behaviour. The help text is not
 wrong about the destination; it says nothing about the precondition, and the precondition is
 what mattered.
+---
+
+### 2026-09-12 — v1.68.0: the boot race behind the mobile black screen
+
+**Status:** ✅ **RETURNED, VERIFIED** — commit `63eda16`, private **v1.68.0**. Two files.
+
+🔥 **Found in RUN's own error telemetry, which nobody had checked.**
+`rundot analytics export error_breakdown_7d` was carrying the answer the whole time:
+
+```
+RUNTIME_ERROR - handleError - non-fatal
+"Cannot access 'WebGLRenderer' before initialization."
+1.65.0 - ios - 3 occurrences / 3 sessions / 1 player
+```
+
+`crash_sessions_7d` was empty — caught, never fatal.
+
+#### The mechanism
+
+Pixi 8 code-splits the renderer into its own lazily-imported chunk
+(`dist/assets/WebGLRenderer-*.js`, 68 KB). **Two independent consumers first-touched that
+chunk concurrently at boot:**
+
+1. `main.tsx` step 6 patches `phase: 'playing'`, mounting `GameCanvas`, whose effect calls
+   `createPixiApp()` → `app.init()`.
+2. `main.tsx` step 8 fires `generateTowerIcons()` → `autoDetectRenderer()`, fire-and-forget,
+   microseconds later.
+
+Concurrent first-touch of a chunk with an internal cycle yields that TDZ error. ✅ It
+explains everything the earlier diagnosis did not: the intermittency, the iOS skew (slower
+parse widens the window), UI and music loading while the canvas stayed black, and why a
+retry clears it.
+
+🔴 **A correction to the v1.66.0 entry.** That round's two named root causes — the
+unhandled `app.init()` rejection and the `scale 0` commit — were **not what threw**.
+v1.66.0's `.catch()` + retry is genuinely the right shape of fix for a race, which is why
+the symptom cleared on device, but it was reached without identifying the mechanism, and it
+left the trigger in place.
+
+#### The fix
+
+`generateTowerIconsWhenSafe()` gates the icon renderer on `store.engineReady` — set only by
+`registerEngine()`, which runs after `createTowerScene()`, by which point the chunk is fully
+evaluated and a second `autoDetectRenderer()` is a cache hit. **8 s fallback** so a broken
+canvas never leaves the UI permanently icon-less; GameCanvas's own retries fire at
+0/+300/+900/+2100 ms, so the fallback sits clear of the whole window. Both previously silent
+catch sites now `console.warn` + `track('error_occurred')`.
+
+✅ **Acceptance was structural, by instruction.** This defect cannot be reproduced in
+`vite dev`, and the round was explicitly forbidden from closing on "could not reproduce" —
+the failure mode that cost v1.60 and v1.61. The agent argued the ordering guarantee from the
+code and exercised both exit paths.
+
+---
+
+### 2026-09-12 — v1.69.0: block-1 onboarding, the FTUE's opening pad, and an unloseable tutorial
+
+**Status:** ✅ **RETURNED, VERIFIED** — commit `6d39595`, private **v1.69.0**. Seven files.
+
+**Field report:** three props placed, `CASH 30`, wave 4, still losing. *"FTUE should be so
+that losing is impossible."*
+
+#### 🔴 The simulator had been reporting this since before launch
+
+The per-level rows said it plainly; only the summary line was ever read.
+
+| Profile | L4 | L5 | Died |
+|---|---|---|---|
+| fox-spam (4 props) | held, 81% depth, 36 s | — | 35 |
+| balanced (3) | **leaked 2** | **leaked 2** | 34 |
+| miser (2) | **leaked 4** | **leaked 4** | **6** |
+| pad0-rush (1) | **dead** | — | **4** |
+
+🔥 **And the FTUE *was* `pad0-rush`.** The tutorial hardcoded **pad 0**, which is A-row
+and carries **`bonus: null`** — the single worst opening on the board. The profile modelling
+what the tutorial teaches had been reporting death at level 4 for rounds, logged as a
+"floor case carried for continuity".
+
+#### The cause
+
+`data/waves.ts`'s `composeLevel`, block-1 final `else` (levels 4–10):
+`spacingMult = 0.15` with `hpBoost = 2.1` — five tanky units inside one second, 36–47 s to
+clear, immediately after level 3's 17 chaff. Its own comment records that it was tuned to
+make onboarding "a real test" — validated against `maxed-meta`, the declared primary case,
+where it is invisible.
+
+✅ **Ruled out, not assumed:** `lateEconomy.bountyMult: 0.55` starts at level 11
+(`fromLevel`), so the early economy was never implicated.
+
+#### The four changes
+
+| | Change | File |
+|---|---|---|
+| **C** | `spacingMult 0.15→0.45`, `hpBoost 2.1→1.35` | `data/waves.ts` 🔓 unsealed for this round only |
+| **D** | `startCoins 140→200`, `waveBonus 15→25` | `config.ts` |
+| **E** | FTUE opens on `FTUE_FIRST_PAD = 4` (B3, damage ×1.5); beats `placeFirst → upgrade0 → place2 → place3` fill B3/B2/B1 | `actions.ts` |
+| **F** | While `ftueActive`, restore lives to `startLives` at each build phase | `towerScene.ts` |
+
+**140 coins bought exactly two props** — the third was bounty-funded and a fourth was never
+affordable, which is what the screenshot showed. 200 makes three the intended opening.
+
+#### New baseline: **35 / 36 / 11 / 4 / 90**
+
+✅ `balanced` now shows `lives 10 (leaked 0)` on **every level 1–12**. ✅ `maxed-meta`
+unchanged at **90**, inside its 85–110 criterion. ✅ `miser` still loses, as its contract
+requires. The endgame tuning was not disturbed.
+
+#### ⚠️ What F is, and is not
+
+F restores on wave **clear**, so it cannot catch a single wave that drains all ten lives at
+once — level 3 is 17 units at 1 `livesCost`, and `stag` costs 3. A true floor belongs at the
+decrement site in `sim/engine.ts` (`state.lives -= e.def.livesCost`), still sealed. 🔴 **F
+is also invisible to `npm run balance`** — the simulator drives the engine directly and has
+no FTUE. C and D are data and stay modelled; F is not, and must never become load-bearing
+for the acceptance numbers. If it ever fires *visibly*, that is a signal C/D need retuning,
+not that F needs widening.
+
+➕ **Beyond spec, and right:** `grantFtueShortfall()` tops up coins so the forced upgrade
+beat can never be unaffordable — closing a dead-end the old code documented but never fixed.
+
+✅ **The agent self-caught a bug its own edit introduced:** `towerScene.ts`'s scene-mount
+reset still hardcoded pad 0, clobbering the pad-4 selection at boot. It did not match the
+search pattern this handover named — see Retro 105.

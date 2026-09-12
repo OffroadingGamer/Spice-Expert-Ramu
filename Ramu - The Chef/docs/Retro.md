@@ -2561,3 +2561,51 @@ uniques are the score; the trend matters more than any single day.
      failure to be silent** — then the next occurrence arrives as a report instead of a
      bounce. ⚠️ The corollary: an unhandled rejection in a boot path is not a style issue,
      it is a category of outage that cannot be diagnosed after the fact.
+
+103. 🔴 **The balance simulator reported the bug for weeks; we read only the summary
+     line.** Sep 12 2026. A player reported waves 4–5 unwinnable with three props. The cause
+     was already sitting in `npm run balance` output — `balanced` showing
+     `lives 8 (leaked 2)` at level 4 and `(leaked 2)` again at level 5, `miser` bleeding
+     four lives at each, `pad0-rush` dead at 4. 🔥 **Every round had checked the five
+     end-of-run numbers (35/34/6/4/90) and treated them as the whole report.** The per-level
+     rows — which the tool prints by default, unasked — were never read. ✅ **Rule: when a
+     tool emits a detail view alongside a summary, the detail is the output and the summary
+     is an index.** An aggregate that holds steady is not evidence that the thing it
+     aggregates is healthy; it is evidence of nothing in particular. ⚠️ Sharper still:
+     `pad0-rush: LOST on level 4` was *documented in the code* as "the floor case kept for
+     continuity across rounds" — a number deliberately reclassified as decoration. The
+     tutorial forced pad 0. **We had a profile modelling exactly what the game teaches, it
+     reported failure at level 4 every single run, and it had been relabelled as noise.**
+     This is [94] recurring with the proxy inverted: not a proxy that missed the goal, but a
+     measurement that hit it and was filed as irrelevant.
+
+104. ✅ **Check whether the platform already recorded the failure before theorising about
+     it.** Sep 12 2026. The mobile cold-boot black screen was diagnosed from a screenshot
+     across two rounds, producing two plausible root causes that turned out not to be what
+     threw. 🔥 **RUN had been capturing the actual exception the entire time** —
+     `rundot analytics export error_breakdown_7d` returned
+     `"Cannot access 'WebGLRenderer' before initialization."` with version, platform,
+     session and player counts, from its own SDK-level `handleError`. One command, and it
+     named the mechanism outright. ⚠️ **Rule: for any defect observed in the field, query
+     the platform's telemetry before building a theory.** The instinct to reason from
+     symptoms is right when nothing else exists; it is wasted effort when a server-side log
+     is one command away. ➕ The same export surfaced `version_mix_30d`, which showed that
+     essentially no real player had ever touched the current build — a second fact that
+     materially changed a spending decision and that no amount of code reading would have
+     produced.
+
+105. ✅ **When replacing a hardcoded constant, verify by driving the system — not by
+     grepping for the old literal.** Sep 12 2026. Moving the FTUE off pad 0 meant replacing
+     a hardcoded `0` with `FTUE_FIRST_PAD = 4`. The handover named the specific search
+     pattern (`padIndex === 0`) and listed the call sites. 🔴 **One site did not match it**
+     — `towerScene.ts`'s scene-mount reset read
+     `selectedPad: store.get().ftueActive ? 0 : null`, a bare literal in a ternary — and it
+     silently clobbered the correct selection at boot. ✅ The agent found it by ticking a
+     live engine through the FTUE over CDP and reading `selectedPad` back, *"despite the
+     code being correct everywhere else"*. ⚠️ **Rule: a grep proves the absence of a
+     pattern, never the absence of a behaviour.** A constant-extraction refactor is exactly
+     the case where the remaining instances are the ones written differently — so the
+     acceptance test has to observe the value at runtime. ➕ Note this is the mirror of
+     [100]: there, a live report beat a passing desktop test; here, live execution beat
+     static reading. Both say the same thing — **the artefact under test is the running
+     system.**
