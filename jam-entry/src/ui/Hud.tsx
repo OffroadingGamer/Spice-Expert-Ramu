@@ -315,104 +315,74 @@ export default function Hud() {
                 </div>
             )}
 
-            {/* Ready: bottom centre, out of the way of the build sheet. The
-                real gate against starting a wave mid-beat is actions.ts's
-                startWave() (one place); ftueBeat === null here just keeps
-                this display rule in sync with it — without it Ready would
-                flash visible during the post-wave-2 pulse, where
-                selectedPad is briefly null before pad 2 auto-selects. */}
-            {tdPhase === 'build' && selectedPad === null && ftueBeat === null && !menuOpen && !ftueActive && (
-                <div className="pointer-events-auto absolute inset-x-0 bottom-0 flex justify-center gap-2 px-3 pb-safe-bottom">
-                    {/* Round I Task 9: Kitchen Actions — the coin sink. One
-                        wave's effect, bought here, gone after. Deliberately
-                        minimal/provisional (round 3 restyles this area) — a
-                        plain row of three buttons, each showing its live
-                        price (sim/engine.ts's kitchenActionCost) and
-                        disabling once bought for this wave or unaffordable.
-                        Final round, task 2: moved from bottom-24 to the true
-                        edge (bottom-0 + pb-safe-bottom) — Ready grew enough
-                        that the old stacking (this row above Ready) no
-                        longer had room for both; putting this compact row
-                        below the now-bigger Ready button, where Ready used
-                        to sit, fit both without shrinking Ready back down. */}
-                    {(['freeze', 'heat', 'slow'] as const).map((kind) => {
-                        const bought = getEngine()?.state.kitchenActions[kind] ?? false;
-                        const price = kitchenActionPrice(kind);
-                        const label = kind === 'freeze' ? 'Deep Freeze' : kind === 'heat' ? 'Turn Up The Heat' : 'Slow Service';
-                        const disabled = bought || coins < price;
-                        return (
-                            <button
-                                key={kind}
-                                type="button"
-                                disabled={disabled}
-                                className="rounded-xl bg-black/55 px-2 py-1.5 text-center text-[0.7rem] font-bold leading-tight text-white disabled:opacity-45"
-                                onClick={() => { sfx.click(); buyKitchenAction(kind); }}
-                            >
-                                <span className="block">{label}</span>
-                                <span className="block">{bought ? '✓ bought' : `${price}c`}</span>
-                            </button>
-                        );
-                    })}
-                </div>
-            )}
-
-            {/* Round D: the FTUE now scripts every run through wave 3 (not
-                just the first), so ftueActive covers waves 1-2 entirely and
-                this hint's old wave 2-3 range is dead — it can only ever
-                fire once, at wave 4, the first build phase after the script
-                lets go. Kept: it's a real reminder for a genuinely new
-                mechanic (upgrading) at the first moment nothing else is
-                cueing it.
-                Final polish round, task 7: pulled out of the Ready-button
-                column and given its own fixed band above it, independent of
-                Ready's or the Kitchen Actions row's own height — a fixed
-                clearance is simpler and safer than measuring either row's
-                live height, and neither can trade places with this since
-                none of the three is keyed off another.
-                Final round, task 2: bumped from bottom-40 to bottom-48 —
-                Kitchen Actions moved to the true bottom edge and Ready grew
-                and moved up to sit above it, so this toast's own clearance
-                target became Ready's new (higher, taller) top edge, not the
-                actions row directly. */}
-            {tdPhase === 'build' && selectedPad === null && ftueBeat === null && !menuOpen && wave === 4 && (
-                <div className="pointer-events-none absolute inset-x-0 bottom-48 flex justify-center px-3">
-                    <p className="rounded-xl bg-black/55 px-3 py-2 text-lg font-bold">
-                        Tap a cook to upgrade
-                    </p>
-                </div>
-            )}
-
-            {/* Final round, task 2: enlarged (px-16/py-5/text-3xl, was
-                px-14/py-4/text-2xl) for a bigger tap target, and moved up
-                off the true bottom edge — but not by stacking a taller
-                button into the same footprint the old (smaller) one used.
-                The first attempt did exactly that (mb-6 on top of bottom-0)
-                and measurably overlapped the Kitchen Actions row by 12px at
-                wave 4 — enlarging AND lifting both eat into the same fixed
-                gap the old, smaller button only barely cleared. The actual
-                fix (bottom-16 here, Kitchen Actions moved to bottom-0
-                above) gives Ready its own clear band with room to be
-                properly bigger, confirmed by re-measuring, not re-guessing.
-                The looping pulse lives on a WRAPPING div, not the button
-                itself — animating the button's own transform would fight
-                active:scale-95's tap feedback (both target the same
-                property; the keyframe would win every frame and the press
-                would never visibly register). Task 4: locked (visibly, via
-                disabled + dimmed styling, not just inert) for
-                BACKDROP_LOCK_S while a real block transition crossfades —
-                actions.ts's startWave() is the real gate, same one-gate
-                posture as every other FTUE wall in this file; disabled
-                also suspends the pulse, since animating "tap me" on a
-                button that currently can't be tapped would be its own
-                small lie. */}
+            {/* Mobile layout round, task 1: Ready and the Kitchen Actions row
+                collided on-device three times running (12px overlap, then a
+                34px-safe-area overlap the desktop-emulation testing that
+                "fixed" it never had). Each prior fix was a magic offset
+                (bottom-16 / bottom-0) tuned against a zero-inset desktop
+                measurement, so it broke again the moment a real
+                env(safe-area-inset-bottom) (~34px on a home-indicator
+                device) lifted the actions row without also lifting Ready.
+                The structural fix: ONE bottom-anchored flex column holds
+                the wave-4 toast, Ready, and the actions row, in that visual
+                order, with a shared `gap` between whichever of them render
+                and `pb-safe-bottom` applied exactly once on the column
+                itself. Ready's position is now "however tall the actions
+                row is, plus one gap" instead of a fixed guess — the two
+                literally cannot overlap at any viewport, inset, or text
+                scale, because normal flex flow (not two independently
+                positioned siblings) is what's placing them. This also
+                retires the wave-4 toast's old bottom-48 fixed clearance
+                (see its own comment below) in favour of the same flow. */}
             {tdPhase === 'build' && selectedPad === null && ftueBeat === null && !menuOpen && (
-                <div className="absolute inset-x-0 bottom-16 flex flex-col items-center px-3">
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-2 px-3 pb-safe-bottom">
+                    {/* Round D: the FTUE now scripts every run through wave 3
+                        (not just the first), so ftueActive covers waves 1-2
+                        entirely and this hint's old wave 2-3 range is dead —
+                        it can only ever fire once, at wave 4, the first
+                        build phase after the script lets go. Kept: it's a
+                        real reminder for a genuinely new mechanic (upgrading)
+                        at the first moment nothing else is cueing it.
+                        Mobile layout round, task 2: used to float at a fixed
+                        bottom-48 with no z-index, so a z-10 pad pulse
+                        (below) could paint over it — z-index alone doesn't
+                        reach across siblings reliably once one of them wins
+                        the stacking-context tiebreak, so this column also
+                        carries z-20 (below) to make the whole block win.
+                        Living in this flex column (instead of its own
+                        absolute offset) also means it always sits exactly
+                        one gap above Ready, whatever Ready's own height
+                        ends up being at this viewport. */}
+                    {wave === 4 && (
+                        <p className="rounded-xl bg-black/55 px-3 py-2 text-lg font-bold">
+                            Tap a cook to upgrade
+                        </p>
+                    )}
+
+                    {/* Ready: enlarged for a bigger tap target, sized down at
+                        narrow (~400 CSS px) widths via the sm: breakpoint
+                        rather than a single fixed size — px-16/py-5/text-3xl
+                        read as oversized on a phone but are the right scale
+                        again once the viewport is wide enough (~740 px) not
+                        to look undersized. The looping pulse lives on a
+                        WRAPPING div, not the button itself — animating the
+                        button's own transform would fight active:scale-95's
+                        tap feedback (both target the same property; the
+                        keyframe would win every frame and the press would
+                        never visibly register). Locked (visibly, via
+                        disabled + dimmed styling, not just inert) for
+                        BACKDROP_LOCK_S while a real block transition
+                        crossfades — actions.ts's startWave() is the real
+                        gate, same one-gate posture as every other FTUE wall
+                        in this file; disabled also suspends the pulse, since
+                        animating "tap me" on a button that currently can't
+                        be tapped would be its own small lie. */}
                     <div className={backdropTransitioning ? '' : 'motion-safe:animate-ready-pulse'}>
                         <button
                             type="button"
                             disabled={backdropTransitioning}
                             className={
-                                'pointer-events-auto rounded-2xl px-16 py-5 text-3xl font-bold shadow-lg transition-transform active:scale-95 ' +
+                                'pointer-events-auto rounded-2xl px-10 py-4 text-2xl font-bold shadow-lg transition-transform active:scale-95 sm:px-16 sm:py-5 sm:text-3xl ' +
                                 (backdropTransitioning ? 'bg-white/20 text-white/40' : 'bg-primary text-black')
                             }
                             onClick={() => { sfx.startWave(); startWave(); }}
@@ -420,6 +390,39 @@ export default function Hud() {
                             Ready!
                         </button>
                     </div>
+
+                    {/* Round I Task 9: Kitchen Actions — the coin sink. One
+                        wave's effect, bought here, gone after. Deliberately
+                        minimal/provisional (round 3 restyles this area) — a
+                        plain row of three buttons, each showing its live
+                        price (sim/engine.ts's kitchenActionCost) and
+                        disabling once bought for this wave or unaffordable.
+                        Hidden for the same waves Ready still shows on
+                        (ftueBeat === null can be true mid-FTUE, between
+                        forced beats) — the scripted intro keeps the coin
+                        sink out of the player's hands until wave 3. */}
+                    {!ftueActive && (
+                        <div className="pointer-events-auto flex justify-center gap-2">
+                            {(['freeze', 'heat', 'slow'] as const).map((kind) => {
+                                const bought = getEngine()?.state.kitchenActions[kind] ?? false;
+                                const price = kitchenActionPrice(kind);
+                                const label = kind === 'freeze' ? 'Deep Freeze' : kind === 'heat' ? 'Turn Up The Heat' : 'Slow Service';
+                                const disabled = bought || coins < price;
+                                return (
+                                    <button
+                                        key={kind}
+                                        type="button"
+                                        disabled={disabled}
+                                        className="rounded-xl bg-black/55 px-2 py-1.5 text-center text-[0.7rem] font-bold leading-tight text-white disabled:opacity-45"
+                                        onClick={() => { sfx.click(); buyKitchenAction(kind); }}
+                                    >
+                                        <span className="block">{label}</span>
+                                        <span className="block">{bought ? '✓ bought' : `${price}c`}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             )}
 

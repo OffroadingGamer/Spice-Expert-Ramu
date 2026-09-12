@@ -256,7 +256,7 @@ export default function StationRail() {
                                             type="button"
                                             disabled={!affordable}
                                             className={
-                                                'w-full rounded-lg py-2 text-[0.68rem] leading-tight font-bold transition-transform active:scale-95 ' +
+                                                'w-full rounded-lg px-1 py-2 text-center text-[0.62rem] leading-tight font-bold break-words transition-transform active:scale-95 ' +
                                                 (affordable ? 'bg-primary text-black' : 'bg-white/10 text-white/40')
                                             }
                                             onClick={() => {
@@ -271,7 +271,7 @@ export default function StationRail() {
                                     );
                                 })()
                             ) : (
-                                <span className="w-full rounded-lg bg-white/10 py-2 text-center text-[0.68rem] font-bold text-white/50">
+                                <span className="w-full rounded-lg bg-white/10 px-1 py-2 text-center text-[0.62rem] font-bold break-words text-white/50">
                                     Max
                                 </span>
                             )}
@@ -282,7 +282,7 @@ export default function StationRail() {
                                 type="button"
                                 disabled={ftueActive}
                                 className={
-                                    'w-full rounded-lg py-2 text-[0.68rem] font-bold text-white transition-transform active:scale-95 ' +
+                                    'w-full rounded-lg px-1 py-2 text-center text-[0.62rem] font-bold break-words text-white transition-transform active:scale-95 ' +
                                     (ftueActive ? 'bg-red-500/30 opacity-40' : 'bg-red-500/80')
                                 }
                                 onClick={() => { sfx.click(); setConfirmSell(true); }}
