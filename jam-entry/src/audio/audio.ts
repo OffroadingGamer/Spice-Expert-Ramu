@@ -178,7 +178,7 @@ const SAMPLES: Record<SampleId, { url: string; gain: number }> = {
     // final round's own guess (block-transition.mp3) never existed; the id
     // stays 'block-transition' (ids and filenames already differ
     // elsewhere, e.g. lose -> ah.mp3), only the url was wrong.
-    'block-transition': { url: 'audio/bombay-transition.mp3', gain: 0.5 },
+    'block-transition': { url: 'audio/bombay-transition.mp3', gain: 0.75 }, // 1.5x: user could not hear it under the ducked BGM at 0.5. Output peaks -10.08 dBFS, ample headroom.
 };
 
 /** The CDN-streamed music cues (see switchCue near the sequencer, below).
