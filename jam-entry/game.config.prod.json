@@ -1,8 +1,17 @@
-﻿{
+{
   "gameId": "PpB5gECS0AMU49mGYAKM",
   "relativePathToDistFolder": "dist",
   "usesPreloader": false,
   "orientation": "portrait",
-  "keywords": null,
+  "keywords": [
+    "tower-defense",
+    "cooking",
+    "chef",
+    "kitchen",
+    "indian",
+    "strategy",
+    "cozy",
+    "back-to-work"
+  ],
   "kitId": "september-jam-tower-defense"
 }
