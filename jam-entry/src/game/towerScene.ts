@@ -11,6 +11,8 @@ import {
     Container,
     Graphics,
     Sprite,
+    Text,
+    TextStyle,
     type Application,
     type FederatedPointerEvent,
     type Texture,
@@ -326,8 +328,60 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     const board = new Container(); // path, burrows, pads, selection ring
     const world = new Container(); // towers, enemies, projectiles (y-sorted)
     world.sortableChildren = true;
-    boardRoot.addChild(board, world);
+    // Task 4 (delivered-audio round): coin-kill popups, above everything
+    // else in the board (its own layer, not fighting world's y-sort zIndex).
+    const popupLayer = new Container();
+    boardRoot.addChild(board, world, popupLayer);
     stage.root.addChild(backdropLayer, boardRoot);
+
+    // Pool, not spawn-per-kill: 4x speed can kill many enemies (splash) in
+    // one frame, and a fresh PIXI.Text + style per popup is exactly the
+    // "cost frames" the handover warns against. Fixed pool of reusable Text
+    // nodes; a kill that finds every slot busy is simply skipped (capped,
+    // never grows) rather than queued or forced.
+    const COIN_POPUP_POOL_SIZE = 16;
+    const COIN_POPUP_LIFETIME_S = 0.8;
+    const COIN_POPUP_RISE_PX = 34; // per second, in design units
+    const coinPopupStyle = new TextStyle({
+        fontSize: 22,
+        fontWeight: 'bold',
+        fill: 0xffd54a,
+        stroke: { color: 0x000000, width: 3 },
+    });
+    const coinPopupPool: { text: Text; life: number; active: boolean }[] = [];
+    for (let i = 0; i < COIN_POPUP_POOL_SIZE; i++) {
+        const text = new Text({ text: '', style: coinPopupStyle });
+        text.anchor.set(0.5);
+        text.visible = false;
+        popupLayer.addChild(text);
+        coinPopupPool.push({ text, life: 0, active: false });
+    }
+
+    /** Spawns nothing (silently) once every pooled slot is already busy —
+     *  the intended cap, not a bug. */
+    function spawnCoinPopup(x: number, y: number, amount: number): void {
+        const slot = coinPopupPool.find((p) => !p.active);
+        if (!slot) return;
+        slot.active = true;
+        slot.life = COIN_POPUP_LIFETIME_S;
+        slot.text.text = `+${amount}`;
+        slot.text.position.set(x, y);
+        slot.text.alpha = 1;
+        slot.text.visible = true;
+    }
+
+    /** Called once per RENDERED frame (not per substep) with the frame's
+     *  own dt — popups rise/fade at a constant real-time pace regardless of
+     *  the game-speed multiplier, same posture as fadeBackdrop's dt. */
+    function updateCoinPopups(dt: number): void {
+        for (const p of coinPopupPool) {
+            if (!p.active) continue;
+            p.life -= dt;
+            if (p.life <= 0) { p.active = false; p.text.visible = false; continue; }
+            p.text.y -= dt * COIN_POPUP_RISE_PX;
+            p.text.alpha = Math.max(0, p.life / COIN_POPUP_LIFETIME_S);
+        }
+    }
 
     // the bugs' road: fat rounded polyline, edge stroke first for a border
     const road = new Graphics();
@@ -341,12 +395,25 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     board.addChild(road);
 
     // burrows at both ends of the road, so bugs appear and vanish INTO
-    // something no matter where the board sits vertically
+    // something no matter where the board sits vertically.
+    // Delivered-audio round, task 5: a round line cap extends a stroke by
+    // half its own width BEYOND each endpoint (same reasoning kitchenScene.ts's
+    // round-12a comment already documents for its own belt-cap fix) — here
+    // that's (SZ.pathWidth + 14) / 2 = 43 units past both (170,90) and
+    // (540,1300), each approached on a vertical path segment. The old fixed
+    // 64-tall hole only covered 32 of that, so the road's rounded end
+    // visibly poked out past the decal by 11 units at both burrows. Sized
+    // from the measured protrusion, not guessed: height covers the full
+    // cap radius on both sides (2x), width keeps the original 110/64
+    // aspect ratio exactly.
+    const capRadius = (SZ.pathWidth + 14) / 2;
+    const holeHeight = capRadius * 2;
+    const holeWidth = holeHeight * (110 / 64);
     for (const end of [CONFIG.path[0], CONFIG.path[CONFIG.path.length - 1]]) {
         const hole = new Sprite(tex.burrow);
         hole.anchor.set(0.5);
-        hole.width = 110;
-        hole.height = 64;
+        hole.width = holeWidth;
+        hole.height = holeHeight;
         hole.position.set(end.x, end.y);
         board.addChild(hole);
     }
@@ -446,6 +513,19 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     // uid -> enemy type, so a leaked ticket can report which dish it was;
     // only ever grows (uids never repeat), which is fine for one run's life
     const enemyDefByUid = new Map<number, string>();
+    // uid -> that enemy's base bounty (data/enemies.ts, sealed — read via
+    // the live instance's own e.def.bounty, never imported directly).
+    // Task 4: this is what lets trackDeathBounties credit the SAME amount
+    // engine.ts:628 actually paid (base * lateEconomy.bountyMult past
+    // fromLevel) without needing anything from the sealed engine's own
+    // { type: 'death' } event, which carries neither position nor amount.
+    const enemyBountyByUid = new Map<number, number>();
+    // uid -> credited coin amount, for a death attributed THIS frame — the
+    // syncEnemies() removal loop (which already has each enemy's last
+    // rendered position) drains this to spawn the actual popup, then
+    // clears it; a uid that leaked, or died in a step this frame's
+    // attribution couldn't disambiguate, is simply never in here.
+    const pendingBounties = new Map<number, number>();
 
     /** Attribute this step's leak(s) to an enemy type when unambiguous —
      *  i.e. nothing also died in the same physics step. Never guesses. */
@@ -464,6 +544,34 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 wave,
                 lives_remaining: engine.state.lives,
             });
+        }
+    }
+
+    /**
+     * Task 4 (delivered-audio round): a coin popup must never show for a
+     * leak (🔴 acceptance) — mirrors trackLeaksForStep's own attribution
+     * exactly (same events, same preUids, same "never guess" posture), just
+     * for the opposite event. Only credits when this step's missing uids
+     * are ALL deaths (leakCount === 0) and the count matches exactly; a
+     * step that mixes a leak in with deaths is genuinely ambiguous per-uid
+     * (which missing uid was which event?) and is skipped entirely rather
+     * than risk crediting the leaked one. `level` is read by the CALLER
+     * before engine.step() so it matches engine.ts:627's own snapshot for
+     * the bounty math this exact step just ran (waveIndex only advances
+     * on a same-step wave-clear, which happens AFTER the death/bounty pass).
+     */
+    function trackDeathBounties(stepEvents: EngineEvent[], preUids: Set<number>, level: number): void {
+        const deathCount = stepEvents.filter((e) => e.type === 'death').length;
+        if (deathCount === 0) return;
+        const leakCount = stepEvents.filter((e) => e.type === 'leak').length;
+        const postUids = new Set(engine.state.enemies.map((e) => e.uid));
+        const missing = [...preUids].filter((uid) => !postUids.has(uid));
+        if (leakCount !== 0 || missing.length !== deathCount) return;
+        const bountyMult = level < CONFIG.economy.lateEconomy.fromLevel ? 1 : CONFIG.economy.lateEconomy.bountyMult;
+        for (const uid of missing) {
+            const bounty = enemyBountyByUid.get(uid);
+            if (bounty === undefined) continue;
+            pendingBounties.set(uid, Math.round(bounty * bountyMult));
         }
     }
 
@@ -713,10 +821,21 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         }
         for (const [uid, v] of enemyViews) {
             if (!alive.has(uid)) {
+                // Task 4: this loop already has the last rendered position
+                // for every uid being torn down, dead or leaked alike —
+                // exactly what a coin popup needs, and exactly why it's
+                // spawned HERE rather than back in the substep loop (which
+                // only knows uids and amounts, not screen position).
+                // pendingBounties holds ONLY uids trackDeathBounties already
+                // attributed as an unambiguous death this frame; a leaked
+                // uid, or one from an ambiguous mixed step, is never in it.
+                const credited = pendingBounties.get(uid);
+                if (credited !== undefined) spawnCoinPopup(v.node.x, v.node.y, credited);
                 v.node.destroy({ children: true });
                 enemyViews.delete(uid);
             }
         }
+        pendingBounties.clear();
         relaxEnemyPositions();
     }
 
@@ -1004,6 +1123,10 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         // common case) or after (a cold block 1 load, or a slow network).
         updateBackdrop(block.id);
         fadeBackdrop(dt);
+        // Once per rendered frame, real dt — same posture as fadeBackdrop
+        // just above (never multiplied by speed, so popups always rise and
+        // fade at the same readable pace regardless of game-speed).
+        updateCoinPopups(dt);
         // Speed-up runs MORE substeps of the same dt (never one bigger step),
         // so 4x is exactly 4 seconds of identical simulation per second.
         // Drained per substep (not once after the loop) so a leak can be
@@ -1017,13 +1140,18 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         if (readyBlocks.has(block.id)) {
             for (let i = 0; i < store.get().speed; i++) {
                 const preUids = new Set(engine.state.enemies.map((e) => e.uid));
-                for (const e of engine.state.enemies) enemyDefByUid.set(e.uid, e.def.id);
+                const levelForStep = engine.state.waveIndex + 1;
+                for (const e of engine.state.enemies) {
+                    enemyDefByUid.set(e.uid, e.def.id);
+                    enemyBountyByUid.set(e.uid, e.def.bounty);
+                }
                 const wasWave = prevPhase === 'wave';
                 engine.step(dt);
                 if (!wasWave && engine.state.phase === 'wave') waveStartedAt = performance.now();
                 prevPhase = engine.state.phase;
                 const stepEvents = engine.drainEvents();
                 trackLeaksForStep(stepEvents, preUids);
+                trackDeathBounties(stepEvents, preUids, levelForStep);
                 allEvents.push(...stepEvents);
             }
         }

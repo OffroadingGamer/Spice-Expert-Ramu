@@ -5,7 +5,7 @@
  */
 import { store, type AppState } from '../state/store.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
-import { switchCue, prefetchCue } from '../audio/audio.ts';
+import { switchCue, prefetchCue, isAudioUnlocked } from '../audio/audio.ts';
 import { completeFtue, setFtueFirstTower } from '../state/save.ts';
 import { CONFIG } from './config.ts';
 import { WAVES } from './data/waves.ts';
@@ -45,7 +45,13 @@ export function registerEngine(e: Engine | null): void {
         runStartedAt = performance.now();
         runAnalytics = { towersPlaced: 0, firstTowerPlaced: false, firstWaveStarted: false };
         highTensionLatched = false;
-        switchCue('service_low');
+        // Delivered-audio round, task 2: only switch here if audio is
+        // already unlocked (a Retry, or Menu -> Challenge Mode, both well
+        // after the player's first gesture). On a cold boot into 'playing'
+        // (main.tsx, no menu tap first), this fires before ctx exists —
+        // skip it and let initAudio's unlock handler set the correct cue
+        // once it actually can (see audio.ts's isAudioUnlocked doc).
+        if (isAudioUnlocked()) switchCue('service_low');
         prefetchCue('service_high');
         trackFunnelStep(2, 'run_start', 'run', 2);
         track('run_start', { wave_target: WAVES.length, lives_start: e.state.lives });

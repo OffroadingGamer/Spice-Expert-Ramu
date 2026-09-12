@@ -66,6 +66,22 @@ function ensureCtx(): AudioContext | null {
     return ctx;
 }
 
+/** Delivered-audio round, task 2: whether the AudioContext already exists
+ *  (the player's first gesture already unlocked it). registerEngine()
+ *  (actions.ts) reads this before calling switchCue('service_low') — on a
+ *  cold boot into 'playing' (no menu tap first), that call used to fire
+ *  with ctx still null, which set activeCue to 'service_low' without ever
+ *  actually starting it (fetchCueBuffer bails with no ctx to decode into).
+ *  The LATER, correct call from initAudio's unlock handler then no-op'd
+ *  via switchCue's own `activeCue === id` guard, so the real track never
+ *  played — the FTUE ran on the sequencer fallback all the way through.
+ *  Deferring the initial cue entirely to the unlock handler (which reads
+ *  the live phase at gesture time) avoids the premature call; once audio
+ *  IS unlocked, registerEngine() switches immediately as before. */
+export function isAudioUnlocked(): boolean {
+    return ctx !== null;
+}
+
 /**
  * Call once at boot with the saved volumes. Attaches one-time gesture
  * listeners that unlock audio and start the music loop.
@@ -115,7 +131,6 @@ type SampleId = 'lose' | 'upgrade' | 'wave-clear' | 'kettle-boil' | 'water-pour'
 const SAMPLES: Record<SampleId, { url: string; gain: number }> = {
     lose: { url: 'audio/ah.mp3', gain: 0.5 },
     upgrade: { url: 'audio/level-up.mp3', gain: 0.35 },
-    'wave-clear': { url: 'audio/level-complete.mp3', gain: 0.72 },
     // Round 11 (TEST MODE): a Kettle/Water Dispenser grab, kitchenScene.ts's
     // attemptUseOrSell. Measured peaks -6.78dBFS (kettle) / -5.53dBFS
     // (water), already quieter than the -3dBFS the rest of this table
@@ -123,15 +138,17 @@ const SAMPLES: Record<SampleId, { url: string; gain: number }> = {
     // measurement, same as every other gain here.
     'kettle-boil': { url: 'audio/kettle-boil.mp3', gain: 0.65 },
     'water-pour': { url: 'audio/water-pour.mp3', gain: 0.65 },
+    // Delivered-audio round: a real bell replaces the old synth-derived
+    // level-complete.mp3; 1.0 is the delivered gain (no clip — worst
+    // post-gain music peak measured at -1.39dBFS, SFX_BASE 0.6 covers it).
+    'wave-clear': { url: 'audio/wave-clear-bell.mp3', gain: 1.0 },
     // Final round, task 4/5: plays once per real block-to-block backdrop
     // transition (towerScene.ts's tick — situation 2 only, see its own
-    // comment). The file itself lands separately from an audio-generation
-    // pass; this wiring doesn't wait for it — playSample() returns false
-    // harmlessly (silent) until jam-entry/public/audio/block-transition.mp3
-    // actually exists. 0.5 is the handover's own starting point (source
-    // measured at -1.44dBFS peak vs this table's -3dBFS norm) — a human
-    // retune by ear once the file lands, same as every other gain here.
-    'block-transition': { url: 'audio/block-transition.mp3', gain: 0.5 },
+    // comment). Filename corrected in the delivered-audio round — the
+    // final round's own guess (block-transition.mp3) never existed; the id
+    // stays 'block-transition' (ids and filenames already differ
+    // elsewhere, e.g. lose -> ah.mp3), only the url was wrong.
+    'block-transition': { url: 'audio/bombay-transition.mp3', gain: 0.5 },
 };
 
 /** The CDN-streamed music cues (see switchCue near the sequencer, below).
@@ -143,9 +160,11 @@ const SAMPLES: Record<SampleId, { url: string; gain: number }> = {
 type CueId = 'menu' | 'service_low' | 'service_high';
 
 const CUES: Record<CueId, { path: string; gain: number }> = {
-    menu: { path: 'bgm-menu.mp3', gain: 1.308 },
+    // Delivered-audio round: the new 60s Pixabay loops, RMS-matched to
+    // service_low — filenames unchanged, gains retuned for the new masters.
+    menu: { path: 'bgm-menu.mp3', gain: 1.125 },
     service_low: { path: 'bgm-service-low.mp3', gain: 1.0 },
-    service_high: { path: 'bgm-service-high.mp3', gain: 1.101 },
+    service_high: { path: 'bgm-service-high.mp3', gain: 1.162 },
 };
 
 const MUSIC = {
@@ -495,6 +514,13 @@ function fetchCueBuffer(id: CueId): Promise<AudioBuffer | null> {
         return buffer;
     })().catch(() => null); // last-resort net — the steps above already handle their own failures
 
+    // Delivered-audio round, task 2: a failed attempt (network, ctx not
+    // ready yet, decode) used to sit in cueFetches forever — the resolved
+    // (to null) promise is immutable, so every later call for this id kept
+    // returning that same permanently-failed promise instead of trying
+    // again. Deleting the entry on failure is what lets a later, better-
+    // timed call (ctx now exists, network back) actually retry.
+    p.then((buffer) => { if (!buffer) cueFetches.delete(id); });
     cueFetches.set(id, p);
     return p;
 }
