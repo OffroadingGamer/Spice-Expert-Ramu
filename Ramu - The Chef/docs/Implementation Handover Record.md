@@ -1754,3 +1754,105 @@ beat can never be unaffordable — closing a dead-end the old code documented bu
 ✅ **The agent self-caught a bug its own edit introduced:** `towerScene.ts`'s scene-mount
 reset still hardcoded pad 0, clobbering the pad-4 selection at boot. It did not match the
 search pattern this handover named — see Retro 105.
+---
+
+## 2026-09-12 — What RUN's marketing system actually costs, and why `run` never flew
+
+🛑 **No campaign was ever submitted. Nothing was spent on ads.** This section exists
+because three rounds of attempts established facts about the platform that are expensive to
+re-learn, and none of them are in the public docs. ⚠️ Marketing *strategy* belongs to the
+marketing agent's own two documents — this is the platform mechanics only.
+
+### 🔴 The `run` network is wired but not live — for anyone
+
+The original campaign was designed around **`--network run`**: RUN's own in-house
+cross-promotion, a native *sponsored* unit inside the RUN app's discovery drawer. No
+external ad platform, no third-party attribution. When live it is **web-only**,
+**traffic-install only**, **square creatives only**, passive slot only.
+
+It is **deliberately not enabled in production for any account.** This is not a tier gate, an
+opt-in, or a config gap on this account — there is nothing to request. 🔥 **This killed the
+campaign's entire thesis**, which was that in-app traffic puts a player one tap from a play;
+every remaining network is external traffic through a multi-step deeplink funnel.
+
+### 🔴 `prepare` validates locally; `submit` validates server-side
+
+`rundot marketing prepare` checks the network name against a **hardcoded allowlist compiled
+into the CLI binary** and never contacts the server. `run` is on that list. So `prepare`
+accepted the campaign, wrote `campaign.json`, and gave no warning — and **843 credits of
+creatives were generated against a network that could never fly.** `submit` uploaded all
+four assets and only then returned:
+
+```
+network "run" is not available (enabled: meta, google, reddit, unity)
+```
+
+✅ **The failure was clean** — no server-side campaign, no reservation, balance unchanged.
+That is worth knowing: **an attempted submit is a safe probe.** See [Retro 106].
+
+### Two independent gates, neither visible from the client
+
+1. **Per-environment network enablement.** Production has meta, google, reddit, unity.
+   Reddit is production-only *by design* — excluded from staging because its minimum spend
+   floor would make smoke tests costly.
+2. **A global `flights` kill switch**, fail-closed, set in RUN's own deploy configuration.
+   If absent, **every** submission is blocked regardless of network. A creator cannot inspect
+   it.
+
+### 🔥 The real cost model — the part that changed the decision
+
+| Mechanic | Value |
+|---|---|
+| Charged at `submit` | **nothing** — a human on the RUN team approves and *flights* it first |
+| Charged at flighting | the **entire budget, up front** — not paced daily |
+| Flight fee | flat **5,000 credits, non-refundable** |
+| Ad-spend conversion | **1,000 credits per $1 USD × 1.05 markup**, markup applied to the USD first |
+| Top-up rate | **$1 = 500 credits** — a *different* rate; never use it to estimate a debit |
+| Refunds | only a **terminal stop** (cancel, or completion) refunds the remainder. **Pause refunds nothing** |
+| Pacing warning | `prepare` warns when budget ÷ days ÷ legs is at or below **~$50/day** |
+
+⚠️ **Funding is from creator credits**, confirmed — so an expiring credit lot is a real
+budget, but only if the campaign is *flighted* before it expires. Since the charge lands at
+flighting and flighting is a human step of unknown latency, **an expiring lot cannot be
+relied on**.
+
+### The arithmetic, worked — and the formula to reuse
+
+The $70–90 budget was sized against the BACK-TO-WORK lot (**92,047 credits**) before anyone
+had read the billing model. With the markup and the fee:
+
+```
+$90 x 1.05 x 1,000 = 94,500  +  5,000 fee  =  99,500 credits
+                                  BACK-TO-WORK =  92,047 credits
+                                  overshoot    =  ~7,450  -> hits the ringfenced durable pool
+```
+
+🔴 **A sizing that looked comfortable was 8% over**, and the overshoot landed on exactly
+the pool the brief had protected. ✅ **Size from credits backward, never from dollars
+forward:**
+
+```
+max_usd = (lot_credits - 5000) / 1050
+```
+
+For BACK-TO-WORK: `(92,047 - 5,000) / 1050` = **$82.90** → **$82 fits** (91,100 credits,
+947 spare); **$83 does not** (92,150, over by 103).
+
+### Creative requirements, measured
+
+- **Reddit** creates **one ad per square image**; `square` defaults to **4** on non-Meta/Google
+  networks — so four squares is exactly right and needs no rework.
+- **Meta/Google** use creative *families*, sized `clamp(floor(budget / legs / days / 15), 1, 10)`,
+  and `generate` warns below three. At $90 over 3 days that solves to **2** — under-funded by
+  the tool's own heuristic.
+- **Unity** needs a mobile platform, a 15-second portrait MP4 and a target CPI. Wrong shape
+  for a web entry.
+- **`--kind vertical` is rejected outright by the `run` network** (allowed: square, logo).
+  The multi-network creative guide in `prepare --help` describes **Meta and Google** slots and
+  must not be generalised to other networks.
+- **No audience targeting is exposed** — no subreddit, geo or interest flags. Targeting lives
+  inside each provider adapter.
+
+⚠️ **`prepare --help` is out of date**: it names Meta and Google as live and Reddit as
+*"flight-gated"*, omits Unity entirely, and does not list `run` as a network even though
+`prepare` accepts it. Reported upstream.

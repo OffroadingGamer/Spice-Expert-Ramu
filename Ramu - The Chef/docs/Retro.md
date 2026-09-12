@@ -2609,3 +2609,41 @@ uniques are the score; the trend matters more than any single day.
      [100]: there, a live report beat a passing desktop test; here, live execution beat
      static reading. Both say the same thing — **the artefact under test is the running
      system.**
+
+106. 🔴 **A command succeeding proves your input was well-formed — not that the operation
+     is possible.** Sep 12 2026. `rundot marketing prepare --network run` succeeded with no
+     warning, wrote a valid `campaign.json`, and **843 credits of ad creatives were generated
+     against it** — before `submit` revealed the `run` network is not enabled in production
+     *for any account*. 🔥 The mechanism, from RUN directly: **`prepare` validates the
+     network against a hardcoded allowlist compiled into the CLI and never contacts the
+     server**; `submit` is the first call that asks the server anything. Two independent
+     server-side gates sit behind it — per-environment network enablement, and a
+     fail-closed global kill switch set in RUN's deploy config — and **a creator can inspect
+     neither.** ✅ **Rule: when a tool validates locally, treat every local success as
+     "well-formed", never as "available".** Before spending anything irreversible against a
+     configuration, find the cheapest call that actually round-trips to the server, and make
+     that the gate. ➕ **The corollary that saved us:** the failed `submit` cost nothing — it
+     uploaded four assets, was rejected server-side, created no campaign and reserved no
+     budget. **An attempted submit turned out to be a safe probe, and probing would have been
+     cheaper than asking.** Two rounds of questions to support produced less than one
+     rejected call did. ⚠️ The same session repeated the pattern in miniature: the brief
+     told the agent to generate `vertical` creatives because `prepare --help`'s multi-network
+     guide describes Meta and Google slots — generalised to a network it does not cover. [98],
+     [99] and the `set-public` correction are all the same error wearing different clothes:
+     **reading a description and believing it describes the case in front of you.**
+
+107. ✅ **Derive the cost, don't inherit someone else's sizing.** Sep 12 2026. A $70–90 ad
+     budget arrived pre-sized as "fits the 92,047-credit BACK-TO-WORK lot, leaves the durable
+     pool untouched", and was approved on that basis. 🔴 Reading the billing model later
+     showed $90 actually debits **99,500 credits** — a **1.05× ad-spend markup** on the USD
+     plus a **flat, non-refundable 5,000-credit flight fee** — overshooting the lot by ~7,450
+     and landing precisely on the pool the brief had ringfenced. The sizing was off by 8% and
+     the error fell on the one constraint that had been stated explicitly. ✅ **Rule: before
+     committing a budget, compute the debit from the documented conversion yourself and size
+     backwards from the constraint** — here `max_usd = (lot_credits - 5000) / 1050`, giving
+     $82, not $90. ⚠️ Two traps worth naming: the platform quotes **two different credit
+     rates** (ad spend 1,000/\$1, top-ups 500/\$1) and using the wrong one halves your
+     estimate; and a **flat fee is invisible in a percentage check** — 5,000 credits is 5.5%
+     of this campaign and would be 25% of a $20 one. ➕ Nobody had read the billing doc
+     because the number came with a rationale attached, and a rationale reads like
+     verification. It isn't.
