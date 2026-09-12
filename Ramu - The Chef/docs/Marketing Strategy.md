@@ -1,6 +1,6 @@
 # Marketing Strategy
 
-**Last updated:** Sep 11 2026, 12:00 IST
+**Last updated:** Sep 12 2026, 10:30 IST
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)
 
@@ -674,4 +674,73 @@ decision.
 top of list this time):** Spice Expert: Ramu is now **3rd place, $300 tier**
 — 577 total plays / 410 DUP, up from 4th (375 DUP) at the §9 pull. SHIFT, the
 entry that was closing fast in §9, no longer appears in the top 12. Cushion to
+4th widened, see §11 for the next-day reading.
+
+## 11. Handover drafted for Central Agent — Sep 12 2026, 10:30 IST
+
+**Trigger:** direct user instruction — analyse fresh board/finance screenshots,
+ask clarifying MCQs, then draft the ask for Central Agent. Permission to draft
+was requested last round (§10) and this round's instruction is the explicit
+go-ahead for this specific handover, not a standing reversal of "ask before
+drafting."
+
+**Board re-pull (84 games, DUP-sorted):** Spice Expert: Ramu holds **3rd,
+$300 tier** — 615 total plays, **422 DUP** (up from 410). 4th place (The Good
+Life) grew to 372 DUP. Cushion is **+50**, essentially flat day-over-day (+12
+us vs +14 them) — not eroding, not widening much either.
+
+**Finance re-pull — FEEDBACK05's runway is now critical:**
+
+| Lot | Amount | Expires | Days left |
+|---|---|---|---|
+| FEEDBACK05 | 6,372 (was 7,820) | Sep 13, 2026 | **1** |
+| BACK-TO-WORK | 92,047 (untouched) | Sep 15, 2026 | **3** |
+
+Combined studio+runtime usage this month is now 12,181 + 9,046 = 21,227
+credits — still far below the ~98,419 at risk.
+
+**New input this round: the build is in Review now, and RUNStudio is pushing
+Review→Public on its own schedule** — user's estimate, ~2–3 hours from this
+entry. That's a materially different situation from §10's "wait for a handover"
+holding pattern: the polish gate and the tag-promotion gate (§9) are both
+being resolved by forces outside this agent's or even the user's direct
+control, on a clock shorter than BACK-TO-WORK's.
+
+**Three MCQ answers, direct from the user (not this agent's judgment):**
+
+1. **Polish gate:** *"It's balanced and polished enough now, further
+   polishing will be additive, crucial stage has been passed."* Treating the
+   Challenge Mode polish hold from §9 as cleared, per the user — the handover
+   asks Central Agent to confirm against its own tracking rather than
+   asserting this as settled fact on this agent's authority.
+2. **FEEDBACK05:** user's read is *"run ads with the bigger picture in
+   mind... game is ready, in review and within 2-3 hours public. We can just
+   start running ads now!"* — reads as: don't spend effort chasing the
+   1-day lot, keep focus on BACK-TO-WORK, and lean toward firing soon. This
+   agent is not treating "start running ads now" as authorization to execute
+   directly — the standing rule (only run the campaign on a returned
+   handover from Central Agent) stands unless the user says otherwise. The
+   urgency is carried into the handover as a timing recommendation, not
+   acted on.
+3. **Budget:** confirmed **$70–90**, the figure already sized in §6/§7.
+
+⚠️ **Correction carried into the handover, not left standing uncorrected:**
+the user's framing assumed ad-spend debits are "direct and refund-based."
+Checked against §6 Q2 — only the **end-of-campaign unspent-remainder refund**
+is confirmed by RUN's CLI docs. Whether the debit at `submit` reserves the
+full budget upfront or meters it during flight is **still unresolved**, exactly
+as it was Sep 9. Not blocking on this — the standing safety procedure
+(submit → recheck `rundot credits` → confirm the drop → only then pause)
+covers both possibilities — but the belief itself needed correcting before it
+propagated into Central Agent's own log.
+
+**Handover text (verbatim, as given to the user in chat and logged in full in
+[Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)):**
+see that file's 2026-09-12 10:30 IST entry for the complete text delivered to
+the user for hand-off to Central Agent.
+
+**Status:** drafted only. Not delivered, not executed. No `prepare`/`submit`/
+`generate` run, no tag touched, no campaign funded — this agent will not act
+on the campaign until a handover comes back from Central Agent saying so, per
+the standing rule reaffirmed this round.
 4th (The Good Life, 358 DUP) is now +52, not a deficit.

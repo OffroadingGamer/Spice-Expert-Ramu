@@ -533,3 +533,129 @@ Only the play link was used (no vote link) — fine per §8's RUN-native
 exception. Logged verbatim in
 [Marketing Strategy.md](Marketing%20Strategy.md) §4. No tag touched, no
 campaign action, nothing else posted this round.
+
+### 2026-09-11 12:00 IST — Direct user update: finance screenshot + credit-expiry analysis
+**From:** User — fresh Finances + leaderboard screenshots, no new handover
+**Status:** ✅ complete
+
+New standing rule stated this round: the paid ad plan only executes on a
+handover *from* Central Agent, and this agent asks permission *before*
+drafting any handover, rather than doing so unprompted. User asked for a
+spending plan against the Finances screenshot (152,167 balance).
+
+Analysed and logged as §10 in [Marketing Strategy.md](Marketing%20Strategy.md):
+99,867 credits (FEEDBACK05 7,820/Sep 13 + BACK-TO-WORK 92,047/Sep 15 — 65.6%
+of balance) expiring inside 4 days, against a monthly usage pace of only
+18,131 credits — not closeable organically. Board re-read in the same
+screenshot: 3rd place, $300 tier, 410 DUP.
+
+Asked permission (AskUserQuestion) to draft the Central Agent handover now,
+given the deadline. User chose **"Just flag the deadline, no draft."** No
+handover drafted, no CLI action taken this round.
+
+### 2026-09-12 10:30 IST — Handover drafted for Central Agent: `--network run` campaign ask
+**From:** User — direct instruction to analyse fresh screenshots, ask
+clarifying MCQs, then draft the handover
+**Status:** ✅ drafted, not yet delivered — awaiting the user to hand it to
+Central Agent
+
+Fresh board pull: still 3rd/$300, now 422 DUP (+12), cushion to 4th +50 and
+flat. Fresh finance pull: FEEDBACK05 down to 6,372 with **1 day** left
+(Sep 13), BACK-TO-WORK untouched at 92,047 with **3 days** left (Sep 15).
+New input: build is in Review, user estimates RUNStudio pushes it to Public
+within ~2–3 hours.
+
+Three MCQs asked and answered by the user (not this agent's judgment):
+1. **Polish gate** — user: *"It's balanced and polished enough now, further
+   polishing will be additive, crucial stage has been passed."* Carried into
+   the handover as the user's assessment, with a request for Central Agent
+   to confirm against its own tracking.
+2. **FEEDBACK05** — user: *"run ads with the bigger picture in mind... game
+   is ready, in review and within 2-3 hours public. We can just start
+   running ads now!"* Read as: don't chase the 1-day lot, keep focus on
+   BACK-TO-WORK, lean toward firing soon. **Not treated as authorization to
+   execute directly** — the standing rule (only run the campaign on a
+   returned handover from Central Agent) still stands; the urgency is
+   carried into the handover as a timing recommendation only.
+3. **Budget** — confirmed **$70–90**, already sized in §6/§7.
+
+⚠️ **Correction made before it reached Central Agent's log:** the user's
+framing assumed ad-spend debits are "direct and refund-based." Per §6 Q2,
+only the end-of-campaign unspent-remainder refund is confirmed by RUN's CLI
+docs — whether `submit` reserves the full budget upfront or meters it during
+flight is still unresolved. Flagged in the handover rather than let the
+unverified belief stand as fact.
+
+**Handover text delivered to the user, verbatim:**
+
+> # Handover — Marketing Agent → Central Agent
+> ## Request: authorize + size the `--network run` ad campaign before the BACK-TO-WORK credit lot expires
+>
+> **Date:** 2026-09-12
+> **Game:** Spice Expert: Ramu (`PpB5gECS0AMU49mGYAKM`)
+> **From:** Marketing Agent
+> **To:** Central Agent
+> **Why now:** two event-credit lots are expiring and this is the only spend
+> currently sized to use one of them before it lapses.
+>
+> ### 1. Where things stand
+> - Board (`run.world/jams/september-2026-jam`, DUP-sorted): **Spice Expert:
+>   Ramu is 3rd, $300 tier** — 615 total plays, 422 DUP. Cushion to 4th (The
+>   Good Life, 372 DUP) is +50 and flat day-over-day.
+> - Build status: in Review now; user's estimate is RUNStudio pushes
+>   Review→Public within ~2–3 hours of this handover.
+> - Credits: FEEDBACK05 — 6,372, expires Sep 13 (1 day). BACK-TO-WORK —
+>   92,047, expires Sep 15 (3 days). Durable pool (Starter + Quest + Grant) —
+>   52,200, safe until Dec 2026 at the earliest.
+> - Polish gate: user's own assessment this round is that Challenge Mode has
+>   passed its crucial polish stage — further work is additive, not
+>   blocking. Flagging this as the user's call, not this agent's judgment —
+>   asking Central Agent to confirm against its own tracking before treating
+>   the gate as cleared.
+>
+> ### 2. The ask
+> Authorize a `--network run` (mobile-web, RUN's in-app house cross-promo —
+> confirmed via `rundot marketing prepare --help`) campaign:
+> - **Budget:** $70–90 — matches BACK-TO-WORK's value, leaves the durable
+>   ~$52,200 pool untouched. Already sized in this agent's Sep 9 analysis.
+> - **Timing:** recommend launching once the build is confirmed Public, so
+>   paid traffic lands on the real v1.43.0 dish-sprite build rather than the
+>   current Public tag's v1.42.0 (the same pre-v1.43.0-screenshot risk
+>   already flagged for marketing copy applies to the build itself). If
+>   Central Agent judges the ~2–3h wait isn't worth it, that's its call —
+>   not this agent's.
+> - **FEEDBACK05 (6,372, 1 day left):** treating as already lost — no
+>   review-turnaround margin to chase it (§6 Q1 is still unresolved). Not
+>   asking for anything on this lot, noting it only so it isn't mistaken for
+>   an oversight.
+>
+> ### 3. One correction worth carrying into Central Agent's own log
+> The working assumption going into this round was that ad spend is "direct
+> and refund-based." That's only half-confirmed: RUN's CLI docs confirm the
+> **unspent remainder at end of campaign/window is refunded** — they do
+> **not** confirm whether the debit at `submit` reserves the full budget
+> upfront or meters it during flight (unresolved since Sep 9). Recommend
+> whoever executes this follows the standing safety procedure regardless of
+> which model is true: `submit` → immediately re-check `rundot credits` →
+> confirm the balance actually dropped by the expected amount → only then
+> walk away.
+>
+> ### 4. What Central Agent would need to hand Implementation Agent, if approved
+> - Command shape: `rundot marketing prepare --network run` (mobile-web is
+>   the default platform when `--platforms` is omitted), budget $70–90, then
+>   `submit` once prepared.
+> - The post-submit credit-recheck step from §3 above.
+> - Confirmation of which build/tag the play link resolves to at launch time
+>   (Public should be v1.43.0 by then).
+>
+> ### 5. Not touched by this agent
+> No `prepare`/`submit`/`generate` run. No tag action. No campaign funded.
+> This agent will not act on the campaign without a returned handover saying
+> so, per the standing rule from this thread.
+>
+> **Reporting:** once Central Agent responds, bring the reply back and this
+> agent will log the outcome — and if approved, still wait for the specific
+> execution handover before touching any CLI campaign command.
+
+**Next:** waiting on the user to deliver this to Central Agent's own thread.
+No action taken on this agent's part beyond drafting and logging.
