@@ -34,13 +34,17 @@
  * Round D: the FTUE is a persistent, walled script through wave 3
  * (store.ftueBeat drives the walls — see actions.ts/towerScene.ts). Two
  * cue kinds, never both at once (one voice):
- *   - Canvas cues (the picker-beat arrow, and the empty-pad pulse) are
- *     positioned via stage.ts's designToScreen() — the same contain-fit
- *     transform stage.ts and towerScene.ts use internally, read here but
- *     never written, and never re-derived by hand (round C, task 2).
- *   - The Upgrade-button arrow (forced-upgrade beat) is a DOM cue anchored
- *     to StationRail's own button by getBoundingClientRect() instead — it
- *     lives in StationRail.tsx, not here.
+ *   - The empty-pad pulse is a canvas cue, positioned via stage.ts's
+ *     designToScreen() — the same contain-fit transform stage.ts and
+ *     towerScene.ts use internally, read here but never written, and never
+ *     re-derived by hand (round C, task 2).
+ *   - Every forced-beat arrow (upgrade0, and — final round — place0/place2
+ *     too) is a DOM cue anchored to a live element inside StationRail.tsx
+ *     by getBoundingClientRect() instead, and lives entirely there. Final
+ *     round: place0/place2 used to point a canvas arrow at the target pad
+ *     here, redundant with the selected-pad ring (which already shows
+ *     which pad) and pointing at the wrong place besides — the player
+ *     still has to tap a card in the rail, not the pad again.
  *
  * Round E: the picker-beat arrow's pad is store.ftueBeatPad, not a
  * hardcoded pad — see store.ts/towerScene.ts. The empty-pad pulse
@@ -60,9 +64,9 @@ import Slider from './Slider.tsx';
 /** Live screen positions of a set of pads, tracking the canvas's own
  *  contain-fit + board-centering transform — stage.ts's designToScreen() is
  *  the one source of truth for this (round C, task 2: a hand-rolled second
- *  copy of this formula here caused a near-miss review). Round D extends
- *  this from one pad (the original FTUE arrow) to several (the empty-pad
- *  pulse) rather than writing a second copy. */
+ *  copy of this formula here caused a near-miss review). Used for the
+ *  empty-pad pulse below; the FTUE arrow moved off canvas entirely (final
+ *  round, task 1 — see the header comment) so this no longer also serves it. */
 function usePadsScreenPos(padIndices: number[]): Array<{ x: number; y: number }> {
     const key = padIndices.join(',');
     const [positions, setPositions] = useState<Array<{ x: number; y: number }>>([]);
@@ -105,27 +109,17 @@ export default function Hud() {
     const selectedPad = useStore((s) => s.selectedPad);
     const runId = useStore((s) => s.runId);
     const ftueBeat = useStore((s) => s.ftueBeat);
-    const ftueBeatPad = useStore((s) => s.ftueBeatPad);
     const pulsePads = useStore((s) => s.pulsePads) ?? [];
     const ftueActive = useStore((s) => s.ftueActive);
+    const backdropTransitioning = useStore((s) => s.backdropTransitioning);
     const ftueGrantAmount = useStore((s) => s.ftueGrantAmount);
     const ftueGrantNonce = useStore((s) => s.ftueGrantNonce);
     const [menuOpen, setMenuOpen] = useState(false);
     const [showObjective, setShowObjective] = useState(true);
     const [showMilestone, setShowMilestone] = useState(false);
     const [showGrant, setShowGrant] = useState(false);
-    // The picker beats (place0/place2) get the canvas arrow; the
-    // forced-upgrade beat's cue lives inside StationRail instead (its own
-    // Upgrade button, not a pad) — never both cue kinds at once. Round E:
-    // place2's target is ftueBeatPad, not a hardcoded pad 2 (store.ts) — it
-    // may be any empty pad once the board isn't wide open.
-    const canvasArrowPad = ftueBeat === 'place0' ? 0 : ftueBeat === 'place2' ? ftueBeatPad : null;
-    // Only show the cue while its pad is STILL the selection — however the
-    // player dismisses the sheet (Close, re-tapping the pad on the canvas,
-    // the backdrop), the arrow disappears with it instead of lingering into
-    // the next wave pointed at a pad that's no longer relevant.
-    const activeArrowPad = canvasArrowPad !== null && selectedPad === canvasArrowPad ? canvasArrowPad : null;
-    const arrowPos = usePadsScreenPos(activeArrowPad !== null ? [activeArrowPad] : [])[0] ?? null;
+    // Final round, task 1: every forced-beat arrow (place0/place2 included
+    // now) lives inside StationRail.tsx — see this file's header comment.
     const pulsePositions = usePadsScreenPos(pulsePads);
 
     // Coin top-up toast (round D, task 3): re-show on every grant, even a
@@ -321,13 +315,19 @@ export default function Hud() {
                 flash visible during the post-wave-2 pulse, where
                 selectedPad is briefly null before pad 2 auto-selects. */}
             {tdPhase === 'build' && selectedPad === null && ftueBeat === null && !menuOpen && !ftueActive && (
-                <div className="pointer-events-auto absolute inset-x-0 bottom-24 flex justify-center gap-2 px-3">
+                <div className="pointer-events-auto absolute inset-x-0 bottom-0 flex justify-center gap-2 px-3 pb-safe-bottom">
                     {/* Round I Task 9: Kitchen Actions — the coin sink. One
                         wave's effect, bought here, gone after. Deliberately
                         minimal/provisional (round 3 restyles this area) — a
                         plain row of three buttons, each showing its live
                         price (sim/engine.ts's kitchenActionCost) and
-                        disabling once bought for this wave or unaffordable. */}
+                        disabling once bought for this wave or unaffordable.
+                        Final round, task 2: moved from bottom-24 to the true
+                        edge (bottom-0 + pb-safe-bottom) — Ready grew enough
+                        that the old stacking (this row above Ready) no
+                        longer had room for both; putting this compact row
+                        below the now-bigger Ready button, where Ready used
+                        to sit, fit both without shrinking Ready back down. */}
                     {(['freeze', 'heat', 'slow'] as const).map((kind) => {
                         const bought = getEngine()?.state.kitchenActions[kind] ?? false;
                         const price = kitchenActionPrice(kind);
@@ -357,44 +357,62 @@ export default function Hud() {
                 mechanic (upgrading) at the first moment nothing else is
                 cueing it.
                 Final polish round, task 7: pulled out of the Ready-button
-                column and given its own band ABOVE the Kitchen Actions row
-                (which sits at bottom-24, independent of this toast's own
-                height) — stacking it directly above Ready let its height
-                push up into the actions row whenever both showed at once
-                (wave 4, once the FTUE has let go). A fixed clearance is
-                simpler and safer than measuring the actions row's live
-                height, and the two can never trade places since neither is
-                keyed off the other. */}
+                column and given its own fixed band above it, independent of
+                Ready's or the Kitchen Actions row's own height — a fixed
+                clearance is simpler and safer than measuring either row's
+                live height, and neither can trade places with this since
+                none of the three is keyed off another.
+                Final round, task 2: bumped from bottom-40 to bottom-48 —
+                Kitchen Actions moved to the true bottom edge and Ready grew
+                and moved up to sit above it, so this toast's own clearance
+                target became Ready's new (higher, taller) top edge, not the
+                actions row directly. */}
             {tdPhase === 'build' && selectedPad === null && ftueBeat === null && !menuOpen && wave === 4 && (
-                <div className="pointer-events-none absolute inset-x-0 bottom-40 flex justify-center px-3">
+                <div className="pointer-events-none absolute inset-x-0 bottom-48 flex justify-center px-3">
                     <p className="rounded-xl bg-black/55 px-3 py-2 text-lg font-bold">
                         Tap a cook to upgrade
                     </p>
                 </div>
             )}
 
+            {/* Final round, task 2: enlarged (px-16/py-5/text-3xl, was
+                px-14/py-4/text-2xl) for a bigger tap target, and moved up
+                off the true bottom edge — but not by stacking a taller
+                button into the same footprint the old (smaller) one used.
+                The first attempt did exactly that (mb-6 on top of bottom-0)
+                and measurably overlapped the Kitchen Actions row by 12px at
+                wave 4 — enlarging AND lifting both eat into the same fixed
+                gap the old, smaller button only barely cleared. The actual
+                fix (bottom-16 here, Kitchen Actions moved to bottom-0
+                above) gives Ready its own clear band with room to be
+                properly bigger, confirmed by re-measuring, not re-guessing.
+                The looping pulse lives on a WRAPPING div, not the button
+                itself — animating the button's own transform would fight
+                active:scale-95's tap feedback (both target the same
+                property; the keyframe would win every frame and the press
+                would never visibly register). Task 4: locked (visibly, via
+                disabled + dimmed styling, not just inert) for
+                BACKDROP_LOCK_S while a real block transition crossfades —
+                actions.ts's startWave() is the real gate, same one-gate
+                posture as every other FTUE wall in this file; disabled
+                also suspends the pulse, since animating "tap me" on a
+                button that currently can't be tapped would be its own
+                small lie. */}
             {tdPhase === 'build' && selectedPad === null && ftueBeat === null && !menuOpen && (
-                <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-3 pb-safe-bottom">
-                    <button
-                        type="button"
-                        className="pointer-events-auto mb-3 rounded-2xl bg-primary px-14 py-4 text-2xl font-bold text-black shadow-lg transition-transform active:scale-95"
-                        onClick={() => { sfx.startWave(); startWave(); }}
-                    >
-                        Ready!
-                    </button>
-                </div>
-            )}
-
-            {/* FTUE canvas arrow cue: points at the pad the script just
-                forced a selection onto (pad 0 at run start, pad 2 after the
-                wave-2 pulse). The forced-upgrade beat's cue is inside
-                StationRail instead — see this file's header comment. */}
-            {arrowPos && (
-                <div
-                    className="pointer-events-none absolute z-10 flex flex-col items-center"
-                    style={{ left: arrowPos.x, top: arrowPos.y - 84, transform: 'translateX(-50%)' }}
-                >
-                    <span className="motion-safe:animate-bounce text-5xl leading-none">⬇️</span>
+                <div className="absolute inset-x-0 bottom-16 flex flex-col items-center px-3">
+                    <div className={backdropTransitioning ? '' : 'motion-safe:animate-ready-pulse'}>
+                        <button
+                            type="button"
+                            disabled={backdropTransitioning}
+                            className={
+                                'pointer-events-auto rounded-2xl px-16 py-5 text-3xl font-bold shadow-lg transition-transform active:scale-95 ' +
+                                (backdropTransitioning ? 'bg-white/20 text-white/40' : 'bg-primary text-black')
+                            }
+                            onClick={() => { sfx.startWave(); startWave(); }}
+                        >
+                            Ready!
+                        </button>
+                    </div>
                 </div>
             )}
 

@@ -5,6 +5,7 @@
  */
 import { useEffect } from 'react';
 import { sfx } from '../audio/audio.ts';
+import { scriptedRunStart } from '../game/actions.ts';
 import { openComments, promptLike } from '../sdk/engagement.ts';
 import { trackFunnelStep } from '../sdk/analytics.ts';
 import { devModeEnabled } from '../state/devMode.ts';
@@ -85,14 +86,7 @@ export default function MainMenu() {
                     // gates entry (actions.ts's startWave still calls
                     // completeFtue() when wave 3 begins — it's the hook for
                     // a later behaviour-based toggle, not a gate today).
-                    store.patch({
-                        phase: 'playing',
-                        selectedPad: 0,
-                        runId: store.get().runId + 1,
-                        ftueActive: true,
-                        ftueBeat: 'place0',
-                        pulsePads: null,
-                    });
+                    store.patch({ phase: 'playing', ...scriptedRunStart() });
                 }}
             >
                 Challenge Mode

@@ -32,9 +32,16 @@
  * forced beat (store.ftueBeat !== null — actions.ts is the real gate, this
  * is just the display rule), and Sell stays disabled for the whole
  * onboarding (store.ftueActive), not only inside the forced beats — it
- * returns once wave 3 begins. The forced-upgrade beat's arrow cue is a DOM
- * cue anchored to the Upgrade button's own rect (no stage.ts transform —
- * this button lives in the rail's normal DOM layout, not the canvas).
+ * returns once wave 3 begins.
+ *
+ * Final round, task 1: every forced-beat arrow lives here now, anchored to
+ * a live getBoundingClientRect() (no stage.ts transform — these are normal
+ * DOM layout inside the rail, never something positioned on the canvas).
+ * upgrade0 points at the Upgrade button, same as before; place0/place2 now
+ * point at the station list (the buyable cards) instead of Hud.tsx pointing
+ * a canvas arrow at the target pad — the selected-pad ring already shows
+ * which pad, so the arrow's only job left is "tap here," and "here" is the
+ * rail, not the board.
  */
 import { useEffect, useRef, useState } from 'react';
 import { sfx } from '../audio/audio.ts';
@@ -94,7 +101,8 @@ export default function StationRail() {
     const [confirmSell, setConfirmSell] = useState(false);
     const [showTargetHelp, setShowTargetHelp] = useState(false);
     const upgradeBtnRef = useRef<HTMLButtonElement>(null);
-    const [upgradeArrowPos, setUpgradeArrowPos] = useState<{ x: number; y: number } | null>(null);
+    const stationListRef = useRef<HTMLDivElement>(null);
+    const [ftueArrowPos, setFtueArrowPos] = useState<{ x: number; y: number } | null>(null);
     const railPx = useRailWidthPx();
 
     // a new selection always starts with both popups closed
@@ -106,22 +114,49 @@ export default function StationRail() {
     const engine = getEngine();
     const tower = selectedPad !== null ? engine?.state.towers.find((t) => t.padIndex === selectedPad) : undefined;
     const showUpgradeArrow = ftueBeat === 'upgrade0' && selectedPad === 0;
+    // Final round, task 1: place0/place2 point here instead of at the pad
+    // on canvas (Hud.tsx used to) — matches exactly when the station-list
+    // branch below actually renders (selectedPad set, no tower yet).
+    const showPlaceArrow = (ftueBeat === 'place0' || ftueBeat === 'place2') && selectedPad !== null && !tower;
 
-    // Anchor the arrow to the Upgrade button's own rect — viewport (fixed)
-    // coords, no stage.ts transform, since this button is normal DOM layout
-    // inside the rail, not something positioned on the canvas.
+    // Anchor to whichever DOM element the active beat cares about —
+    // viewport (fixed) coords, no stage.ts transform, since these are
+    // normal DOM layout inside the rail, never something positioned on the
+    // canvas. One mechanism, two possible targets, since the two beats are
+    // mutually exclusive (never both at once). `!!engine` is in the deps
+    // for a real race, not paranoia: on the very FIRST render of a fresh
+    // run (final round, task 3 — cold boot can now land here before
+    // GameCanvas's effect has called registerEngine()), `engine` is still
+    // null, the early return below fires, and the ref never attaches to a
+    // DOM node THIS render. showPlaceArrow was already true on that same
+    // render (it doesn't depend on engine), so without `!!engine` here the
+    // effect's inputs look unchanged on the very next render — the first
+    // one where the ref'd element actually exists — and never re-fires.
+    //
+    // A ResizeObserver on the target element (not just a window 'resize'
+    // listener) matters for the same reason useRailWidthPx below tracks
+    // #app-frame the same way: the station list's own height — and
+    // therefore its centred top position — changes when towerIcons
+    // resolves asynchronously after mount (main.tsx's generateTowerIcons)
+    // and the cards gain their <img> art. That's neither a window resize
+    // nor a change to this effect's own deps, so only observing the
+    // element itself catches it; caught live (a station-list rect that
+    // measurably drifted with a stale window-resize-only arrow, then held
+    // steady once switched to ResizeObserver).
     useEffect(() => {
-        if (!showUpgradeArrow) { setUpgradeArrowPos(null); return; }
+        if (!showUpgradeArrow && !showPlaceArrow) { setFtueArrowPos(null); return; }
+        const el = showUpgradeArrow ? upgradeBtnRef.current : stationListRef.current;
+        if (!el) { setFtueArrowPos(null); return; }
         const compute = () => {
-            const btn = upgradeBtnRef.current;
-            if (!btn) return;
-            const r = btn.getBoundingClientRect();
-            setUpgradeArrowPos({ x: r.left + r.width / 2, y: r.top });
+            const r = el.getBoundingClientRect();
+            setFtueArrowPos({ x: r.left + r.width / 2, y: r.top });
         };
         compute();
+        const ro = new ResizeObserver(compute);
+        ro.observe(el);
         window.addEventListener('resize', compute);
-        return () => window.removeEventListener('resize', compute);
-    }, [showUpgradeArrow, tower?.level]);
+        return () => { ro.disconnect(); window.removeEventListener('resize', compute); };
+    }, [showUpgradeArrow, showPlaceArrow, tower?.level, !!engine]);
 
     if (selectedPad === null || tdPhase === 'lost' || !engine) return null;
 
@@ -148,7 +183,7 @@ export default function StationRail() {
                     fit on a short screen — the page itself never scrolls. */}
                 <div className="pointer-events-auto flex max-h-full w-full flex-col gap-1.5 overflow-y-auto rounded-2xl bg-surface p-1.5">
                     {selectedPad !== null && !tower && (
-                        <div className="flex flex-col gap-1.5 pt-1">
+                        <div ref={stationListRef} className="flex flex-col gap-1.5 pt-1">
                             {TOWERS.map((def) => {
                                 const affordable = coins >= def.cost;
                                 return (
@@ -298,10 +333,10 @@ export default function StationRail() {
                     )}
                 </div>
             </div>
-            {upgradeArrowPos && (
+            {ftueArrowPos && (
                 <div
                     className="pointer-events-none fixed z-10 flex flex-col items-center"
-                    style={{ left: upgradeArrowPos.x, top: upgradeArrowPos.y - 60, transform: 'translateX(-50%)' }}
+                    style={{ left: ftueArrowPos.x, top: ftueArrowPos.y - 60, transform: 'translateX(-50%)' }}
                 >
                     <span className="motion-safe:animate-bounce text-5xl leading-none">⬇️</span>
                 </div>

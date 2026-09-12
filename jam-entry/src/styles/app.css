@@ -5,6 +5,20 @@
        text-primary, bg-surface, ...). Add the game's full palette here. */
     --color-primary: #ff6b1a;   /* hot pass light */
     --color-surface: #14141a;   /* kitchen dark */
+
+    /* Final round, task 2: a looping scale pulse for the Ready button —
+       Tailwind v4's --animate-* theme keys generate an animate-* utility
+       (here, animate-ready-pulse), the same mechanism as the built-in
+       animate-pulse/animate-bounce this codebase already gates behind
+       motion-safe: at every other call site (Hud.tsx). Applied to a
+       WRAPPING element around Ready, never the button itself — see
+       Hud.tsx's own comment on why. */
+    --animate-ready-pulse: ready-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes ready-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
 }
 
 /* ---------------------------------------------------------------------------

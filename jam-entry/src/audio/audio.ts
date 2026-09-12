@@ -21,6 +21,7 @@
  */
 import { fetchCdnAsset } from '../sdk/cdn.ts';
 import { track } from '../sdk/analytics.ts';
+import { store } from '../state/store.ts';
 
 let ctx: AudioContext | null = null;
 let musicBus: GainNode | null = null;
@@ -80,7 +81,18 @@ export function initAudio(volumes: { music: number; sfx: number }): void {
         if (c.state === 'suspended') c.resume().catch(() => {});
         startMusic();
         loadSamples();
-        switchCue('menu');
+        // Final round, task 3: this used to hard-code 'menu' — harmless
+        // when the menu was always the first screen (the tap that unlocks
+        // audio and the click that starts a run were two separate events).
+        // Now that boot can land straight in 'playing' (main.tsx), the
+        // player's first tap is often ALSO the first tap inside a run
+        // already scored to 'service_low' by registerEngine() (actions.ts)
+        // — a hard-coded switchCue('menu') here would override it out from
+        // under the game with menu music. Ask the store what's actually on
+        // screen instead. 'testbelt' (Kitchen Mode) starts its own
+        // 'service_low' the same way (kitchenScene.ts) — same fix applies.
+        const phase = store.get().phase;
+        switchCue(phase === 'playing' || phase === 'testbelt' ? 'service_low' : 'menu');
     };
     window.addEventListener('pointerdown', unlock);
     window.addEventListener('keydown', unlock);
@@ -94,7 +106,7 @@ export function initAudio(volumes: { music: number; sfx: number }): void {
 // as before.
 // ---------------------------------------------------------------------------
 
-type SampleId = 'lose' | 'upgrade' | 'wave-clear' | 'kettle-boil' | 'water-pour';
+type SampleId = 'lose' | 'upgrade' | 'wave-clear' | 'kettle-boil' | 'water-pour' | 'block-transition';
 
 /** Playback gain per sample — peak-matched to the synth cues they replace
  * (MP3s normalise to -3dBFS ~= 0.708 peak; the synth peaks at 0.30-0.35),
@@ -111,6 +123,15 @@ const SAMPLES: Record<SampleId, { url: string; gain: number }> = {
     // measurement, same as every other gain here.
     'kettle-boil': { url: 'audio/kettle-boil.mp3', gain: 0.65 },
     'water-pour': { url: 'audio/water-pour.mp3', gain: 0.65 },
+    // Final round, task 4/5: plays once per real block-to-block backdrop
+    // transition (towerScene.ts's tick — situation 2 only, see its own
+    // comment). The file itself lands separately from an audio-generation
+    // pass; this wiring doesn't wait for it — playSample() returns false
+    // harmlessly (silent) until jam-entry/public/audio/block-transition.mp3
+    // actually exists. 0.5 is the handover's own starting point (source
+    // measured at -1.44dBFS peak vs this table's -3dBFS norm) — a human
+    // retune by ear once the file lands, same as every other gain here.
+    'block-transition': { url: 'audio/block-transition.mp3', gain: 0.5 },
 };
 
 /** The CDN-streamed music cues (see switchCue near the sequencer, below).

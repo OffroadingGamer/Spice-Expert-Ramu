@@ -3,7 +3,7 @@
  * its engine instance here; UI components call these actions and read
  * results through the store (never holding engine state in React).
  */
-import { store } from '../state/store.ts';
+import { store, type AppState } from '../state/store.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
 import { switchCue, prefetchCue } from '../audio/audio.ts';
 import { completeFtue, setFtueFirstTower } from '../state/save.ts';
@@ -54,6 +54,26 @@ export function registerEngine(e: Engine | null): void {
 
 export function getEngine(): Engine | null {
     return slot.current;
+}
+
+/**
+ * The FTUE script's start payload (GDD §10.11): force pad 0's selection, a
+ * fresh runId (remounts GameCanvas into a new engine), and beat 1 armed.
+ * Three call sites need exactly this — MainMenu's Challenge Mode button,
+ * main.tsx's cold-boot-straight-into-Challenge, and EndScreen's Retry —
+ * each layering its own phase transition on top (phase: 'playing' for a
+ * fresh mount into 'playing'; tdPhase: 'build' for Retry, which is already
+ * on the 'playing' phase and just needs the sim-facing field reset). One
+ * function here means the script's shape can't quietly drift between them.
+ */
+export function scriptedRunStart(): Partial<AppState> {
+    return {
+        selectedPad: 0,
+        runId: store.get().runId + 1,
+        ftueActive: true,
+        ftueBeat: 'place0',
+        pulsePads: null,
+    };
 }
 
 /**
@@ -198,6 +218,10 @@ export function startWave(): void {
     // off entirely — one gate, here, so no UI path can start a wave out
     // from under an unresolved beat regardless of what the button shows.
     if (store.get().ftueBeat !== null) return;
+    // Final round, task 4: same one-gate posture for the block-transition
+    // lock (towerScene.ts) — Hud.tsx's disabled attribute is the visible
+    // half, this is what actually stops it.
+    if (store.get().backdropTransitioning) return;
     if (slot.current?.startWave()) {
         syncStore();
         // Round E task 2: whatever was pulsing (the FTUE's own cue or the

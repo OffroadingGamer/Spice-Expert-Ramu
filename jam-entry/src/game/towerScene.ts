@@ -43,7 +43,7 @@ import {
 import { store } from '../state/store.ts';
 import { getSave, recordRunEnd } from '../state/save.ts';
 import { submitRunScores } from '../sdk/leaderboard.ts';
-import { sfx } from '../audio/audio.ts';
+import { playSample, sfx } from '../audio/audio.ts';
 import { PLAYFIELD_HEIGHT, type Stage } from './stage.ts';
 
 /** The scene contract: every createXxxScene(app, stage) returns one of these. */
@@ -251,10 +251,20 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     // fully opaque. tex.grass (still made above) is the immediate fallback —
     // shown until the current block's real art is in Assets.cache — so the
     // board is never a blank field while a cold cache is still loading it.
-    const BACKDROP_FADE_S = 0.5;
+    // Final round, task 4: raised from 0.5s — at that speed a real block
+    // change read as a glitchy blink rather than a scene change. A separate
+    // constant for the Ready lock's own duration (below), even though it's
+    // set equal to this one today, so retuning either later is a one-line
+    // change that can't accidentally couple to the other.
+    const BACKDROP_FADE_S = 2.5;
+    const BACKDROP_LOCK_S = BACKDROP_FADE_S;
     const backdropLayer = new Container();
     const backdropSprites: Sprite[] = [];
     let currentBackdropAlias: string | null = null;
+    /** Cleared on scene destroy, same posture as ftuePulseTimer below — a
+     *  stray callback must never patch backdropTransitioning into whatever
+     *  run (or menu) comes next. */
+    let backdropLockTimer: ReturnType<typeof setTimeout> | null = null;
 
     /** Cover-fit (aspect preserved, overflow cropped) a backdrop sprite
      *  against the full visible screen box — never contain-fit: the source
@@ -416,6 +426,12 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         waveCount: WAVES.length,
         tdPhase: 'build',
         wave: 1,
+        // Final round, task 4: defensively reset every run — belt-and-
+        // suspenders alongside destroy()'s own reset against ever latching
+        // locked (a stray timer from a prior run should already be
+        // impossible, but this costs nothing and the acceptance bar is
+        // "can never latch locked", not "shouldn't in practice").
+        backdropTransitioning: false,
     });
     syncStore();
     // Kick the current block's dish load off immediately (don't wait for the
@@ -955,9 +971,32 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         const level = engine.state.waveIndex + 1;
         const block = blockForLevel(level);
         if (block.id !== trackedBlockId) {
+            const priorBlockId = trackedBlockId;
             trackedBlockId = block.id;
             ensureBlockAssets(block.id);
             ensureBlockAssets(block.id + 1);
+            // Final round, task 4: the sting+lock fires for exactly one of
+            // updateBackdrop's three situations — a REAL block change whose
+            // art is ALREADY cached at this exact boundary tick, the common
+            // case thanks to the block+1 prefetch a whole block early
+            // (above). priorBlockId > 0 excludes the game-start swap
+            // (grass -> block 1, priorBlockId is the 0 sentinel) — that one
+            // is never a "change" the player could have opinions about.
+            // A cold/slow load that reaches Assets.cache many ticks after
+            // THIS check (situation 3 — "late load, arbitrary timing") does
+            // NOT retroactively qualify: this check runs once, right here,
+            // at the boundary, deliberately held apart from
+            // currentBackdropAlias's own cache-polling below, which is
+            // what actually performs the swap whenever it lands.
+            if (priorBlockId > 0 && Assets.cache.has(backdropAliasForBlock(block.id))) {
+                playSample('block-transition'); // no-op, silently, until the file lands
+                store.patch({ backdropTransitioning: true });
+                if (backdropLockTimer) clearTimeout(backdropLockTimer);
+                backdropLockTimer = setTimeout(() => {
+                    backdropLockTimer = null;
+                    store.patch({ backdropTransitioning: false });
+                }, BACKDROP_LOCK_S * 1000);
+            }
         }
         // Polled every tick (not only at the boundary above) so the swap
         // fires the instant the backdrop lands in Assets.cache, whether
@@ -1008,6 +1047,8 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 trackRunEnd('quit');
             }
             if (ftuePulseTimer) { clearTimeout(ftuePulseTimer); ftuePulseTimer = null; }
+            if (backdropLockTimer) { clearTimeout(backdropLockTimer); backdropLockTimer = null; }
+            store.patch({ backdropTransitioning: false }); // never leave Ready latched locked past this scene
             app.ticker.remove(tick);
             app.stage.off('pointertap', onTap);
             offResize();

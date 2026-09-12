@@ -13,6 +13,7 @@
  */
 import { useEffect, useState } from 'react';
 import { sfx, switchCue } from '../audio/audio.ts';
+import { scriptedRunStart } from '../game/actions.ts';
 import { CONFIG } from '../game/config.ts';
 import { adsSystem } from '../sdk/ads.ts';
 import { addGems } from '../state/save.ts';
@@ -114,15 +115,11 @@ export default function EndScreen() {
                     // restarts the whole script from beat 1 — whether this
                     // run died mid-FTUE (unfinished) or well past it
                     // (ftueActive was already false; a fresh run scripts
-                    // again regardless).
-                    store.patch({
-                        tdPhase: 'build',
-                        selectedPad: 0,
-                        runId: store.get().runId + 1,
-                        ftueActive: true,
-                        ftueBeat: 'place0',
-                        pulsePads: null,
-                    });
+                    // again regardless). Same payload as MainMenu's
+                    // Challenge Mode button and main.tsx's cold boot
+                    // (actions.ts's scriptedRunStart) — already on
+                    // 'playing', so only tdPhase needs resetting here.
+                    store.patch({ tdPhase: 'build', ...scriptedRunStart() });
                 }}
             >
                 Retry

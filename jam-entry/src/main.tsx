@@ -8,6 +8,7 @@ import { initSdk, registerLifecycles, sdkReady } from './sdk/runSdk.ts';
 import { track } from './sdk/analytics.ts';
 import { refreshEngagement } from './sdk/engagement.ts';
 import { generateTowerIcons } from './game/towerIcons.ts';
+import { scriptedRunStart } from './game/actions.ts';
 import { initAudio, resumeAudio, suspendAudio } from './audio/audio.ts';
 import { refreshServerTime } from './shared/serverTime.ts';
 import { warmAssets } from './assets/preload.ts';
@@ -69,8 +70,12 @@ async function boot() {
     //    assets keep loading in the background after this resolves.
     await warmAssets((p) => store.patch({ loadProgress: p }));
 
-    // 6. Loading done — hand over to the menu.
-    store.patch({ phase: 'menu' });
+    // 6. Loading done — final round, task 3: hand over straight into
+    //    Challenge Mode with the FTUE armed, rather than the menu. Same
+    //    scripted-run payload MainMenu.tsx's Challenge Mode button and
+    //    EndScreen.tsx's Retry use (actions.ts's scriptedRunStart) — this is
+    //    a fresh mount into 'playing', same as MainMenu's case.
+    store.patch({ phase: 'playing', ...scriptedRunStart() });
 
     // 7. Host lifecycle hooks. Register AFTER boot so handlers never race
     //    half-initialized state.

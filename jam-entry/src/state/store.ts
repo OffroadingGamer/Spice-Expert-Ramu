@@ -99,6 +99,13 @@ export interface AppState {
     ftueGrantNonce: number;
     /** PNG data URLs of the tower art, generated at boot for DOM UI use */
     towerIcons: Record<string, string>;
+    /** True for BACKDROP_LOCK_S (towerScene.ts) after a genuine block-to-
+     *  block backdrop transition — art already cached, so the crossfade
+     *  plays immediately, distinct from the silent game-start swap and a
+     *  silent late-arriving load (docs: towerScene.ts's updateBackdrop).
+     *  Ready reads this to lock itself for the crossfade's duration; reset
+     *  at both run start and scene teardown so it can never latch locked. */
+    backdropTransitioning: boolean;
     /** Platform engagement prompts: capability-gated by the host at boot */
     likeAvailable: boolean;
     commentsAvailable: boolean;
@@ -136,6 +143,7 @@ const INITIAL: AppState = {
     ftueGrantAmount: 0,
     ftueGrantNonce: 0,
     towerIcons: {},
+    backdropTransitioning: false,
     likeAvailable: false,
     commentsAvailable: false,
     isLiked: false,
