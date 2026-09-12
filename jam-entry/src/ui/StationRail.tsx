@@ -30,9 +30,10 @@
  * instead of occupying space the board had to shrink to make room for.
  *
  * Width: RAIL_WIDTH_UNITS (stage.ts) is this panel's own overlay width in
- * design units, run through getFit()'s own scale via useRailWidthPx()
- * below — it no longer feeds getFit() itself, since the board doesn't
- * reserve space for it.
+ * design units, run through getFit()'s own scale via useRailFit() below —
+ * it no longer feeds getFit() itself, since the board doesn't reserve space
+ * for it. The same scale also drives the rail's label font sizes (label-
+ * overflow round, below).
  *
  * Final round: the panel is content-height, not h-full — it used to stretch
  * the full viewport, leaving a large empty column below its (short)
@@ -73,24 +74,52 @@ import { TARGETING_DESCRIPTIONS, TARGETING_LABELS, TARGETING_MODES } from '../ga
 import { TOWERS } from '../game/data/towers.ts';
 import { store, useStore } from '../state/store.ts';
 
-/** The rail's own overlay width in CSS px, tracking #app-frame's size the
- *  same way Hud.tsx's usePadsScreenPos does. Only StationRail.tsx itself
- *  needs this now — the board no longer reserves layout space for it. */
-function useRailWidthPx(): number {
-    const [px, setPx] = useState(0);
+/** The rail's own overlay width in CSS px, AND the board's design→screen
+ *  scale that produces it, tracking #app-frame's size the same way
+ *  Hud.tsx's usePadsScreenPos does. Only StationRail.tsx itself needs this
+ *  now — the board no longer reserves layout space for it. `scale` is what
+ *  the label-overflow round below derives its font sizes from — the same
+ *  number that already sizes this panel's own width, so a label can never
+ *  drift out of sync with how much room the rail actually has. */
+function useRailFit(): { railPx: number; scale: number } {
+    const [fit, setFit] = useState({ railPx: 0, scale: 0 });
     useEffect(() => {
         const frame = document.getElementById('app-frame');
         if (!frame) return;
         const compute = () => {
             const rect = frame.getBoundingClientRect();
-            setPx(getFit(rect.width, rect.height).scale * RAIL_WIDTH_UNITS);
+            const { scale } = getFit(rect.width, rect.height);
+            setFit({ railPx: scale * RAIL_WIDTH_UNITS, scale });
         };
         compute();
         const ro = new ResizeObserver(compute);
         ro.observe(frame);
         return () => ro.disconnect();
     }, []);
-    return px;
+    return fit;
+}
+
+/**
+ * Label-overflow round: Upgrade/Sell/Max/station-name/targeting-mode labels
+ * used a fixed rem size against a rail whose own CSS width is ITSELF
+ * derived from getFit()'s scale (RAIL_WIDTH_UNITS above) — a fixed size
+ * against a variable-width panel is exactly what overflowed on a narrow
+ * device, and break-words papered over it with an ugly mid-word "Upgra/de"
+ * split instead of a real fix. Deriving font size from the SAME scale that
+ * already sizes the rail fixes the whole class at once and stays
+ * deterministic: no runtime measurement of the text itself, ever —
+ * getBoundingClientRect/refs/ResizeObserver on these elements specifically
+ * has failed on device three rounds running (see this file's arrow-round
+ * comment above). RAIL_LABEL_FONT_UNITS is a design-unit font size, exactly
+ * like anything else scale multiplies; retune this one constant if labels
+ * ever need to run bigger or smaller. railLabelFontPx() returns undefined
+ * before the first real measurement lands (scale 0), so the className's own
+ * fixed-rem size is what shows briefly instead of a zero-size flash — same
+ * `|| undefined` fallback pattern the rail's own width style already uses.
+ */
+const RAIL_LABEL_FONT_UNITS = 21;
+function railLabelFontPx(scale: number): number | undefined {
+    return scale > 0 ? scale * RAIL_LABEL_FONT_UNITS : undefined;
 }
 
 /** How far above the panel's own vertical centre the upgrade0 arrow sits,
@@ -131,7 +160,8 @@ export default function StationRail() {
     useStore((s) => s.padVersion); // re-render on coin-free engine mutations
     const [confirmSell, setConfirmSell] = useState(false);
     const [showTargetHelp, setShowTargetHelp] = useState(false);
-    const railPx = useRailWidthPx();
+    const { railPx, scale: railScale } = useRailFit();
+    const railLabelFontSize = railLabelFontPx(railScale);
 
     // a new selection always starts with both popups closed
     useEffect(() => {
@@ -225,7 +255,7 @@ export default function StationRail() {
                                         {towerIcons[def.id] && (
                                             <img src={towerIcons[def.id]} alt="" className="h-8 w-8 object-contain" />
                                         )}
-                                        <span className="text-center text-[0.62rem] leading-tight font-bold">{def.name}</span>
+                                        <span className="text-center text-[0.62rem] leading-tight font-bold" style={{ fontSize: railLabelFontSize }}>{def.name}</span>
                                         <span className="text-[0.6rem] text-white/70 tabular-nums">🪙{def.cost}</span>
                                     </button>
                                 );
@@ -259,6 +289,7 @@ export default function StationRail() {
                                                 'w-full rounded-lg px-1 py-2 text-center text-[0.62rem] leading-tight font-bold break-words transition-transform active:scale-95 ' +
                                                 (affordable ? 'bg-primary text-black' : 'bg-white/10 text-white/40')
                                             }
+                                            style={{ fontSize: railLabelFontSize }}
                                             onClick={() => {
                                                 sfx.upgrade();
                                                 upgradeTower(selectedPad);
@@ -271,7 +302,10 @@ export default function StationRail() {
                                     );
                                 })()
                             ) : (
-                                <span className="w-full rounded-lg bg-white/10 px-1 py-2 text-center text-[0.62rem] font-bold break-words text-white/50">
+                                <span
+                                    className="w-full rounded-lg bg-white/10 px-1 py-2 text-center text-[0.62rem] font-bold break-words text-white/50"
+                                    style={{ fontSize: railLabelFontSize }}
+                                >
                                     Max
                                 </span>
                             )}
@@ -285,6 +319,7 @@ export default function StationRail() {
                                     'w-full rounded-lg px-1 py-2 text-center text-[0.62rem] font-bold break-words text-white transition-transform active:scale-95 ' +
                                     (ftueActive ? 'bg-red-500/30 opacity-40' : 'bg-red-500/80')
                                 }
+                                style={{ fontSize: railLabelFontSize }}
                                 onClick={() => { sfx.click(); setConfirmSell(true); }}
                             >
                                 Sell
@@ -320,6 +355,7 @@ export default function StationRail() {
                                                 ? 'bg-primary text-black'
                                                 : 'bg-white/10 text-white/70')
                                         }
+                                        style={{ fontSize: railLabelFontSize }}
                                         onClick={() => {
                                             sfx.click();
                                             setTargeting(selectedPad, mode);

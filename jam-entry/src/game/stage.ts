@@ -148,6 +148,18 @@ export function createStage(app: Application): Stage {
 
     const layout = () => {
         const { scale, offsetX, designHeight } = getFit(app.screen.width, app.screen.height);
+        // Cold-boot blocker: a host that hasn't been sized yet (an iframe in
+        // the RUN host, or dvw/dvh still settling on mobile) can call this
+        // with screen 0x0, producing scale 0 -- committing that would leave
+        // the whole board permanently invisible. Pixi's resizeTo only reacts
+        // to WINDOW resize events (see node_modules/pixi.js's ResizePlugin),
+        // never to the host element's own later resize, so nothing would
+        // ever re-run this with a good size on its own; GameCanvas.tsx's own
+        // ResizeObserver on the host (mirroring StationRail.tsx's
+        // useRailWidthPx) is what re-triggers it once the host actually has
+        // one. Skip committing a broken layout rather than guess a fallback
+        // size — the next real resize corrects it.
+        if (!Number.isFinite(scale) || scale <= 0) return;
         root.scale.set(scale);
         root.x = offsetX;
         _designHeight = designHeight;

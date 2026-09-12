@@ -256,6 +256,40 @@ export default function Hud() {
                         ))}
                     </div>
                 </div>
+
+                {/* Mobile layout round, task 2: the objective/milestone
+                    banners used to be separate `absolute top-20` overlays —
+                    a magic offset measured against row 1+2's height at one
+                    viewport, which overlapped the WAVE label and speed row
+                    the moment either grew (a longer RUSH label wrapping, a
+                    taller safe-area top inset). Flowing them as ordinary
+                    flex children right here, inside the same gap-2 column as
+                    row 1+2, makes "below the top rows" true by construction
+                    at any height instead of a guessed pixel value — the
+                    shared `gap-2` is the only spacing rule, and it already
+                    applies correctly whether 0, 1, or 2 of the rows above
+                    grow. Objective and milestone are mutually exclusive
+                    (each guards on !showMilestone / the FTUE/pulse state so
+                    only one ever speaks at once — round 19's belt mistake
+                    was two cues teaching the same moment), so at most one of
+                    these two slots is ever occupied. Copy round: the
+                    objective banner now reads the live `lives` count instead
+                    of a fixed number, so it stays accurate even if it's
+                    still on screen when the player takes an early hit. */}
+                {showObjective && ftueBeat === null && pulsePads.length === 0 && !showMilestone && (
+                    <div className="pointer-events-auto flex justify-center" onClick={() => setShowObjective(false)}>
+                        <p className="max-w-xs rounded-xl bg-black/70 px-4 py-2 text-center text-[1.05rem] font-semibold leading-snug">
+                            Don't miss an order — you only have {lives} ❤️🏃 before you lose.
+                        </p>
+                    </div>
+                )}
+                {showMilestone && ftueBeat === null && pulsePads.length === 0 && (
+                    <div className="pointer-events-auto flex justify-center" onClick={() => setShowMilestone(false)}>
+                        <p className="max-w-xs rounded-xl bg-primary px-4 py-2 text-center text-[1.05rem] font-semibold leading-snug text-black">
+                            Full shift held. Everything from here is overtime — how far can you push it?
+                        </p>
+                    </div>
+                )}
             </div>
 
             {/* Coin top-up toast (round D, task 3): the exact shortfall a
@@ -265,53 +299,6 @@ export default function Hud() {
             {showGrant && (
                 <div className="pointer-events-none absolute left-3 top-24 z-10 rounded-lg bg-primary px-3 py-1 text-[1.05rem] font-bold text-black">
                     +{ftueGrantAmount} 🪙 shift float
-                </div>
-            )}
-
-            {/* Objective banner: states the goal and the fail consequence
-                once per run, then fades — tap to dismiss early. Suppressed
-                for as long as ANY forced FTUE beat is active — ftueBeat is
-                the single source for this, covering all three cue kinds
-                (canvas arrow, the pulse, AND StationRail's own Upgrade-button
-                arrow, which Hud.tsx has no other visibility into) — plus
-                the milestone banner and (round E) the general post-wave
-                pulse, which by definition fires with ftueBeat already null,
-                so only one thing speaks at a time (round 19's belt mistake:
-                two cues teaching the same moment). In practice the
-                objective banner's own 4s timer has long since expired by
-                the time any beat past run start, or the earliest possible
-                general pulse (wave 3+), fires in real play, but this keeps
-                the guarantee exact rather than timing-dependent — a forced
-                state-jump (or a future faster FTUE) shouldn't be able to
-                stack them. */}
-            {showObjective && ftueBeat === null && pulsePads.length === 0 && !showMilestone && (
-                <div
-                    className="pointer-events-auto absolute inset-x-0 top-20 flex justify-center px-6"
-                    onClick={() => setShowObjective(false)}
-                >
-                    <p className="max-w-xs rounded-xl bg-black/70 px-4 py-2 text-center text-[1.05rem] font-semibold leading-snug">
-                        Survive {waveCount} rushes. Run out of lives (❤️🏃) and the shift ends.
-                    </p>
-                </div>
-            )}
-
-            {/* Campaign-milestone banner: the reward for reaching overtime,
-                not an instruction — primary colour, not bg-black/70, so it
-                reads distinct from the objective banner above. Suppressed
-                while any forced FTUE beat is active (ftueBeat !== null) or
-                the general post-wave pulse is showing, for the same
-                one-voice rule; in practice unreachable together since the
-                FTUE always completes well before wave 11 and a pulse clears
-                the instant the next wave starts, but the guard is exact
-                rather than timing-dependent. */}
-            {showMilestone && ftueBeat === null && pulsePads.length === 0 && (
-                <div
-                    className="pointer-events-auto absolute inset-x-0 top-20 flex justify-center px-6"
-                    onClick={() => setShowMilestone(false)}
-                >
-                    <p className="max-w-xs rounded-xl bg-primary px-4 py-2 text-center text-[1.05rem] font-semibold leading-snug text-black">
-                        Full shift held. Everything from here is overtime — how far can you push it?
-                    </p>
                 </div>
             )}
 
