@@ -45,7 +45,7 @@ import {
 import { store } from '../state/store.ts';
 import { getSave, recordRunEnd } from '../state/save.ts';
 import { submitRunScores } from '../sdk/leaderboard.ts';
-import { playSample, sfx } from '../audio/audio.ts';
+import { duckMusicForSting, playSample, resetMusicDuck, sfx } from '../audio/audio.ts';
 import { PLAYFIELD_HEIGHT, type Stage } from './stage.ts';
 
 /** The scene contract: every createXxxScene(app, stage) returns one of these. */
@@ -500,6 +500,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         // "can never latch locked", not "shouldn't in practice").
         backdropTransitioning: false,
     });
+    resetMusicDuck(); // same defensive posture as backdropTransitioning just above
     syncStore();
     // Kick the current block's dish load off immediately (don't wait for the
     // first tick) so it has the longest possible head start before wave 1
@@ -1109,6 +1110,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             // what actually performs the swap whenever it lands.
             if (priorBlockId > 0 && Assets.cache.has(backdropAliasForBlock(block.id))) {
                 playSample('block-transition'); // no-op, silently, until the file lands
+                duckMusicForSting(); // dip the BGM so the sting is audible over it (audio.ts)
                 store.patch({ backdropTransitioning: true });
                 if (backdropLockTimer) clearTimeout(backdropLockTimer);
                 backdropLockTimer = setTimeout(() => {
@@ -1177,6 +1179,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             if (ftuePulseTimer) { clearTimeout(ftuePulseTimer); ftuePulseTimer = null; }
             if (backdropLockTimer) { clearTimeout(backdropLockTimer); backdropLockTimer = null; }
             store.patch({ backdropTransitioning: false }); // never leave Ready latched locked past this scene
+            resetMusicDuck(); // same guarantee, for the music: never leave it latched ducked past this scene
             app.ticker.remove(tick);
             app.stage.off('pointertap', onTap);
             offResize();

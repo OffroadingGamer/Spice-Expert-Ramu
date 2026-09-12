@@ -48,16 +48,23 @@
  * onboarding (store.ftueActive), not only inside the forced beats — it
  * returns once wave 3 begins.
  *
- * Final round, task 1: every forced-beat arrow lives here now, anchored to
- * a live getBoundingClientRect() (no stage.ts transform — these are normal
- * DOM layout inside the rail, never something positioned on the canvas).
- * upgrade0 points at the Upgrade button, same as before; place0/place2 now
- * point at the station list (the buyable cards) instead of Hud.tsx pointing
- * a canvas arrow at the target pad — the selected-pad ring already shows
- * which pad, so the arrow's only job left is "tap here," and "here" is the
- * rail, not the board.
+ * Arrow round: the forced-beat cue (place0, place2, upgrade0) is a sideways
+ * arrow pointing at this panel from its left edge — CSS layout only.
+ * getBoundingClientRect()/ResizeObserver/refs/fixed-position measuring the
+ * real DOM already failed on a real device three separate rounds (each one
+ * passed locally first); this rewrite deletes that entire approach rather
+ * than debug it a fourth time. The arrow is `position: absolute` against
+ * the rail's own outer wrapper (already `position: absolute` itself, so no
+ * extra positioning context is needed) — `right-full` puts it just outside
+ * the panel's left edge, and vertical placement is plain CSS: centred
+ * against the panel for place0/place2 (the station list roughly fills it),
+ * nudged up toward the Upgrade button's fixed spot in the occupied-tower
+ * panel's content order for upgrade0 (UPGRADE_ARROW_LIFT_PX below — eyeballed
+ * against that panel's own fixed layout, never measured at runtime; that
+ * panel's content shape doesn't vary while this beat is active, so a fixed
+ * offset stays accurate every time it shows).
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { sfx } from '../audio/audio.ts';
 import { getEngine, placeTower, sellTower, setTargeting, upgradeTower } from '../game/actions.ts';
 import { CONFIG } from '../game/config.ts';
@@ -85,6 +92,15 @@ function useRailWidthPx(): number {
     }, []);
     return px;
 }
+
+/** How far above the panel's own vertical centre the upgrade0 arrow sits,
+ *  in CSS px — eyeballed against the occupied-tower panel's fixed content
+ *  order (name/level, dmg/rate, then Upgrade), never measured at runtime.
+ *  That panel's shape doesn't change while this beat is active (the beat
+ *  never arms unless a real Upgrade button is showing, not "Max"), so one
+ *  fixed offset stays accurate every time it appears. Retune this one
+ *  constant if the content above Upgrade ever changes. */
+const UPGRADE_ARROW_LIFT_PX = 70;
 
 /** Player-facing label for a gold pad's bonus. */
 function bonusLabel(bonus: NonNullable<(typeof CONFIG.pads)[number]['bonus']>): string {
@@ -115,9 +131,6 @@ export default function StationRail() {
     useStore((s) => s.padVersion); // re-render on coin-free engine mutations
     const [confirmSell, setConfirmSell] = useState(false);
     const [showTargetHelp, setShowTargetHelp] = useState(false);
-    const upgradeBtnRef = useRef<HTMLButtonElement>(null);
-    const stationListRef = useRef<HTMLDivElement>(null);
-    const [ftueArrowPos, setFtueArrowPos] = useState<{ x: number; y: number } | null>(null);
     const railPx = useRailWidthPx();
 
     // a new selection always starts with both popups closed
@@ -129,49 +142,11 @@ export default function StationRail() {
     const engine = getEngine();
     const tower = selectedPad !== null ? engine?.state.towers.find((t) => t.padIndex === selectedPad) : undefined;
     const showUpgradeArrow = ftueBeat === 'upgrade0' && selectedPad === 0;
-    // Final round, task 1: place0/place2 point here instead of at the pad
-    // on canvas (Hud.tsx used to) — matches exactly when the station-list
-    // branch below actually renders (selectedPad set, no tower yet).
+    // place0/place2 point at the station picker (the buyable cards) — the
+    // selected-pad ring already shows which pad, so the arrow's only job
+    // is "tap here," and "here" is the rail, not the board.
     const showPlaceArrow = (ftueBeat === 'place0' || ftueBeat === 'place2') && selectedPad !== null && !tower;
-
-    // Anchor to whichever DOM element the active beat cares about —
-    // viewport (fixed) coords, no stage.ts transform, since these are
-    // normal DOM layout inside the rail, never something positioned on the
-    // canvas. One mechanism, two possible targets, since the two beats are
-    // mutually exclusive (never both at once). `engineReady` is in the deps
-    // for a real race, not paranoia: on the very FIRST render of a fresh
-    // run (final round, task 3 — cold boot can now land here before
-    // GameCanvas's effect has called registerEngine()), `engine` is still
-    // null, the early return below fires, and the ref never attaches to a
-    // DOM node THIS render. showPlaceArrow was already true on that same
-    // render (it doesn't depend on engine), so without `engineReady` here the
-    // effect's inputs look unchanged on the very next render — the first
-    // one where the ref'd element actually exists — and never re-fires.
-    //
-    // A ResizeObserver on the target element (not just a window 'resize'
-    // listener) matters for the same reason useRailWidthPx below tracks
-    // #app-frame the same way: the station list's own height — and
-    // therefore its centred top position — changes when towerIcons
-    // resolves asynchronously after mount (main.tsx's generateTowerIcons)
-    // and the cards gain their <img> art. That's neither a window resize
-    // nor a change to this effect's own deps, so only observing the
-    // element itself catches it; caught live (a station-list rect that
-    // measurably drifted with a stale window-resize-only arrow, then held
-    // steady once switched to ResizeObserver).
-    useEffect(() => {
-        if (!showUpgradeArrow && !showPlaceArrow) { setFtueArrowPos(null); return; }
-        const el = showUpgradeArrow ? upgradeBtnRef.current : stationListRef.current;
-        if (!el) { setFtueArrowPos(null); return; }
-        const compute = () => {
-            const r = el.getBoundingClientRect();
-            setFtueArrowPos({ x: r.left + r.width / 2, y: r.top });
-        };
-        compute();
-        const ro = new ResizeObserver(compute);
-        ro.observe(el);
-        window.addEventListener('resize', compute);
-        return () => { ro.disconnect(); window.removeEventListener('resize', compute); };
-    }, [showUpgradeArrow, showPlaceArrow, tower?.level, engineReady]);
+    const showRailArrow = showUpgradeArrow || showPlaceArrow;
 
     if (selectedPad === null || tdPhase === 'lost' || !engineReady) return null;
 
@@ -183,6 +158,37 @@ export default function StationRail() {
                 className="pointer-events-none absolute inset-y-3 right-3 flex items-center"
                 style={{ width: railPx || undefined }}
             >
+                {/* Arrow round: sideways cue, positioned purely against this
+                    (already `position: absolute`) wrapper — `right-full`
+                    lands it just outside the panel's own left edge (the
+                    wrapper shrink-wraps its one child, so its left edge IS
+                    the panel's left edge), motion-safe: gated same as every
+                    other Hud.tsx animation. place0/place2 centre against the
+                    wrapper's full height, which is also the panel's own
+                    centre (the panel is itself centred in this same
+                    wrapper) — correct for the station picker, which fills
+                    most of the panel. upgrade0 shifts up from that same
+                    centre by a fixed, eyeballed amount (see
+                    UPGRADE_ARROW_LIFT_PX) toward where Upgrade always sits
+                    in that panel's fixed content order. */}
+                {showRailArrow && (
+                    // Two elements, not one: the outer div's inline transform
+                    // holds the (static) vertical offset, the inner span's
+                    // animate-nudge-right class holds the (moving)
+                    // horizontal one. A CSS animation overrides an inline
+                    // transform on the SAME element for as long as it runs,
+                    // so combining both into one transform would silently
+                    // lose the vertical placement the instant the animation
+                    // started — splitting them onto parent/child means each
+                    // transform composes independently instead of fighting.
+                    <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute right-full top-1/2 mr-2"
+                        style={{ transform: showUpgradeArrow ? `translateY(calc(-50% - ${UPGRADE_ARROW_LIFT_PX}px))` : 'translateY(-50%)' }}
+                    >
+                        <span className="motion-safe:animate-nudge-right block text-4xl leading-none">➡️</span>
+                    </div>
+                )}
                 {/* Visual round, task 5 (carried from the old sheet): opaque
                     bg-surface, not a see-through tint — the belt and D-row
                     pads must not read straight through the panel. Only
@@ -198,7 +204,7 @@ export default function StationRail() {
                     fit on a short screen — the page itself never scrolls. */}
                 <div className="pointer-events-auto flex max-h-full w-full flex-col gap-1.5 overflow-y-auto rounded-2xl bg-surface p-1.5">
                     {selectedPad !== null && !tower && (
-                        <div ref={stationListRef} className="flex flex-col gap-1.5 pt-1">
+                        <div className="flex flex-col gap-1.5 pt-1">
                             {TOWERS.map((def) => {
                                 const affordable = coins >= def.cost;
                                 return (
@@ -247,7 +253,6 @@ export default function StationRail() {
                                     const affordable = coins >= cost;
                                     return (
                                         <button
-                                            ref={upgradeBtnRef}
                                             type="button"
                                             disabled={!affordable}
                                             className={
@@ -348,14 +353,6 @@ export default function StationRail() {
                     )}
                 </div>
             </div>
-            {ftueArrowPos && (
-                <div
-                    className="pointer-events-none fixed z-10 flex flex-col items-center"
-                    style={{ left: ftueArrowPos.x, top: ftueArrowPos.y - 60, transform: 'translateX(-50%)' }}
-                >
-                    <span className="motion-safe:animate-bounce text-5xl leading-none">⬇️</span>
-                </div>
-            )}
             {showTargetHelp && tower && (
                 <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/70 px-8">
                     <div className="flex w-full max-w-sm flex-col gap-3 rounded-2xl bg-black/90 p-6">

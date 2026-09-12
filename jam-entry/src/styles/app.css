@@ -14,11 +14,25 @@
        WRAPPING element around Ready, never the button itself — see
        Hud.tsx's own comment on why. */
     --animate-ready-pulse: ready-pulse 1.6s ease-in-out infinite;
+
+    /* FTUE arrow rewrite: the rail's forced-beat cue is now a sideways
+       arrow, laid out to the panel's own left edge via plain relative/
+       absolute CSS (StationRail.tsx) — no getBoundingClientRect, no
+       ResizeObserver, nothing that measures anything at runtime, after
+       that approach failed on device three rounds running. A horizontal
+       nudge (not the vertical animate-bounce Hud.tsx's old downward arrow
+       used) reads as "over here, to the right" for a sideways pointer. */
+    --animate-nudge-right: nudge-right 1s ease-in-out infinite;
 }
 
 @keyframes ready-pulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.08); }
+}
+
+@keyframes nudge-right {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(8px); }
 }
 
 /* ---------------------------------------------------------------------------

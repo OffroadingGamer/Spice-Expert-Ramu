@@ -26,10 +26,21 @@ import { store } from '../state/store.ts';
 let ctx: AudioContext | null = null;
 let musicBus: GainNode | null = null;
 let sfxBus: GainNode | null = null;
-/** Children of musicBus: seqGain carries the procedural sequencer (the
+/** Arrow round, task 2: sits between every music source and musicBus —
+ * seqGain/trackA/trackB all route through this, never straight to musicBus
+ * — so ducking under the block-transition sting scales whatever's already
+ * playing without ever touching musicBus itself. musicBus stays the
+ * volume-slider's own master (setMusicVolume() writes it directly): moving
+ * the slider mid-duck still multiplies against the CURRENT duck level
+ * (GainNodes chain multiplicatively), so it never fights the duck or gets
+ * clobbered by its restore, and the level is simply correct once the duck
+ * finishes, no special-casing needed. See duckMusicForSting()/
+ * resetMusicDuck() below. */
+let duckGain: GainNode | null = null;
+/** Children of duckGain: seqGain carries the procedural sequencer (the
  * permanent fallback), trackA/trackB carry CDN cues — two nodes, not one,
  * so switchCue() can crossfade between two music cues without cutting the
- * outgoing one first. musicBus itself stays the volume-slider master. */
+ * outgoing one first. */
 let seqGain: GainNode | null = null;
 let trackA: GainNode | null = null;
 let trackB: GainNode | null = null;
@@ -41,6 +52,22 @@ let sfxVolume = 0.8;
 const MUSIC_BASE = 0.5;
 const SFX_BASE = 0.6;
 
+/** Arrow round, task 2: duckGain's two ramp targets — both named constants,
+ *  each retunable in one line. DUCK_LOW ~0.25 dips the music without fully
+ *  silencing it (a floor under the sting, not a cut); DUCK_HIGH 1.0 is
+ *  "unducked", not the music's own volume (that's musicBus/musicVolume's
+ *  job — duckGain only ever multiplies against whatever that already is). */
+const DUCK_LOW = 0.25;
+const DUCK_HIGH = 1.0;
+/** Short ramps read as a dip, not a fade — ~200-300ms per the handover. */
+const DUCK_RAMP_S = 0.25;
+/** Sized to the STING's own length (audio/bombay-transition.mp3, 4.6s),
+ *  not the 2.5s visual crossfade (BACKDROP_FADE_S, towerScene.ts) — a
+ *  different duration for a different reason (audibility of the sting vs.
+ *  how long the backdrop takes to swap), so this is its own constant, not
+ *  derived from or coupled to that one. */
+const DUCK_HOLD_S = 4.6;
+
 function ensureCtx(): AudioContext | null {
     if (ctx) return ctx;
     try {
@@ -48,15 +75,18 @@ function ensureCtx(): AudioContext | null {
         musicBus = ctx.createGain();
         musicBus.gain.value = musicVolume * MUSIC_BASE;
         musicBus.connect(ctx.destination);
+        duckGain = ctx.createGain();
+        duckGain.gain.value = DUCK_HIGH;
+        duckGain.connect(musicBus);
         seqGain = ctx.createGain();
         seqGain.gain.value = 1.0;
-        seqGain.connect(musicBus);
+        seqGain.connect(duckGain);
         trackA = ctx.createGain();
         trackA.gain.value = 0.0;
-        trackA.connect(musicBus);
+        trackA.connect(duckGain);
         trackB = ctx.createGain();
         trackB.gain.value = 0.0;
-        trackB.connect(musicBus);
+        trackB.connect(duckGain);
         sfxBus = ctx.createGain();
         sfxBus.gain.value = sfxVolume * SFX_BASE;
         sfxBus.connect(ctx.destination);
@@ -228,6 +258,39 @@ export function setMusicVolume(v: number): void {
 export function setSfxVolume(v: number): void {
     sfxVolume = v;
     if (sfxBus) sfxBus.gain.value = v * SFX_BASE;
+}
+
+/**
+ * Arrow round, task 2: dip the music under the block-transition sting, then
+ * bring it back — towerScene.ts calls this at the exact same point it
+ * calls playSample('block-transition'). Pure AudioParam automation (no
+ * setTimeout for the ramp itself): setValueAtTime anchors the CURRENT gain
+ * before ramping, so a re-trigger mid-ramp starts cleanly from wherever the
+ * gain actually is instead of jumping; the flat setValueAtTime partway
+ * through is what makes the middle a HOLD, not a straight ramp-down-then-
+ * immediately-ramp-up triangle.
+ */
+export function duckMusicForSting(): void {
+    const c = ctx;
+    if (!c || !duckGain) return;
+    const t0 = c.currentTime;
+    duckGain.gain.cancelScheduledValues(t0);
+    duckGain.gain.setValueAtTime(duckGain.gain.value, t0);
+    duckGain.gain.linearRampToValueAtTime(DUCK_LOW, t0 + DUCK_RAMP_S);
+    duckGain.gain.setValueAtTime(DUCK_LOW, t0 + DUCK_HOLD_S - DUCK_RAMP_S);
+    duckGain.gain.linearRampToValueAtTime(DUCK_HIGH, t0 + DUCK_HOLD_S);
+}
+
+/** 🔴 The one guarantee that matters here: the duck can never latch.
+ *  Cancels any in-flight ramp/hold and snaps back to DUCK_HIGH immediately
+ *  — towerScene.ts calls this on scene destroy (quit or retry mid-duck)
+ *  and defensively at every run's own start, the same two-call posture
+ *  store.backdropTransitioning already uses for the same reason. */
+export function resetMusicDuck(): void {
+    const c = ctx;
+    if (!c || !duckGain) return;
+    duckGain.gain.cancelScheduledValues(c.currentTime);
+    duckGain.gain.setValueAtTime(DUCK_HIGH, c.currentTime);
 }
 
 /** Host lifecycle: freeze all audio with the game. */
