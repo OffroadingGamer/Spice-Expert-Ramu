@@ -1,6 +1,6 @@
 # Marketing Strategy
 
-**Last updated:** Sep 12 2026, 10:30 IST
+**Last updated:** Sep 12 2026, 11:30 IST
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)
 
@@ -743,4 +743,82 @@ the user for hand-off to Central Agent.
 `generate` run, no tag touched, no campaign funded — this agent will not act
 on the campaign until a handover comes back from Central Agent saying so, per
 the standing rule reaffirmed this round.
+
+## 12. Central Agent's return, and this agent's read — Sep 12 2026, 11:30 IST
+
+**What came back (full text in [Social Media Handover
+Record.md](Social%20Media%20Handover%20Record.md)):** $90 approved, but
+`--network run` doesn't exist in production for anyone — it's backend-only,
+never enabled, not a tier/config gap. That kills §11's entire thesis: the
+budget was sized against an in-app one-tap surface that never existed as an
+option. The four live networks (meta, google, reddit, unity) are all
+external, multi-step deeplink funnels with a **zero-row conversion baseline**
+— no campaign has ever run for this game on any of them.
+
+Two of this agent's own numbers were corrected:
+- **Budget sizing was 8% over.** $90 costs 99,500 credits after the 1.05×
+  markup and the flat 5,000-credit flight fee — 7,450 over BACK-TO-WORK's
+  92,047. $82 is the actual ceiling ((92,047−5,000)/1,050 ≈ $82.9).
+- **"+50 cushion, flat" understated a real collapse.** Central Agent's
+  daily DUP series (Sep 4→12: 117·54·59·60·38·41·19·20·4) shows acquisition
+  cratering, not holding steady — this agent's framing compared snapshot
+  totals day-over-day rather than true daily inflow, and missed it.
+
+**Root cause, checked against this file's own §4 action log rather than
+guessed:** of the six Tier-1 "free, ≤15 min, fire today/tomorrow" channels
+planned Sep 9 (§7.2), **only one — RUN.creators Discord — has actually
+fired**, and that was two days ago in the user's own voice, not the drafted
+copy. WhatsApp/Telegram, Funsmith Club, Indie Game Academy, GameDev India,
+and Backstage Pass are all still unfired. That gap lines up with the DUP
+crater far better than any "organic just dies" explanation — it's an
+execution gap, not a demand-side collapse, and it's fixable in hours.
+
+**Also material:** the build is now on v1.69.0 across all three tags
+(Private/Review/Public) — v1.68.0 fixed an iOS boot-race black-screen and
+v1.69.0 fixed the tutorial, which had been opening on an unbonused pad and
+teaching a strategy that dies at wave 4. `version_mix_30d` shows almost all
+historical play sat on the old, broken versions (1.7.0, 1.42.0) — meaning
+every DUP number logged in this file to date reflects a worse game than the
+one live right now. This is genuine, honest news content, not recycled
+promo — a real hook the Tier-1 re-fire should use.
+
+**Licensing narrowed:** only Kitchen Essentials (toxiccolors) is cleared as
+generator *input* (written seller consent); Kitchen Props (hoshiixs) and
+dobo_ui may ship in the build but may not be fed to `rundot generate` as
+reference material. Noted for any future creative ask — none planned by
+this agent right now.
+
+**This agent's read, given directly since Central Agent asked for it rather
+than instructing it:**
+
+1. **Paid — worth a cheap, expectation-free attempt, not a plan to lean on.**
+   The credits expire worthless either way and nothing is charged until
+   flighting, so there's no downside to trying beyond the sunk 843-credit
+   creative spend that already happened. But the upside case is weak: zero
+   conversion baseline on every live network, a collapsing organic backdrop
+   to compare against, and no audience-targeting exposed by the CLI (can't
+   point it at Indian or gaming-interest audiences specifically).
+   **Recommended shape: Reddit, $82, submitted today** rather than waiting —
+   Reddit is the only enabled network the existing 3-square creative set
+   fits natively with zero rework; $82 respects the BACK-TO-WORK ringfence
+   exactly where $90 didn't; submitting today maximises runway against both
+   Sep 15 and the open submit→flighting SLA ticket. Flagged the $41/day
+   pacing sits under the ~$50/day warning threshold — expected to warn, not
+   block.
+2. **Free channels are the real lever for the remaining 6 days**, precisely
+   because the gap there is execution, not time or demand. Plan: fire the
+   five unfired Tier-1 channels today with the tutorial/iOS-fix hook folded
+   into the existing §8.1 copy; treat r/Indiangamers as stalled (48h+ past
+   the 24h signal threshold, no reply); shoot the still-outstanding vertical
+   video now, built around the tutorial fix specifically since it's the most
+   concrete proof the game changed; and unblock r/GameDevelopersOfIndia
+   immediately rather than waiting on r/Indiangamers's unrelated Modmail.
+
+Full reply text delivered to the user for hand-off to Central Agent is
+logged verbatim in [Social Media Handover
+Record.md](Social%20Media%20Handover%20Record.md)'s 2026-09-12 11:30 IST
+entry.
+
+**Status:** analysis and reply only. No `prepare`/`submit`/`generate` run,
+no post made, no tag touched by this agent this round.
 4th (The Good Life, 358 DUP) is now +52, not a deficit.

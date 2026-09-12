@@ -6,9 +6,20 @@
 > version. Once we are live next time, we can start with this, until then log them in a
 > document 'Ideas.md'. Not to be acted upon until we go live."*
 
-✅ **The gate:** the current build ships, reaches `public`, goes stable, and the marketing
-agent's ads are running. Only then does anything below become schedulable. Do not raise
-these as actionable work before that, and do not let a handover quietly pull one in.
+✅ **The gate — UPDATED Sep 13 2026.** Originally: *"the current build ships, reaches
+`public`, goes stable, and the marketing agent's ads are running."*
+
+- ✅ **Shipped and public:** v1.69.0 on all three tags since Sep 12.
+- ✅ **Stable:** the iOS boot race (v1.68.0) and the block-1 onboarding cliff (v1.69.0) are
+  both closed.
+- 🔴 **Ads are NOT running, and may never run.** RUN's `run` cross-promo network is wired
+  but **not live in production for any account**, which killed the campaign's whole thesis.
+  See the record's *"What RUN's marketing system actually costs"* section.
+
+⚠️ **So the ads clause can no longer gate this file** — it is waiting on something outside
+our control that may not arrive. **Two of three conditions are met; treat the gate as open
+for scheduling purposes, and confirm with the user before starting any item below.** Do not
+let a handover quietly pull one in unasked.
 
 ---
 
@@ -193,7 +204,7 @@ else):
 *"the six bonused center pads (B/C rows) first"* — so **every profile places on row C from
 wave 1**, and `maxed-meta` (the primary case, all ten pads, which must lose between levels
 85–110) would have 5 pads for waves 1–10 and 8 for 11–20. It will lose **earlier**. The
-**35 / 34 / 6 / 4 / 90** baseline becomes invalid and must be re-derived, not re-asserted.
+**35 / 36 / 11 / 4 / 90** baseline (v1.69.0; it was 35/34/6/4/90 before the block-1 retune) becomes invalid and must be re-derived, not re-asserted.
 
 ✅ **`sim/engine.ts` does NOT need unsealing.** Put the unlock rule in `config.ts` and enforce
 it in the two non-sealed callers — `actions.ts::placeTower` and `simulate.ts::nextFreePad`.

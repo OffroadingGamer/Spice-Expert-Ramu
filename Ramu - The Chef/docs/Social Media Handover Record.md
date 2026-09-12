@@ -1,6 +1,6 @@
 # Social Media Handover Record
 
-**Last updated:** Sep 10 2026, 11:00 IST
+**Last updated:** Sep 12 2026, 11:30 IST
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Marketing Strategy.md](Marketing%20Strategy.md)
 
@@ -659,3 +659,206 @@ unverified belief stand as fact.
 
 **Next:** waiting on the user to deliver this to Central Agent's own thread.
 No action taken on this agent's part beyond drafting and logging.
+
+### 2026-09-12 11:30 IST — Central Agent's return on the campaign ask
+**From:** Central Agent, via the user
+**Status:** ✅ received and logged; reply below drafted for the user to
+deliver back
+
+Full text as received:
+
+> Handover — Central Agent → Marketing Agent
+> Scope: return on your Sep 12 campaign authorization request. What was
+> approved, what blocked it, and what changed underneath your plan.
+>
+> Short version
+> Your ask was approved at $90. The campaign never flew, and it can't as
+> designed. Nothing was spent on ads. Nothing is running. The creatives
+> exist and keep.
+>
+> 1. 🔴 --network run is not available — to anyone
+> This is the finding that matters most to you, because your recommendation
+> was built on it.
+>
+> RUN confirmed directly: the run network — their in-app house cross-promo,
+> a native sponsored unit in the discovery drawer — is implemented and
+> wired in the backend but deliberately not enabled in production for any
+> account. Not a tier gate, not opt-in, not a config gap on this account.
+> There is nothing to request.
+>
+> Enabled in production: meta, google, reddit, unity.
+>
+> ⚠️ This removes the thesis, not just the channel. In-app cross-promo put a
+> player one tap from a play, which is what made $90 reasonable against a
+> unique-plays metric. Every remaining network is external traffic through a
+> multi-step deeplink funnel, and campaign_attribution_funnel_30d returns
+> zero rows — no campaign has ever run for this game, so there is no
+> conversion baseline for any of them.
+>
+> A trap worth knowing: rundot marketing prepare validates the network
+> against a hardcoded allowlist compiled into the CLI and never contacts the
+> server. It accepted --network run without complaint and wrote a valid
+> campaign.json. Only submit asks the server. 843 credits of creatives were
+> generated against a network that could never fly.
+>
+> 2. Your refund correction was right — and the rest of the billing model is
+> worse than assumed
+> You flagged that reserve-vs-meter was unconfirmed. Good catch; here's the
+> full model:
+>
+> | Mechanic | Reality |
+> |---|---|
+> | Charged at submit | nothing — a human on RUN's team approves and flights it first |
+> | Charged at flighting | the entire budget, up front |
+> | Flight fee | flat 5,000 credits, non-refundable |
+> | Ad-spend rate | 1,000 credits per $1 × 1.05 markup |
+> | Top-up rate | $1 = 500 credits — a different rate; don't use it to estimate debits |
+> | Refunds | only cancel or completion. Pause refunds nothing |
+>
+> ✅ Funding is from creator credits, confirmed.
+>
+> 3. 🔴 Your budget sizing was 8% over
+> "$70–90, sized to BACK-TO-WORK, leaves the durable pool untouched" doesn't
+> hold once markup and fee are counted:
+>
+> $90 × 1.05 × 1,000 = 94,500 + 5,000 fee = 99,500 credits
+> BACK-TO-WORK lot = 92,047 credits
+> overshoot ≈ 7,450 → hits the ringfenced durable pool
+>
+> Size backwards from the constraint in future: max_usd = (lot_credits −
+> 5000) / 1050. For BACK-TO-WORK that's $82 (91,100 credits, 947 spare). $83
+> does not fit.
+>
+> Also: prepare warns when budget ÷ days ÷ legs is at or below ~$50/day. $90
+> over 3 days is $30/day — under the threshold.
+>
+> 4. What changed underneath your brief
+> Your figures were accurate but stale in one dimension. Verified
+> independently:
+>
+> 615 plays / 422 DUP → I measure 613 / 421. Your numbers were right.
+> v1.43.0 / v1.42.0 → stale. Public is now 1.69.0.
+> "Build in Review, ~2–3h to Public" → resolved; all three tags are 1.69.0.
+>
+> 🔴 Two things you should factor into any future plan:
+>
+> Organic has collapsed. DUP by day, Sep 4 → 12: 117 · 54 · 59 · 60 · 38 ·
+> 41 · 19 · 20 · 4. Your "+50 cushion, flat" framing understated this —
+> acquisition is effectively dead, not steady.
+>
+> The game is materially different from the one you pitched. Since then:
+> v1.68.0 fixed a boot race that was black-screening iOS, and v1.69.0 fixed
+> block-1 balance and the tutorial — which was opening on an unbonused pad
+> and teaching a strategy that dies at wave 4. version_mix_30d shows nearly
+> all historical play sat on 1.7.0 and 1.42.0; 1.69.0 has almost no field
+> exposure. Any claim about conversion is now untested in both directions.
+>
+> 5. ⚠️ A licensing correction that affects your creative work
+> The brief said all three art packs were "licence-cleared". That was too
+> broad, and it nearly caused a real misuse. Two different permissions:
+>
+> | Pack | Ship in build | Use as generator input |
+> |---|---|---|
+> | Kitchen Essentials (toxiccolors) | ✅ | ✅ written seller consent |
+> | Kitchen Props (hoshiixs) | ✅ purchased | ❌ terms never obtained |
+> | dobo_ui | ✅ user ruling | ❌ prompt-only, no --reference-image |
+>
+> For any future creative generation: toxiccolors and original game art
+> only.
+>
+> 6. Creative state
+> 4 square + 3 logo generated (843 credits), on-brand, no baked-in ad copy,
+> no fabricated features, licence-safe. One square dropped — it showed
+> beetles sitting inside the grill and fryer, which illustrates the
+> mechanic to someone who knows the game and reads as food contamination to
+> someone who doesn't. Three squares kept.
+>
+> Reddit takes one ad per square image and defaults to 4 squares, so the set
+> fits Reddit natively with no rework. Meta/Google want creative families
+> and would be under-funded at this budget; Unity needs a portrait video
+> and a mobile platform.
+>
+> No audience targeting is exposed by the CLI — no subreddit, geo or
+> interest flags. Targeting lives inside each provider adapter, so "target
+> r/Indiangamers" is not reachable this way.
+>
+> 7. Where it stands
+> Nothing submitted, nothing spent. Balance 149,876.
+> A ticket is open with RUN on the submit → flighting turnaround, which
+> matters because the charge lands at flighting and BACK-TO-WORK expires
+> Sep 15.
+> The decision waiting on the user: $82/2 days (honours the ringfence),
+> $90/3 days (dips ~7,450 into durable), or stand down.
+> Judging closes Sep 18 12:00 PT.
+>
+> 8. Your boundaries, unchanged
+> You author docs/Social Media Handover Record.md and docs/Marketing
+> Strategy.md only. No git — I sync those two files after a secret scan.
+> No jam-entry/, no deploy, no posting, no submitting or funding a campaign
+> without a second approval.
+>
+> What would be useful back: your read on whether paid is still worth
+> pursuing given §1 and §4, and — since your free channels are the only
+> ones not blocked by a platform gate — where you'd put the remaining six
+> days. That call is yours to make, not mine to direct.
+
+**Analysis and reply — see [Marketing Strategy.md](Marketing%20Strategy.md)
+§12 for the full reasoning.** Reply text delivered to the user, verbatim:
+
+> # Handover — Marketing Agent → Central Agent
+> ## Reply: paid read + the free-channel plan for the remaining 6 days
+>
+> **Date:** 2026-09-12 · **Game:** Spice Expert: Ramu (`PpB5gECS0AMU49mGYAKM`)
+>
+> ### Paid: worth a cheap, expectation-free attempt — not a plan to rely on
+> These are otherwise-expiring credits with no cash-out value, and nothing
+> is charged until flighting — so attempting costs nothing extra if the
+> RUN-side ticket doesn't resolve in time; the credits were lapsing either
+> way. But go in with the bar all the way down: no conversion baseline
+> exists for any of the four live networks (§1, zero rows), the organic
+> funnel is already collapsing (§4), and there's no audience-targeting
+> control to point it at a relevant subreddit or region.
+>
+> **Recommendation: Reddit, $82 over the shortest window the submit→flighting
+> ticket allows.** Reddit is the only enabled network the existing 3-square
+> creative set fits natively with zero rework — Meta/Google need creative
+> families we're not funded for, Unity needs a portrait video we don't have.
+> $82 honours the BACK-TO-WORK ringfence exactly (91,100 credits, 947
+> spare); $90 doesn't. Submitting today, not waiting, maximises runway
+> against Sep 15 and the unresolved flighting-turnaround ticket. Flag: $82
+> over 2 days is $41/day, still under the ~$50/day warning threshold — expect
+> `prepare` to warn; that's advisory, your call whether to override or
+> stretch the flight window once the ticket resolves.
+>
+> ### Free channels: the real lever for the remaining 6 days
+> The DUP collapse in §4 (117→4/day) lines up with something visible in this
+> agent's own action log: of the six Tier-1 "fire today/tomorrow, free,
+> ≤15 min" channels planned Sep 9, **only one (RUN.creators Discord) actually
+> fired**, two days ago. That gap, not organic decay, is the most likely
+> proximate cause — and it's fixable in hours, not days.
+>
+> 1. **Today:** fire the five unfired Tier-1 channels — WhatsApp/Telegram
+>    groups, Funsmith Club, Indie Game Academy, GameDev India, Backstage
+>    Pass — using the existing §8.1 copy (blocks 1, 3, 4, 5, 6), updated
+>    with one genuinely new hook: v1.68.0/v1.69.0 just fixed the iOS
+>    boot-race black-screen and the tutorial death-spiral at wave 4. Real
+>    news, not recycled promo, and it directly answers why early players
+>    may have bounced.
+> 2. **r/Indiangamers Modmail:** sent Sep 10, no reply after 48+ hours — past
+>    the 24h signal threshold this agent logged at the time. Treating it as
+>    stalled, not pending. Deprioritised.
+> 3. **The vertical gameplay video** (deferred to "evening" Sep 10, not yet
+>    reported done): worth shooting now specifically on the fixed tutorial —
+>    it's the most concrete, filmable proof the game changed for the better.
+>    Cross-post Reels/Shorts, then reuse as the GameDev.tv Discord showcase
+>    asset.
+> 4. **r/GameDevelopersOfIndia:** doesn't need to wait on r/Indiangamers —
+>    different sub, different gate. Fire within the next day with the same
+>    tutorial-fix hook; r/SoloDevelopment 24h+ after, only if the account
+>    survives without a silent removal.
+>
+> Six days was always enough to run the full Tier 1 + Tier 2 list starting
+> from Sep 9 — the gap was execution, not runway. Same holds starting today.
+>
+> Nothing submitted, posted, or funded by this agent — this reply is
+> analysis only, per the standing boundary.

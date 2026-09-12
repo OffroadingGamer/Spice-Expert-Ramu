@@ -540,18 +540,39 @@ Every element already exists; nothing here needs new game systems.
 
 | Beat | What happens | Code entity |
 |---|---|---|
-| Pre-start | A counter is **pre-selected** and the build dialogue opens on it | Pad **0** `(360, 215)` + `BuildSheet.tsx` |
+| Pre-start | A counter is **pre-selected** and the build dialogue opens on it | ⚠️ **v1.69.0: pad 4** (B3, `damage ×1.5`), was pad 0 — `FTUE_FIRST_PAD` |
 | | Player picks a counter, presses **Ready** | existing Ready button |
 | Wave 1 | plays normally | |
-| Wave 1 end | **Ready hides.** The same counter re-selects, with an **arrow** pointing at it, to teach *upgrade* | pad 0 again |
+| Wave 1 end | **Ready hides.** The same counter re-selects, with an **arrow** pointing at it, to teach *upgrade* | ⚠️ **v1.69.0: pad 4 again**, was pad 0 |
 | | Dialogue closes → Ready returns → **Wave 2** | |
-| Wave 2 end | The **centre of the three platforms below** auto-selects, prompting a **second** counter | Pad **2** `(360, 485)` — the row is `(250/360/520, 485)` |
+| Wave 2 end | The **centre of the three platforms below** auto-selects, prompting a **second** counter | ⚠️ **v1.69.0: pad 3** (B2, `range ×1.5`), was pad 2 |
 | | Placed → Ready returns → **Wave 3** | |
 | Wave 3 end | **Achievement unlocks**, named for the counter placed **first** | §10.11b |
+| ➕ **v1.69.0** | A **third** placement is prompted before wave 4 | pad **2** (B1, `fireRate ×1.5`) — beat `place3` |
+| ➕ **v1.69.0** | While `ftueActive`, lives are restored each build phase — losing the tutorial is not possible | `towerScene.ts` |
 
-🔥 **Keep this deliberate:** pad 0 carries a **`damage × 1.5` bonus** — the strongest pad
-on the board (`config.ts:116`). The FTUE therefore puts a new player's first counter on the
-best square by construction. Do not "fix" this later.
+🔴 **SUPERSEDED Sep 13 2026 — this paragraph was wrong, and the error was
+load-bearing.** It read: *"pad 0 carries a `damage × 1.5` bonus — the strongest pad on the
+board. The FTUE therefore puts a new player's first counter on the best square by
+construction. Do not 'fix' this later."*
+
+⚠️ **Pad 0 carries no bonus at all.** `config.ts`'s `PADS` array has pads 0 and 1 (row A)
+and pads 8 and 9 (row D) at **`bonus: null`**; every bonus lives on rows B (2,3,4) and
+C (5,6,7). **Round H Task 3 moved the only `damage` bonus off pad 0** — `config.ts`'s own
+header comment records that change — and this paragraph was never updated. The cited
+`config.ts:116` no longer points at a pad.
+
+🔥 **The consequence, measured Sep 12 2026.** The FTUE kept opening on pad 0 on the
+authority of this paragraph, which also instructed future readers *not to fix it*. Pad 0 with
+one tower is exactly the simulator's `pad0-rush` profile — **which had been reporting death
+at level 4 every single run.** A player following the tutorial was being taught the worst
+opening on the board. Fixed in **v1.69.0**: the script now opens on `FTUE_FIRST_PAD = 4`
+(B3, `damage × 1.5`) and fills B2 and B1 after waves 2 and 3. See the record's v1.69.0 entry
+and [Retro.md](Retro.md) §103.
+
+✅ **The intent behind the original line still stands** — the FTUE *should* put a new
+player's first counter on the strongest square. It simply has to name a pad that is
+actually bonused, and be re-checked whenever `PADS` changes.
 
 **Runs once**, gated on a save flag — see the ⚠️ note below.
 

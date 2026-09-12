@@ -30,6 +30,37 @@ when the return arrives.** A round with no entry here has not been handed over.
 
 ---
 
+## 📌 CURRENT STATE — last updated Sep 13 2026
+
+🔴 **Read this before grepping the round entries below.** Everything after this block is a
+**dated log**: each entry was true when written and is deliberately never rewritten. Numbers
+quoted inside a round entry are historical. **This block is the only authoritative statement
+of the present.**
+
+| | |
+|---|---|
+| **Live version** | **1.69.0** on all three tags — Private · Review (Approved) · Public |
+| **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
+| **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
+| **Endgame criterion** | `maxed-meta` must lose between levels **85–110** (currently 90) |
+| **`miser` contract** | must still **lose** (currently 11) |
+| **Early economy** | `startCoins 200` · `startLives 10` · `waveBonus 25` (levels 1–10) |
+| **Late economy** | from level 11: `waveBonus 6`, `bountyMult 0.55` |
+| **FTUE opening pad** | **`FTUE_FIRST_PAD = 4`** (B3, `damage ×1.5`), then pads 3 and 2 |
+| **Sealed files** | `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` |
+| **`data/waves.ts`** | ⚠️ **RE-SEALED.** Unsealed for the v1.69.0 block-1 retune only |
+
+⚠️ **The old baseline `35 / 34 / 6 / 4 / 90` appears twelve times below.** Every one of
+those is a historical round entry and correct in context. **It is not the current
+baseline.** It changed in v1.69.0 when the block-1 difficulty spike was retuned.
+
+🔥 **And read the per-level rows, not just these five numbers.** The five end-of-run
+figures hid a wave 4–5 cliff that was in `npm run balance`'s own output for rounds — see
+[Retro.md](Retro.md) §103. An aggregate holding steady is not evidence that what it
+aggregates is healthy.
+
+---
+
 ## Entry format
 
 ```
@@ -1856,3 +1887,24 @@ For BACK-TO-WORK: `(92,047 - 5,000) / 1050` = **$82.90** → **$82 fits** (91,10
 ⚠️ **`prepare --help` is out of date**: it names Meta and Google as live and Reddit as
 *"flight-gated"*, omits Unity entirely, and does not list `run` as a network even though
 `prepare` accepts it. Reported upstream.
+---
+
+### 2026-09-12 — v1.69.0 promoted to `review` → `public`
+
+Route used: **`rundot game update-tag review --version 1.69.0`**. `set-public` was **not**
+run — it is a version-submission, not a visibility toggle, and the two paths appear to reach
+the same destination, so taking one closes the other.
+
+**📊 Approval latency — third sample, and an outlier.** Submitted 19:44:48 IST; a 60-second
+poll caught Review reading `1.69.0 (Approved)` at **19:45:40 IST — under a minute**, against
+**11m 48s** and **~12m** for the two prior samples.
+
+⚠️ **Recorded honestly rather than flatly: treat this as "landed in under a minute", not as
+a measurement.** The submit timestamp was captured *before* the call ran and the poller had
+its own startup lag, so both ends carry slop. Two clustered samples and one outlier is not a
+trend. ✅ **The working estimate stays ~11–12 minutes**; the most plausible reading is an
+empty review queue, which is a property of *when* you submitted, not of the service.
+✅ The ~20-minute escalation threshold held — it resolved unaided.
+
+RUN wrote the `public` tag automatically on approval. Final state, reconfirmed at 19:46:08
+IST and verified independently: **Private · Review · Public all 1.69.0**.

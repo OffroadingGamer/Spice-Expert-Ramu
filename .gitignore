@@ -95,3 +95,9 @@ jam-entry/public/cdn-assets/bgm-service-low.mp3
 jam-entry/public/cdn-assets/bgm-service-high.mp3
 jam-entry/public/audio/wave-clear-bell.mp3
 jam-entry/public/audio/bombay-transition.mp3
+
+# Generated ad creatives (`rundot marketing prepare/generate`). 16 MB of PNGs
+# plus prompt/seed sidecars, all regenerable from campaign.json. No secrets --
+# the sidecars carry prompt/model/seed only, and campaign.json's gameId is
+# already public -- this is excluded as build working material, not as a leak.
+jam-entry/rundot/marketing/
