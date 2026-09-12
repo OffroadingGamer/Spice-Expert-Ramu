@@ -74,6 +74,21 @@ import { TARGETING_DESCRIPTIONS, TARGETING_LABELS, TARGETING_MODES } from '../ga
 import { TOWERS } from '../game/data/towers.ts';
 import { store, useStore } from '../state/store.ts';
 
+/** Rail-width round: on a narrow phone (~403 CSS px wide), scale × 140
+ *  design units bottoms out around 53px — not a font-size problem, a
+ *  floor-space problem: even the font-size floor below can't make
+ *  "Upgrade" fit inside a 33px text budget. The rail's CSS width is capped
+ *  to this MINIMUM independent of the board's own zoom, same as a
+ *  min-width would read in plain CSS — the board is free to keep shrinking
+ *  below it, the rail just stops shrinking with it. 88px leaves ~68px of
+ *  text space after the panel's own p-1.5 and a button's px-1 (88 - 12 - 8),
+ *  which is what actually fits "Upgrade" at a readable size — not a round
+ *  number, a measured one. Below the design's own board proportions this
+ *  necessarily overlaps the (274px-wide, centred) board by design — the
+ *  panel is opaque and only mounts while a pad is selected, so that's an
+ *  accepted tradeoff, not a bug. */
+const RAIL_MIN_PX = 88;
+
 /** The rail's own overlay width in CSS px, AND the board's design→screen
  *  scale that produces it, tracking #app-frame's size the same way
  *  Hud.tsx's usePadsScreenPos does. Only StationRail.tsx itself needs this
@@ -89,7 +104,7 @@ function useRailFit(): { railPx: number; scale: number } {
         const compute = () => {
             const rect = frame.getBoundingClientRect();
             const { scale } = getFit(rect.width, rect.height);
-            setFit({ railPx: scale * RAIL_WIDTH_UNITS, scale });
+            setFit({ railPx: Math.max(scale * RAIL_WIDTH_UNITS, RAIL_MIN_PX), scale });
         };
         compute();
         const ro = new ResizeObserver(compute);
@@ -112,14 +127,26 @@ function useRailFit(): { railPx: number; scale: number } {
  * has failed on device three rounds running (see this file's arrow-round
  * comment above). RAIL_LABEL_FONT_UNITS is a design-unit font size, exactly
  * like anything else scale multiplies; retune this one constant if labels
- * ever need to run bigger or smaller. railLabelFontPx() returns undefined
- * before the first real measurement lands (scale 0), so the className's own
- * fixed-rem size is what shows briefly instead of a zero-size flash — same
- * `|| undefined` fallback pattern the rail's own width style already uses.
+ * ever need to run bigger or smaller.
+ *
+ * Rail-width round: shrinking the font further on a narrow rail turned out
+ * to have a floor — "Upgrade" simply needs more space than any legible size
+ * could buy back, which is what RAIL_MIN_PX above actually fixes. This
+ * clamp is what it sounds like: a floor so the font never becomes
+ * unreadable on a still-narrow-but-now-min-width rail, and a ceiling so an
+ * unusually wide/tall desktop window doesn't blow labels up past what
+ * "desktop size" has always looked like. railLabelFontPx() returns
+ * undefined before the first real measurement lands (scale 0), so the
+ * className's own fixed-rem size is what shows briefly instead of a
+ * zero-size flash — same `|| undefined` fallback pattern the rail's own
+ * width style already uses.
  */
 const RAIL_LABEL_FONT_UNITS = 21;
+const RAIL_LABEL_FONT_MIN_PX = 11;
+const RAIL_LABEL_FONT_MAX_PX = 18;
 function railLabelFontPx(scale: number): number | undefined {
-    return scale > 0 ? scale * RAIL_LABEL_FONT_UNITS : undefined;
+    if (scale <= 0) return undefined;
+    return Math.min(Math.max(scale * RAIL_LABEL_FONT_UNITS, RAIL_LABEL_FONT_MIN_PX), RAIL_LABEL_FONT_MAX_PX);
 }
 
 /** How far above the panel's own vertical centre the upgrade0 arrow sits,
@@ -255,7 +282,22 @@ export default function StationRail() {
                                         {towerIcons[def.id] && (
                                             <img src={towerIcons[def.id]} alt="" className="h-8 w-8 object-contain" />
                                         )}
-                                        <span className="text-center text-[0.62rem] leading-tight font-bold" style={{ fontSize: railLabelFontSize }}>{def.name}</span>
+                                        {/* Rail-width round: no whitespace-nowrap here, unlike
+                                            Upgrade/Sell/Max/targeting below — those are single,
+                                            unbreakable words where any wrap is a mid-word break;
+                                            "Pressure Cooker" is two real words, and forcing it onto
+                                            one line at the font floor overflowed the button (83px
+                                            of text in a ~64-76px box). A natural wrap at the space
+                                            ("Pressure"/"Cooker") is a clean two-line label, not the
+                                            defect this round exists to fix — the button is a plain
+                                            flex column with no fixed height, so it just grows.
+                                            w-full is what actually lets that wrap happen: the
+                                            button's items-center otherwise shrink-wraps this span to
+                                            its own unwrapped content width (a flex child with no
+                                            explicit width sizes to fit, not to the container), so
+                                            without a definite width the browser never has a reason
+                                            to break the line at all. */}
+                                        <span className="w-full text-center text-[0.62rem] leading-tight font-bold" style={{ fontSize: railLabelFontSize }}>{def.name}</span>
                                         <span className="text-[0.6rem] text-white/70 tabular-nums">🪙{def.cost}</span>
                                     </button>
                                 );
@@ -286,7 +328,7 @@ export default function StationRail() {
                                             type="button"
                                             disabled={!affordable}
                                             className={
-                                                'w-full rounded-lg px-1 py-2 text-center text-[0.62rem] leading-tight font-bold break-words transition-transform active:scale-95 ' +
+                                                'w-full rounded-lg px-1 py-2 text-center text-[0.62rem] leading-tight font-bold whitespace-nowrap transition-transform active:scale-95 ' +
                                                 (affordable ? 'bg-primary text-black' : 'bg-white/10 text-white/40')
                                             }
                                             style={{ fontSize: railLabelFontSize }}
@@ -303,7 +345,7 @@ export default function StationRail() {
                                 })()
                             ) : (
                                 <span
-                                    className="w-full rounded-lg bg-white/10 px-1 py-2 text-center text-[0.62rem] font-bold break-words text-white/50"
+                                    className="w-full rounded-lg bg-white/10 px-1 py-2 text-center text-[0.62rem] font-bold whitespace-nowrap text-white/50"
                                     style={{ fontSize: railLabelFontSize }}
                                 >
                                     Max
@@ -316,7 +358,7 @@ export default function StationRail() {
                                 type="button"
                                 disabled={ftueActive}
                                 className={
-                                    'w-full rounded-lg px-1 py-2 text-center text-[0.62rem] font-bold break-words text-white transition-transform active:scale-95 ' +
+                                    'w-full rounded-lg px-1 py-2 text-center text-[0.62rem] font-bold whitespace-nowrap text-white transition-transform active:scale-95 ' +
                                     (ftueActive ? 'bg-red-500/30 opacity-40' : 'bg-red-500/80')
                                 }
                                 style={{ fontSize: railLabelFontSize }}
@@ -350,7 +392,7 @@ export default function StationRail() {
                                         key={mode}
                                         type="button"
                                         className={
-                                            'min-w-0 rounded-md px-1 py-1.5 text-center text-[0.6rem] leading-tight font-semibold transition-colors ' +
+                                            'min-w-0 rounded-md px-1 py-1.5 text-center text-[0.6rem] leading-tight font-semibold whitespace-nowrap transition-colors ' +
                                             (tower.targeting === mode
                                                 ? 'bg-primary text-black'
                                                 : 'bg-white/10 text-white/70')
