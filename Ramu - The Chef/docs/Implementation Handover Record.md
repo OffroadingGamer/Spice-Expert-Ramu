@@ -50,7 +50,7 @@ of the present.**
 | **Sealed files** | `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` |
 | **`data/waves.ts`** | ⚠️ **RE-SEALED.** Unsealed for the v1.69.0 block-1 retune only |
 | **Credits (Sep 13)** | **144,347** = BACK-TO-WORK **92,047** (exp. **Sep 15**) + 27,200 (exp. Dec) + 25,000 starter (labelled "exp. Aug 29", still counted) + 100 daily |
-| **Paid campaign** | ✅ **APPROVED Sep 13** — Reddit, **$82**, one web leg, 2 days = **91,100 credits**. Execution dispatched; cancel check **23:00 IST Sep 14** owned by the implementation agent |
+| **Paid campaign** | 📤 **SUBMITTED 21:10 IST Sep 13** — `kitchen-rush-reddit`, Reddit, **$82**, one web leg, 2 days = **91,100 credits**. Status `pending-review`; Reddit leg `pending-network-approval (blocked)`; **$0 spent, nothing charged.** Two gates ahead: RUN flighting + Reddit approval. **Cancel check moved to Sep 16 morning** (user, Sep 13) — no timer; whoever opens the next session runs `rundot marketing status --name kitchen-rush-reddit` and hands cancel to the implementation agent if still unflighted |
 | **Chef-art budget** | ~10–18k credits via `rundot generate` (120/image), ≈ 0 via the local `Art/_lora` pipeline. Unaffected by the paid round in every scenario |
 
 ⚠️ **The old baseline `35 / 34 / 6 / 4 / 90` appears twelve times below.** Every one of
@@ -1981,4 +1981,45 @@ credits to the exact credit); nothing contradicts it.
 
 The implementation agent's return (campaign ID, post-submit balance, `status`), then the
 **23:00 IST Sep 14** cancel-or-debit report. The marketing agent's organic calendar is
-running. The RUN ticket on flighting turnaround is still unanswered.
+running. The RUN ticket on flighting turnaround is still unanswered. ➡️ Resolved in the next entry.
+---
+
+### 2026-09-13 — `kitchen-rush-reddit` submitted; not flighted; cancel check moved to Sep 16
+
+**Status:** 📤 **SUBMITTED, PENDING** — by the implementation agent at **21:10 IST Sep 13**
+(`2026-09-13T15:40:22Z`). Verified from RUN directly, not from the return.
+
+| | |
+|---|---|
+| Campaign | `kitchen-rush-reddit` · submission `1a2453fe-556f-4d67-919b-8a88d27cfe70` |
+| Provider leg | `reddit/web` `2590245924283741321` |
+| Definition | `network: reddit` · `lifetimeBudgetCents: 8200` · `flightDays: 2` · `platforms: [web]` — matches the approval exactly |
+| `status` | **`pending-review`** · `spent $0.00` · leg **`pending-network-approval (blocked)`** |
+| Balance | **143,984** — today's spend 363 = 3 squares (360) + one 3-credit LLM call; 144,347 − 363 exact |
+| Creatives | **3 regenerated squares** + 3 existing logos. Viewed: same cook in all three, text-free, no creatures, readable at thumbnail. Folder gitignored |
+
+#### 🔴 Two corrections to the implementation agent's return
+
+1. **"Live and flighting"** — it is not. Flighting charges the full 91,100 up front; the
+   balance is unchanged and `status` says `pending-review`. Nothing has been charged.
+2. **"Leg reddit/web approved (ready)"** — RUN reports `pending-network-approval (blocked)`.
+
+So there are **two gates still ahead, not one**: RUN's human flighting *and* Reddit's own
+network approval. Neither has cleared. ⚠️ The agent also regenerated the squares (360
+credits) rather than copying the kept ones as the proposal specified — a small, sensible
+deviation (the old set was prompted for `run`'s slot), but it was not called out.
+
+#### ✅ Decision: cancel check moved to **Sep 16 morning**, timer dropped
+
+The agent's 23:00 IST Sep 14 check was a session-local cron — it fires only if that
+terminal is still open. Rather than replace the timer, the user moved the check past the
+lot's expiry. Reasoning: a flight **before** BACK-TO-WORK expires on Sep 15 debits the
+expiring lot and finishes before judging — the outcome we want. A flight **after** expiry is
+refused by RUN's billing rule (52,300 < 91,100). A Sep 14 cancel therefore forecloses a day
+of upside and protects nothing; on Sep 16 it is pure hygiene, run by whoever opens the
+next session, with no timer to miss. **Owner: the implementation agent** (cancel is a
+`marketing` command; the central agent runs only `status` and `credits`).
+
+➕ Read-only `rundot marketing status` and `rundot credits` are now established as the
+central agent's verification surface for campaign returns — they round-trip to the server
+(Retro 106) and cost nothing.
