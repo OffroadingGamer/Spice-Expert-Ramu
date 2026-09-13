@@ -1,6 +1,6 @@
 # Social Media Handover Record
 
-**Last updated:** Sep 12 2026, 11:30 IST
+**Last updated:** Sep 13 2026, 20:30 IST
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Marketing Strategy.md](Marketing%20Strategy.md)
 
@@ -862,3 +862,230 @@ Full text as received:
 >
 > Nothing submitted, posted, or funded by this agent — this reply is
 > analysis only, per the standing boundary.
+
+### 2026-09-13 20:30 IST — Final-five-days proposal (paid / organic / both)
+**From:** Central Agent, via the user
+**Status:** ✅ analysis complete, proposal returned — awaiting user approval;
+nothing executes
+
+`whoami` → `offroadinggamedev@gmail.com` before any read. Full text as
+received:
+
+> Handover — Central Agent → Marketing Agent
+> Scope: analyse the current position and return a proposal — paid,
+> organic, or both — for the final five days. Analysis only; nothing
+> executes until the user approves your return. You may ask the user
+> questions during analysis.
+>
+> Where we are — Sep 13, evening IST
+> Live: 1.69.0 on all three tags since Sep 12 evening
+> Judging closes: Sep 18, 12:00 PT
+> BACK-TO-WORK lot: 92,047 credits, expires Sep 15 — intact, next in line
+> Durable pool: 52,200 — ringfenced, do not plan against it
+> Balance: 144,347 (FEEDBACK05 expired today; the 843 creative credits came
+> out of it, so they cost nothing)
+> RUN ticket: open, unanswered — weekend. Asked: submit→flighting turnaround
+>
+> The data, refreshed today
+> Daily unique players, Sep 3 → 13:
+> 9 · 117 · 54 · 59 · 60 · 38 · 41 · 19 · 20 · 47 · 17 (partial)
+>
+> Sep 12 is the 1.69.0 launch day. Yesterday's "collapsed to 4" read was a
+> two-hour-old day — 47 is the real number, and it broke the decline.
+> Whether it holds is the first thing to look at.
+>
+> Platform mix, 30 days: mobile-web 360 players · web 68 · android 21 · ios
+> 6. Mobile-web is 73%. Any traffic you propose lands there.
+>
+> 1.69.0 exposure: 44 sessions / 37 players — the first field data on a
+> build with a working tutorial. Everything before this was measured on
+> 1.7.0/1.42.0 and is not evidence about the current game.
+>
+> Load loss: 4 players in 7 days hit RUN's 15s load timeout on mobile-web.
+> Roughly 4% of arrivals never reach the game. Price that into any CPI
+> assumption.
+>
+> What's changed underneath your last brief
+> Read my Sep 12 return handover in your own record first — it has the full
+> detail. The load-bearing points:
+>
+> --network run is not live for any account. Your recommended channel does
+> not exist in production. Enabled: meta, google, reddit, unity.
+> Cost model: nothing charges at submit; a human flights it; then the whole
+> budget is charged up front plus a flat 5,000-credit fee, at 1,000
+> credits/$ × 1.05. Pause refunds nothing.
+> $82 is the ceiling that fits BACK-TO-WORK. max_usd = (lot_credits − 5000)
+> / 1050. $90 overshoots into the durable pool.
+> Flighting latency is unknown and the lot expires Tuesday. If RUN flights
+> after Sep 15, the charge lands on the durable pool — the one outcome
+> ringfenced against. This is the single biggest risk in any paid proposal.
+> Creatives exist: 3 squares kept (1 dropped — beetles inside the fryer
+> read as contamination), 3 logos. They fit Reddit natively (one ad per
+> square). Meta/Google want creative families and are under-funded at this
+> budget by the tool's own heuristic. Unity needs video + mobile. No
+> audience targeting is exposed — no subreddit/geo/interest flags.
+>
+> What I want back
+> A proposal with a recommendation and its reasoning, covering:
+>
+> Paid: go / no-go, and if go, exactly how sized. Given #4, say explicitly
+> whether you'd submit before RUN answers, and what you'd want to be true
+> before flighting.
+> Organic: what you'd do with the remaining days, since free channels are
+> the only ones no platform gate blocks. This is your domain — I'm not
+> directing it, I'm asking for your plan.
+> What the 47→? trajectory needs to look like for each option to have been
+> worth it. Name the number you'd judge by.
+> Questions for the user, batched, not dribbled — they've said they'll
+> answer. Ask what you actually need.
+>
+> What you may do
+> Read-only data: rundot analytics export <query>, rundot credits, rundot
+> marketing status / list. Export outside jam-entry/ — a scratch folder.
+> rundot analytics queries lists what's available; share_funnel_30d,
+> retention_by_platform_30d, session_end_summary_30d and funnel_steps_30d
+> are probably worth your time.
+> Write: docs/Social Media Handover Record.md and docs/Marketing
+> Strategy.md only.
+> What you may not do
+> No marketing prepare / generate / submit. No socials posting. No game tag
+> commands, no deploy, no git — I sync your two files after a secret scan.
+> No submitting or funding anything without a second approval. Never fake
+> plays: no bots, click-farms, incentivized clicks, proxies, self-play —
+> RUN audits and voids all entries.
+>
+> Return the proposal and I'll verify it against the data, brief the user,
+> and stop.
+
+**User-supplied screenshots the same evening:** board — Ramu 3rd, 718 total
+plays, **489 DUP**; Good Life 4th 394; Last Audit 5th 296; Employment Crisis
+211 in 3 days. Finances — balance 144,347; BACK-TO-WORK 92,047 "expires in 2
+days · Sep 15"; studio usage 13,024; runtime AI 9,889 (85 calls).
+
+**Four batched questions asked; answers verbatim:**
+
+1. *Cancel deadline owner* → **"Implementation/Central agent owns it"**
+2. *Sep 12 spike — did you post?* → **"Yes — somewhere else"**
+3. *Unreported Tier-1 posts?* → **"RUNDiscord #showcasing, my personal
+   friends on whatsapp and snapchat, they reshared it to their friends to
+   check it out. Whatsapp group of gamedev."** (Read together with Q2 as the
+   Sep 12 posts; exact dates not given.)
+4. *Hours/day through Sep 18* → **"4+ hours/day — unchanged"**
+
+**Blocking finding surfaced during analysis:** the CLI's embedded creative
+guide says Reddit "remains flight-gated"; Central Agent's Sep 12 return
+lists Reddit as enabled. One is stale — same failure mode as `--network
+run`. Reddit must be confirmed server-side before any submit.
+
+Full analysis in [Marketing Strategy.md](Marketing%20Strategy.md) §13.
+Proposal delivered to the user, verbatim:
+
+> # Proposal — Marketing Agent → Central Agent
+> ## Final five days: conditional paid, full organic
+>
+> **Date:** 2026-09-13, 20:30 IST · **Game:** Spice Expert: Ramu
+> (`PpB5gECS0AMU49mGYAKM`) · Analysis only, nothing executed.
+>
+> ### 1. Position — the prize tier is not movable by this proposal
+> 3rd at 489 DUP. 2nd (9 to Thrive) is 1,008 and grew ~80 yesterday — 519
+> ahead, unreachable. 4th (Good Life) 394 at ~+22/day → ~495 by close. The
+> live threat is Employment Crisis, 211 in 3 days (~70/day) → ~526 if it
+> holds. Ramu at 17/day finishes ~565; at 30/day ~625. **3rd is defendable
+> at organic pace.** D1 retention is 1.4% on mobile-web, so DUP is fresh
+> arrivals every day — there is no compounding base. Paid is therefore a
+> baseline purchase and credit salvage, not a rank play.
+>
+> Also from the funnel: ~24% of loaded sessions never reach the menu
+> (game_loaded 619 → menu_shown 487), on top of your 4% load timeout —
+> about 3 in 4 arrivals see the menu. Mostly old-build data, but it's the
+> number to price into CPI. Flagged for you, not mine to fix.
+>
+> The Sep 12 spike (47) is attributed: user posted RUN Discord #showcasing
+> + personal WhatsApp/Snapchat (friends re-shared) + a gamedev WhatsApp
+> group. Same engine as Sep 4's 117. Decays inside a day both times.
+>
+> ### 2. Paid — conditional GO: Reddit or nothing, $82, one `web` leg, 2 days
+> **Blocking check first:** `rundot marketing --help` (beta flag on) embeds
+> the creative guide, which says *"Meta and Google are live; Reddit is
+> wired and remains flight-gated."* Your Sep 12 return lists Reddit as
+> enabled. One is stale, and this is exactly the trap that ate `--network
+> run` — the CLI validates locally and only `submit` asks the server.
+> Confirm Reddit flights for this account before anything is submitted.
+> If it's gated → **no-go.** Meta/Google at $82 fund one creative family by
+> the tool's own heuristic; Unity needs portrait video + native mobile.
+> Don't substitute.
+>
+> **Go only if all four hold at submit time:**
+> 1. Reddit confirmed flightable (above).
+> 2. Cancel deadline staffed — user assigned this to Implementation/Central.
+>    Hard cutoff **Sep 14, 23:00 IST**: if `rundot marketing status` doesn't
+>    show flighted, `rundot marketing cancel --name <name>`. Lot says
+>    "expires Sep 15" with no hour/zone; worst case 00:00 UTC = 05:30 IST,
+>    6.5 h margin. `cancel` is owner-only and costs nothing pre-flight
+>    (confirmed in help text).
+> 3. `rundot credits` shows BACK-TO-WORK intact immediately before submit;
+>    re-check immediately after flighting to confirm the debit came from
+>    that lot.
+> 4. One leg, `--platforms web` (73% of players are mobile-web; Reddit ad →
+>    phone browser → play link, no install). Reddit floor is $65/leg, so
+>    $82 supports exactly one.
+>
+> **Submit before RUN answers?** Yes — because #2 is staffed. Waiting on a
+> weekend ticket spends the lot's only runway; the cancel cutoff bounds
+> the durable-pool risk. If #2 can't actually be staffed, don't submit.
+>
+> **Sizing:** $82 × 1.05 × 1,000 + 5,000 = 91,100 credits, 947 spare.
+> `--days 2`. $41/day trips the ≤$50/day warning — advisory.
+>
+> **Yield (estimate, not data):** ~100–200 clicks → ~50% through deeplink +
+> load + menu → 40–80 unique players over two days = **+20–40 DUP/day**,
+> roughly doubling organic for the flight. Doesn't change rank. Buys the
+> first paid-channel conversion baseline this game has ever had.
+>
+> **Judge by:** `campaign_attribution_funnel_30d` session starts. **≥ 55
+> (≤ $1.50/start) = worth it. < 20 = channel is dead for this game; never
+> route durable credits to paid.**
+>
+> ### 3. Organic — Sep 13 evening → Sep 18 12:00 PT (4+ h/day confirmed)
+> Engine: RUN Discord + personal network, fires once per real update,
+> lifts for a day, gets tuned out on repeat. So: different audience each
+> day, RUN Discord only when there's news.
+>
+> - **Sep 13 tonight:** Funsmith Club #share-cool-games — "new tutorial,
+>   tell me if wave 4 still kills you."
+> - **Sep 14:** Indie Game Academy #help-each-other (ranking allowed) ·
+>   shoot the vertical video: tutorial → wave-1 clear, 20–30 s portrait.
+> - **Sep 15:** GameDev India #games-from-india (template) · Reels + Shorts
+>   of the video · r/GameDevelopersOfIndia devlog on the tutorial fix.
+> - **Sep 16:** GameDev.tv #project-showcase (template, uses video) ·
+>   Backstage Pass.
+> - **Sep 17:** r/SoloDevelopment only if r/GDoI survived · second RUN
+>   Discord post **only if you ship something announceable** — tell me
+>   what's landing by then.
+> - **Sep 18 morning IST:** personal-network "judging closes tonight" push.
+>
+> Copy rules: play link leads; add "plays in your phone browser, no
+> install"; say the tutorial/iOS fixes plainly. Dropped: r/Indiangamers
+> (Modmail silent 72 h+), TikTok. Never: bots, incentivized clicks,
+> self-play, asking friends to replay for numbers.
+>
+> ### 4. Numbers to judge by
+> - **Organic: ≥ 30 unique players/day on 3 of the 5 remaining days.**
+>   Finishes ≥ ~620. Fail: < 20/day on 3+ days.
+> - **Paid: ≥ 55 attributed session starts.** Secondary: Sep 15–16 uniques
+>   ≥ +20 over surrounding organic-only days.
+> - **Rank: hold 3rd.** Escalation trigger: Employment Crisis > 60/day two
+>   days running → one more RUN Discord post with a real update, not more
+>   paid.
+>
+> ### 5. Flags for you
+> 24% load→menu loss · zero in-game shares in 30 days · one Android crash
+> on 1.69.0 Sep 13 (1/1) · `share_funnel_30d` backend unavailable · Reddit
+> flight-gate discrepancy is **blocking**.
+>
+> ### 6. Not touched
+> No prepare/generate/submit, no socials, no tags, no deploy, no git.
+> Analytics CSVs exported to the session scratch folder, outside the repo.
+
+**Next:** user approves/rejects; Central Agent verifies against the data.
+This agent holds — no execution of any kind until a handover says so.

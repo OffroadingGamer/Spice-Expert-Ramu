@@ -1,6 +1,6 @@
 # Marketing Strategy
 
-**Last updated:** Sep 12 2026, 11:30 IST
+**Last updated:** Sep 13 2026, 20:30 IST
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)
 
@@ -108,6 +108,17 @@ surfaces don't need the play-vs-vote distinction enforced, since votes are as
 frictionless as plays there. First post/application on RUN.creators for this
 account. Not measurable against DUP yet — too soon after posting; check next
 board pull for movement attributable to this channel specifically.
+
+### 2026-09-12 (approx.) — RUN Discord `#showcasing` + personal WhatsApp/Snapchat + gamedev WhatsApp group — Tier 1, channel 1 fired
+**Drafted:** nothing specific — user posted in their own words around the
+1.69.0 launch.
+**Posted by user:** ✅ reported 2026-09-13 in answer to a batched question;
+exact date not given, user's answer ties it to the Sep 12 spike.
+**Outcome:** Sep 12 unique players **47** (96 sessions, median 119 s) against
+a ~20/day run-rate on Sep 10–11 — same shape as the Sep 4 RUN-Discord spike
+(117). Friends re-shared on WhatsApp/Snapchat to their own circles. Sep 13
+partial at 17 by evening IST, so the lift decays inside ~1 day, as Sep 4's
+did. This is the repeatable engine; it is not a daily one.
 
 ## 5. Build promotion log — Sep 9 2026
 
@@ -821,4 +832,168 @@ entry.
 
 **Status:** analysis and reply only. No `prepare`/`submit`/`generate` run,
 no post made, no tag touched by this agent this round.
+
+## 13. Final-five-days proposal — Sep 13 2026, 20:30 IST
+
+**Trigger:** formal handover from Central Agent (full text in [Social Media
+Handover Record.md](Social%20Media%20Handover%20Record.md)). Analysis only;
+nothing executes until the user approves. `whoami` confirmed
+`offroadinggamedev@gmail.com` before any CLI read.
+
+### 13.1 Data pulled (read-only, exported to the session scratch folder, not `jam-entry/`)
+
+`daily_activity_30d`, `platform_mix_30d`, `version_mix_30d`,
+`retention_by_platform_30d`, `funnel_steps_30d`, `session_end_summary_30d`,
+`share_channels_30d`, `core_loop_events_30d`, `crash_free_summary_30d`,
+`rundot credits`, `rundot marketing list`. `share_funnel_30d` returned
+"Analytics backend unavailable" twice — not retried further.
+
+| Day | Unique players | Sessions | Median s |
+|---|---|---|---|
+| Sep 3 | 9 | 17 | 301 |
+| Sep 4 | 117 | 148 | 116 |
+| Sep 5 | 54 | 69 | 80 |
+| Sep 6 | 59 | 72 | 0 |
+| Sep 7 | 60 | 87 | 96 |
+| Sep 8 | 38 | 54 | 117 |
+| Sep 9 | 41 | 76 | 116 |
+| Sep 10 | 19 | 34 | 6 |
+| Sep 11 | 20 | 35 | 242 |
+| Sep 12 | **47** | 96 | 119 |
+| Sep 13 (partial, evening IST) | 17 | 23 | 25 |
+
+Sum = 481, which reconciles to the board's 489 DUP within the partial day —
+**so DUP is the sum of daily unique players.** Every day is scored fresh.
+
+### 13.2 What the data says
+
+- **The prize tier is not movable by anything in this proposal.** 2nd (9 to
+  Thrive) is 1,008 and grew ~80 yesterday — 519 ahead, out of reach. 4th
+  (The Good Life) is 394 at ~+22/day → ~495 by close. The live threat is
+  **Employment Crisis: 211 in 3 days (~70/day)** → ~526 by close if it holds
+  (new entries usually decelerate). Ramu at even 17/day finishes ~565; at
+  30/day ~625. **3rd is defendable at organic pace and unreachable-upward.**
+  Paid is therefore judged as a baseline purchase and credit salvage, not a
+  rank play.
+- **Retention is ~zero, so DUP ≈ fresh arrivals.** D1 mobile-web 1.4% (5 of
+  357), web 3.0%. No compounding base exists; the score is bought daily.
+- **Mobile-web is 73%** (360 of 495 players). Every link should say "plays in
+  your phone browser, no install."
+- **~24% of loaded sessions never reach the menu** (`game_loaded` 619 →
+  `menu_shown` 487 sessions; 433 → 343 players) on top of the 4% load
+  timeout Central Agent reported. Mostly old-build data (1.7.0 dominates the
+  30-day mix), but it is the number to price into any CPI: roughly **3 in 4
+  arrivals see the menu.** Flagged for Central, not this agent's to fix.
+- Once at the menu the loop holds: 95.7% start a run, 87% place a tower,
+  74% clear wave 1, 55% of those reach `run_end`.
+- **1.69.0 players replay more**: 2.04 sessions/player on Sep 12 vs 1.26 on
+  Sep 4. n = 37 players — a direction, not a result.
+- **The Sep 12 spike is attributed.** User posted in RUN Discord
+  `#showcasing`, to personal WhatsApp/Snapchat (friends re-shared), and to a
+  gamedev WhatsApp group. Same engine as Sep 4 (RUN Discord → 117). It decays
+  inside a day both times. Repeatable per *real update*, not per day.
+- **Zero in-game shares in 30 days** (`share_channels_30d` empty). Flag only.
+- Crash-free on 1.69.0: 100% mobile-web/web/ios; one Android crash Sep 13
+  (1 of 1 sessions). Flag only.
+
+### 13.3 ⚠️ Discrepancy that gates the paid option
+
+`rundot marketing --help` (with `RUNDOT_BETA_FEATURES=1`) embeds the creative
+guide, which states: *"Meta and Google are live; Reddit is wired and remains
+flight-gated."* Central Agent's Sep 12 return says enabled networks are
+meta, google, reddit, unity. One of these is stale. **This is the exact
+failure mode that consumed the first plan** — the CLI accepted a network the
+server could never flight. Reddit must be confirmed flightable for this
+account, from the server side, before anything is submitted. If it is gated,
+paid is a no-go: Meta/Google at $82 fund one creative family by the tool's
+own heuristic and won't clear Meta's learning phase; Unity needs a portrait
+video and a native mobile platform.
+
+Also confirmed from the same help text: `rundot marketing cancel --name`
+exists, is **owner-only**, and works on a submitted campaign; campaign names
+are single-use; Reddit's floor is **$65/leg**, so $82 supports exactly one
+leg; budget range $50–$25,000; `prepare` warns at ≤ ~$50/day pacing.
+
+### 13.4 Paid — conditional go: Reddit or nothing, $82, one leg, 2 days
+
+**Go only if all four hold at submit time; otherwise no-go:**
+
+1. Reddit confirmed flightable for this account (13.3).
+2. The cancel deadline is staffed. User's answer: **Implementation/Central
+   Agent owns it.** Proposed hard cutoff: **Sep 14, 23:00 IST** — if
+   `rundot marketing status` does not show the campaign flighted, run
+   `rundot marketing cancel --name <name>`. Rationale: the lot "expires Sep
+   15" with no hour or timezone shown; worst case is 00:00 UTC Sep 15 =
+   05:30 IST, leaving 6.5 h margin. Nothing is charged pre-flight, so a
+   cancel costs nothing.
+3. `rundot credits` shows BACK-TO-WORK intact (balance ≥ 91,100 with the lot
+   still listed) immediately before submit, and is re-checked immediately
+   after flighting to confirm the debit came from that lot — the standing
+   procedure from §6.
+4. Platform leg = `web` only (mobile-web is where 73% of players are; Reddit
+   ad → phone browser → play link, no install step).
+
+**Submit before RUN answers the ticket?** Yes — *because* condition 2 is
+staffed. Waiting for a weekend ticket burns the only runway the lot has; the
+cancel deadline converts "unknown flighting latency" from a durable-pool risk
+into a bounded one. If condition 2 can't be met, don't submit.
+
+**Sizing:** $82 × 1.05 × 1,000 + 5,000 = 91,100 credits; 947 spare in the
+lot. `--days 2`. $41/day will trigger the ≤$50/day warning — advisory.
+
+**Expected yield — an estimate, not data:** $82 on Reddit at $0.40–0.80 per
+click → ~100–200 clicks; deeplink + load-timeout + load→menu losses ≈ 50% →
+50–100 sessions → ~40–80 unique players across two days = **+20–40 DUP/day**,
+roughly doubling organic for the flight. It does not change rank. It buys the
+first conversion baseline this game has ever had on a paid network, which
+matters for its life after the jam (the user's stated goal in the Modmail).
+
+**Judge by:** `campaign_attribution_funnel_30d` game session starts. **≥ 55
+attributed starts (≤ $1.50/start) = worth it.** < 20 = the channel is dead for
+this game; never route durable credits to paid afterward.
+
+### 13.5 Organic — the plan for Sep 13 evening → Sep 18 12:00 PT (4+ h/day confirmed)
+
+**Engine, named:** RUN Discord + the user's personal network. Fires once per
+real update, lifts for a day. Repeats without news get tuned out — so the
+cadence below spreads *different* audiences across the days rather than
+hammering one.
+
+| Day (IST) | Fire | Why this day |
+|---|---|---|
+| Sep 13 (tonight) | Funsmith Club `#share-cool-games` — playtest framing: "new tutorial, tell me if wave 4 still kills you" | Genuine-feedback community; zero prep; tonight's post lifts Sep 14's number |
+| Sep 14 | Indie Game Academy `#help-each-other` (ranking framing allowed) · **shoot the vertical video**: tutorial → wave-1 clear, 20–30 s portrait, OBS + Edits | IGA is the second zero-prep Discord; the video is the asset three later channels reuse |
+| Sep 15 | GameDev India `#games-from-india` (their template) · Reels + Shorts post of the video · r/GameDevelopersOfIndia devlog: the tutorial-fix story | Paid flight (if go) also lands Sep 15–16 — stacking organic on the same days makes the judge number harder to read, but the calendar doesn't allow otherwise; attribute paid via the funnel query, not DUP |
+| Sep 16 | GameDev.tv `#project-showcase` (strict template, uses the video) · Backstage Pass `#Showcase-Your-Game` | Largest single community on the list; video makes the template fillable |
+| Sep 17 | r/SoloDevelopment (only if r/GDoI survived without silent removal) · **second RUN Discord post only if Central ships something announceable** | Don't repost RUN Discord without news |
+| Sep 18 morning IST | Final personal-network push: "judging closes tonight, last chance to play" | The one day a "last day" ask is honest |
+
+**Copy rules for all of it:** play link leads (§8 policy); add "plays in your
+phone browser, no install"; say the tutorial and iOS fixes plainly; no
+standings claims outside communities that permit them. **Dropped:**
+r/Indiangamers (Modmail silent 72 h+); TikTok (hard skip). **Never:** bots,
+incentivized clicks, self-play, asking friends to replay for numbers — RUN
+audits and voids. Friends re-sharing to their own circles, as happened Sep
+12, is exactly the right kind of spread.
+
+### 13.6 The numbers to judge by
+
+- **Organic:** **≥ 30 unique players/day on at least 3 of the 5 remaining
+  days** — holding the 1.69.0 launch-day level, not the pre-launch 20. That
+  finishes Ramu ≥ ~620, above any plausible Employment Crisis line. Fail
+  state: < 20/day on 3+ days.
+- **Paid:** ≥ 55 attributed session starts (13.4). Secondary: Sep 15–16
+  daily uniques ≥ +20 over the surrounding organic-only days.
+- **Rank:** hold 3rd. Escalation trigger: Employment Crisis > 60/day for two
+  consecutive days → add a RUN Discord post with whatever real update exists,
+  not more paid.
+
+### 13.7 Flags for Central Agent (not this agent's to act on)
+
+24% load→menu loss (13.2); zero in-game shares; one Android crash on 1.69.0
+Sep 13; `share_funnel_30d` backend unavailable; Reddit flight-gate
+discrepancy (13.3) is blocking.
+
+**Status:** proposal only. Nothing submitted, generated, posted, tagged, or
+funded. Analytics CSVs live in the session scratch folder, outside the repo.
 4th (The Good Life, 358 DUP) is now +52, not a deficit.

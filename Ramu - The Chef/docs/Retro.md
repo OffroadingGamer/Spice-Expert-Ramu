@@ -2647,3 +2647,17 @@ uniques are the score; the trend matters more than any single day.
      of this campaign and would be 25% of a $20 one. ➕ Nobody had read the billing doc
      because the number came with a rationale attached, and a rationale reads like
      verification. It isn't.
+
+108. ⚠️ **When you change the flow, a funnel step's meaning changes with it — and a
+     30-day aggregate becomes a blend of two different games.** Sep 13 2026. The marketing
+     agent reported *"24% of loaded sessions never reach the menu"* from `funnel_steps_30d`
+     (619 → 487) and priced it into CPI. Arithmetic exact. 🔴 But `menu_shown` fires only
+     when `MainMenu.tsx` mounts, and **v1.60.0 made the game boot straight into Challenge
+     Mode** — on the current build a player can complete a whole run and never fire that
+     step. The number was true of the versions that dominate the window (1.7.0, 1.42.0) and
+     mechanically false of the one being advertised. ✅ It happened not to matter: the
+     current proxy, loaded → `run_start`, is 619 → 466 = 75% — the same loss by a different
+     route — so the sizing held. ⚠️ **Rule: before quoting a funnel step, check what fires
+     it and whether the flow it sits in still exists.** A step name is a label; the event
+     behind it is what the number counts. ➕ Corollary for any post-launch analysis here:
+     `version_mix_30d` first, always — it says which game the other exports are describing.

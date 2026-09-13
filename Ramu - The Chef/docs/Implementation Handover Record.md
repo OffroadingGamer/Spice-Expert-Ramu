@@ -49,6 +49,9 @@ of the present.**
 | **FTUE opening pad** | **`FTUE_FIRST_PAD = 4`** (B3, `damage ×1.5`), then pads 3 and 2 |
 | **Sealed files** | `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` |
 | **`data/waves.ts`** | ⚠️ **RE-SEALED.** Unsealed for the v1.69.0 block-1 retune only |
+| **Credits (Sep 13)** | **144,347** = BACK-TO-WORK **92,047** (exp. **Sep 15**) + 27,200 (exp. Dec) + 25,000 starter (labelled "exp. Aug 29", still counted) + 100 daily |
+| **Paid campaign** | ✅ **APPROVED Sep 13** — Reddit, **$82**, one web leg, 2 days = **91,100 credits**. Execution dispatched; cancel check **23:00 IST Sep 14** owned by the implementation agent |
+| **Chef-art budget** | ~10–18k credits via `rundot generate` (120/image), ≈ 0 via the local `Art/_lora` pipeline. Unaffected by the paid round in every scenario |
 
 ⚠️ **The old baseline `35 / 34 / 6 / 4 / 90` appears twelve times below.** Every one of
 those is a historical round entry and correct in context. **It is not the current
@@ -1908,3 +1911,74 @@ empty review queue, which is a property of *when* you submitted, not of the serv
 
 RUN wrote the `public` tag automatically on approval. Final state, reconfirmed at 19:46:08
 IST and verified independently: **Private · Review · Public all 1.69.0**.
+---
+
+### 2026-09-13 — Marketing proposal verified; paid approved; execution dispatched
+
+**Status:** ✅ **APPROVED BY USER** (*"Go ahead with the marketing"*) — the second approval on
+funding. Paid leg handed to the implementation agent; organic calendar approved to the
+marketing agent as written. ⚠️ Nothing had flighted at the time of writing.
+
+#### The proposal (verbatim in the marketing agent's own record)
+
+Reddit or nothing · **$82** · one `--platforms web` leg · **2 days** · submit before RUN answers
+the ticket · cancel staffed at **23:00 IST Sep 14** if not flighted. Organic: one fresh
+audience per day Sep 13–18, vertical video shot Sep 14, RUN Discord only with news. Judge
+paid by **≥ 55 attributed session starts**; organic by **≥ 30 uniques/day on 3 of 5 days**.
+Position: 3rd place is defendable at organic pace; paid is credit salvage, not a rank play.
+
+#### ✅ Verified independently
+
+D1 retention **1.4%** mobile-web (exact) · loaded→menu **619→487** (arithmetic exact) · DUP
+**487** to its 489 · Reddit floor **$65/leg** (verbatim in help) · budget range **$50–$25,000**
+· names single-use after cancel (verbatim). **Board standings are the agent's claim** — the
+jam page is not reachable from the CLI.
+
+#### 🔴 Three corrections — none changed the decision
+
+1. **"24% never reach the menu" names the wrong mechanism for the current build.**
+   `menu_shown` fires only on `MainMenu.tsx` mount, and since **v1.60.0 the game boots
+   straight into Challenge Mode** — a 1.69.0 player can finish a run without triggering it.
+   The 30-day window is dominated by pre-1.60 versions where the menu *was* first, so the
+   number is historically real; the current proxy is loaded→`run_start` = **619→466 = 75%**,
+   the same loss by a different route. Price ~25% in; do not call it "menu loss". See
+   [Retro 108].
+2. **"Cancel costs nothing pre-flight — confirmed in help text"** is an inference. The help
+   describes cancel on *running* campaigns; the pre-flight case rests on RUN's own
+   *"nothing is charged at submit"*, which is the stronger source anyway.
+3. **Two execution details the proposal skipped:** a Reddit campaign needs a **fresh
+   `prepare --network reddit`** under a **new name** (the old folder is `network: run`; one
+   campaign is one network; names are single-use). Creatives copy over — the 3 kept squares
+   and 3 logos, `square/2.png` stays dropped.
+
+#### 🔥 The billing finding that de-risked "submit before RUN answers"
+
+The rule is *"if your balance can't cover the budget plus the fee, flighting is blocked."*
+If RUN flights **after** BACK-TO-WORK expires, the balance (52,300) cannot cover 91,100 and
+**flighting is refused.** A late flight cannot drain the durable pool because it cannot
+afford itself. The 23:00 cancel is therefore **hygiene** (no dangling submission), not money
+protection. ⚠️ One assumption underneath: ad spend uses the same soonest-expiring-first
+ledger as generation. One data point supports it (FEEDBACK05 absorbed the 843 creative
+credits to the exact credit); nothing contradicts it.
+
+#### Credits, from the studio page (Sep 13)
+
+- **`rundot socials` is not advertising and spends no credits** — launch packet, composer
+  links, checklist. Only `socials promo` (an image) meters. **There is exactly one way to
+  turn credits into players: a paid campaign.** Everything else turns credits into assets.
+- **"Durable 52,200" was two things:** 27,200 expiring December, plus **25,000 starter credits
+  labelled "Expires Aug 29"** — a past date, still counted. Treat **27,200** as the truly
+  durable figure.
+- **Runtime AI usage: 9,889 credits / 85 calls attributed to the game.** ✅ The game code
+  calls **no** AI surface (verified: `popups`, `analytics`, `leaderboard`, `iap`, `cdn`,
+  `appStorage`, `ads`, `system`, timing, lifecycle — nothing generative). Most likely our own
+  `--game-id` generations categorised under the game. Every listed lot is intact at full
+  value, so all usage came out of the expired FEEDBACK05. ⚠️ **Watch item:** if this line
+  grows next month with no generations from us, raise a ticket.
+- Image generation is **120 credits, exact** (`generate estimate image`).
+
+#### Pending at compaction
+
+The implementation agent's return (campaign ID, post-submit balance, `status`), then the
+**23:00 IST Sep 14** cancel-or-debit report. The marketing agent's organic calendar is
+running. The RUN ticket on flighting turnaround is still unanswered.
