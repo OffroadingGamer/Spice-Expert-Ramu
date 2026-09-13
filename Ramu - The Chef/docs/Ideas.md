@@ -233,7 +233,107 @@ from the launch build for exactly that reason.
 
 ---
 
-## 6. Previously held, still parked
+## 6. Progression gauge + Chef Ramu — proposed Sep 13 2026, for speculation
+
+User, after playtesting 1.69.0: *"There's no visual progression system."* Three parts,
+**decoupled so each can ship alone.** Sequencing across §6 and §7: **scroll → gauge →
+chef** — cheapest first, and each owns a different screen region.
+
+### 6a · The service gauge
+
+A hollow vertical cylinder, bottom-left, filling with **dishes served this wave**; resets
+each wave. Two marks:
+
+- **SAFE line** = minimum served to survive = `units − (lives − 1)`. Derived, not authored;
+  it moves with lives. Boss waves weight by `livesCost` (stag = 3), so use lives-weighted
+  units, not headcount.
+- **Top** = every unit in the wave.
+
+Amber → green as fill crosses SAFE; red pulse if the remaining units can no longer reach
+it. ✅ **No engine change** — `towerScene` already counts deaths per substep for the coin
+popups. ⚠️ **Label it SAFE, not CLEAR**: it is a survive line, not a no-damage line, and
+that distinction is the whole lesson of the walkout system.
+
+🔴 **Measure the left gutter before designing.** `Hud.tsx`'s bottom column and the 88px
+rail own the bottom and right. On a 403px phone the gauge lives in whatever horizontal slack
+the height-fit board leaves — real on tall phones, near zero on short ones. Retro 99.
+
+### 6b · Chef Ramu (UI sprite)
+
+Bottom-left, in front of the gauge's base; dialogue along the bottom. ⚠️ **Supersedes
+§1's "portrait on the right, text left-to-centre."**
+
+🔥 **Layered sprite — body and face as separate images.** The spec implies 9 costumes ×
+3 voices × 2 moods = 54 sprites. Layered it is **9 bodies + 4 faces = 13 assets**, and the
+face is the same image every time: consistency by construction, not by prompt discipline.
+
+**Faces:** A-warm (default idle), B-wry, C-moved — shown while a dialogue line of that
+voice is up — and **W-worried**, the idle when `highTensionLatched` fires (`actions.ts:158`,
+lives under 30%; the trigger already exists and already drives `service_high`). Crossfade
+~400 ms on any change.
+
+**Costumes, one per block** (rides `blockForLevel` directly):
+
+| Block | Label | Attire |
+|---|---|---|
+| 1 | CAFE | cafe worker, worn — the rags |
+| 2 | NORTH INDIAN | dhaba |
+| 3 | SOUTH INDIAN | local chef — veshti, shoulder towel |
+| 4 | ITALIAN | Indian-Italian — toque over kurta |
+| 5 | NORTH EAST | dhoti and vest |
+| 6 | NE FUSION | NE base, elements carried forward |
+| 7 | ITALIAN FUSION | Italian base, Indian elements |
+| 8 | DESI FUSION | the composite — everything earned |
+| 9 | OVERTIME | royal — the maharaja chef |
+
+**Swap slot: the existing 2.5 s backdrop crossfade with Ready locked** (`BACKDROP_FADE_S`).
+The body layer crossfades in the same window — zero new dead time, the same argument §1
+makes for dialogue.
+
+**Art route:** one canonical character sheet first (front three-quarter, neutral), then
+costumes and faces derived against it through `Art/_lora`. Ramu is original art — no
+third-party licence question — but consistency needs a locked reference, not nine
+independent prompts. **Effort: two art rounds, one to two implementation rounds.**
+
+### 6c · Dialogue
+
+Already specified in §1 (12 boxes, voices locked). The chef sprite *is* the portrait — no
+separate asset. Opening two boxes skippable; district beats not.
+
+---
+
+## 7. Wave-intro scroll — proposed Sep 13 2026, for speculation
+
+**Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll
+follows on dismiss or skips that wave.
+
+**Content:** the wave's incoming dishes. ✅ **Data path is entirely existing** —
+`waveAt(level).entries[].enemy` → `blocks.ts`'s archetype-to-dish-slug map (line ~20) →
+the `dish-<slug>` icon already in the manifest. Name, large icon, and:
+
+- 🔴 **HP must be the effective value, `hp × entry.hpMult`**, and bounty must apply
+  `bountyMult` from level 11. Base numbers would lie about the thing the card exists to say.
+- Raw HP is opaque. **Recommend 1–5 toughness pips** against a reference shot, plus bounty
+  as coins.
+
+Multiple dish types → carousel (swipe or tap, dot indicator), deduped by slug.
+
+**Art: one asset** — an Indian scroll with rolled ends. Unroll = mask reveal ~350 ms;
+everything inside is DOM text plus existing icons.
+
+**Layout: top-centre band** under the wave chip and coins — not the bottom (Ready) and not
+the right (rail). Auto-dismiss ~3 s or on tap. **Never blocks placement.**
+
+➕ On boss waves this *is* the boss card — Ooti, three walkouts — for free.
+
+**Effort: one art asset, one implementation round. Low risk.** ⚠️ The only one of these
+that could fit inside the jam window — and only by a Sep 15 ship with a device playtest.
+Central agent's recommendation (Sep 13) was to freeze 1.69.0 and not take even this before
+judging.
+
+---
+
+## 8. Previously held, still parked
 
 - **Wave roster panel** (GDD §8) — held.
 - **Regenerating the other eight backdrops** — held.
