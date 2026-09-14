@@ -356,6 +356,38 @@ handover if wrong.
 **Sequencing:** Round 0 + 1 handed over together (Sep 15), Round 2 Sep 16, Round 3 Sep 17,
 Round 4 after judging. Promotion, if approved, as **v1.70.0**.
 
+#### ✏️ Amendment — user playtest of Private 1.71.0, Sep 15 2026
+
+Six annotated screenshots. These override the rows above where they conflict.
+
+**Round 2b (inserted before Round 3) — the dialogue box becomes the FTUE's Ready button.**
+
+| Beat | Was | Now |
+|---|---|---|
+| 1 | once per player | **every run**, at boot, before `placeFirst`. Visible **Skip** |
+| 2 | with beat 1 | **after the first prop is placed** (`placeFirst` resolved). **Tap = start wave 1.** Ready hidden |
+| 3 | on wave-1 cleared | on wave-1 cleared, line becomes *"They came back for seconds. Did you see that? **It's time to upgrade.**"* **Stays open through the `upgrade0` purchase** (must not cover the rail); once bought, **tap = start wave 2** |
+| 4 | on first upgrade | **wave 4's build phase**, after `place3` resolves — *"New gear, same nerves. Let's find out."* **Tap = start wave 4.** The "Tap a cook to upgrade" toast stays |
+| 5–12 | once per run | unchanged; add a visible **Skip** (top-right) and a **"tap to continue ▸"** hint (bottom-right) to every box |
+
+The `dialogueSeen` persistence goes: beats 1–4 ride `ftueActive`, which is already every run.
+Ready's own button hides whenever a box owns the moment; the box calls the same `startWave()`.
+
+⚠️ Why the opening didn't show on the user's device: almost certainly `dialogueSeen`
+persisted from an earlier Private session — the once-per-player assumption, working as
+specified and wrong as a product. Removed.
+
+**Round 3 — decided: horizontal fill under the wave chip**, not a bar in the gutter. Same
+maths (SAFE = units − (lives − 1)), amber → green, resets per wave. Top-left, directly under
+`WAVE n / RUSH: …`, width of that chip group.
+
+**Round 4 — redesigned:** a **chat bubble over the idle chef** at each wave start carrying
+the **final-dish icons** of the wave; **tap → a small scroll-styled submenu in the top band
+between the WAVE chip and the speed buttons** (name, toughness pips, bounty). ⚠️ On
+phones where the idle chef is hidden (gutter < 72 px — the 403×874 reference), the bubble
+anchors to the **wave chip** instead. §7's data path is unchanged.
+
+
 ## 7. Wave-intro scroll — proposed Sep 13 2026, for speculation
 
 **Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll
