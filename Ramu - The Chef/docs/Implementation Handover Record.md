@@ -39,7 +39,7 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.71.0** (progression rounds; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.72.0** (progression rounds; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
 | **Endgame criterion** | `maxed-meta` must lose between levels **85–110** (currently 90) |
@@ -2308,3 +2308,33 @@ ref reset each time and the dialogue portrait **popped instead of fading** — i
 correctness check because the final frame was right. Fixed by tracking "last shown" at module
 scope across both mount points, plus a one-render lag between alias resolution and duration.
 Same shape as Retro 105: the artefact under test is the running system, over time.
+---
+
+### 2026-09-15 — Round 2b issued and returned: the dialogue box is the FTUE's Ready → Private v1.72.0
+
+**Issued** after the user's playtest of 1.71.0 (six annotated screenshots — decisions in
+[Ideas.md](Ideas.md) §6d *Amendment*). **Returned the same day; verified; committed.** Private
+**1.72.0**, Review/Public **1.69.0**. Seven files. Sealed untouched; balance **35 / 36 / 11 /
+4 / 90**; `tsc` clean; no sidecars.
+
+| Beat | Now |
+|---|---|
+| 1 `opening` | every run at boot (Retry included), Skip visible |
+| 2 `stove-lit` | on `placeFirst` resolved; **tap = `startWave()`**; suppressed if 1 was skipped |
+| 3 `wave1-cleared` | *"… It's time to upgrade."* Stays open through `upgrade0`; **narrows to `calc(100% − 100px)`, left-anchored, portrait dropped** while the rail is up (88 px floor + 12 gutter at scale 0.450); no-op tap before purchase; tap = wave 2 after |
+| 4 `wave4-ready` | wave 4 build after `place3`, toast above it; tap = wave 4; FTUE retires |
+| 5–12 | unchanged; Skip + "tap to continue ▸" on every box |
+
+`dialogueSeen` removed (save parse never spread the raw object, so old saves load). Flag off
+reproduces 1.69.0's flow exactly — the flag now gates the gate.
+
+#### 🔴 A gap in Central's amendment, found by the agent
+"Skip skips beats 1 and 2 together" — but beat 2 fires from `placeTower()`, a different call
+site, not from the queue. Queued naively it would replay after a Skip. Fixed with a run-scoped
+`openingSkipped` flag in `dialogueController.ts` (module scope, not the store), checked at
+the placement site. Verified live. The amendment described the *experience* and left the
+*mechanism* to inference across two triggers — the same shape as Retro 105's "written
+differently" instance.
+
+✅ Also right, unasked: `RAIL_MIN_PX` exported from `StationRail.tsx` rather than copied, so
+the box and the rail can never disagree about the floor.
