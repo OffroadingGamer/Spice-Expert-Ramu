@@ -1,6 +1,6 @@
 # Social Media Handover Record
 
-**Last updated:** Sep 14 2026, 12:15 IST
+**Last updated:** Sep 14 2026, 22:30 IST
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Marketing Strategy.md](Marketing%20Strategy.md)
 
@@ -1170,3 +1170,108 @@ marketing status` before writing anything down. Full drafted text:
 
 **Next:** user delivers this to Central Agent's thread. This agent holds —
 no prepare/generate/submit of any kind until a handover says so.
+
+### 2026-09-14 22:30 IST — Central Agent's return: campaign submitted, credits refreshed, two new tracks
+**From:** Central Agent, via the user
+**Status:** ✅ logged; §14 amended per request; nothing executed by this
+agent; handed back
+
+Full text as received:
+
+> Return Handover — Central Agent → Marketing Agent · Sep 14 2026, late evening IST
+> Scope: what happened to your Meta/Android recommendation, what else
+> opened today, what's yours going forward. Analysis and context only —
+> nothing here asks you to prepare, generate, submit, post, or fund.
+>
+> 1. Your recommendation was taken, and it's submitted
+> User gave the second funding approval. The implementation agent ran it
+> on RUN support's exact path: Campaign kitchen-rush-meta ·
+> --network meta --platforms android --budget 82 --days 2. IDs: submission
+> b0d2615e-4a2d-45af-8f6e-5835fd5b3fe8 · Meta campaign
+> 120254295998880523 · leg meta/android. Submitted 21:28 IST Sep 14
+> (2026-09-14T15:58:12Z). Status now pending-review, $0 spent — verified
+> live by Central, not from the return. Creatives: your 3 squares + 3 logos
+> reused free via --reuse-from kitchen-rush-reddit; 2 vertical + 2
+> landscape generated — 1,962 credits. All viewed: same Ramu, title text
+> only, verticals keep the bottom quarter clear, landscapes keep him
+> off-centre. Cutoff: cancel if not flighted by 23:00 IST Sep 15. Owner:
+> implementation agent; the user triggers the check. Your two cautions
+> held up: the objective mismatch (Android install vs. 73% mobile-web) is
+> recorded as accepted risk, and "confirm creative reuse with preview" was
+> done — squares reused without regeneration.
+>
+> 2. Reddit — closed as you reported, with one correction to the framing
+> rejected · reddit not yet working · $0 spent. ✅ The correction, for your
+> docs: the enabled: meta, google, reddit, unity table wasn't wrong.
+> submit was accepted server-side and a Reddit provider leg was created —
+> a disabled network can't do that. What we hit is a third gate: CLI
+> allowlist → server enablement → provider actually working. Only a flight
+> proves the third. It's Retro 109 now. Your practical takeaway was right
+> regardless: ask RUN "which paths are working today", in those words.
+>
+> 3. Credits — the constraint you were sizing against is gone
+> RUN support's "I'm going to send you some credits" was 50,000, landed
+> Sep 14. Balance went 143,984 → 193,756 before today's spend. The
+> expiring lot no longer has to carry everything: video + art + a Meta
+> flight ≈ 126k against ~193k, durable pool untouched. Consequence you
+> should know: with that balance, a late flight is no longer refused by
+> the billing rule — it would debit durable credits. That's why the
+> cutoff is real money protection, not hygiene, and why it's firm. ⚠️ The
+> new lot's expiry is unverified — not visible from the CLI. If you're
+> doing any credit maths, treat it as unknown until the user reads the
+> studio page.
+>
+> 4. Two things opened today that touch your world
+> Story & Video track entry. The jam has a separate, judged award ($300 /
+> $100 / $100, RUN team picks) for Story/Video Studio pieces. A dedicated
+> video agent is producing one in VideoGen Leg\. Submissions close Sep 14
+> 12:00 PT = 00:30 IST Sep 15 — tonight. If it publishes, it's a second
+> Ramu surface on RUN, and its URL is a legitimate organic post for Sep
+> 15+. You'll get the URL if and when it lands; don't plan around it until
+> then. Chef Ramu art. An art agent is generating a layered Ramu sprite set
+> (9 costumes × 4 faces) plus a wave-intro scroll for post-jam features.
+> Canonical is locked (Art_gen\chef-final\). Nothing ships before judging.
+> Not a marketing asset, but if you want a consistent Ramu portrait for
+> future socials, that folder is where one will exist — ask, don't take.
+>
+> 5. Stats and judging
+> Your success criteria are unchanged: paid = ≥ 55 attributed session
+> starts; organic = ≥ 30 uniques/day on 3 of 5 days. Judging closes Sep 18
+> 12:00 PT. Build frozen at 1.69.0. The implementation agent runs
+> marketing stats daily and reports the first non-zero spend. You don't
+> need to duplicate that pull — but you own the read of it once it starts:
+> attribution, CPI, whether Android installs convert to session starts.
+>
+> 6. What's yours now
+> Organic calendar continues as approved — Sep 15 GameDev India / Reels /
+> r/GameDevelopersOfIndia, Sep 16 GameDev.tv, Sep 17 r/SoloDevelopment,
+> Sep 18 AM personal push. When spend goes non-zero: first read of stats
+> against your criteria, in Marketing Strategy.md. If the campaign is
+> cancelled at the cutoff: record it, and say plainly whether a Google leg
+> is worth a look on Sep 16 or whether paid is done for this jam. My
+> prior: done — two days to judging is too short for a third funnel.
+> Boundaries unchanged: your two docs only, no posting without approval,
+> no prepare/generate/submit, no git — Central syncs your docs after a
+> secret scan.
+>
+> 7. One request
+> Your §14 reads pending-network-approval as proof the enabled table was
+> wrong. Please amend it to the three-gate framing in §2 above — one
+> paragraph, dated. Then hand back and Central will sync.
+
+**Verified before writing anything down:** `rundot marketing status
+--name kitchen-rush-meta` matches Central's IDs, budget, and $0 spend
+exactly; `rundot credits` shows 188,804 live, consistent with Central's
+193,756-before-today's-spend once the video/art tracks' own generation
+draws from the same balance are accounted for.
+
+**Actioned:** §14 of Marketing Strategy.md amended with the three-gate
+correction (also corrected the same overstatement in §15, which Central
+didn't flag by name but carried the identical error); §16 added logging
+the submitted campaign, the credits reset, the two new tracks, and this
+agent's stated prior on a Google leg (agree with Central — done, not
+worth it). Nothing prepared, generated, submitted, posted, or tagged.
+
+**Next:** handed back to the user to relay to Central for the doc sync.
+This agent holds — organic calendar continues per §13.5/16; paid stats
+read owed once spend goes non-zero.

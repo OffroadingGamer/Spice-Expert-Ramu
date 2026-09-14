@@ -1,6 +1,6 @@
 # Marketing Strategy
 
-**Last updated:** Sep 14 2026, 12:15 IST
+**Last updated:** Sep 14 2026, 22:30 IST
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)
 
@@ -1017,6 +1017,18 @@ flagged in §13.3 playing out as a pending approval rather than an outright
 rejection — the CLI creative guide's "Reddit remains flight-gated" line was
 closer to true than Central's "enabled: meta, google, reddit, unity" table.
 
+**Amendment — Sep 14 2026, 22:30 IST, per Central Agent's correction:** the
+"table was wrong" framing above overstates it. `submit` was accepted
+server-side and created a real Reddit provider leg — a genuinely disabled
+network can't do that, so the enablement table wasn't false. There are
+three independent gates: the CLI's own hardcoded allowlist (what `prepare`
+checks), server-side enablement (what let `submit` through), and whether
+the provider actually works (what only a flight attempt proves). Reddit
+cleared the first two and failed the third. Central logged this as Retro
+109. The practical takeaway stands unchanged: ask RUN "which paths are
+working today," in those words, before sizing a campaign around any one
+network's stated status.
+
 **Cancel-check deadline moved:** Sep 14 23:00 IST → **Sep 16 morning**
 (owner unchanged — Implementation/Central). A cron job (`0077a76a`) tied to
 the old deadline was to be deleted; it is not in this agent's session cron
@@ -1057,11 +1069,13 @@ rundot marketing status --name kitchen-rush-reddit
 ```
 
 Matches exactly. `run` was already known dead (§12); this closes Reddit the
-same way, and settles the §13.3/§14 discrepancy — the CLI creative guide
-("Reddit remains flight-gated") was right, Central's "enabled: meta, google,
-reddit, unity" table was stale. **Zero credits lost to ad spend** — the
-campaign never left "pending." Whatever RUN is crediting back is for the
-imagegen/audiogen spend on creative prep, not ad budget.
+same way. **Correction, Sep 14 22:30 IST — see §14's amendment:** the
+"table was stale" framing below was itself an overstatement; Central
+clarified it's a three-gate problem (allowlist → server enablement →
+provider actually working), not a wrong table. **Zero credits lost to ad
+spend** either way — the campaign never left "pending." Whatever RUN is
+crediting back is for the imagegen/audiogen spend on creative prep, not ad
+budget.
 
 **What this changes about the paid read, and what it doesn't:**
 
@@ -1099,3 +1113,72 @@ any of this.
 gave permission to draft a return handover; drafted 12:15 IST, logged in
 the companion Record, delivered to the user for their Central Agent thread.
 Holding for Central's return.
+
+## 16. Central's return — campaign submitted, credits refreshed, two new tracks — Sep 14 2026, late evening IST
+
+The recommendation in §15 was taken: user gave the second funding approval,
+Implementation submitted on RUN's exact recommended path. Verified live,
+not taken from the return:
+
+```
+rundot marketing status --name kitchen-rush-meta
+  Status               pending-review
+  Setup                traffic-install · default geo · asset-pool
+  Submitted            2026-09-14T15:58:12.904Z
+  Budget               $82.00 total · spent $0.00
+  Android (Meta) leg   $82.00 total (spent: $0.00)
+  Meta Campaign ID     120254295998880523
+```
+
+Matches Central's numbers exactly. Creatives: the 3 squares + 3 logos from
+`kitchen-rush-reddit` reused via `--reuse-from` (free, no regeneration) as
+§15 flagged might be possible, plus 2 vertical + 2 landscape generated for
+1,962 credits. Cutoff unchanged in substance, restated by Central: cancel
+if not flighted by **23:00 IST Sep 15**, owner Implementation, user
+triggers the check.
+
+**Credits:** live balance now **188,804** (checked 2026-09-14T16:20 UTC),
+consistent with Central's "193,756 before today's spend" once the video
+track's and art track's own generation (§4 of the return) are accounted
+for — those draw the same shared balance, not something to reconcile
+line-by-line here. The material change: RUN sent **50,000 credits**
+(landed Sep 14) as compensation for creative-prep spend on dead networks.
+This retires the scarcity framing this whole analysis was built on — a
+late flight is no longer refused by the billing rule, it would simply debit
+durable credits instead. **That is why the Sep 15 23:00 IST cutoff is real
+money protection now, not hygiene**, and why it stays firm regardless of
+the new balance. The new lot's own expiry is unverified — treat as unknown
+until the user reads the studio page directly.
+
+**Two tracks opened today, noted for awareness, not this agent's to act
+on:**
+- **Story & Video track** — a separate judged award, a dedicated video
+  agent producing a piece in `VideoGen Leg\`, submissions close 00:30 IST
+  Sep 15 (tonight). If it publishes, its URL becomes a legitimate organic
+  post for Sep 15+ — not planning around it until it exists.
+- **Chef Ramu art** — a layered sprite set + wave-intro scroll for
+  post-jam, canonical in `Art_gen\chef-final\`. Not a marketing asset and
+  nothing ships before judging; if a consistent Ramu portrait is wanted for
+  future socials, that folder is where one will exist — ask before taking.
+
+**What's this agent's going forward, unchanged from §13.5/13.6:** the
+organic calendar continues as approved (Sep 15 GameDev India / Reels /
+r/GameDevelopersOfIndia; Sep 16 GameDev.tv; Sep 17 r/SoloDevelopment; Sep 18
+AM personal push). Own the first read of stats against the §13.6 criteria
+(paid ≥ 55 attributed starts; organic ≥ 30 uniques/day on 3 of 5 days) once
+spend goes non-zero — Implementation runs the daily pull, this agent reads
+it, not duplicates it.
+
+**On a possible Google leg if the Meta campaign is cancelled at cutoff:**
+agree with Central's prior — **done, not worth it.** Both networks tried
+so far sat in `pending-review` for hours before resolving; a Google attempt
+started at or after the Sep 15 23:00 IST cutoff would face the same review
+lag against a Sep 18 12:00 PT judging close, with real odds of never
+clearing review at all. The downside (more prep credits, more surface area
+for a fourth flight-gate surprise) isn't worth the small, non-rank-moving
+upside paid was always going to deliver. Recording this now so it doesn't
+need re-litigating at the cutoff.
+
+**Status:** §14 amended per Central's request (three-gate framing, dated
+paragraph above). Nothing prepared, generated, submitted, posted, or tagged
+by this agent. Handing back for Central to sync.
