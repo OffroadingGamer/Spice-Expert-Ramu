@@ -39,7 +39,7 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.73.0** (progression rounds; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.74.0** (progression rounds; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
 | **Endgame criterion** | `maxed-meta` must lose between levels **85–110** (currently 90) |
@@ -2378,3 +2378,30 @@ fill under the top-left chip group, `SAFE = units − (lives − 1)` with lives-
 amber → green, tick at SAFE, resets per wave. Beat 3 keeps portrait + Skip at reduced width.
 Skip mutes all later boxes (persisted); chef tap un-mutes; chef-head HUD button proposed as
 the always-present tap target.
+---
+
+### 2026-09-15 — Round 3 returned → Private v1.74.0
+
+**Status:** ✅ **RETURNED, VERIFIED, COMMITTED.** Private **1.74.0**; Review/Public **1.69.0**.
+Nine files (`ServiceGauge.tsx` new). Sealed untouched; balance **35 / 36 / 11 / 4 / 90**;
+`tsc` clean; no sidecars.
+
+| Part | Verified |
+|---|---|
+| A gauge | `syncGauge()` samples lives-weighted `units` and `SAFE` at the wave-start transition; forecast during build; width live-measured from the ESCAPES+CASH row (0 px delta at 403 and 768). Level 4: `units 5, safe 0` — green from kill 0, matching the simulator's row. Level 10: `units 10` with the stag weighted, `safe 1`, tick at 1/10 |
+| B beat 3 | portrait 100 px, text wraps (92 px tall), Skip inside, box 279 px at 403 wide; Upgrade tapped live 1→2 with the box open |
+| C mute | `dialogueMuted` persisted; Skip on any box mutes; survives Retry; `#chef-head-button` (44 px, next to the WAVE chip, always present) and the idle portrait un-mute; wry cue rides the existing crossfade |
+
+#### Four judgment calls the agent flagged — Central's rulings
+1. **"`calc(100% − 100px)`" kept as the live `useRailClearancePx()` formula, not a literal.**
+   ✅ Right — 100 was the value at one scale; a literal would break at 768.
+2. **Skip now also on beats 2 and 4** (the Ready-substitutes), reversing Round 2b's "tapping
+   *is* the action". Skip there mutes and closes, revealing the plain Ready. ✅ Accepted —
+   the user's rule was "Skip works over all the dialogue boxes"; the reveal is coherent.
+3. **Un-mute cue uses face B (wry)** at idle size, where §6b says B doesn't read. ✅ Accepted
+   as motion feedback, not an expression to parse; 400 ms, transient.
+4. **Chef-head crop by eye**, not measured. ✅ Cosmetic; not a tap boundary. Re-measure only
+   if Round 4's bubble needs a precise anchor point.
+
+**Left for Round 4:** bubble anchors to `#chef-head-button` on phones where the idle sprite
+is hidden, to the idle portrait where it isn't.
