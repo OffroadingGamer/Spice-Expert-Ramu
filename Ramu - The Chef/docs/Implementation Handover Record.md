@@ -50,7 +50,7 @@ of the present.**
 | **Sealed files** | `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` |
 | **`data/waves.ts`** | ⚠️ **RE-SEALED.** Unsealed for the v1.69.0 block-1 retune only |
 | **Credits (Sep 14, ~11:00 IST)** | **193,756** = BACK-TO-WORK ~**91,700** (exp. **Sep 15**, hour unverified) + **50,000 refund from RUN support** (landed Sep 14, **expiry unverified — read the studio page**) + 27,200 (exp. Dec) + 25,000 starter (labelled "exp. Aug 29", still counted) + daily |
-| **Paid campaign** | ❌ **Reddit REJECTED** by RUN (`reddit not yet working`), $0 spent, verified live Sep 14. ⏳ **Meta/Android go/no-go pending user** — recommended go: `--network meta --platforms android --budget 82 --days 2`, name `kitchen-rush-meta`, **hard cutoff: cancel if not flighted by 23:00 IST Sep 15** (a late flight now debits durable credits — the balance covers it) |
+| **Paid campaign** | 📤 **`kitchen-rush-meta` SUBMITTED 21:28 IST Sep 14** — Meta, **Android**, **$82**, 2 days = 91,100 credits. `pending-review`, $0 spent (verified live). Creatives: 3 squares reused free + 2 vertical + 2 landscape for **1,962 credits**. **Hard cutoff: cancel if not flighted by 23:00 IST Sep 15** (owner: implementation agent; its cron `5f540037` is session-local — the user triggers the check). Reddit: rejected, $0 |
 | **Art leg (Sep 14)** | 🎨 **Chef Ramu sprite set + wave-intro scroll** handed to an art agent (`Art\` only). Cap **10,000 credits**, ~36 images at 147. Three stops: canonical pick → layered-vs-flat probe → batch. References: `Art\_gen\ref\ramu-ads\` (7 RUN-generated squares). `Art/_lora` is the dish LoRA — no use for a character |
 | **Video leg (Sep 14)** | 🎬 **Story & Video track entry** handed to a video agent (`VideoGen Leg\` only, untracked). Judged track, $300/$100/$100, RUN team picks. **Submissions close Sep 14 12:00 PT = 00:30 IST Sep 15**; target publish 22:30 IST. Video Studio = series → chapters via chat; budget cap is the user's call inside the leg |
 
@@ -2084,3 +2084,40 @@ is written and waits on the user's word; nothing has been prepared or submitted.
   (§7). Route is `rundot generate image --reference-image` against the RUN-generated ad
   creatives, copied to `Art\_gen\ref\ramu-ads\` for the agent's reach. Layered (13) vs flat
   (12) is decided by a two-image probe, not assumed. Cap 10,000. Nothing ships before judging.
+---
+
+### 2026-09-14 — `kitchen-rush-meta` submitted; the creative estimate was wrong by 4×
+
+**Status:** 📤 **SUBMITTED, PENDING** — user gave the second funding approval; implementation
+agent ran `prepare → generate → submit` on RUN support's recommended path.
+
+| | |
+|---|---|
+| Campaign | `kitchen-rush-meta` · submission `b0d2615e-4a2d-45af-8f6e-5835fd5b3fe8` · Meta campaign `120254295998880523` · leg `meta/android` |
+| Definition | `network: meta` · `platforms: [android]` · `lifetimeBudgetCents: 8200` · `flightDays: 2` — verified on disk |
+| `status` | **`pending-review`** · `spent $0.00` · submitted `2026-09-14T15:58:12Z` — verified live |
+| Creatives | 3 squares + 3 logos **reused free** via `--reuse-from kitchen-rush-reddit`; **2 vertical (1242×2208) + 2 landscape (1200×628) generated for 1,962 credits.** All four viewed: same Ramu, title text only, bottom quarter of verticals clear, landscapes off-centre for square re-crop |
+| Balance | agent-reported 190,802 (192,911 → 190,949 generation → 190,802). The "unexplained −147" is one art-agent generation landing between reads — both agents draw from one balance. ⚠️ Not yet verified: `rundot credits` was returning **502** at the time |
+| Submit warning | reused squares lack `creativeFamilies` metadata; server fell back to legacy family IDs. Non-fatal |
+
+#### 🔴 Two errors in Central's brief, both the same class
+
+1. **`rundot marketing generate estimate` does not exist.** The brief named it as the
+   pre-spend gate. `estimate` is a subcommand of the generic `rundot generate`, not of
+   `marketing generate` — the agent checked both `--help` outputs and **stopped rather than
+   guess**, which was exactly right.
+2. **"120 credits/image, fixed" was true of the generic generator at default size and false
+   of Meta creatives.** 4 images cost **1,962 ≈ 490 each**. The 2,000-credit cap held by 38
+   credits — luck, not design. The replacement gate ("stop if more than 12 images") was
+   sized from the wrong unit price and would have allowed ~5,900.
+
+Both are [Retro 106] again: a fact read off one surface (`rundot generate`) applied to a
+neighbouring one (`rundot marketing generate`) without checking it transfers. ✅ The rule
+that would have worked: **when no estimate exists, generate the smallest unit first, read
+the actual debit, then size the batch.**
+
+#### The cutoff is now money protection
+
+Balance covers 91,100 well past BACK-TO-WORK's expiry, so a late flight **would** debit
+durable credits. **Cancel if not flighted by 23:00 IST Sep 15.** The implementation agent's
+cron is session-local; the user triggers the check.
