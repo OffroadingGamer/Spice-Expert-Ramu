@@ -49,9 +49,10 @@ of the present.**
 | **FTUE opening pad** | **`FTUE_FIRST_PAD = 4`** (B3, `damage ×1.5`), then pads 3 and 2 |
 | **Sealed files** | `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` |
 | **`data/waves.ts`** | ⚠️ **RE-SEALED.** Unsealed for the v1.69.0 block-1 retune only |
-| **Credits (Sep 13)** | **144,347** = BACK-TO-WORK **92,047** (exp. **Sep 15**) + 27,200 (exp. Dec) + 25,000 starter (labelled "exp. Aug 29", still counted) + 100 daily |
-| **Paid campaign** | 📤 **SUBMITTED 21:10 IST Sep 13** — `kitchen-rush-reddit`, Reddit, **$82**, one web leg, 2 days = **91,100 credits**. Status `pending-review`; Reddit leg `pending-network-approval (blocked)`; **$0 spent, nothing charged.** Two gates ahead: RUN flighting + Reddit approval. **Cancel check moved to Sep 16 morning** (user, Sep 13) — no timer; whoever opens the next session runs `rundot marketing status --name kitchen-rush-reddit` and hands cancel to the implementation agent if still unflighted |
-| **Chef-art budget** | ~10–18k credits via `rundot generate` (120/image), ≈ 0 via the local `Art/_lora` pipeline. Unaffected by the paid round in every scenario |
+| **Credits (Sep 14, ~11:00 IST)** | **193,756** = BACK-TO-WORK ~**91,700** (exp. **Sep 15**, hour unverified) + **50,000 refund from RUN support** (landed Sep 14, **expiry unverified — read the studio page**) + 27,200 (exp. Dec) + 25,000 starter (labelled "exp. Aug 29", still counted) + daily |
+| **Paid campaign** | ❌ **Reddit REJECTED** by RUN (`reddit not yet working`), $0 spent, verified live Sep 14. ⏳ **Meta/Android go/no-go pending user** — recommended go: `--network meta --platforms android --budget 82 --days 2`, name `kitchen-rush-meta`, **hard cutoff: cancel if not flighted by 23:00 IST Sep 15** (a late flight now debits durable credits — the balance covers it) |
+| **Art leg (Sep 14)** | 🎨 **Chef Ramu sprite set + wave-intro scroll** handed to an art agent (`Art\` only). Cap **10,000 credits**, ~36 images at 147. Three stops: canonical pick → layered-vs-flat probe → batch. References: `Art\_gen\ref\ramu-ads\` (7 RUN-generated squares). `Art/_lora` is the dish LoRA — no use for a character |
+| **Video leg (Sep 14)** | 🎬 **Story & Video track entry** handed to a video agent (`VideoGen Leg\` only, untracked). Judged track, $300/$100/$100, RUN team picks. **Submissions close Sep 14 12:00 PT = 00:30 IST Sep 15**; target publish 22:30 IST. Video Studio = series → chapters via chat; budget cap is the user's call inside the leg |
 
 ⚠️ **The old baseline `35 / 34 / 6 / 4 / 90` appears twelve times below.** Every one of
 those is a historical round entry and correct in context. **It is not the current
@@ -2023,3 +2024,63 @@ next session, with no timer to miss. **Owner: the implementation agent** (cancel
 ➕ Read-only `rundot marketing status` and `rundot credits` are now established as the
 central agent's verification surface for campaign returns — they round-trip to the server
 (Retro 106) and cost nothing.
+---
+
+### 2026-09-14 — Reddit rejected; RUN refunds 50,000; two new legs; Meta/Android pending
+
+**Status:** ❌ Reddit closed · ✅ credits verified · ⏳ Meta/Android awaiting the user's second
+funding approval · 🎬🎨 video and art legs dispatched.
+
+#### Reddit, verified live
+
+```
+Status           rejected
+Rejected reason  reddit not yet working
+Budget           $82.00 total · spent $0.00
+reddit/web leg   pending-network-approval (blocked)   ← never advanced
+```
+
+RUN support's ticket reply (via the marketing agent, verbatim): *"the RUN network ads are not
+yet available… ad budget does use credits! reddit ads are not currently working. there is
+currently not audience targeting other than geo… im going to send you some credits for what
+you might have lost trying to prepare creatives for networks that dont yet work. if you are
+trying to get a campaign up today i recommend doing meta / android."*
+
+🔴 **Enabled ≠ working.** The marketing agent read this as "the `enabled: meta, google,
+reddit, unity` table was wrong". It wasn't: `submit` was accepted server-side and a Reddit
+provider leg was created, which a disabled network cannot do. There are **three gates**, not
+two — the CLI allowlist (Retro 106), server-side enablement, and **provider reality** — and
+only a flight proves the third. See [Retro 109].
+
+#### Credits
+
+`rundot credits`: **193,756**, up from 143,984. Today's spend 328 (12 LLM calls — the video
+agent's Studio chat). So the refund is **50,000 + 100 daily**, to the credit. ⚠️ Its expiry
+is not visible from the CLI; the studio page must be read before relying on it.
+
+This dissolves yesterday's collision: video (≤ 25k) + art (≤ 10k) + a Meta flight (91,100)
+≈ 126k against 193k, durable pool untouched. ⚠️ It also **reverses the cancel logic**: a
+late flight is no longer refused by the billing rule, so a cutoff is money protection again.
+
+#### Meta/Android — recommendation made, decision pending
+
+The marketing agent recommended a conditional go on RUN's suggested path. Central concurs:
+**go, same terms** (`meta` / `android` / $82 / 2 days), because RUN named the path and said
+"today", and credits are no longer binding. Weighed against it, honestly: an app-install
+funnel for a 73%-mobile-web audience; Meta's own creative heuristic wants ≥ 3 families and
+$82 / 2 days yields 2; Reddit's "approved" sat 18 hours before rejection. Hence the **hard
+cutoff — cancel if not flighted by 23:00 IST Sep 15.** Handover to the implementation agent
+is written and waits on the user's word; nothing has been prepared or submitted.
+
+#### Two legs opened today
+
+- **Video** (`VideoGen Leg\`, video agent, folder-only access): the jam's Story & Video track
+  is a separate, judged award ($300/$100/$100, RUN team picks). Submissions close **Sep 14
+  12:00 PT = 00:30 IST Sep 15**; the handover targets publish by 22:30 IST. Video Studio is
+  series → chapters built through a chat; cost, length and publish mechanics are the agent's
+  Phase 1 to establish from the user's screenshots — the Studio is an app shell and the
+  docs do not cover it.
+- **Art** (`Art\`, art agent): Chef Ramu sprite set (Ideas.md §6b) + wave-intro scroll
+  (§7). Route is `rundot generate image --reference-image` against the RUN-generated ad
+  creatives, copied to `Art\_gen\ref\ramu-ads\` for the agent's reach. Layered (13) vs flat
+  (12) is decided by a two-image probe, not assumed. Cap 10,000. Nothing ships before judging.

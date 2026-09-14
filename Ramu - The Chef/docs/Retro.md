@@ -2661,3 +2661,19 @@ uniques are the score; the trend matters more than any single day.
      it and whether the flow it sits in still exists.** A step name is a label; the event
      behind it is what the number counts. ➕ Corollary for any post-launch analysis here:
      `version_mix_30d` first, always — it says which game the other exports are describing.
+
+109. 🔴 **"Enabled" is not "working" — there is a third gate behind the server, and only
+     a flight proves it.** Sep 14 2026. `rundot marketing submit --network reddit` was accepted
+     server-side, a provider leg was created, and the campaign sat at `pending-network-approval`
+     for 18 hours before RUN rejected it with `reddit not yet working`. Support's reply named
+     the cause: networks "still in beta/not working". ⚠️ So the gates are **three**: the CLI's
+     local allowlist ([106]), the server's per-environment enablement, and the provider
+     integration actually functioning — and each one passing tells you nothing about the next.
+     The marketing agent concluded the server's `enabled:` list had been wrong; it hadn't —
+     the list answered a different question than the one we needed. ✅ **Rule: a platform's
+     "available/enabled/supported" claim is a statement about configuration, not operation.
+     When the operation is what you're paying for, ask the operator which paths are *working
+     today*, in those words** — that one question, asked on Sep 12, would have saved two
+     days and a rejected submission. ➕ What did work: nothing was charged, and support
+     refunded 50,000 credits unasked. **Reporting a broken path clearly and early cost nothing
+     and paid.**

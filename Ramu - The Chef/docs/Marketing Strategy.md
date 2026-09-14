@@ -1,6 +1,6 @@
 # Marketing Strategy
 
-**Last updated:** Sep 14 2026, 09:00 IST
+**Last updated:** Sep 14 2026, 12:15 IST
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)
 
@@ -1027,3 +1027,75 @@ not actioned here.
 **Standing task:** continue pulling `rundot marketing status`; report the
 first day spend goes non-zero (currently $0.00, Sep 14). No action taken
 beyond verification — nothing to submit, cancel, or fund from this side.
+
+**Superseded same day — see §15.** The pending state above resolved to an
+outright rejection a few hours later; the standing "watch for non-zero
+spend" task is moot for this campaign.
+
+## 15. RUN support ticket response — Sep 14 2026, 12:00 IST
+
+The user raised a ticket earlier (unclear exact date; answered today).
+RUN's reply, relayed verbatim by the user:
+
+> the RUN network ads are not yet available. This functionality isnt live yet.
+> this is a side effect of some networks being still in beta/not working
+> ad budget does use credits!
+> reddit ads are not currently working
+> there is currently not audience targeting other than geo.
+> we appreciate the detailed feedback on trying this out — im going to send
+> you some credits for what you might have lost trying to prepare creatives
+> for networks that dont yet work
+> if you are trying to get a campaign up today i recommend doing meta / android
+
+**Verified against the campaign, live:**
+
+```
+rundot marketing status --name kitchen-rush-reddit
+  Status               rejected
+  Rejected reason       reddit not yet working
+  Budget                $82.00 total · spent $0.00
+```
+
+Matches exactly. `run` was already known dead (§12); this closes Reddit the
+same way, and settles the §13.3/§14 discrepancy — the CLI creative guide
+("Reddit remains flight-gated") was right, Central's "enabled: meta, google,
+reddit, unity" table was stale. **Zero credits lost to ad spend** — the
+campaign never left "pending." Whatever RUN is crediting back is for the
+imagegen/audiogen spend on creative prep, not ad budget.
+
+**What this changes about the paid read, and what it doesn't:**
+
+- **Confirms:** paid was never going to move the prize tier (§13.1/13.2 —
+  DUP is daily-fresh, no compounding; the tier gap is a rate problem, not a
+  reach problem). That doesn't change with the network.
+- **New, and worth weighing:** the existing creatives (3 squares + 3 logos
+  in `kitchen-rush-crosspromo/`) are very likely reusable as-is for Meta —
+  Meta takes a flat asset pool of the same image kinds the Reddit prep used
+  (creative guide: "Meta ships the selected image kinds through the
+  campaign's delivery mode"). The creative-prep spend may not be wasted.
+- **New, and a real mismatch to flag:** RUN's recommendation is `--network
+  meta --platforms android` — an **app-install leg** (deep-links into the
+  RUN app), not the web-traffic objective the original plan assumed. 73%
+  of players are mobile-**web** (§13.2). An Android app-install campaign
+  is optimizing for a different funnel than the one the DUP data describes;
+  it may reach a narrower or different slice of "Android users with the RUN
+  app" rather than "anyone who taps a link."
+- **Timing is tight either way.** BACK-TO-WORK (the lot that funds this)
+  expires ~Sep 15, exact hour unknown. RUN's own phrasing — "if you are
+  trying to get a campaign up **today**" — reads as a same-day-or-not
+  window, not one this agent can extend by analysing longer.
+
+**This agent's read:** worth a same-day attempt only if Central/the user
+can get a fresh `prepare` → `generate` (or reuse) → `preview` → `submit`
+through **today**, sized the same way as §13.4 ($82, `--days 2`, floor
+trivially clears at $5/leg for one `android` leg), with the same cancel
+discipline if it doesn't clear review before the lot expires. Sitting on
+it another day to "think it over" most likely means the lot expires unused
+— at which point the right call is to let it go and not chase a second
+scramble; organic (§13.5) was always the real lever and is unaffected by
+any of this.
+
+**Status: analysis only.** Nothing prepared, generated, or submitted. User
+gave permission to draft a return handover; drafted 12:15 IST, logged in
+the companion Record, delivered to the user for their Central Agent thread.
+Holding for Central's return.

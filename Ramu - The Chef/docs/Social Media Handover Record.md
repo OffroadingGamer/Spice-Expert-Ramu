@@ -1,6 +1,6 @@
 # Social Media Handover Record
 
-**Last updated:** Sep 13 2026, 20:30 IST
+**Last updated:** Sep 14 2026, 12:15 IST
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Marketing Strategy.md](Marketing%20Strategy.md)
 
@@ -1089,3 +1089,84 @@ Proposal delivered to the user, verbatim:
 
 **Next:** user approves/rejects; Central Agent verifies against the data.
 This agent holds — no execution of any kind until a handover says so.
+
+### 2026-09-14 12:15 IST — Handover drafted for Central Agent: Reddit rejection + Meta/Android go/no-go
+**From:** User — direct instruction ("yes draft it") after this agent
+surfaced the RUN support ticket findings and asked permission
+**Status:** ✅ drafted, not yet delivered — awaiting the user to hand it to
+Central Agent
+
+Chain into this: user corrected the campaign's status (§14 of Marketing
+Strategy.md — pending-review, not flighting) on 2026-09-14 09:00 IST; a
+RUN support ticket reply landed at ~12:00 IST closing the question outright
+(rejected, "reddit not yet working"). Both verified live via `rundot
+marketing status` before writing anything down. Full drafted text:
+
+> Handover — Marketing Agent → Central Agent
+> Scope: Reddit campaign outcome + RUN support ticket findings; recommend a
+> same-day go/no-go on Meta/Android before the funding lot expires.
+> Analysis only — this agent has prepared, generated, and submitted
+> nothing.
+>
+> ### 1. Reddit is closed, cleanly
+> `kitchen-rush-reddit` status is now `rejected`, reason "reddit not yet
+> working" (verified live via `rundot marketing status`). $0 spent — the
+> campaign never left pending, so nothing was charged against BACK-TO-WORK.
+> The flight-gate discrepancy from my Sep 13 proposal is resolved: the CLI
+> creative guide was right, Reddit was never actually flightable on this
+> account, regardless of the "enabled: meta, google, reddit, unity" table
+> in your Sep 12 return.
+>
+> ### 2. RUN support's ticket reply, verbatim (relayed by the user)
+> "the RUN network ads are not yet available. This functionality isnt live
+> yet. this is a side effect of some networks being still in beta/not
+> working. ad budget does use credits! reddit ads are not currently
+> working. there is currently not audience targeting other than geo. we
+> appreciate the detailed feedback on trying this out — im going to send
+> you some credits for what you might have lost trying to prepare
+> creatives for networks that dont yet work. if you are trying to get a
+> campaign up today i recommend doing meta / android"
+>
+> Confirms your billing model (ad budget does debit credits) and that no
+> audience targeting beyond geo exists on any network right now. The
+> credit refund RUN mentions is for imagegen/audiogen creative-prep spend,
+> not ad budget — nothing was lost to ad spend since nothing flighted.
+>
+> ### 3. What changes, what doesn't
+> Doesn't change: paid was never sized to move the prize tier — DUP is
+> daily-fresh with no compounding (§13.2 of my strategy doc), regardless of
+> network. Changes: RUN itself is now recommending a live path — `--network
+> meta --platforms android` — if a campaign is wanted today.
+>
+> ### 4. Two things to weigh before saying yes
+> - **Objective mismatch:** the Android leg is an app-install/deep-link
+>   objective, not the web-traffic objective the original $82 sizing
+>   assumed. 73% of players are mobile-**web**, not app — this may reach a
+>   different population than the one in the DUP numbers.
+> - **Creative reuse, probably fine:** Meta takes a flat asset pool of the
+>   same image kinds already generated for the Reddit attempt (the 3 kept
+>   squares + 3 logos in `kitchen-rush-crosspromo/`) — likely reusable
+>   without regenerating. Worth confirming with `preview` before assuming.
+>
+> ### 5. Timing — the actual constraint
+> BACK-TO-WORK expires ~Sep 15, exact hour still unverified. RUN's own
+> phrasing — "if you are trying to get a campaign up today" — reads as
+> same-day-or-not. A fresh prepare → generate/reuse → preview → submit
+> needs to clear today to have any chance of being funded by this lot.
+>
+> ### 6. My recommendation
+> Conditional go, same terms as before, new network: `--network meta
+> --platforms android --budget 82 --days 2`, only if Implementation can run
+> prepare through submit **today**, with the same cancel discipline as
+> before (owner-only `cancel`, hard cutoff ahead of the lot's actual
+> expiry — please get the exact hour/zone this time, not "~Sep 15"). If it
+> can't happen today, let the lot lapse rather than forcing a second
+> scramble tomorrow. Organic (§13.5 of my strategy doc) is unaffected
+> either way and remains the real lever for the board position.
+>
+> ### 7. Not touched
+> No prepare/generate/submit, no socials, no tags, no deploy, no git by
+> this agent. Holding for your return.
+
+**Next:** user delivers this to Central Agent's thread. This agent holds —
+no prepare/generate/submit of any kind until a handover says so.
