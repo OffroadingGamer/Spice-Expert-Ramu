@@ -2243,3 +2243,26 @@ and district beats.
 
 **Left for Round 2:** `ChefPortrait.tsx` into the reserved 160×160 slot; the 160/100 px
 sizing split; body/face crossfade inside `BACKDROP_FADE_S`; the left-gutter measurement first.
+---
+
+### 2026-09-15 — Round 2 handed over: Chef Ramu portrait
+
+**Status:** 📤 **ISSUED** (user dispatched Sep 15). 🔒 **Private only** — restated by the
+user at dispatch; nothing reaches Review or Public until Round 4 succeeds and a human decides.
+
+**Scope:** `ChefPortrait.tsx` — two stacked `<img>` (body + face, same 320² canvas, `inset-0`)
+in two mounts: **160 px** inside the slot `DialogueBox.tsx` reserved, and **~100 px idle**
+bottom-left showing only warm/worried. Costume = `blockForLevel`, via the existing
+`chefBodyAliasForBlock()` (no second copy). Face = open line's voice → else worried while
+`lives < startLives × 0.3` (store read, not `actions.ts`'s latch) → else warm. Face fade
+400 ms; body fade 2.5 s when `backdropTransitioning`, else 400 ms; reduced-motion 0 ms; never
+render an uncached body.
+
+🔴 **Task 1 is a measurement:** the left gutter at 403×874 and 375×667, against pad D1 at
+design (225, 1090). Idle portrait ships at ~100 px if it fits, down to 72 px, else hidden on
+that device. Overlap is not an outcome (Retro 99).
+
+**Acceptance (8):** gutter numbers · costume change at every boundary with no wrong-face
+frame · 2.5 s vs 400 ms fades measured · worried below 3 lives and back · voice faces on
+beats 4/7/12 · in-game contact sheet of all 9 costumes at 160 px · no D1 overlap, taps pass
+through · balance / tsc / sidecars / Private deploy with `list-tags`.
