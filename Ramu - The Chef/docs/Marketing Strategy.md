@@ -1,6 +1,6 @@
 # Marketing Strategy
 
-**Last updated:** Sep 13 2026, 20:30 IST
+**Last updated:** Sep 14 2026, 09:00 IST
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)
 
@@ -997,3 +997,33 @@ discrepancy (13.3) is blocking.
 **Status:** proposal only. Nothing submitted, generated, posted, tagged, or
 funded. Analytics CSVs live in the session scratch folder, outside the repo.
 4th (The Good Life, 358 DUP) is now +52, not a deficit.
+
+## 14. Reddit campaign — status correction, Sep 14 2026, 09:00 IST
+
+The proposal in §13 was adopted and submitted (by Implementation Agent, per
+Central's handover to it — not by this agent). The user relayed a correction
+to what its state actually is; verified live before writing it down here:
+
+```
+rundot marketing status --name kitchen-rush-reddit
+  Status               pending-review
+  Submitted            2026-09-13T15:40:22.423Z
+  Budget               $82.00 total · spent $0.00
+  reddit/web leg       pending-network-approval (blocked)
+```
+
+**Not flighting, not approved, not spending.** This is the flight-gate risk
+flagged in §13.3 playing out as a pending approval rather than an outright
+rejection — the CLI creative guide's "Reddit remains flight-gated" line was
+closer to true than Central's "enabled: meta, google, reddit, unity" table.
+
+**Cancel-check deadline moved:** Sep 14 23:00 IST → **Sep 16 morning**
+(owner unchanged — Implementation/Central). A cron job (`0077a76a`) tied to
+the old deadline was to be deleted; it is not in this agent's session cron
+list (`CronList` → none), so it was scheduled from Central's or
+Implementation's own thread and can only be removed there. Flagged back,
+not actioned here.
+
+**Standing task:** continue pulling `rundot marketing status`; report the
+first day spend goes non-zero (currently $0.00, Sep 14). No action taken
+beyond verification — nothing to submit, cancel, or fund from this side.
