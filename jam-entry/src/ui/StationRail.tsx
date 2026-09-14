@@ -87,8 +87,11 @@ import { store, useStore } from '../state/store.ts';
  *  number, a measured one. Below the design's own board proportions this
  *  necessarily overlaps the (274px-wide, centred) board by design — the
  *  panel is opaque and only mounts while a pad is selected, so that's an
- *  accepted tradeoff, not a bug. */
-const RAIL_MIN_PX = 88;
+ *  accepted tradeoff, not a bug. Exported: Round 2b (docs/Ideas.md §6d
+ *  amendment) gives DialogueBox.tsx's own beat 3 a reason to know this same
+ *  floor — the one run where the dialogue box and this rail are both on
+ *  screen at once — rather than a second, driftable copy of the number. */
+export const RAIL_MIN_PX = 88;
 
 /** The rail's own overlay width in CSS px, AND the board's design→screen
  *  scale that produces it, tracking #app-frame's size the same way

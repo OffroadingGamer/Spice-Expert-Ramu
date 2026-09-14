@@ -1,13 +1,20 @@
 /**
  * Ramu's dialogue-box pass (docs/Ideas.md §1, "Chosen dialogue — SELECTED
- * Sep 12 2026"). 11 entries carrying the 12 lines verbatim — the opening is
- * one entry with two lines (beats 1-2); every other beat is one line.
+ * Sep 12 2026"; §6d's "Round 2b" amendment, Sep 15 2026, turns beats 1-4
+ * into the FTUE's own Ready button). 12 entries, one line each — the
+ * opening's second line is now its own beat (see 'stove-lit' below) instead
+ * of sharing 'opening's two-line array, because it fires on a different
+ * trigger and its tap starts wave 1 rather than just closing the box.
  *
  * `trigger` is a plain lookup key, not consumed generically: the opening is
  * embedded directly into actions.ts's scriptedRunStart() (it must land in
- * the same patch that arms the FTUE), 'wave1-cleared' and 'first-upgrade'
- * are queued from their one call site each, and 'district-<n>' / 'overtime'
- * are queued from towerScene.ts's block-boundary branch keyed on block.id.
+ * the same patch that arms the FTUE), 'stove-lit' and 'wave4-ready' queue
+ * from actions.ts's placeTower() (placeFirst/place3 resolving), 'wave1-
+ * cleared' queues from towerScene.ts's trackWaveClears(), and 'district-<n>'
+ * / 'overtime' queue from towerScene.ts's block-boundary branch keyed on
+ * block.id. No beat is once-per-player any more (the amendment retired
+ * dialogueSeen) — beats 1-4 ride ftueActive (already every run), 5-12 reset
+ * with runId as before.
  */
 export interface DialogueBeat {
     id: string;
@@ -21,20 +28,23 @@ export const DIALOGUE_BEATS: DialogueBeat[] = [
         id: 'opening',
         trigger: 'run-start',
         voice: 'A',
-        lines: [
-            "Some days the tin is empty. Today's one of them.",
-            "But the stove still lights. That's enough to start.",
-        ],
+        lines: ["Some days the tin is empty. Today's one of them."],
+    },
+    {
+        id: 'stove-lit',
+        trigger: 'place-first-resolved',
+        voice: 'A',
+        lines: ["But the stove still lights. That's enough to start."],
     },
     {
         id: 'wave1-cleared',
         trigger: 'wave-1-cleared',
         voice: 'A',
-        lines: ['They came back for seconds. Did you see that?'],
+        lines: ["They came back for seconds. Did you see that? It's time to upgrade."],
     },
     {
-        id: 'first-upgrade',
-        trigger: 'first-upgrade',
+        id: 'wave4-ready',
+        trigger: 'wave-4-build',
         voice: 'B',
         lines: ["New gear, same nerves. Let's find out."],
     },

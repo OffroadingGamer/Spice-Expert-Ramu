@@ -736,8 +736,11 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             });
             if (e.cleared === 1) {
                 trackFunnelStep(5, 'wave_1_cleared', 'run', 2);
-                // Round 1 (docs/Ideas.md §1 beat 3): once-per-player.
-                queueDialogue('wave1-cleared', true);
+                // Round 2b (docs/Ideas.md §6d amendment): every run now
+                // (dialogueSeen is gone) — stays open through the upgrade0
+                // purchase that applyFtueWaveEnd(1) arms right below;
+                // DialogueBox.tsx's own tap logic handles that window.
+                queueDialogue('wave1-cleared');
             }
             if (store.get().ftueActive) {
                 // Task F, onboarding-balance round: a practical guarantee
@@ -1192,7 +1195,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 // construction, so no dialogueSeen gating is needed here,
                 // unlike beats 1-4 above.
                 const beat = dialogueForBlock(block.id);
-                if (beat) queueDialogue(beat.id, false);
+                if (beat) queueDialogue(beat.id);
             }
         }
         // Polled every tick (not only at the boundary above) so the swap

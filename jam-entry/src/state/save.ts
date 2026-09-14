@@ -67,12 +67,6 @@ export interface SaveData {
     ftue: FtueState;
     /** Belt-mode progress. */
     kitchen: KitchenSaveState;
-    /** Rounds 0+1 (docs/Ideas.md §6d): ids of once-per-player dialogue beats
-     *  already shown (opening, wave1-cleared, first-upgrade) — district/
-     *  overtime beats reset every run and are never recorded here. New
-     *  optional field with a default; no SAVE_KEY/shape-version bump needed
-     *  (see the module comment above). */
-    dialogueSeen: string[];
 }
 
 function emptyMeta(): MetaLevels {
@@ -90,12 +84,15 @@ const DEFAULTS: SaveData = {
     ads: { watchedToday: 0, lastResetDay: null },
     ftue: { challengeDone: false, firstTowerId: null },
     kitchen: { bestLevel: 0, propsOwned: [], shiftsCompleted: 0, hats: 0, clears: {} },
-    dialogueSeen: [],
 };
 
 let data: SaveData = structuredClone(DEFAULTS);
 
-/** Validate a raw stored blob. Unknown/corrupt input falls back to defaults. */
+/** Validate a raw stored blob. Unknown/corrupt input falls back to defaults.
+ *  Round 2b (docs/Ideas.md §6d amendment) dropped `dialogueSeen` — an old
+ *  save that still has it loads fine (this parse only ever copies the
+ *  fields it explicitly maps below, so an extra JSON key is silently
+ *  ignored, never rejected) and the field is simply never written again. */
 function parse(raw: string | null): SaveData | null {
     if (!raw) return null;
     try {
@@ -155,9 +152,6 @@ function parse(raw: string | null): SaveData | null {
             },
             ftue,
             kitchen,
-            dialogueSeen: Array.isArray(parsed.dialogueSeen)
-                ? parsed.dialogueSeen.filter((s): s is string => typeof s === 'string')
-                : [],
         };
     } catch {
         return null;
@@ -233,15 +227,6 @@ export function setFtueFirstTower(towerId: string): void {
 export function completeFtue(): void {
     if (data.ftue.challengeDone) return;
     data = { ...data, ftue: { ...data.ftue, challengeDone: true } };
-    flushSave();
-}
-
-/** Idempotent, same posture as completeFtue/setFtueFirstTower — a once-per-
- *  player dialogue beat (dialogueController.ts) marked seen the first time
- *  it queues, so a later Retry or reload never replays it. */
-export function markDialogueSeen(id: string): void {
-    if (data.dialogueSeen.includes(id)) return;
-    data = { ...data, dialogueSeen: [...data.dialogueSeen, id] };
     flushSave();
 }
 

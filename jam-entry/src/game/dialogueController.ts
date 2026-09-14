@@ -1,9 +1,12 @@
 /**
- * Owns the dialogue queue (docs/Ideas.md §6d Round 1). Deliberately decoupled
- * from actions.ts/FTUE state — the one FTUE-specific wire (the opening beat
- * releasing the placeFirst picker cue) lives in DialogueBox.tsx instead,
- * which already imports actions.ts; importing FTUE_FIRST_PAD back in here
- * would cycle against actions.ts's own future imports of queueDialogue.
+ * Owns the dialogue queue (docs/Ideas.md §6d Round 1; §6d's Round 2b
+ * amendment retired the once-per-player dialogueSeen gate — every beat
+ * resets each run now, so queueDialogue no longer takes an oncePerPlayer
+ * flag). Deliberately decoupled from actions.ts/FTUE state — the one
+ * FTUE-specific wire (the opening beat releasing the placeFirst picker cue)
+ * lives in DialogueBox.tsx instead, which already imports actions.ts;
+ * importing FTUE_FIRST_PAD back in here would cycle against actions.ts's own
+ * future imports of queueDialogue.
  *
  * Only one beat is ever open (store.dialogue); a second trigger while one is
  * showing queues behind it, FIFO — see store.ts's doc on `dialogue` for why
@@ -13,16 +16,38 @@
 import { store } from '../state/store.ts';
 import { track } from '../sdk/analytics.ts';
 import { CONFIG } from './config.ts';
-import { getSave, markDialogueSeen } from '../state/save.ts';
 import { dialogueById, type DialogueBeat } from './data/dialogue.ts';
 
 let queue: DialogueBeat[] = [];
+
+/** Round 2b (docs/Ideas.md §6d amendment): "Skip on beat 1 only skips beats
+ *  1 and 2 together" — beat 2 ('stove-lit') doesn't open on its own timer,
+ *  it opens later, whenever placeFirst happens to resolve (actions.ts's
+ *  placeTower), so suppressing it can't go through the FIFO queue above
+ *  (that only holds beats already competing to open NOW). This flag is the
+ *  one piece of state that survives between "beat 1 closed" and "placeFirst
+ *  resolved," parallel to `queue` itself — reset every run alongside it. */
+let openingSkipped = false;
 
 /** Called from actions.ts's scriptedRunStart — a fresh run's beats re-queue
  *  from scratch, so any leftover overflow from a run that was quit mid-queue
  *  must not bleed into the next one. */
 export function resetDialogueQueue(): void {
     queue = [];
+    openingSkipped = false;
+}
+
+/** DialogueBox.tsx calls this from its Skip handler, only for the opening
+ *  beat (id 'opening') — skipping a later, already-skippable beat (5-12)
+ *  has nothing to suppress downstream and must not set this. */
+export function markOpeningSkipped(): void {
+    openingSkipped = true;
+}
+
+/** actions.ts's placeTower reads this once, at the moment placeFirst
+ *  resolves, to decide whether beat 2 still queues. */
+export function wasOpeningSkipped(): boolean {
+    return openingSkipped;
 }
 
 function openBeat(beat: DialogueBeat): void {
@@ -31,23 +56,17 @@ function openBeat(beat: DialogueBeat): void {
 }
 
 /**
- * Queue a beat by id. `oncePerPlayer` beats (wave1-cleared, first-upgrade —
- * the opening is special-cased in actions.ts's scriptedRunStart, not routed
- * through here) are gated on, and immediately marked into, the persisted
- * dialogueSeen list — marked BEFORE opening so a beat can never replay even
- * if the tab closes mid-line. District/overtime beats pass false: they
- * reset every run by construction (a block boundary only exists once per
- * run), no persistence needed. CONFIG.narrative.enabled is the master
- * switch — false makes every call here a no-op.
+ * Queue a beat by id (the opening is special-cased in actions.ts's
+ * scriptedRunStart, not routed through here). Every beat resets every run —
+ * beats 1-4 ride ftueActive (already every run), district/overtime beats
+ * reset by construction (a block boundary only exists once per run) — so
+ * there is no persisted gate to check any more. CONFIG.narrative.enabled is
+ * the master switch — false makes every call here a no-op.
  */
-export function queueDialogue(id: string, oncePerPlayer: boolean): void {
+export function queueDialogue(id: string): void {
     if (!CONFIG.narrative.enabled) return;
     const beat = dialogueById(id);
     if (!beat) return;
-    if (oncePerPlayer) {
-        if (getSave().dialogueSeen.includes(id)) return;
-        markDialogueSeen(id);
-    }
     if (store.get().dialogue) {
         queue.push(beat);
         return;

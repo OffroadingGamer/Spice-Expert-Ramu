@@ -6,11 +6,11 @@
 import { store, type AppState } from '../state/store.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
 import { switchCue, prefetchCue, isAudioUnlocked } from '../audio/audio.ts';
-import { completeFtue, getSave, markDialogueSeen, setFtueFirstTower } from '../state/save.ts';
+import { completeFtue, setFtueFirstTower } from '../state/save.ts';
 import { CONFIG } from './config.ts';
 import { WAVES } from './data/waves.ts';
 import { OPENING_DIALOGUE } from './data/dialogue.ts';
-import { queueDialogue, resetDialogueQueue } from './dialogueController.ts';
+import { queueDialogue, resetDialogueQueue, wasOpeningSkipped } from './dialogueController.ts';
 import type { TargetingMode } from './data/targeting.ts';
 import { kitchenActionCost, type Engine, type KitchenActionKind } from './sim/engine.ts';
 
@@ -99,24 +99,24 @@ export function getEngine(): Engine | null {
  * One function here means the script's shape can't quietly drift between
  * them.
  *
- * Round 1 (docs/Ideas.md §1/§6d): the opening dialogue (beats 1-2) is armed
- * in this SAME patch rather than queued through dialogueController.ts —
- * queueDialogue reads store.get().dialogue to decide whether to open or
- * queue, and this patch hasn't landed yet when scriptedRunStart runs, so
- * routing the opening through it here would always see a stale "nothing
- * open" read from the PREVIOUS run. Showing it also holds off the
- * placeFirst picker cue (selectedPad stays null) until the opening closes —
- * DialogueBox.tsx sets selectedPad to FTUE_FIRST_PAD itself at that point,
- * the one FTUE-specific wire this whole dialogue pass needs (see that
- * file's / dialogueController.ts's doc comments). A player who has already
- * seen the opening (dialogueSeen, persisted) or has CONFIG.narrative.enabled
- * off gets exactly today's behaviour, unchanged.
+ * Round 1 (docs/Ideas.md §1/§6d): the opening dialogue is armed in this SAME
+ * patch rather than queued through dialogueController.ts — queueDialogue
+ * reads store.get().dialogue to decide whether to open or queue, and this
+ * patch hasn't landed yet when scriptedRunStart runs, so routing the opening
+ * through it here would always see a stale "nothing open" read from the
+ * PREVIOUS run. Showing it also holds off the placeFirst picker cue
+ * (selectedPad stays null) until the opening closes — DialogueBox.tsx sets
+ * selectedPad to FTUE_FIRST_PAD itself at that point, the one FTUE-specific
+ * wire this whole dialogue pass needs (see that file's / dialogueController.
+ * ts's doc comments). Round 2b (docs/Ideas.md §6d amendment): the opening
+ * shows on EVERY run now (dialogueSeen is gone — beats 1-4 ride ftueActive,
+ * which is already every run), so CONFIG.narrative.enabled is the only gate
+ * left; off gets exactly today's plain-Ready FTUE, unchanged.
  */
 export function scriptedRunStart(): Partial<AppState> {
     resetDialogueQueue();
-    const showOpening = CONFIG.narrative.enabled && !getSave().dialogueSeen.includes(OPENING_DIALOGUE.id);
+    const showOpening = CONFIG.narrative.enabled;
     if (showOpening) {
-        markDialogueSeen(OPENING_DIALOGUE.id);
         track('dialogue_shown', { id: OPENING_DIALOGUE.id });
     }
     return {
@@ -203,6 +203,19 @@ export function placeTower(padIndex: number, towerId: string): void {
         const beatPad = beat === 'placeFirst' ? FTUE_FIRST_PAD : store.get().ftueBeatPad;
         if ((beat === 'placeFirst' || beat === 'place2' || beat === 'place3') && padIndex === beatPad) {
             store.patch({ ftueBeat: null });
+            // Round 2b (docs/Ideas.md §6d amendment): placeFirst resolving is
+            // what opens beat 2 ('stove-lit') — the dialogue box IS this
+            // beat's Ready (tap starts wave 1), so it queues right here
+            // rather than waiting for a later tick. Unless the opening was
+            // Skipped: "Skip on beat 1 only skips beats 1 and 2 together,"
+            // so a skip suppresses this one queue call and the player lands
+            // straight on the plain Ready button once placeFirst resolves,
+            // same as today. place3 resolving opens beat 4 ('wave4-ready')
+            // the same way, always (only the opening itself is skippable).
+            // place2 has no beat of its own — waves 2->3 stay the plain
+            // Ready button, unchanged.
+            if (beat === 'placeFirst' && !wasOpeningSkipped()) queueDialogue('stove-lit');
+            if (beat === 'place3') queueDialogue('wave4-ready');
         }
         syncStore();
         runAnalytics.towersPlaced++;
@@ -243,11 +256,14 @@ export function upgradeTower(padIndex: number): void {
         // isFtueBeatResolvable() would otherwise have to re-derive from
         // scratch one line later.
         if (store.get().ftueBeat === 'upgrade0' && padIndex === FTUE_FIRST_PAD) {
+            // Round 2b (docs/Ideas.md §6d amendment): beat 3 ('wave1-
+            // cleared') opened when wave 1 cleared and stays open through
+            // this purchase — resolving upgrade0 just releases the rail/
+            // wall; it no longer queues a dialogue of its own (that used to
+            // be 'first-upgrade', now retired — see DialogueBox.tsx's
+            // readyTapId, which flips beat 3's own tap to startWave() the
+            // instant ftueBeat clears).
             store.patch({ ftueBeat: null, selectedPad: null });
-            // Round 1 (docs/Ideas.md §1 beat 4, "First upgrade bought"):
-            // once-per-player, so a Retry after the beat is already in
-            // dialogueSeen no-ops here.
-            queueDialogue('first-upgrade', true);
         }
         syncStore();
         track('tower_upgraded', {
