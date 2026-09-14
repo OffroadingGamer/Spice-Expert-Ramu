@@ -324,6 +324,38 @@ separate asset. Opening two boxes skippable; district beats not.
 
 ---
 
+### 6d · Implementation plan — APPROVED Sep 14 2026
+
+🔒 **Promotion rule (user, Sep 14):** every round below deploys to **Private only**. Nothing
+reaches Review or Public until **Round 4 has succeeded**, and then **human verification
+decides** whether the result goes public at all. The jam entry (1.69.0) stays live and
+untouched throughout; git and Private deploys do not affect it.
+
+🔒 **Every round:** `npm run balance` must still print **35 / 36 / 11 / 4 / 90** — all of
+this is UI and the simulator must not notice · typecheck clean · device check at 403 px ·
+no `.png.json` sidecars in `public/` · sealed files untouched.
+
+| Round | Scope | Hooks that already exist | Acceptance |
+|---|---|---|---|
+| **0** Asset prep | 1024² sources → **320²** (160 px draw × 2 DPR), **uniform scale, no crop** so body/face alignment survives by construction. `body-cafe` + `face-warm` in `critical`; the other 8 + 3 in `deferred`, warmed by `ensureBlockAssets()` | `manifest.ts` bundles, `ensureBlockAssets` prefetch | byte sizes recorded (~1 MB total); sidecars absent; `Assets.cache.has('body-north-indian')` before block 2 |
+| **1** Dialogue | `data/dialogue.ts` with the 12 lines of §1; store `dialogue`; `DialogueBox.tsx`, tap to advance, Ready hidden while open, 160 px portrait slot left empty; `CONFIG.narrative.enabled`; `dialogue_shown` / `dialogue_skipped` events | opening: `scriptedRunStart()` · wave-1: `towerScene.ts` `e.cleared === 1` · upgrade: `actions.ts` `upgrade0` resolution · districts + overtime: the `priorBlockId > 0` branch inside the 2.5 s `backdropTransitioning` lock | all 12 fire in order in one run; FTUE pulse only after the opening is dismissed; block lock still exactly 2.5 s |
+| **2** Chef portrait | `ChefPortrait.tsx`, two stacked `<img>`; body = `blockForLevel`, face = open line's voice → else worried while `lives < startLives × 0.3` → else warm; 400 ms face crossfade; body swaps inside the backdrop fade; **160 px in dialogue, ~100 px idle** (§6b sizing finding) | `trackedBlockId` change; lives in store | 🔴 first task: measure the left gutter at 403 px — idle sprite must not cover pad 8; costume changes at every boundary with no mismatched frame; in-game contact sheet of all 9 |
+| **3** Service gauge | per-wave `units = Σ count × livesCost`, `served = kills − killsAtWaveStart`, **SAFE = units − (lives − 1)**; cylinder behind the idle portrait | `waveAt(level).entries`, `engine.state.kills` via `syncStore` | crosses to green on the exact kill where a leak no longer loses the wave — check against the simulator's `balanced` rows for levels 4 and 10 |
+| **4** Wave-intro scroll | §7 as written; dialogue wins when both queue | `blocks.ts` slug map, `entry.hpMult`, `bountyMult` | → then **human verification** for public |
+
+⚠️ **Gauge simplification found while planning:** §6a's "red pulse when SAFE is unreachable"
+is dead logic — remaining units always equal `units − served − leaked`, so SAFE becomes
+unreachable only at the instant the run is lost. **Two states: amber below SAFE, green at
+or above.**
+
+⚠️ **Repeat policy (assumption, Round 1):** `ftueActive` is true on *every* run, boot and
+Retry alike, so beats 1–4 would replay each run. Spec: **beats 1–4 once per player**
+(persisted with the existing save layer), **beats 5–12 once per run.** Override in the
+handover if wrong.
+
+**Sequencing:** Round 0 + 1 handed over together (Sep 15), Round 2 Sep 16, Round 3 Sep 17,
+Round 4 after judging. Promotion, if approved, as **v1.70.0**.
+
 ## 7. Wave-intro scroll — proposed Sep 13 2026, for speculation
 
 **Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll
