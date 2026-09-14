@@ -39,7 +39,7 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **1.69.0** on all three tags — Private · Review (Approved) · Public |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.70.0** (progression rounds; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
 | **Endgame criterion** | `maxed-meta` must lose between levels **85–110** (currently 90) |
@@ -2205,3 +2205,41 @@ is a Video Studio entry published before the deadline, it's automatically in con
 RUN also suggested posting the share link widely before Sep 18 — that is the marketing
 agent's remit and has been passed to it. The studio balance (184,274) matches the CLI, so the
 video's renders did not draw from creator credits.
+---
+
+### 2026-09-15 — Rounds 0+1: chef assets + dialogue system → Private v1.70.0
+
+**Status:** ✅ **RETURNED, VERIFIED, COMMITTED** — Private **1.70.0**; Review and Public
+**1.69.0**, untouched (verified via `list-tags`). Nine files changed, three new, 243 insertions.
+Spec: [Ideas.md](Ideas.md) §1 / §6b / §6d.
+
+| Checked by Central | Result |
+|---|---|
+| Sealed files | `git diff` on `engine.ts`, `enemies.ts`, `towers.ts`, `waves.ts` — empty |
+| `npm run balance` | **35 / 36 / 11 / 4 / 90** — the agent reports byte-identical output |
+| `tsc --noEmit` | clean |
+| Assets | `public/images/chef/` = **821,257 bytes** (critical 142,426: `body-cafe` + `face-a`; deferred 678,831). Four bodies quantised. **No `.png.json` under `public/`** |
+| Hooks | opening armed in the `scriptedRunStart()` patch · `e.cleared === 1` · `upgrade0` resolution · block-boundary branch inside the `backdropTransitioning` lock · Ready hidden on `dialogue === null` · `dialogueSeen` persisted in `save.ts` · `CONFIG.narrative.enabled` |
+| Lines | 12, verbatim against §1 on three spot-checks |
+
+#### Acceptance, as the agent evidenced it
+All eleven `dialogue_shown` ids in order in one run (district beats driven by `waveIndex`
+jumps — legitimate, the trigger reads live state each tick) · Retry: opening did not re-fire,
+district-2 did · pad-4 cue withheld until the opening closed, `placeFirst` still resolved on
+pad 4 · block lock measured **2,492 ms** with a box open — dialogue neither extends nor
+shortens `BACKDROP_LOCK_S` · flag off = today's behaviour · 403×874 screenshots of opening
+and district beats.
+
+#### 🔴 What the handover got wrong
+1. **"FTUE pad-4 pulse (`pulsePads`)"** — `placeFirst`'s cue was never `pulsePads` (that is
+   `place2`/`place3`); it is `selectedPad` auto-opening the rail's picker. Intent implemented;
+   terminology wrong.
+2. **"1.70.0-private.1"** — no such scheme exists; `rundot deploy` auto-bumps clean semver
+   to Private. Deployed as plain 1.70.0.
+3. **Unlisted hook:** `towerScene.ts`'s scene-mount reset (`selectedPad: ftueActive ?
+   FTUE_FIRST_PAD : null` — the same line Retro 105 is about) needed `&& !dialogue`, or the
+   mount would clobber the opening's picker suppression. The agent found it; the handover
+   should have named it, given Retro 105.
+
+**Left for Round 2:** `ChefPortrait.tsx` into the reserved 160×160 slot; the 160/100 px
+sizing split; body/face crossfade inside `BACKDROP_FADE_S`; the left-gutter measurement first.
