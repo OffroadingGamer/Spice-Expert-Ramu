@@ -39,7 +39,7 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.72.0** (progression rounds; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.73.0** (progression rounds; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
 | **Endgame criterion** | `maxed-meta` must lose between levels **85–110** (currently 90) |
@@ -2347,3 +2347,24 @@ the box and the rail can never disagree about the floor.
 cook to upgrade" toast (Hud + DialogueBox copies); Pixi `Lv↑` pill above each affordable-
 upgrade prop, driven by the rail's affordability test, hidden for the selected pad and at max
 level; dialogue text vertically centred; Skip inside the box top-right.
+---
+
+### 2026-09-15 — Round 2c returned → Private v1.73.0
+
+**Status:** ✅ **RETURNED, VERIFIED, COMMITTED.** Private **1.73.0**; Review/Public **1.69.0**.
+Three files. Sealed untouched; balance **35 / 36 / 11 / 4 / 90**; `tsc` clean; no sidecars;
+`grep "Tap a cook to upgrade"` → 0.
+
+- **`Lv↑` markers:** `markerLayer` between `world` and `popupLayer`; `syncUpgradeMarkers()`
+  after `syncTowers()` each tick, rail's affordability test, allocation only on visibility
+  flips. Sequence verified live: cash 10 → none; 55 → fox only; select → hides; deselect →
+  back; fox maxed at 500 → gone while owl/bear show.
+- **Box:** now a `<div>` wrapping the Continue `<button>` — the agent's first pass nested a
+  button in a button (invalid HTML) and it caught its own error. Text centre-Y delta vs
+  portrait **0 px**; Skip `absolute top-2 right-2` inside, white/85; skip fires
+  `dialogue_skipped`, not the advance path.
+- 🔴 **Found live, not in the brief:** `fontSize: 15` rendered at ~7 CSS px at scale 0.45 —
+  the ↑ smudged. Fixed at **24** (the coin popup's proven size) and the pill width is
+  `max(60 % sprite, measured label)` so it cannot clip. The brief said "~60 % of a tower
+  sprite's width" and nothing about type size — a size that was never going to survive the
+  reference phone's scale. Legibility at scale is an acceptance item from now on.
