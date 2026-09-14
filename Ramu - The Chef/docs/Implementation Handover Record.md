@@ -2368,3 +2368,13 @@ Three files. Sealed untouched; balance **35 / 36 / 11 / 4 / 90**; `tsc` clean; n
   `max(60 % sprite, measured label)` so it cannot clip. The brief said "~60 % of a tower
   sprite's width" and nothing about type size — a size that was never going to survive the
   reference phone's scale. Legibility at scale is an acceptance item from now on.
+---
+
+### 2026-09-15 — Round 3 issued: service gauge + beat-3 wrap + Skip-as-mute
+
+**Issued** with two playtest fixes from 1.73.0 folded in (user: "no need for a small separate
+handover"). Spec: [Ideas.md](Ideas.md) §6d *Amendment*. 🔒 Private only. Gauge: horizontal
+fill under the top-left chip group, `SAFE = units − (lives − 1)` with lives-weighted units,
+amber → green, tick at SAFE, resets per wave. Beat 3 keeps portrait + Skip at reduced width.
+Skip mutes all later boxes (persisted); chef tap un-mutes; chef-head HUD button proposed as
+the always-present tap target.

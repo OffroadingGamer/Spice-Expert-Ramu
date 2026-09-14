@@ -385,6 +385,16 @@ specified and wrong as a product. Removed.
 2. Dialogue text **moved up** — vertically centred against the portrait, not bottom-hugging.
 3. **Skip inside the box**, top-right, legible — it was rendering outside, faint.
 
+**Folded into Round 3 (user playtest of 1.73.0, Sep 15):**
+1. **Beat 3's narrowed box must keep the portrait and Skip** — the line wraps inside the
+   reduced width; never a one-line strip. (Portrait may drop to ~100 px there.)
+2. **Skip = mute.** One Skip silences every later box for the run; **tapping the chef**
+   re-enables from the next wave. While muted, beats 2/3/4 fall back to the plain Ready.
+   ⚠️ Central's proposal, pending user override: because the idle sprite is hidden on the
+   reference phone (39 px gutter), add a **~44 px chef-head button in the HUD top-left,
+   always present** — the un-mute tap on every device and Round 4's bubble anchor. Mute
+   persists in the save (a player who muted stays muted across Retry).
+
 **Round 3 — decided: horizontal fill under the wave chip**, not a bar in the gutter. Same
 maths (SAFE = units − (lives − 1)), amber → green, resets per wave. Top-left, directly under
 `WAVE n / RUSH: …`, width of that chip group.
