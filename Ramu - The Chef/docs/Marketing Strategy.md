@@ -1,6 +1,6 @@
 # Marketing Strategy
 
-**Last updated:** Sep 14 2026, 22:30 IST
+**Last updated:** Sep 15 2026
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)
 
@@ -1182,3 +1182,76 @@ need re-litigating at the cutoff.
 **Status:** §14 amended per Central's request (three-gate framing, dated
 paragraph above). Nothing prepared, generated, submitted, posted, or tagged
 by this agent. Handing back for Central to sync.
+
+## 17. Twelve Glasses published — added to the organic calendar — Sep 15 2026
+
+**Trigger:** short relayed update, no timestamp given, informal (not a full
+handover): the Story & Video track entry teased in §16.4 published overnight
+and closed the loop — confirmed by RUN as an entry in the Story & Video
+track. Share link: `https://w.run/s/UvNAAno`. Instruction: fold it into the
+remaining organic calendar (Sep 15–18) alongside the game link; RUN
+specifically suggested `#back-to-work` on Discord, Reddit, and X. Same
+standing rule applies — draft, don't post.
+
+**Verified before drafting:** the share link redirects through
+`run-world.onelink.me` (RUN's own deep-link redirector — same domain
+pattern as the game's own `w.run` share links) to
+`run.world/catalog/game/5u4uBHrkmLc8bG0OOaS9`, a different catalog id from
+the game's own (`PpB5gECS0AMU49mGYAKM`), consistent with this being a
+separate Video Studio catalog entry rather than a typo or dead link. The
+catalog page itself renders client-side and returned no fetchable content —
+same known limitation already logged for the jam board (§2). Title, jam
+attribution and Story & Video track status are taken on the relay's word,
+consistent with the video track's own docs already syncing this
+independently (visible in recent commit history, outside this agent's
+remit to inspect further).
+
+**Surface note — Reddit and X vs. §1's "decided" surface list:** §1 states
+"The user has LinkedIn and Discord. Nothing else. No X, no Reddit," dated
+Sep 8. That line has already been superseded in practice, not just now:
+§7.1 (Sep 9) recorded real X (`@PuneetMakes`) and Reddit accounts, and the
+organic calendar since §8/§13.5 has run Reddit posts
+(r/GameDevelopersOfIndia, r/SoloDevelopment) as a matter of course. X was
+never forbidden outright — §7.2 Tier 4 marked it "skip," explicitly
+**"revisit only as a free cross-post once other creative exists."** That
+condition is exactly what just happened: real creative (the video) exists,
+and RUN itself is suggesting the cross-post. Drafting for X here is that
+tier's own exception firing, not an override of §1.
+
+**Drafted — RUN Discord `#back-to-work`:**
+> Small extra from the jam — made a 45s short, *Twelve Glasses*, for RUN's
+> Story & Video track. Watch it here: https://w.run/s/UvNAAno
+> And if you haven't yet, Spice Expert: Ramu (chef-vs-kitchen arcade,
+> my main jam entry) is playable here: https://w.run/puneetmakes/spice-expert-ramu
+> #back-to-work
+
+**Drafted — Reddit** (subreddit is the user's call — r/GameDevelopersOfIndia
+or r/SoloDevelopment fit the existing calendar; note r/SoloDevelopment's
+max-2-posts/week rule if it's already been used this week):
+> Side entry for RUN's September Jam's Story & Video track — a 45s short
+> called *Twelve Glasses*: https://w.run/s/UvNAAno
+> It ties into my main jam entry, Spice Expert: Ramu, a chef-vs-kitchen
+> arcade game (plays in your phone browser, no install):
+> https://w.run/puneetmakes/spice-expert-ramu
+> #back-to-work
+
+**Drafted — X (`@PuneetMakes`):**
+> Made a 45s short for RUN's September Jam Story & Video track —
+> *Twelve Glasses*. https://w.run/s/UvNAAno
+> Main entry is Spice Expert: Ramu, a chef-vs-kitchen arcade game:
+> https://w.run/puneetmakes/spice-expert-ramu
+> #back-to-work
+
+**Caveat carried forward, not dropped:** X is still a cold, zero-follower
+account (§7.1/§7.2) — this post won't move numbers on its own and isn't
+being counted toward either the paid or organic judging criteria in §13.6.
+Including it because it's free, RUN suggested it by name, and the creative
+now exists — not because the account's reach changed.
+
+**Calendar fold-in — §13.5, Sep 15 row:** the three blocks above run
+alongside today's already-planned GameDev India / Reels+Shorts /
+r/GameDevelopersOfIndia activity, not instead of it. No change to Sep
+16–18's plan.
+
+**Status:** drafted only, per the standing rule. Nothing posted by this
+agent. Awaiting the user to post under their own name and relay back.

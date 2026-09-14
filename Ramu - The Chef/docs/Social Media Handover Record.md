@@ -1,6 +1,6 @@
 # Social Media Handover Record
 
-**Last updated:** Sep 14 2026, 22:30 IST
+**Last updated:** Sep 15 2026
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Marketing Strategy.md](Marketing%20Strategy.md)
 
@@ -1275,3 +1275,28 @@ worth it). Nothing prepared, generated, submitted, posted, or tagged.
 **Next:** handed back to the user to relay to Central for the doc sync.
 This agent holds — organic calendar continues per §13.5/16; paid stats
 read owed once spend goes non-zero.
+
+### 2026-09-15 (no time given) — Twelve Glasses published, add to organic calendar
+**From:** relayed short update, source read as Central Agent/the Story &
+Video track closing the loop promised in the 2026-09-14 22:30 IST return's
+point 4
+**Status:** ✅ complete — drafted, not posted
+
+Full text as received:
+
+> Ramu: Twelve Glasses (Video Studio, 45 s) is published and confirmed by
+> RUN as an entry in the Story & Video track. Share link:
+> https://w.run/s/UvNAAno. Add it to the remaining organic calendar (Sep
+> 15–18) alongside the game link — RUN specifically suggested
+> #back-to-work on Discord, Reddit, and X. Same approval rule: draft,
+> don't post.
+
+Link verified to resolve through RUN's own `onelink.me` redirector to a
+distinct RUN.world catalog id before anything was drafted; content itself
+unverifiable (client-side rendering, same known limitation as the jam
+board). Three copy blocks (RUN Discord `#back-to-work`, Reddit, X) drafted
+and folded into the Sep 15 calendar row alongside the day's existing plan —
+full text and reasoning, including why X is back in scope despite §1's
+Sep 8 "no X, no Reddit" line, in
+[Marketing Strategy.md](Marketing%20Strategy.md) §17. Nothing posted,
+nothing else touched.
