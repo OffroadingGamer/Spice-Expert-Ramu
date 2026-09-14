@@ -2338,3 +2338,12 @@ differently" instance.
 
 ✅ Also right, unasked: `RAIL_MIN_PX` exported from `StationRail.tsx` rather than copied, so
 the box and the rail can never disagree about the floor.
+---
+
+### 2026-09-15 — Round 2c issued: toast → `Lv↑` markers; box text and Skip placement
+
+**Issued** after the user's playtest of 1.72.0 (four screenshots). Decisions in
+[Ideas.md](Ideas.md) §6d *Amendment → Round 2c*. 🔒 Private only. Scope: remove the "Tap a
+cook to upgrade" toast (Hud + DialogueBox copies); Pixi `Lv↑` pill above each affordable-
+upgrade prop, driven by the rail's affordability test, hidden for the selected pad and at max
+level; dialogue text vertically centred; Skip inside the box top-right.

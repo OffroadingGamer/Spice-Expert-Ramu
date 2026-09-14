@@ -377,6 +377,14 @@ Ready's own button hides whenever a box owns the moment; the box calls the same 
 persisted from an earlier Private session — the once-per-player assumption, working as
 specified and wrong as a product. Removed.
 
+**Round 2c (user playtest of 1.72.0, Sep 15) — three fixes:**
+1. **"Tap a cook to upgrade" toast removed everywhere.** Replaced by a **`Lv↑` marker above
+   each placed prop whose next upgrade is affordable** (`coins >= def.upgrades[level-1].cost`,
+   the rail's own test), live as cash changes, hidden for the selected pad (the rail shows it)
+   and at max level. Every wave, not just wave 4.
+2. Dialogue text **moved up** — vertically centred against the portrait, not bottom-hugging.
+3. **Skip inside the box**, top-right, legible — it was rendering outside, faint.
+
 **Round 3 — decided: horizontal fill under the wave chip**, not a bar in the gutter. Same
 maths (SAFE = units − (lives − 1)), amber → green, resets per wave. Top-left, directly under
 `WAVE n / RUSH: …`, width of that chip group.
