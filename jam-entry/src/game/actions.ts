@@ -10,7 +10,7 @@ import { completeFtue, setFtueFirstTower } from '../state/save.ts';
 import { CONFIG } from './config.ts';
 import { WAVES } from './data/waves.ts';
 import { OPENING_DIALOGUE } from './data/dialogue.ts';
-import { queueDialogue, resetDialogueQueue, wasOpeningSkipped } from './dialogueController.ts';
+import { queueDialogue, resetDialogueQueue, isDialogueMuted } from './dialogueController.ts';
 import type { TargetingMode } from './data/targeting.ts';
 import { kitchenActionCost, type Engine, type KitchenActionKind } from './sim/engine.ts';
 
@@ -111,11 +111,15 @@ export function getEngine(): Engine | null {
  * ts's doc comments). Round 2b (docs/Ideas.md §6d amendment): the opening
  * shows on EVERY run now (dialogueSeen is gone — beats 1-4 ride ftueActive,
  * which is already every run), so CONFIG.narrative.enabled is the only gate
- * left; off gets exactly today's plain-Ready FTUE, unchanged.
+ * left; off gets exactly today's plain-Ready FTUE, unchanged. Round 3: a
+ * muted player (dialogueController.ts's isDialogueMuted, loaded from the
+ * save by resetDialogueQueue() right above) takes the SAME branch — folded
+ * into showOpening rather than a second condition below, so a muted Retry
+ * skips straight to FTUE_FIRST_PAD exactly like flag-off does today.
  */
 export function scriptedRunStart(): Partial<AppState> {
     resetDialogueQueue();
-    const showOpening = CONFIG.narrative.enabled;
+    const showOpening = CONFIG.narrative.enabled && !isDialogueMuted();
     if (showOpening) {
         track('dialogue_shown', { id: OPENING_DIALOGUE.id });
     }
@@ -206,15 +210,13 @@ export function placeTower(padIndex: number, towerId: string): void {
             // Round 2b (docs/Ideas.md §6d amendment): placeFirst resolving is
             // what opens beat 2 ('stove-lit') — the dialogue box IS this
             // beat's Ready (tap starts wave 1), so it queues right here
-            // rather than waiting for a later tick. Unless the opening was
-            // Skipped: "Skip on beat 1 only skips beats 1 and 2 together,"
-            // so a skip suppresses this one queue call and the player lands
-            // straight on the plain Ready button once placeFirst resolves,
-            // same as today. place3 resolving opens beat 4 ('wave4-ready')
-            // the same way, always (only the opening itself is skippable).
-            // place2 has no beat of its own — waves 2->3 stay the plain
-            // Ready button, unchanged.
-            if (beat === 'placeFirst' && !wasOpeningSkipped()) queueDialogue('stove-lit');
+            // rather than waiting for a later tick. place3 resolving opens
+            // beat 4 ('wave4-ready') the same way. place2 has no beat of its
+            // own — waves 2->3 stay the plain Ready button, unchanged.
+            // Round 3: queueDialogue itself now no-ops when muted (Skip on
+            // any earlier box), so neither call here needs its own mute
+            // check — that used to be wasOpeningSkipped's one job.
+            if (beat === 'placeFirst') queueDialogue('stove-lit');
             if (beat === 'place3') queueDialogue('wave4-ready');
         }
         syncStore();

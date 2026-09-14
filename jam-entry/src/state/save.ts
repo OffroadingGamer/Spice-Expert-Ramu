@@ -67,6 +67,11 @@ export interface SaveData {
     ftue: FtueState;
     /** Belt-mode progress. */
     kitchen: KitchenSaveState;
+    /** Round 3 (docs/Ideas.md §6d): Skip on any dialogue box mutes every
+     *  later one for the rest of the run AND every run after — persisted so
+     *  a Retry (or a fresh tab on the same device) doesn't quietly re-arm
+     *  dialogue a player explicitly turned off. */
+    dialogueMuted: boolean;
 }
 
 function emptyMeta(): MetaLevels {
@@ -84,6 +89,7 @@ const DEFAULTS: SaveData = {
     ads: { watchedToday: 0, lastResetDay: null },
     ftue: { challengeDone: false, firstTowerId: null },
     kitchen: { bestLevel: 0, propsOwned: [], shiftsCompleted: 0, hats: 0, clears: {} },
+    dialogueMuted: false,
 };
 
 let data: SaveData = structuredClone(DEFAULTS);
@@ -152,6 +158,7 @@ function parse(raw: string | null): SaveData | null {
             },
             ftue,
             kitchen,
+            dialogueMuted: parsed.dialogueMuted === true,
         };
     } catch {
         return null;
@@ -227,6 +234,16 @@ export function setFtueFirstTower(towerId: string): void {
 export function completeFtue(): void {
     if (data.ftue.challengeDone) return;
     data = { ...data, ftue: { ...data.ftue, challengeDone: true } };
+    flushSave();
+}
+
+/** Round 3 (docs/Ideas.md §6d): Skip on any dialogue box mutes every later
+ *  one, persisted so it survives Retry/reload — same idempotent-write
+ *  posture as completeFtue above. dialogueController.ts is the only caller
+ *  (mute on Skip, un-mute on tapping the chef). */
+export function setDialogueMuted(muted: boolean): void {
+    if (data.dialogueMuted === muted) return;
+    data = { ...data, dialogueMuted: muted };
     flushSave();
 }
 

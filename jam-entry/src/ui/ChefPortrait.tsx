@@ -15,6 +15,20 @@
  * highTensionLatched (a private, one-way-latched module variable that also
  * drives audio) — this reads store.lives directly and un-latches naturally
  * if lives are restored (the FTUE's wave-1-3 safety net, or a Retry).
+ *
+ * Round 3 (docs/Ideas.md §6d amendment): the idle mount is also one of the
+ * two un-mute tap targets (the other is Hud.tsx's chef-head button, for
+ * devices where the idle gutter is too narrow to show it at all — see
+ * useLeftGutterPx below) — tapping it calls dialogueController.ts's
+ * unmuteDialogue(), a no-op while not muted. Only the idle variant is
+ * clickable; the dialogue portrait never is, there being no reason to tap
+ * the chef while its own box is already open. A brief warm->wry->warm cue
+ * plays on a successful un-mute, riding the same face-crossfade plumbing
+ * below rather than a new animation (see unmuteCueNonce in the component).
+ * This file also exports ChefHeadIcon, the ~44px cropped-to-head icon
+ * Hud.tsx's always-present chef-head button uses — a cosmetic crop (object-
+ * position + scale) centred on the face band's own alignment (§6b), not a
+ * pixel-measured one.
  */
 import { useEffect, useRef, useState } from 'react';
 import { Assets } from 'pixi.js';
@@ -22,7 +36,9 @@ import { MANIFEST } from '../assets/manifest.ts';
 import { CONFIG } from '../game/config.ts';
 import { blockForLevel, chefBodyAliasForBlock } from '../game/data/blocks.ts';
 import { BACKDROP_FADE_S } from '../game/towerScene.ts';
+import { unmuteDialogue } from '../game/dialogueController.ts';
 import { getFit } from '../game/stage.ts';
+import { sfx } from '../audio/audio.ts';
 import { useStore } from '../state/store.ts';
 
 // Reuses the manifest's own alias->src entries (PropPicker.tsx/TestBelt.tsx's
@@ -209,13 +225,31 @@ export default function ChefPortrait({ size, variant }: ChefPortraitProps) {
     const dialogue = useStore((s) => s.dialogue);
     const lives = useStore((s) => s.lives);
     const backdropTransitioning = useStore((s) => s.backdropTransitioning);
+    const unmuteCueNonce = useStore((s) => s.unmuteCueNonce);
     const reducedMotion = usePrefersReducedMotion();
+
+    // Round 3: a successful unmuteDialogue() bumps this nonce — 'b' (wry)
+    // for one crossfade window, then falls back through the normal priority
+    // below. §6b's own measured finding says wry doesn't read at idle size
+    // (only warm/worried do) — accepted here anyway because the amendment
+    // asks for this exact sequence and the cue is transient (400ms, riding
+    // the existing crossfade, not a sustained expression the player needs to
+    // parse) rather than a UI state meant to be read.
+    const [cueing, setCueing] = useState(false);
+    useEffect(() => {
+        if (unmuteCueNonce === 0) return;
+        setCueing(true);
+        const t = setTimeout(() => setCueing(false), FACE_CROSSFADE_MS);
+        return () => clearTimeout(t);
+    }, [unmuteCueNonce]);
 
     const block = blockForLevel(wave);
     const bodyAlias = chefBodyAliasForBlock(block);
-    const faceLetter = dialogue
-        ? dialogue.voice === 'A' ? 'a' : dialogue.voice === 'B' ? 'b' : 'c'
-        : lives < CONFIG.economy.startLives * 0.3 ? 'w' : 'a';
+    const faceLetter = cueing
+        ? 'b'
+        : dialogue
+            ? dialogue.voice === 'A' ? 'a' : dialogue.voice === 'B' ? 'b' : 'c'
+            : lives < CONFIG.economy.startLives * 0.3 ? 'w' : 'a';
     const faceAlias = `chef-face-${faceLetter}`;
 
     // Hooks run unconditionally, before the idle/dialogue-open early return
@@ -237,16 +271,62 @@ export default function ChefPortrait({ size, variant }: ChefPortraitProps) {
     if (variant === 'idle' && dialogue !== null) return null;
     if (!bodyResolved || !faceResolved) return null; // nothing has ever loaded yet (boot race guard)
 
+    // Round 3: the idle mount is one of the two un-mute tap targets (Hud.tsx's
+    // chef-head button is the other) — pointer-events-auto on just this
+    // instance, inside the HUD overlay's own pointer-events-none tree, is
+    // the same "opt back in individually" pattern every other HUD control
+    // uses, and it's what keeps the tap from ever reaching the canvas
+    // underneath (the DOM overlay sits above it and consumes the event).
+    const idleClickable = variant === 'idle';
     return (
         <div
             data-chef-portrait={variant}
             data-chef-body={bodyResolved}
             data-chef-face={faceResolved}
-            className="pointer-events-none relative shrink-0 overflow-hidden"
+            className={
+                'relative shrink-0 overflow-hidden ' +
+                (idleClickable ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none')
+            }
             style={{ width: size, height: size }}
+            onClick={idleClickable ? () => { sfx.click(); unmuteDialogue(); } : undefined}
         >
             <CrossfadeLayer alias={bodyResolved} durationMs={bodyDurationMs} trackerKey="body" className="absolute inset-0 h-full w-full object-contain" />
             <CrossfadeLayer alias={faceResolved} durationMs={faceDurationMs} trackerKey="face" className="absolute inset-0 h-full w-full object-contain" />
+        </div>
+    );
+}
+
+/**
+ * Round 3: the ~44px chef-head icon for Hud.tsx's always-present un-mute
+ * button (needed because the idle portrait above hides itself under
+ * IDLE_SIZE_FLOOR on narrow-gutter phones — the 403x874 reference included).
+ * Reuses the same ASSET_SRC lookup as the rest of this file rather than a
+ * second alias->path map. "Cropped to the head": object-position centres on
+ * the face band's own alignment point (§6b: (329,296)-(750,585) on the
+ * 1024^2 source), scaled up enough to fill a round icon with it — a cosmetic
+ * crop tuned by eye, not measured to the pixel, since nothing here is a tap
+ * target boundary that needs to be exact. Always chef-body-cafe/chef-face-a
+ * (block 1, warm) — a static icon, not a live-costume one; Round 4 is what
+ * turns this into a real anchor (see this round's own report).
+ */
+export function ChefHeadIcon() {
+    const bodySrc = ASSET_SRC.get('chef-body-cafe');
+    const faceSrc = ASSET_SRC.get('chef-face-a');
+    if (!bodySrc || !faceSrc) return null;
+    const layerStyle = {
+        position: 'absolute' as const,
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover' as const,
+        objectPosition: '50% 42%',
+        transform: 'scale(3.2)',
+        transformOrigin: '50% 42%',
+    };
+    return (
+        <div className="relative h-full w-full overflow-hidden rounded-full">
+            <img src={bodySrc} alt="" style={layerStyle} />
+            <img src={faceSrc} alt="" style={layerStyle} />
         </div>
     );
 }

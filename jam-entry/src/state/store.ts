@@ -138,6 +138,25 @@ export interface AppState {
      *  one is still open. Hud.tsx hides Ready while this is non-null, the
      *  same condition it already applies for `selectedPad`. */
     dialogue: { id: string; voice: 'A' | 'B' | 'C'; lines: string[]; index: number } | null;
+    /** Round 3 (docs/Ideas.md §6a/§6d): this wave's service progress —
+     *  lives-weighted units, dishes served so far (kills since wave start),
+     *  and the SAFE threshold below which the run can still be lost this
+     *  wave. Patched from towerScene.ts's tick loop (syncGauge, mirroring
+     *  actions.ts's syncStore diffing discipline — only on change), sampled
+     *  once at wave start and held for the wave's duration (recomputing SAFE
+     *  against a dropping mid-wave lives count would make the target line
+     *  drift as you take damage). During the build phase this is a forecast
+     *  of the UPCOMING wave (served: 0) rather than null, so Hud.tsx has
+     *  something to draw before the first kill; null only once the run is
+     *  lost (tdPhase === 'lost') or before an engine exists at all. */
+    gauge: { units: number; served: number; safe: number } | null;
+    /** Round 3: bumped by dialogueController.ts's unmuteDialogue() so
+     *  ChefPortrait.tsx can play its brief warm->wry->warm un-mute cue
+     *  (reusing the face-crossfade plumbing it already has) — the nonce, not
+     *  a boolean, is what keys the effect, since un-muting twice in a row
+     *  (impossible today, but see ftueGrantNonce's own doc for the same
+     *  reasoning) must still be able to re-trigger it. */
+    unmuteCueNonce: number;
 }
 
 const INITIAL: AppState = {
@@ -177,6 +196,8 @@ const INITIAL: AppState = {
     commentsAvailable: false,
     isLiked: false,
     dialogue: null,
+    gauge: null,
+    unmuteCueNonce: 0,
 };
 
 /**

@@ -12,42 +12,68 @@
  * showing queues behind it, FIFO — see store.ts's doc on `dialogue` for why
  * this is a guard against a case that can't currently happen rather than a
  * load-bearing feature.
+ *
+ * Round 3 (docs/Ideas.md §6d amendment, "Skip = mute"): Skip on ANY box now
+ * mutes every later one for the rest of the run — and every run after,
+ * persisted (state/save.ts) — until the player taps the chef. This replaces
+ * Round 2b's narrower `openingSkipped` (which only ever suppressed beat 2)
+ * with one flag that queueDialogue itself checks, the same early-return
+ * shape as the CONFIG.narrative.enabled check right above it: a muted run
+ * takes the identical "no dialogue, FTUE walls/rail proceed unchanged" path
+ * a flag-off run already took, not a third code path. scriptedRunStart
+ * (actions.ts) folds it into `showOpening` the same way, so a muted Retry
+ * shows no opening either.
  */
 import { store } from '../state/store.ts';
 import { track } from '../sdk/analytics.ts';
+import { getSave, setDialogueMuted } from '../state/save.ts';
 import { CONFIG } from './config.ts';
 import { dialogueById, type DialogueBeat } from './data/dialogue.ts';
 
 let queue: DialogueBeat[] = [];
 
-/** Round 2b (docs/Ideas.md §6d amendment): "Skip on beat 1 only skips beats
- *  1 and 2 together" — beat 2 ('stove-lit') doesn't open on its own timer,
- *  it opens later, whenever placeFirst happens to resolve (actions.ts's
- *  placeTower), so suppressing it can't go through the FIFO queue above
- *  (that only holds beats already competing to open NOW). This flag is the
- *  one piece of state that survives between "beat 1 closed" and "placeFirst
- *  resolved," parallel to `queue` itself — reset every run alongside it. */
-let openingSkipped = false;
+/** Loaded from the save at the start of every run (resetDialogueQueue) and
+ *  flipped in place by mute/unmuteDialogue below — mirrors Round 2b's
+ *  openingSkipped in shape (module-scoped, run-independent survivor) but
+ *  persists past a single run rather than resetting with `queue`. */
+let dialogueMuted = false;
 
 /** Called from actions.ts's scriptedRunStart — a fresh run's beats re-queue
  *  from scratch, so any leftover overflow from a run that was quit mid-queue
- *  must not bleed into the next one. */
+ *  must not bleed into the next one. Also the one place the persisted mute
+ *  flag loads into this module's live copy — a Retry must see whatever the
+ *  player last set, not whatever this module happened to hold from before. */
 export function resetDialogueQueue(): void {
     queue = [];
-    openingSkipped = false;
+    dialogueMuted = getSave().dialogueMuted;
 }
 
-/** DialogueBox.tsx calls this from its Skip handler, only for the opening
- *  beat (id 'opening') — skipping a later, already-skippable beat (5-12)
- *  has nothing to suppress downstream and must not set this. */
-export function markOpeningSkipped(): void {
-    openingSkipped = true;
+/** DialogueBox.tsx's Skip handler calls this for every box now (Round 3)
+ *  — persists immediately so a mute survives Retry/reload even if the tab
+ *  closes before anything else flushes the save. */
+export function muteDialogue(): void {
+    if (dialogueMuted) return;
+    dialogueMuted = true;
+    setDialogueMuted(true);
 }
 
-/** actions.ts's placeTower reads this once, at the moment placeFirst
- *  resolves, to decide whether beat 2 still queues. */
-export function wasOpeningSkipped(): boolean {
-    return openingSkipped;
+/** The chef-tap un-mute (idle portrait, or the HUD's chef-head button —
+ *  Hud.tsx/ChefPortrait.tsx). Bumps unmuteCueNonce so ChefPortrait.tsx can
+ *  play its brief face cue; "takes effect from the next wave" (docs/Ideas.md
+ *  §6d amendment) falls out for free here — nothing re-queues a beat that
+ *  already fired-and-was-suppressed, only a beat's own NEXT live trigger
+ *  (the next wave's, in practice) ever calls queueDialogue again. */
+export function unmuteDialogue(): void {
+    if (!dialogueMuted) return;
+    dialogueMuted = false;
+    setDialogueMuted(false);
+    store.patch({ unmuteCueNonce: store.get().unmuteCueNonce + 1 });
+}
+
+/** For anything (tests, a future HUD affordance) that needs to read the
+ *  current mute state without reaching into state/save.ts's own store. */
+export function isDialogueMuted(): boolean {
+    return dialogueMuted;
 }
 
 function openBeat(beat: DialogueBeat): void {
@@ -61,10 +87,14 @@ function openBeat(beat: DialogueBeat): void {
  * beats 1-4 ride ftueActive (already every run), district/overtime beats
  * reset by construction (a block boundary only exists once per run) — so
  * there is no persisted gate to check any more. CONFIG.narrative.enabled is
- * the master switch — false makes every call here a no-op.
+ * the master switch — false makes every call here a no-op; Round 3's
+ * dialogueMuted is the same shape, checked right alongside it, so a muted
+ * run is suppressed here at the exact moment its trigger fires ("suppressed,
+ * not queued" — the amendment's own wording) rather than queued and then
+ * discarded.
  */
 export function queueDialogue(id: string): void {
-    if (!CONFIG.narrative.enabled) return;
+    if (!CONFIG.narrative.enabled || dialogueMuted) return;
     const beat = dialogueById(id);
     if (!beat) return;
     if (store.get().dialogue) {
@@ -88,7 +118,10 @@ export function advanceDialogue(): void {
     closeCurrent(false);
 }
 
-/** Opening-only skip affordance — closes immediately regardless of index. */
+/** Skip affordance, now on every box (Round 3) — closes immediately
+ *  regardless of index. Callers pair this with muteDialogue() above; kept
+ *  separate because they're independently meaningful (closeCurrent still
+ *  needs to run even in a hypothetical future where Skip stops muting). */
 export function skipDialogue(): void {
     closeCurrent(true);
 }

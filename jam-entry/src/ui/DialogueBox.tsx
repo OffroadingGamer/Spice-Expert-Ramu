@@ -15,11 +15,24 @@
  * itself — Skip is a real sibling `<button>` positioned against that div,
  * which a nested button couldn't be (invalid HTML).
  *
+ * Round 3 (same day, folded into the amendment): Skip's MEANING changed —
+ * it no longer just closes the current box, it mutes every later one for
+ * the rest of the run (and every run after, persisted — see
+ * dialogueController.ts's muteDialogue/unmuteDialogue). Because muting is
+ * now a real, standalone action rather than a "nothing to skip past"
+ * non-event, Skip renders on EVERY box now, including beats 2-4 — tapping it
+ * there mutes and closes without starting the wave, which is harmless: each
+ * of those beats' own ftueBeat/selectedPad state has already resolved to
+ * "Ready would show" by the time its box is up, so closing the box (muted or
+ * not) simply reveals the real Ready button underneath. Beat 3's compact
+ * strip (waitingOnUpgrade below) also keeps its portrait now, just smaller
+ * (100px) — it used to drop to a bare one-line strip with neither.
+ *
  * Round 2b turns beats 1-4 into the FTUE's own Ready button — the box no
  * longer just advances/closes on every tap:
  *   - 'opening' (beat 1): plain advance/close, same as every other beat.
- *     Skippable — closing it (tap OR skip) is what releases the placeFirst
- *     picker cue (see releasePlaceFirstIfOpeningClosed below).
+ *     Closing it (tap OR skip) is what releases the placeFirst picker cue
+ *     (see releasePlaceFirstIfOpeningClosed below).
  *   - 'stove-lit' (beat 2, opens once placeFirst resolves) and 'wave4-ready'
  *     (beat 4, opens once place3 resolves): tap calls startWave() — the box
  *     IS Ready for these two, exactly like the real button (Hud.tsx).
@@ -29,17 +42,15 @@
  *     useRailClearancePx below). Tap is a no-op while ftueBeat is still
  *     'upgrade0' (nothing to advance to yet); once the purchase resolves it,
  *     tap calls startWave() same as beats 2/4.
- *   - district-2..8 / overtime (beats 5-12): plain advance/close, unchanged,
- *     now also skippable (the amendment's own rule).
- * Skip only ever renders where skipping is actually allowed (isSkippable
- * below) — beats 2-4 have none: tapping IS the action, there's nothing to
- * skip past. Every box gets the small "tap to continue" hint regardless.
+ *   - district-2..8 / overtime (beats 5-12): plain advance/close, unchanged.
+ * Every box gets the small "tap to continue" hint too.
  *
  * Left side: a 160x160px slot holding Round 2's ChefPortrait (body + face,
  * costume by block, face by this beat's voice — see ChefPortrait.tsx).
- * Dropped only for beat 3's collision window (waitingOnUpgrade below) — the
- * box narrows to clear the rail there, and 160px of portrait plus the rail's
- * own reserved width leaves no room for the line to read at all.
+ * Shrinks to 100px for beat 3's collision window (waitingOnUpgrade below) —
+ * the box narrows to clear the rail there, so there isn't room for the full
+ * 160px, but Round 3 explicitly keeps a (smaller) portrait rather than
+ * dropping it — a bare text strip read as a different, lesser UI.
  *
  * The one FTUE-specific wire this whole dialogue pass needs: closing the
  * OPENING beat is what releases the placeFirst picker cue (StationRail's
@@ -50,21 +61,13 @@
  * it — see that file's own doc comment.
  */
 import { useEffect, useState } from 'react';
-import { advanceDialogue, markOpeningSkipped, skipDialogue } from '../game/dialogueController.ts';
+import { advanceDialogue, muteDialogue, skipDialogue } from '../game/dialogueController.ts';
 import { FTUE_FIRST_PAD, startWave } from '../game/actions.ts';
 import { getFit, RAIL_WIDTH_UNITS } from '../game/stage.ts';
 import { sfx } from '../audio/audio.ts';
 import { store, useStore } from '../state/store.ts';
 import ChefPortrait from './ChefPortrait.tsx';
 import { RAIL_MIN_PX } from './StationRail.tsx';
-
-/** Beats 5-12 (districts + overtime) are skippable, same as beat 1 — the
- *  amendment's own rule. Beats 2-4 ('stove-lit'/'wave1-cleared'/
- *  'wave4-ready') are themselves single-tap Ready substitutes and have no
- *  Skip: there's nothing to skip past, tapping already is the action. */
-function isSkippable(id: string): boolean {
-    return id === 'opening' || id.startsWith('district-') || id === 'overtime';
-}
 
 /** Live px StationRail.tsx's own right-edge panel plus its right-3 gutter
  *  occupies — RAIL_MIN_PX is exported from there so this isn't a second,
@@ -111,7 +114,6 @@ export default function DialogueBox() {
     if (!dialogue) return null;
 
     const isLastLine = dialogue.index === dialogue.lines.length - 1;
-    const skippable = isSkippable(dialogue.id);
     const waitingOnUpgrade = dialogue.id === 'wave1-cleared' && ftueBeat === 'upgrade0';
     const readyTap = dialogue.id === 'stove-lit' || dialogue.id === 'wave4-ready'
         || (dialogue.id === 'wave1-cleared' && !waitingOnUpgrade);
@@ -131,10 +133,11 @@ export default function DialogueBox() {
 
     const handleSkip = () => {
         sfx.click();
-        // Skipping the opening also skips beat 2 ('stove-lit') -- it doesn't
-        // open on its own timer, it opens later when placeFirst resolves
-        // (actions.ts's placeTower), so it must be told NOT to now.
-        if (dialogue.id === 'opening') markOpeningSkipped();
+        // Round 3: Skip mutes every later box for the rest of the run (and
+        // beyond, persisted) regardless of which beat it's tapped on — see
+        // dialogueController.ts's own doc for why this doesn't need an
+        // opening-specific case any more.
+        muteDialogue();
         skipDialogue();
         releasePlaceFirstIfOpeningClosed(dialogue.id);
     };
@@ -171,15 +174,17 @@ export default function DialogueBox() {
                     onClick={handleAdvance}
                     className="flex w-full items-center gap-3 p-3 text-left"
                 >
-                    {!waitingOnUpgrade && <ChefPortrait size={160} variant="dialogue" />}
-                    {/* Round 2c: centred against the 160px portrait (was
+                    {/* Round 3: beat 3's compact strip keeps a portrait now,
+                        just shrunk to 100px (was dropped entirely) — the
+                        line still wraps to as many rows as it needs beside
+                        it, same p/self-center below either size. */}
+                    <ChefPortrait size={waitingOnUpgrade ? 100 : 160} variant="dialogue" />
+                    {/* Round 2c: centred against the portrait (was
                         bottom-hugging via the row's old items-end-by-default —
                         items-center on the row above plus self-center here is
                         what actually centres it, since a flex-1 child
                         otherwise stretches to the row's own cross-size and
-                        top-aligns its own text by default). Unaffected by the
-                        compact beat-3 strip, which drops the portrait but
-                        keeps this row. */}
+                        top-aligns its own text by default). */}
                     <p className="flex-1 self-center text-[1.05rem] leading-snug font-semibold text-white">
                         {dialogue.lines[dialogue.index]}
                     </p>
@@ -188,16 +193,19 @@ export default function DialogueBox() {
                     right edge at white/70 on transparent — illegible at arm's
                     length). white/85 on the box's own bg-black/80 reads
                     clearly; stopPropagation keeps a Skip tap from also
-                    registering as a tap-to-continue on the button beneath it. */}
-                {skippable && (
-                    <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); handleSkip(); }}
-                        className="absolute top-2 right-2 rounded-full bg-black/70 px-3 py-1 text-[0.7rem] font-bold text-white/85"
-                    >
-                        Skip
-                    </button>
-                )}
+                    registering as a tap-to-continue on the button beneath it.
+                    Round 3: unconditional now — every box gets one, since
+                    Skip's job changed from "skip this step" (beats 2-4 had
+                    none, tapping already was the action) to "mute the rest of
+                    the run" (a real action on any box, readyTap ones
+                    included — see this file's header comment). */}
+                <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); handleSkip(); }}
+                    className="absolute top-2 right-2 rounded-full bg-black/70 px-3 py-1 text-[0.7rem] font-bold text-white/85"
+                >
+                    Skip
+                </button>
                 <span className="pointer-events-none absolute right-2 bottom-1 text-[0.6rem] font-semibold text-white/40">
                     tap to continue ▸
                 </span>

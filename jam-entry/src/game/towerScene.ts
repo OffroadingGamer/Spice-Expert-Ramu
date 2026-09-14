@@ -19,7 +19,8 @@ import {
     type Ticker,
 } from 'pixi.js';
 import { CONFIG } from './config.ts';
-import { WAVES } from './data/waves.ts';
+import { WAVES, waveAt } from './data/waves.ts';
+import { enemyDef } from './data/enemies.ts';
 import { BLOCKS, blockForLevel, chefBodyAliasForBlock, type Block } from './data/blocks.ts';
 import { MANIFEST } from '../assets/manifest.ts';
 import { createEngine, posAt, PATH_LENGTH, type EngineEvent } from './sim/engine.ts';
@@ -533,6 +534,50 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     const runStartedAt = performance.now();
     let waveStartedAt = performance.now();
     let prevPhase = engine.state.phase;
+    // ---- Round 3 (docs/Ideas.md §6a/§6d): the service gauge ----------------
+    // Both sampled once at the SAME "wave just started" transition tick
+    // already detected below (prevPhase !== 'wave' -> engine.state.phase ===
+    // 'wave') — never recomputed mid-wave, so SAFE can't drift as lives drop.
+    let killsAtWaveStart = engine.state.kills;
+    let livesAtWaveStart = engine.state.lives;
+    // Memoized by waveIndex — waveAt(index).entries never changes for a
+    // given index within one run, so there's no reason to re-sum it every
+    // tick just because syncGauge() itself runs every tick.
+    let gaugeUnitsCache: { index: number; units: number } | null = null;
+    function waveUnits(index: number): number {
+        if (gaugeUnitsCache?.index === index) return gaugeUnitsCache.units;
+        const units = waveAt(index).entries.reduce((sum, e) => sum + e.count * enemyDef(e.enemy).livesCost, 0);
+        gaugeUnitsCache = { index, units };
+        return units;
+    }
+    /**
+     * SAFE = max(0, units - (lives - 1)) — the minimum served count that
+     * guarantees survival even if every remaining unit in the wave leaked
+     * (§6a's own derivation; the "red pulse when unreachable" case turned out
+     * to be dead logic — see the amendment's own note — so this is only ever
+     * amber-below/green-at-or-above). During 'build' this is a forecast of
+     * the wave about to start (served: 0, using CURRENT lives — stable
+     * through build since nothing can leak before a wave starts); during
+     * 'wave' it uses the sampled livesAtWaveStart/killsAtWaveStart above, so
+     * the target line holds still while you're actually playing it. Hidden
+     * (null) once the run is lost — Hud.tsx has nothing to draw a target
+     * against for a wave that will never resume.
+     */
+    function syncGauge(): void {
+        const phase = engine.state.phase;
+        if (phase === 'lost') {
+            if (store.get().gauge !== null) store.patch({ gauge: null });
+            return;
+        }
+        const units = waveUnits(engine.state.waveIndex);
+        const lives = phase === 'wave' ? livesAtWaveStart : engine.state.lives;
+        const safe = Math.max(0, units - (lives - 1));
+        const served = phase === 'wave' ? engine.state.kills - killsAtWaveStart : 0;
+        const cur = store.get().gauge;
+        if (!cur || cur.units !== units || cur.served !== served || cur.safe !== safe) {
+            store.patch({ gauge: { units, served, safe } });
+        }
+    }
     // uid -> enemy type, so a leaked ticket can report which dish it was;
     // only ever grows (uids never repeat), which is fine for one run's life
     const enemyDefByUid = new Map<number, string>();
@@ -1319,7 +1364,11 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 }
                 const wasWave = prevPhase === 'wave';
                 engine.step(dt);
-                if (!wasWave && engine.state.phase === 'wave') waveStartedAt = performance.now();
+                if (!wasWave && engine.state.phase === 'wave') {
+                    waveStartedAt = performance.now();
+                    killsAtWaveStart = engine.state.kills;
+                    livesAtWaveStart = engine.state.lives;
+                }
                 prevPhase = engine.state.phase;
                 const stepEvents = engine.drainEvents();
                 trackLeaksForStep(stepEvents, preUids);
@@ -1330,6 +1379,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         playEvents(allEvents);
         trackWaveClears(allEvents);
         syncStore();
+        syncGauge();
         syncEnemies();
         syncProjectiles();
         syncTowers();
