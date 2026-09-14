@@ -6,6 +6,15 @@
  * condition it already applies for `selectedPad`), so there's no overlap to
  * coordinate against there.
  *
+ * Round 2c (same day, a playtest correction): the upgrade-reminder toast
+ * this file used to render above beat 4 is gone (see towerScene.ts's Lv↑
+ * markers instead); the line text is vertically centred against the
+ * portrait rather than bottom-hugging; and Skip moved INSIDE the box's own
+ * top-right corner at higher contrast (was rendering outside it, faint).
+ * The visible "box" is a plain `<div>` now, not the Continue `<button>`
+ * itself — Skip is a real sibling `<button>` positioned against that div,
+ * which a nested button couldn't be (invalid HTML).
+ *
  * Round 2b turns beats 1-4 into the FTUE's own Ready button — the box no
  * longer just advances/closes on every tap:
  *   - 'opening' (beat 1): plain advance/close, same as every other beat.
@@ -143,40 +152,56 @@ export default function DialogueBox() {
                 right-3) depending on viewport width. Left-anchored, the
                 inline maxWidth above is a hard right-edge cap measured from
                 the screen's left edge, which is what actually keeps it clear. */}
-            {/* Beat 4 keeps the upgrading hint alive even though it replaces
-                Ready (Hud.tsx's own copy of this toast is gated on
-                dialogue === null, so it stays suppressed here — see this
-                file's header comment / the §6d amendment's own note that
-                the toast "still shows above" this beat's box). */}
-            {dialogue.id === 'wave4-ready' && (
-                <p className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full rounded-xl bg-black/55 px-3 py-2 text-lg font-bold whitespace-nowrap">
-                    Tap a cook to upgrade
-                </p>
-            )}
-            <button
-                type="button"
-                aria-label="Continue"
-                onClick={handleAdvance}
-                className="pointer-events-auto relative flex w-full items-center gap-3 rounded-2xl bg-black/80 p-3 text-left"
+            {/* Round 2c (docs/Ideas.md §6d amendment) removed the
+                upgrade-reminder toast that used to render here above beat 4
+                — see towerScene.ts's Lv↑ markers instead. */}
+            {/* Round 2c: the visible "box" is this div now, not the Continue
+                button directly — Skip needs to be a real sibling positioned
+                against the box's own bounds (top-right corner, INSIDE it),
+                and a <button> can't contain another <button> (invalid HTML;
+                browsers hoist the nested one out, breaking both the layout
+                and the tap target). Continue fills the box edge-to-edge. */}
+            <div
+                className="pointer-events-auto relative w-full overflow-hidden rounded-2xl bg-black/80"
                 style={waitingOnUpgrade ? { maxWidth: `calc(100% - ${railClearancePx}px)` } : { maxWidth: '28rem' }}
             >
-                {!waitingOnUpgrade && <ChefPortrait size={160} variant="dialogue" />}
-                <p className="flex-1 text-[1.05rem] leading-snug font-semibold text-white">
-                    {dialogue.lines[dialogue.index]}
-                </p>
+                <button
+                    type="button"
+                    aria-label="Continue"
+                    onClick={handleAdvance}
+                    className="flex w-full items-center gap-3 p-3 text-left"
+                >
+                    {!waitingOnUpgrade && <ChefPortrait size={160} variant="dialogue" />}
+                    {/* Round 2c: centred against the 160px portrait (was
+                        bottom-hugging via the row's old items-end-by-default —
+                        items-center on the row above plus self-center here is
+                        what actually centres it, since a flex-1 child
+                        otherwise stretches to the row's own cross-size and
+                        top-aligns its own text by default). Unaffected by the
+                        compact beat-3 strip, which drops the portrait but
+                        keeps this row. */}
+                    <p className="flex-1 self-center text-[1.05rem] leading-snug font-semibold text-white">
+                        {dialogue.lines[dialogue.index]}
+                    </p>
+                </button>
+                {/* Round 2c: moved inside the box (was rendering outside its
+                    right edge at white/70 on transparent — illegible at arm's
+                    length). white/85 on the box's own bg-black/80 reads
+                    clearly; stopPropagation keeps a Skip tap from also
+                    registering as a tap-to-continue on the button beneath it. */}
+                {skippable && (
+                    <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleSkip(); }}
+                        className="absolute top-2 right-2 rounded-full bg-black/70 px-3 py-1 text-[0.7rem] font-bold text-white/85"
+                    >
+                        Skip
+                    </button>
+                )}
                 <span className="pointer-events-none absolute right-2 bottom-1 text-[0.6rem] font-semibold text-white/40">
                     tap to continue ▸
                 </span>
-            </button>
-            {skippable && (
-                <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); handleSkip(); }}
-                    className="pointer-events-auto absolute top-0 right-6 -translate-y-full rounded-full bg-black/70 px-3 py-1 text-[0.7rem] font-bold text-white/70"
-                >
-                    Skip
-                </button>
-            )}
+            </div>
         </div>
     );
 }

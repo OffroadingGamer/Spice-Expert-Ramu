@@ -328,32 +328,11 @@ export default function Hud() {
                 (see its own comment below) in favour of the same flow. */}
             {tdPhase === 'build' && selectedPad === null && ftueBeat === null && dialogue === null && !menuOpen && (
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-2 px-3 pb-safe-bottom">
-                    {/* Round D: the FTUE now scripts every run through wave 4
-                        (onboarding-balance round: was wave 3, before a third
-                        forced placement extended the script by one wave), so
-                        ftueActive covers waves 1-3 entirely and this hint's
-                        old wave 2-3 range is dead — it can only ever fire
-                        once, at wave 4, the first build phase where the
-                        forced beats have all resolved (ftueBeat is null
-                        again, even though ftueActive/Kitchen Actions don't
-                        fully let go until Ready starts wave 4). Kept: it's a
-                        real reminder for a genuinely new mechanic (upgrading)
-                        at the first moment nothing else is cueing it.
-                        Mobile layout round, task 2: used to float at a fixed
-                        bottom-48 with no z-index, so a z-10 pad pulse
-                        (below) could paint over it — z-index alone doesn't
-                        reach across siblings reliably once one of them wins
-                        the stacking-context tiebreak, so this column also
-                        carries z-20 (below) to make the whole block win.
-                        Living in this flex column (instead of its own
-                        absolute offset) also means it always sits exactly
-                        one gap above Ready, whatever Ready's own height
-                        ends up being at this viewport. */}
-                    {wave === 4 && (
-                        <p className="rounded-xl bg-black/55 px-3 py-2 text-lg font-bold">
-                            Tap a cook to upgrade
-                        </p>
-                    )}
+                    {/* Round 2c (docs/Ideas.md §6d amendment) removed the
+                        upgrade-reminder toast that used to live here at
+                        wave 4 — replaced by the Lv↑ markers towerScene.ts
+                        now draws over any placed, upgrade-affordable prop,
+                        every wave, not just wave 4. */}
 
                     {/* Ready: enlarged for a bigger tap target, sized down at
                         narrow (~400 CSS px) widths via the sm: breakpoint

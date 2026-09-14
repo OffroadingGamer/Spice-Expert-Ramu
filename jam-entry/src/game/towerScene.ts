@@ -340,10 +340,16 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     const board = new Container(); // path, burrows, pads, selection ring
     const world = new Container(); // towers, enemies, projectiles (y-sorted)
     world.sortableChildren = true;
+    // Round 2c (docs/Ideas.md §6d amendment): Lv↑ affordability markers, a
+    // sibling layer (not nested inside world's own y-sorted tower nodes) so
+    // a marker is never sorted behind a taller/closer tower — being added
+    // to boardRoot AFTER world already puts every marker above every tower
+    // regardless of world's own internal zIndex sort.
+    const markerLayer = new Container();
     // Task 4 (delivered-audio round): coin-kill popups, above everything
     // else in the board (its own layer, not fighting world's y-sort zIndex).
     const popupLayer = new Container();
-    boardRoot.addChild(board, world, popupLayer);
+    boardRoot.addChild(board, world, markerLayer, popupLayer);
     stage.root.addChild(backdropLayer, boardRoot);
 
     // Pool, not spawn-per-kill: 4x speed can kill many enemies (splash) in
@@ -1080,6 +1086,91 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         }
     }
 
+    /**
+     * Round 2c (docs/Ideas.md §6d amendment): a small "Lv↑" pill above every
+     * placed prop whose next upgrade is affordable RIGHT NOW — the same
+     * test StationRail.tsx's own Upgrade button uses (line ~328:
+     * `coins >= tower.def.upgrades[tower.level - 1].cost`, guarded by "not
+     * already max level"), so the marker and the button it's pointing at
+     * never disagree. Hidden for the selected pad — the rail is already
+     * showing the same information bigger there.
+     *
+     * Allocates a marker's Graphics+Text ONLY on the tick its visibility
+     * actually flips (a tower entering/leaving affordability, being
+     * selected/deselected, sold, or hitting max level) — every other tick
+     * this loop is three cheap Set/Map lookups per placed tower, no
+     * allocation, same "pool it, don't spawn it" posture spawnCoinPopup's
+     * own doc explains above. No pulse/animation at all (the simplest way
+     * to satisfy "reduced-motion safe: no pulse" everywhere, not just under
+     * the media query) — it just appears and disappears.
+     */
+    const upgradeMarkers = new Map<number, Container>(); // by padIndex
+    // fontSize 15 measured illegible live (403x874's ~0.45 board scale
+    // shrinks it to ~7 CSS px, blurring the ↑ glyph into a smudge) -- 24
+    // matches the coin-popup text's own already-proven-legible size at the
+    // same scale (coinPopupStyle above), one row up from this file's own
+    // "small overlay text that must stay readable" bar.
+    const upgradeMarkerStyle = new TextStyle({ fontSize: 24, fontWeight: 'bold', fill: 0xffffff });
+
+    function upgradeAffordable(t: (typeof engine.state.towers)[number]): boolean {
+        if (t.level > t.def.upgrades.length) return false; // max level -- rail's own "Max" guard
+        return engine.state.coins >= t.def.upgrades[t.level - 1].cost;
+    }
+
+    function buildUpgradeMarker(t: (typeof engine.state.towers)[number]): Container {
+        const size = towerDisplaySize[t.def.id][t.level - 1];
+        const label = new Text({ text: 'Lv↑', style: upgradeMarkerStyle });
+        label.anchor.set(0.5);
+        // ~60% of the tower's own current sprite width is the handover's own
+        // spec and the common case; a floor against the LABEL'S OWN measured
+        // width (not a guessed constant) guarantees the text is never
+        // clipped on a narrow-bodied tower at this larger font -- Text
+        // objects report real rendered width/height after construction, so
+        // this reads the actual glyph metrics rather than estimating them.
+        const pillW = Math.max(size.w * 0.6, label.width + 14);
+        const pillH = label.height + 8;
+        const c = new Container();
+        const bg = new Graphics();
+        // CONFIG.colors.grass (0x14141a) IS app.css's --color-surface / the
+        // HUD's dark chip tone -- reused rather than a second color entry.
+        bg.roundRect(-pillW / 2, -pillH, pillW, pillH, pillH / 2).fill({ color: CONFIG.colors.grass });
+        label.position.set(0, -pillH / 2);
+        c.addChild(bg, label);
+        // Sits just above the tower's sprite: the node's own bottom-anchor
+        // convention (see syncTowers above) puts the sprite's top edge at
+        // node.y - size.h in board space; UPGRADE_MARKER_GAP is pure
+        // cosmetic clearance from that edge, not a hit-test boundary.
+        const node = towerViews.get(t.padIndex)!;
+        const UPGRADE_MARKER_GAP = 8;
+        c.position.set(t.x, node.y - size.h - UPGRADE_MARKER_GAP);
+        return c;
+    }
+
+    function syncUpgradeMarkers(): void {
+        const selectedPad = store.get().selectedPad;
+        for (const t of engine.state.towers) {
+            const want = t.padIndex !== selectedPad && upgradeAffordable(t);
+            const has = upgradeMarkers.has(t.padIndex);
+            if (want && !has) {
+                const marker = buildUpgradeMarker(t);
+                markerLayer.addChild(marker);
+                upgradeMarkers.set(t.padIndex, marker);
+            } else if (!want && has) {
+                upgradeMarkers.get(t.padIndex)!.destroy({ children: true });
+                upgradeMarkers.delete(t.padIndex);
+            }
+        }
+        // sold towers: drop any marker left standing over an empty pad,
+        // same cleanup syncTowers() does for the tower sprite itself.
+        const occupied = new Set(engine.state.towers.map((tw) => tw.padIndex));
+        for (const [pad, marker] of upgradeMarkers) {
+            if (!occupied.has(pad)) {
+                marker.destroy({ children: true });
+                upgradeMarkers.delete(pad);
+            }
+        }
+    }
+
     function drawSelection(): void {
         selection.clear();
         const sel = store.get().selectedPad;
@@ -1242,6 +1333,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         syncEnemies();
         syncProjectiles();
         syncTowers();
+        syncUpgradeMarkers();
         syncPads();
         drawBeams(dt);
         drawSelection();
