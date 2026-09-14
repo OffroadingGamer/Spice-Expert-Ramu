@@ -52,7 +52,7 @@ of the present.**
 | **Credits (Sep 14, ~11:00 IST)** | **193,756** = BACK-TO-WORK ~**91,700** (exp. **Sep 15**, hour unverified) + **50,000 refund from RUN support** (landed Sep 14, **expiry unverified — read the studio page**) + 27,200 (exp. Dec) + 25,000 starter (labelled "exp. Aug 29", still counted) + daily |
 | **Paid campaign** | 📤 **`kitchen-rush-meta` SUBMITTED 21:28 IST Sep 14** — Meta, **Android**, **$82**, 2 days = 91,100 credits. `pending-review`, $0 spent (verified live). Creatives: 3 squares reused free + 2 vertical + 2 landscape for **1,962 credits**. **Hard cutoff: cancel if not flighted by 23:00 IST Sep 15** (owner: implementation agent; its cron `5f540037` is session-local — the user triggers the check). Reddit: rejected, $0 |
 | **Art leg (Sep 14)** | ✅ **DONE** — `Art/_gen/chef-final/`: 9 bodies + 4 faces + scroll, **7,003 credits**, verified. Faces are aligned eyebrow-to-jaw bands. ⚠️ Expressions read at **≥ 160 px, not 96** — spec amended in Ideas.md §6b. Nothing ships before judging |
-| **Video leg (Sep 14)** | ✅ **PUBLISHED** — *Twelve Glasses*, 45 s portrait, Video Studio, live ~00:08 IST Sep 15, ~20 min before the close. Share `https://w.run/s/UvNAAno`. Agent-reported ≈43k credits; ⚠️ **not visible in `rundot credits`** (balance 184,274 reconciles without it) — Studio may bill a separate pool. Docs tracked in `VideoGen Leg/`; media gitignored. 🔴 User to confirm the jam-page listing today |
+| **Video leg (Sep 14)** | ✅ **PUBLISHED** — *Twelve Glasses*, 45 s portrait, Video Studio, live ~00:08 IST Sep 15, ~20 min before the close. Share `https://w.run/s/UvNAAno`. Agent-reported ≈43k credits; ⚠️ **not visible in `rundot credits`** (balance 184,274 reconciles without it) — Studio may bill a separate pool. Docs tracked in `VideoGen Leg/`; media gitignored. ✅ **RUN support confirmed Sep 15: automatically in consideration** — no form, no listing; Editor's Picks $300/$100/$100. Share link handed to the marketing agent for the organic calendar |
 
 ⚠️ **The old baseline `35 / 34 / 6 / 4 / 90` appears twelve times below.** Every one of
 those is a historical round entry and correct in context. **It is not the current
@@ -2196,3 +2196,12 @@ prompt is not · auto-drafted motion prompts use only panels 1–3 of a six-pane
 default to a teal grade — always rewrite.
 
 Sync: seven `.md` files tracked; `References and Logs/` (73 MB of MP4/PNG) gitignored.
+
+✅ **Closed Sep 15 morning.** Search on run.world shows *Ramu: Twelve Glasses* as a public Show
+next to the game; the Event podium lists games only. RUN support, verbatim: *"a qualifying entry
+is any original Story Studio or Video Studio piece made during the jam and published to RUN
+before submissions close — that's it. No submission form, no extra steps. Since Twelve Glasses
+is a Video Studio entry published before the deadline, it's automatically in consideration."*
+RUN also suggested posting the share link widely before Sep 18 — that is the marketing
+agent's remit and has been passed to it. The studio balance (184,274) matches the CLI, so the
+video's renders did not draw from creator credits.
