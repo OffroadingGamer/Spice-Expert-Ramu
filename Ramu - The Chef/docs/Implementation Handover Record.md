@@ -52,7 +52,7 @@ of the present.**
 | **Credits (Sep 14, ~11:00 IST)** | **193,756** = BACK-TO-WORK ~**91,700** (exp. **Sep 15**, hour unverified) + **50,000 refund from RUN support** (landed Sep 14, **expiry unverified — read the studio page**) + 27,200 (exp. Dec) + 25,000 starter (labelled "exp. Aug 29", still counted) + daily |
 | **Paid campaign** | 📤 **`kitchen-rush-meta` SUBMITTED 21:28 IST Sep 14** — Meta, **Android**, **$82**, 2 days = 91,100 credits. `pending-review`, $0 spent (verified live). Creatives: 3 squares reused free + 2 vertical + 2 landscape for **1,962 credits**. **Hard cutoff: cancel if not flighted by 23:00 IST Sep 15** (owner: implementation agent; its cron `5f540037` is session-local — the user triggers the check). Reddit: rejected, $0 |
 | **Art leg (Sep 14)** | ✅ **DONE** — `Art/_gen/chef-final/`: 9 bodies + 4 faces + scroll, **7,003 credits**, verified. Faces are aligned eyebrow-to-jaw bands. ⚠️ Expressions read at **≥ 160 px, not 96** — spec amended in Ideas.md §6b. Nothing ships before judging |
-| **Video leg (Sep 14)** | 🎬 **Story & Video track entry** handed to a video agent (`VideoGen Leg\` only, untracked). Judged track, $300/$100/$100, RUN team picks. **Submissions close Sep 14 12:00 PT = 00:30 IST Sep 15**; target publish 22:30 IST. Video Studio = series → chapters via chat; budget cap is the user's call inside the leg |
+| **Video leg (Sep 14)** | ✅ **PUBLISHED** — *Twelve Glasses*, 45 s portrait, Video Studio, live ~00:08 IST Sep 15, ~20 min before the close. Share `https://w.run/s/UvNAAno`. Agent-reported ≈43k credits; ⚠️ **not visible in `rundot credits`** (balance 184,274 reconciles without it) — Studio may bill a separate pool. Docs tracked in `VideoGen Leg/`; media gitignored. 🔴 User to confirm the jam-page listing today |
 
 ⚠️ **The old baseline `35 / 34 / 6 / 4 / 90` appears twelve times below.** Every one of
 those is a historical round entry and correct in context. **It is not the current
@@ -2160,3 +2160,39 @@ W-worried is distinguishable from A-warm**; at 160 px all four read. Not an art 
 the band is 27 px tall at that scale. Ideas.md §6b now says: idle sprite at ~96–120 px is
 fine (it only switches warm ↔ worried); the **dialogue portrait must be ≥ 160 px or a
 head-only crop.**
+---
+
+### 2026-09-15 — Video leg returned: *Twelve Glasses* published 20 minutes before the close
+
+**Status:** ✅ **PUBLISHED** (video agent, `VideoGen Leg/06 Return Handover.md`). Verified by
+Central: return handover complete; docs secret-scanned clean; `kitchen-rush-meta` unaffected.
+🔴 **Not verifiable from the CLI:** the jam-page listing and the share link are client-rendered
+shells — the user confirms in a browser on Sep 15, Discord before noon PT if missing.
+
+| | |
+|---|---|
+| Entry | *Twelve Glasses* · Story & Video track · 45 s, 3 clips × 3 sub-shots, Seedance 2.0 Fast · ElevenLabs voice + in-tool score |
+| Arc | dawn pour → stall → tandoor → pasta → rain → dawn walk-off → the pass → silent kitchen → twelve glasses + bandana |
+| Retakes | shot 3 × 2, both for real defects (floating glass; a stray spoken "hello") |
+| Rights | Pixabay sitar track **rejected** — not original, not made during the jam. Correct |
+| Spend | agent-reported ≈ 43k against the user's 45k cap: 5 renders × 6,827 + ≈ 8.5k images/drafting |
+
+#### ⚠️ The ledger discrepancy
+
+`rundot credits` on Sep 15 morning: **184,274**, which reconciles to Sep 14's 193,756 minus
+Meta creatives (1,962), art (7,003) and LLM calls — with **no video line and no 34k missing**.
+So Video Studio's renders either bill a **separate pool** or post late. The agent read
+"184.8k" off the Studio's own banner at Episode Ready, which matches the CLI figure — so
+the Studio was showing the same balance *after* the renders. Most likely reading: **the
+video did not draw from the creator-credit balance at all.** Unresolved; the studio page
+decides. No decision depends on it — Meta's 91,100 is covered either way.
+
+#### Tool facts worth keeping (full detail in `VideoGen Leg/01 Tool Notes.md`)
+
+Video Studio and Story Studio are different tools, both accepted by the track · orientation
+locks at project creation · **6,827 credits per 15-s shot**, ~6–7 min each, sequential, each
+shot seeded from the previous last frame · every image is a locked reference, a name in a
+prompt is not · auto-drafted motion prompts use only panels 1–3 of a six-panel sheet and
+default to a teal grade — always rewrite.
+
+Sync: seven `.md` files tracked; `References and Logs/` (73 MB of MP4/PNG) gitignored.

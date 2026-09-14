@@ -101,3 +101,7 @@ jam-entry/public/audio/bombay-transition.mp3
 # the sidecars carry prompt/model/seed only, and campaign.json's gameId is
 # already public -- this is excluded as build working material, not as a leak.
 jam-entry/rundot/marketing/
+
+# Video leg working media (rendered clips, contact sheets, voice samples): 73 MB,
+# regenerable from the prompts in the leg's own docs. The seven .md files are tracked.
+Ramu - The Chef/VideoGen Leg/References and Logs/
