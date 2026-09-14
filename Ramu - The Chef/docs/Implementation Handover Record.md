@@ -39,7 +39,7 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.70.0** (progression rounds; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.71.0** (progression rounds; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
 | **Endgame criterion** | `maxed-meta` must lose between levels **85–110** (currently 90) |
@@ -2266,3 +2266,45 @@ that device. Overlap is not an outcome (Retro 99).
 frame · 2.5 s vs 400 ms fades measured · worried below 3 lives and back · voice faces on
 beats 4/7/12 · in-game contact sheet of all 9 costumes at 160 px · no D1 overlap, taps pass
 through · balance / tsc / sidecars / Private deploy with `list-tags`.
+---
+
+### 2026-09-15 — Round 2 returned: Chef Ramu portrait → Private v1.71.0
+
+**Status:** ✅ **RETURNED, VERIFIED, COMMITTED.** Private **1.71.0**; Review/Public **1.69.0**.
+Five files (four modified, `ChefPortrait.tsx` new). Sealed untouched; balance **35 / 36 / 11 /
+4 / 90**; `tsc` clean; no sidecars.
+
+#### 🔴 The measurement that changes Rounds 2 and 3
+
+| Device | Left gutter | Idle portrait |
+|---|---|---|
+| **403×874** (reference) | **39.4 px** | hidden |
+| 375×667 | 63.8 px | hidden |
+| 480×800 | 91.6 px | 75.6 px |
+| 768×1024 | 194.1 px | 100 px |
+
+Central recomputed all four from `stage.ts` (`min(w/720, h/FIT_HEIGHT) × 0.85`) — exact
+match. The handover's "≥ ~110 px at 403×874" had the geometry backwards: a tall narrow phone
+is *closer* to the board's own aspect and letterboxes *less*. So **on typical phones only the
+dialogue portrait ships**; the idle sprite exists for tablets and wide phones. Acceptable by
+the handover's own decision tree; overlap was the outcome ruled out, and none occurs.
+
+⚠️ **Consequence for Round 3:** the gauge was specified "behind the idle portrait,
+bottom-left". There is no bottom-left on the reference phone. 39 px *is* enough for a slim
+vertical bar (~20 px) running the board's height in the letterbox — the gauge survives as a
+bar; the "cylinder behind the chef" composition does not. Round 3's handover must start from
+that number.
+
+#### Verified
+Costume at every boundary 1→2 … 8→9 with the face constant mid-fade · body fade **2,490 ms**
+riding `backdropTransitioning`, **~406–432 ms** without · worried below 3 lives, un-latched
+back to warm · voice faces on `first-upgrade` (b) and `overtime` (c) · in-game contact sheet
+of all nine at 160 px · taps pass through the idle sprite · load-safety hook covers faces
+too (b/c/w are deferred, same risk as the bodies — the agent extended it unasked, correctly).
+
+#### A bug the agent found in its own first pass, worth keeping
+`DialogueBox.tsx` mounts `ChefPortrait` fresh on every beat, so a component-local "fade from"
+ref reset each time and the dialogue portrait **popped instead of fading** — invisible to a
+correctness check because the final frame was right. Fixed by tracking "last shown" at module
+scope across both mount points, plus a one-render lag between alias resolution and duration.
+Same shape as Retro 105: the artefact under test is the running system, over time.
