@@ -9,9 +9,8 @@
  * skip affordance shows only on the opening beat (id 'opening') — district
  * beats are not skippable (docs/Ideas.md §1's own design note).
  *
- * Left side: a 160x160px slot, reserved and empty this round — Round 2
- * (ChefPortrait.tsx) drops the chef sprite in here; the box is laid out as
- * if it were already present so that's a pure addition, not a relayout.
+ * Left side: a 160x160px slot holding Round 2's ChefPortrait (body + face,
+ * costume by block, face by this beat's voice — see ChefPortrait.tsx).
  *
  * The one FTUE-specific wire this whole dialogue pass needs: closing the
  * OPENING beat is what releases the placeFirst picker cue (StationRail's
@@ -25,6 +24,7 @@ import { advanceDialogue, skipDialogue } from '../game/dialogueController.ts';
 import { FTUE_FIRST_PAD } from '../game/actions.ts';
 import { sfx } from '../audio/audio.ts';
 import { store, useStore } from '../state/store.ts';
+import ChefPortrait from './ChefPortrait.tsx';
 
 /** After closing the opening beat specifically, release the placeFirst
  *  picker cue — a no-op for every other beat, and a no-op if the player
@@ -64,8 +64,7 @@ export default function DialogueBox() {
                 onClick={handleAdvance}
                 className="pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-2xl bg-black/80 p-3 text-left"
             >
-                {/* Round 2 drop-in slot — empty and reserved, never drawn on. */}
-                <div aria-hidden="true" className="h-[160px] w-[160px] shrink-0" />
+                <ChefPortrait size={160} variant="dialogue" />
                 <p className="flex-1 text-[1.05rem] leading-snug font-semibold text-white">
                     {dialogue.lines[dialogue.index]}
                 </p>

@@ -60,6 +60,7 @@ import { CONFIG } from '../game/config.ts';
 import { designToScreen } from '../game/stage.ts';
 import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
+import { ChefPortraitIdle } from './ChefPortrait.tsx';
 import DialogueBox from './DialogueBox.tsx';
 import Slider from './Slider.tsx';
 
@@ -437,6 +438,15 @@ export default function Hud() {
                     style={{ left: pos.x - 24, top: pos.y - 24, width: 48, height: 48 }}
                 />
             ))}
+
+            {/* Round 2 (docs/Ideas.md §6b/§6d): bottom-left, no z-index of
+                its own (z:auto) — mounted here, before Ready/the rail/
+                DialogueBox (all z-10+), so plain DOM order already keeps it
+                beneath every one of them without a fight. Round 3's service
+                gauge shares this same corner and goes behind THIS (an even
+                lower z-index, or mounted even earlier) — see
+                ChefPortrait.tsx's own doc on the z-index left open here. */}
+            <ChefPortraitIdle />
 
             {/* Round 1 (docs/Ideas.md §1/§6d): mounted here per the
                 handover, at the top of Hud's own render order so its z-20

@@ -20,7 +20,7 @@ import {
 } from 'pixi.js';
 import { CONFIG } from './config.ts';
 import { WAVES } from './data/waves.ts';
-import { BLOCKS, blockForLevel, type Block } from './data/blocks.ts';
+import { BLOCKS, blockForLevel, chefBodyAliasForBlock, type Block } from './data/blocks.ts';
 import { MANIFEST } from '../assets/manifest.ts';
 import { createEngine, posAt, PATH_LENGTH, type EngineEvent } from './sim/engine.ts';
 import { registerEngine, syncStore, getTowersPlacedThisRun, grantFtueShortfall, retireFtue, FTUE_FIRST_PAD } from './actions.ts';
@@ -60,17 +60,16 @@ export interface Scene {
 // Same rule/pattern as kitchenScene.ts's MANIFEST_ALIASES.
 const MANIFEST_ALIASES = new Set(MANIFEST.bundles.flatMap((b) => b.assets).map((a) => a.alias as string));
 
+/** How long a REAL block-to-block backdrop crossfade takes (see
+ *  createTowerScene's own BACKDROP_LOCK_S below, which locks Ready for
+ *  exactly this long). Exported so ChefPortrait.tsx (Round 2) can fade the
+ *  costume in the SAME window when the swap rides a real transition —
+ *  one number, not a second copy. */
+export const BACKDROP_FADE_S = 2.5;
+
 /** This block's backdrop alias (docs/LevelBlocks.md §7). */
 function backdropAliasForBlock(blockId: number): string {
     return `bg-block-${blockId}`;
-}
-
-/** This block's chef-body alias (Rounds 0+1, docs/Ideas.md §6b/§6d) — the
- *  slug matches manifest.ts's chef-body-* aliases by construction: both
- *  derive from the same block label, lowercased/hyphenated ('NORTH INDIAN'
- *  -> 'north-indian'), so a new block only ever needs its manifest line. */
-function chefBodyAliasForBlock(block: Block): string {
-    return `chef-body-${block.label.toLowerCase().replace(/\s+/g, '-')}`;
 }
 
 /** Every asset one block needs before it can play — its enemies' dish-*
@@ -272,7 +271,6 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     // constant for the Ready lock's own duration (below), even though it's
     // set equal to this one today, so retuning either later is a one-line
     // change that can't accidentally couple to the other.
-    const BACKDROP_FADE_S = 2.5;
     const BACKDROP_LOCK_S = BACKDROP_FADE_S;
     const backdropLayer = new Container();
     const backdropSprites: Sprite[] = [];

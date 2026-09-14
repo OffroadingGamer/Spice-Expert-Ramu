@@ -156,3 +156,13 @@ export function blockForLevel(level: number): Block {
 export function ladderPosition(level: number): number {
     return ((level - 1) % 10) + 1;
 }
+
+/** This block's chef-body manifest alias (Rounds 0+1/2, docs/Ideas.md
+ *  §6b/§6d) — the slug matches manifest.ts's chef-body-* aliases by
+ *  construction: both derive from the same block label, lowercased/
+ *  hyphenated ('NORTH INDIAN' -> 'north-indian'), so a new block only ever
+ *  needs its manifest line. Shared by towerScene.ts's prefetch and
+ *  ChefPortrait.tsx's costume render — one copy, not two. */
+export function chefBodyAliasForBlock(block: Block): string {
+    return `chef-body-${block.label.toLowerCase().replace(/\s+/g, '-')}`;
+}
