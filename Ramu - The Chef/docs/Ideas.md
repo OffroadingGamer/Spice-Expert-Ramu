@@ -295,6 +295,28 @@ costumes and faces derived against it through `Art/_lora`. Ramu is original art 
 third-party licence question — but consistency needs a locked reference, not nine
 independent prompts. **Effort: two art rounds, one to two implementation rounds.**
 
+✅ **ART DONE — Sep 14 2026.** `Art/_gen/chef-final/`: **9 bodies + 4 faces + `scroll.png`**, 14
+files, 7,003 credits, all 1024² RGBA with corners at alpha 0. Verified by Central: same
+person across all nine bodies; head pixel-locked (bbox identical on cafe / north-indian /
+north-east; the toque and turban bodies extend the bbox upward only).
+
+🔥 **How the layering actually works:** each face is a **1024² canvas with an eyebrow-to-jaw
+band at (329, 296)–(750, 585)** and nothing else — no hair, no headwear. Composite it at
+(0, 0) over any body and it lands. Full-bust faces were tried first and broke on the
+Overtime turban; the band crop is the fix and it must not be widened.
+
+⚠️ **Sizing finding — measured, and it changes the spec:** at **160 px** all four faces are
+distinguishable; at **96 px only W-worried reads** against A-warm — wry and moved collapse
+into warm at that size (the face band is ~27 px tall there). So: the **idle sprite by the
+gauge** may draw at ~96–120 px because it only ever switches warm ↔ worried; the
+**dialogue portrait** (§1 / §6c) must draw at **≥ 160 px, or as a head-only crop** — which
+the aligned faces make a one-line crop. Do not ship a 96 px portrait expecting three
+expressions to carry.
+
+➕ Known gaps, not blocking: Desi Fusion lacks the NE vest its prompt asked for (dropped in
+both takes; still coherent). `rundot generate` has **no reference-strength flag**; expression
+range came from explicit brow/mouth/eye prompting.
+
 ### 6c · Dialogue
 
 Already specified in §1 (12 boxes, voices locked). The chef sprite *is* the portrait — no

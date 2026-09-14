@@ -51,7 +51,7 @@ of the present.**
 | **`data/waves.ts`** | ⚠️ **RE-SEALED.** Unsealed for the v1.69.0 block-1 retune only |
 | **Credits (Sep 14, ~11:00 IST)** | **193,756** = BACK-TO-WORK ~**91,700** (exp. **Sep 15**, hour unverified) + **50,000 refund from RUN support** (landed Sep 14, **expiry unverified — read the studio page**) + 27,200 (exp. Dec) + 25,000 starter (labelled "exp. Aug 29", still counted) + daily |
 | **Paid campaign** | 📤 **`kitchen-rush-meta` SUBMITTED 21:28 IST Sep 14** — Meta, **Android**, **$82**, 2 days = 91,100 credits. `pending-review`, $0 spent (verified live). Creatives: 3 squares reused free + 2 vertical + 2 landscape for **1,962 credits**. **Hard cutoff: cancel if not flighted by 23:00 IST Sep 15** (owner: implementation agent; its cron `5f540037` is session-local — the user triggers the check). Reddit: rejected, $0 |
-| **Art leg (Sep 14)** | 🎨 **Chef Ramu sprite set + wave-intro scroll** handed to an art agent (`Art\` only). Cap **10,000 credits**, ~36 images at 147. Three stops: canonical pick → layered-vs-flat probe → batch. References: `Art\_gen\ref\ramu-ads\` (7 RUN-generated squares). `Art/_lora` is the dish LoRA — no use for a character |
+| **Art leg (Sep 14)** | ✅ **DONE** — `Art/_gen/chef-final/`: 9 bodies + 4 faces + scroll, **7,003 credits**, verified. Faces are aligned eyebrow-to-jaw bands. ⚠️ Expressions read at **≥ 160 px, not 96** — spec amended in Ideas.md §6b. Nothing ships before judging |
 | **Video leg (Sep 14)** | 🎬 **Story & Video track entry** handed to a video agent (`VideoGen Leg\` only, untracked). Judged track, $300/$100/$100, RUN team picks. **Submissions close Sep 14 12:00 PT = 00:30 IST Sep 15**; target publish 22:30 IST. Video Studio = series → chapters via chat; budget cap is the user's call inside the leg |
 
 ⚠️ **The old baseline `35 / 34 / 6 / 4 / 90` appears twelve times below.** Every one of
@@ -2121,3 +2121,42 @@ the actual debit, then size the batch.**
 Balance covers 91,100 well past BACK-TO-WORK's expiry, so a late flight **would** debit
 durable credits. **Cancel if not flighted by 23:00 IST Sep 15.** The implementation agent's
 cron is session-local; the user triggers the check.
+---
+
+### 2026-09-14 — Art leg returned: Chef Ramu layered set + scroll, 7,003 credits
+
+**Status:** ✅ **RETURNED, VERIFIED** — `Art/_gen/chef-final/`, 14 files. Nothing in
+`jam-entry/`; nothing ships before judging. Spec home: [Ideas.md](Ideas.md) §6b/§7.
+
+| | |
+|---|---|
+| Delivered | `body-{cafe, north-indian, south-indian, italian, north-east, ne-fusion, italian-fusion, desi-fusion, overtime}.png` · `face-{warm, wry, moved, worried}.png` · `scroll.png` (1584×672) |
+| Measured | all 1024² RGBA, corners alpha 0; face bands identical at (329, 296)–(750, 585); body bboxes identical where headwear allows |
+| Cost | **7,003** (23 generate calls at 147; 2 rate-limit hits free; 1 probe reused). Under the 8,000 report line |
+| Stops honoured | canonical pick (take 3) → probe (head Δ 0 px; layered chosen) → batch. Three stops, three waits |
+
+#### What the agent got right that the brief didn't ask for
+
+- **Rejected full-bust faces on evidence** — overlay-tested on the Overtime body, saw the
+  bandana-over-turban hybrid, re-cropped all four to a bare eyebrow-to-jaw band, re-tested on
+  three bodies. That crop is now the spec.
+- **Rejected B-wry take 1 at 96 px** ("still smiling") and retook with explicit asymmetry.
+- Found that naive head-position checks (topmost opaque pixel, skin-tone mask) **false-positive
+  on toques, turbans and gold trim**; verified those three by fixed-crop overlay instead.
+- Excluded the four `crosspromo-square-*.png` references before generating — they depict the
+  `run`-network fox, not Ramu. Central copied them in without looking.
+
+#### 🔴 Facts Central's brief got wrong
+
+1. `Art/_gen/final/` named as the in-game style reference is **empty**; the real references
+   are `Art/_gen/dishes-final/` and `Art/_gen/ui-final/chef-hat.png`.
+2. No `--reference-strength` flag exists; the "lower it for faces" instruction was unusable.
+3. Four of seven reference images weren't Ramu (above).
+
+#### ⚠️ The finding that changes the spec
+
+Central composited each face on the cafe body at 96 and 160 px. **At 96 px only
+W-worried is distinguishable from A-warm**; at 160 px all four read. Not an art defect —
+the band is 27 px tall at that scale. Ideas.md §6b now says: idle sprite at ~96–120 px is
+fine (it only switches warm ↔ worried); the **dialogue portrait must be ≥ 160 px or a
+head-only crop.**
