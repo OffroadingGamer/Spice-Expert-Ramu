@@ -131,6 +131,13 @@ export interface AppState {
     likeAvailable: boolean;
     commentsAvailable: boolean;
     isLiked: boolean;
+    /** Rounds 0+1 (docs/Ideas.md §1/§6d): the one open dialogue beat, or
+     *  null. `index` is which line of `lines` is showing. Only ever set by
+     *  dialogueController.ts (queueDialogue/advanceDialogue/skipDialogue) —
+     *  see that file for the queueing rule when a second beat triggers while
+     *  one is still open. Hud.tsx hides Ready while this is non-null, the
+     *  same condition it already applies for `selectedPad`. */
+    dialogue: { id: string; voice: 'A' | 'B' | 'C'; lines: string[]; index: number } | null;
 }
 
 const INITIAL: AppState = {
@@ -169,6 +176,7 @@ const INITIAL: AppState = {
     likeAvailable: false,
     commentsAvailable: false,
     isLiked: false,
+    dialogue: null,
 };
 
 /**

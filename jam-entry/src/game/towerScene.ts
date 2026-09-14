@@ -25,6 +25,8 @@ import { MANIFEST } from '../assets/manifest.ts';
 import { createEngine, posAt, PATH_LENGTH, type EngineEvent } from './sim/engine.ts';
 import { registerEngine, syncStore, getTowersPlacedThisRun, grantFtueShortfall, retireFtue, FTUE_FIRST_PAD } from './actions.ts';
 import { TOWERS } from './data/towers.ts';
+import { dialogueForBlock } from './data/dialogue.ts';
+import { queueDialogue } from './dialogueController.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
 import {
     dishContentExtent,
@@ -63,13 +65,23 @@ function backdropAliasForBlock(blockId: number): string {
     return `bg-block-${blockId}`;
 }
 
+/** This block's chef-body alias (Rounds 0+1, docs/Ideas.md §6b/§6d) — the
+ *  slug matches manifest.ts's chef-body-* aliases by construction: both
+ *  derive from the same block label, lowercased/hyphenated ('NORTH INDIAN'
+ *  -> 'north-indian'), so a new block only ever needs its manifest line. */
+function chefBodyAliasForBlock(block: Block): string {
+    return `chef-body-${block.label.toLowerCase().replace(/\s+/g, '-')}`;
+}
+
 /** Every asset one block needs before it can play — its enemies' dish-*
- *  aliases AND its backdrop — filtered through MANIFEST_ALIASES so a
- *  not-yet-registered asset is silently skipped (falls back to the
- *  archetype silhouette / procedural backdrop, same as today) instead of
- *  throwing. Visual round, task 1: the backdrop rides in the SAME
- *  Assets.load() batch as the dishes (ensureBlockAssets below) — same race,
- *  same fix, not a second mechanism. */
+ *  aliases, its backdrop, AND its chef-body costume — filtered through
+ *  MANIFEST_ALIASES so a not-yet-registered asset is silently skipped
+ *  (falls back to the archetype silhouette / procedural backdrop / no chef
+ *  sprite yet, same posture as today) instead of throwing. Visual round,
+ *  task 1: the backdrop rides in the SAME Assets.load() batch as the dishes
+ *  (ensureBlockAssets below) — same race, same fix, not a second mechanism;
+ *  Rounds 0+1 extend that one batch again for the chef costume rather than
+ *  adding a second prefetch path. */
 function blockAssetAliases(block: Block): string[] {
     const aliases = new Set<string>();
     for (const slugs of Object.values(block.dishes)) {
@@ -80,6 +92,8 @@ function blockAssetAliases(block: Block): string[] {
     }
     const bgAlias = backdropAliasForBlock(block.id);
     if (MANIFEST_ALIASES.has(bgAlias)) aliases.add(bgAlias);
+    const chefAlias = chefBodyAliasForBlock(block);
+    if (MANIFEST_ALIASES.has(chefAlias)) aliases.add(chefAlias);
     return [...aliases];
 }
 
@@ -488,9 +502,12 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     // GDD §10.11's pre-start beat pre-selects FTUE_FIRST_PAD (set by
     // MainMenu.tsx / EndScreen.tsx's Retry BEFORE this scene mounts) — this
     // reset must not clobber it, or the FTUE's opening StationRail never
-    // opens.
+    // opens. Round 1 (docs/Ideas.md §1/§6d): EXCEPT while the opening
+    // dialogue is showing (scriptedRunStart armed it in the same patch,
+    // selectedPad null) — the picker cue must wait for DialogueBox.tsx to
+    // release it, so this reset must not clobber THAT either.
     store.patch({
-        selectedPad: store.get().ftueActive ? FTUE_FIRST_PAD : null,
+        selectedPad: store.get().ftueActive && !store.get().dialogue ? FTUE_FIRST_PAD : null,
         waveCount: WAVES.length,
         tdPhase: 'build',
         wave: 1,
@@ -719,7 +736,11 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 lives_remaining: engine.state.lives,
                 duration_s: (performance.now() - waveStartedAt) / 1000,
             });
-            if (e.cleared === 1) trackFunnelStep(5, 'wave_1_cleared', 'run', 2);
+            if (e.cleared === 1) {
+                trackFunnelStep(5, 'wave_1_cleared', 'run', 2);
+                // Round 1 (docs/Ideas.md §1 beat 3): once-per-player.
+                queueDialogue('wave1-cleared', true);
+            }
             if (store.get().ftueActive) {
                 // Task F, onboarding-balance round: a practical guarantee
                 // against losing DURING the scripted, walled FTUE, not a
@@ -1165,6 +1186,15 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                     backdropLockTimer = null;
                     store.patch({ backdropTransitioning: false });
                 }, BACKDROP_LOCK_S * 1000);
+                // Round 1 (docs/Ideas.md §1 beats 5-12, "Districts" +
+                // "Overtime"): the same real-transition branch the backdrop
+                // crossfade uses — costs no new dead time, the design note
+                // this whole beat kind is built on. Once per RUN (not
+                // persisted): a block boundary only exists once per run by
+                // construction, so no dialogueSeen gating is needed here,
+                // unlike beats 1-4 above.
+                const beat = dialogueForBlock(block.id);
+                if (beat) queueDialogue(beat.id, false);
             }
         }
         // Polled every tick (not only at the boundary above) so the swap

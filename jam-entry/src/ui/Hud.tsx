@@ -60,6 +60,7 @@ import { CONFIG } from '../game/config.ts';
 import { designToScreen } from '../game/stage.ts';
 import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
+import DialogueBox from './DialogueBox.tsx';
 import Slider from './Slider.tsx';
 
 /** Live screen positions of a set of pads, tracking the canvas's own
@@ -115,6 +116,7 @@ export default function Hud() {
     const backdropTransitioning = useStore((s) => s.backdropTransitioning);
     const ftueGrantAmount = useStore((s) => s.ftueGrantAmount);
     const ftueGrantNonce = useStore((s) => s.ftueGrantNonce);
+    const dialogue = useStore((s) => s.dialogue);
     // Blocker round audit: the Kitchen Actions row below reads getEngine()
     // during render, same non-reactive-read shape StationRail.tsx's own doc
     // comment describes in full. Not the reported repro path (this row only
@@ -323,7 +325,7 @@ export default function Hud() {
                 positioned siblings) is what's placing them. This also
                 retires the wave-4 toast's old bottom-48 fixed clearance
                 (see its own comment below) in favour of the same flow. */}
-            {tdPhase === 'build' && selectedPad === null && ftueBeat === null && !menuOpen && (
+            {tdPhase === 'build' && selectedPad === null && ftueBeat === null && dialogue === null && !menuOpen && (
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-2 px-3 pb-safe-bottom">
                     {/* Round D: the FTUE now scripts every run through wave 4
                         (onboarding-balance round: was wave 3, before a third
@@ -435,6 +437,12 @@ export default function Hud() {
                     style={{ left: pos.x - 24, top: pos.y - 24, width: 48, height: 48 }}
                 />
             ))}
+
+            {/* Round 1 (docs/Ideas.md §1/§6d): mounted here per the
+                handover, at the top of Hud's own render order so its z-20
+                bottom bar draws above the Ready column it's mutually
+                exclusive with (both z-20; later in DOM order wins ties). */}
+            <DialogueBox />
 
             {/* Shift menu. Backdrop tap closes it. */}
             {menuOpen && (

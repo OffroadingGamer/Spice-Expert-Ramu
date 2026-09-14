@@ -6,9 +6,11 @@
 import { store, type AppState } from '../state/store.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
 import { switchCue, prefetchCue, isAudioUnlocked } from '../audio/audio.ts';
-import { completeFtue, setFtueFirstTower } from '../state/save.ts';
+import { completeFtue, getSave, markDialogueSeen, setFtueFirstTower } from '../state/save.ts';
 import { CONFIG } from './config.ts';
 import { WAVES } from './data/waves.ts';
+import { OPENING_DIALOGUE } from './data/dialogue.ts';
+import { queueDialogue, resetDialogueQueue } from './dialogueController.ts';
 import type { TargetingMode } from './data/targeting.ts';
 import { kitchenActionCost, type Engine, type KitchenActionKind } from './sim/engine.ts';
 
@@ -96,14 +98,36 @@ export function getEngine(): Engine | null {
  * already on the 'playing' phase and just needs the sim-facing field reset).
  * One function here means the script's shape can't quietly drift between
  * them.
+ *
+ * Round 1 (docs/Ideas.md §1/§6d): the opening dialogue (beats 1-2) is armed
+ * in this SAME patch rather than queued through dialogueController.ts —
+ * queueDialogue reads store.get().dialogue to decide whether to open or
+ * queue, and this patch hasn't landed yet when scriptedRunStart runs, so
+ * routing the opening through it here would always see a stale "nothing
+ * open" read from the PREVIOUS run. Showing it also holds off the
+ * placeFirst picker cue (selectedPad stays null) until the opening closes —
+ * DialogueBox.tsx sets selectedPad to FTUE_FIRST_PAD itself at that point,
+ * the one FTUE-specific wire this whole dialogue pass needs (see that
+ * file's / dialogueController.ts's doc comments). A player who has already
+ * seen the opening (dialogueSeen, persisted) or has CONFIG.narrative.enabled
+ * off gets exactly today's behaviour, unchanged.
  */
 export function scriptedRunStart(): Partial<AppState> {
+    resetDialogueQueue();
+    const showOpening = CONFIG.narrative.enabled && !getSave().dialogueSeen.includes(OPENING_DIALOGUE.id);
+    if (showOpening) {
+        markDialogueSeen(OPENING_DIALOGUE.id);
+        track('dialogue_shown', { id: OPENING_DIALOGUE.id });
+    }
     return {
-        selectedPad: FTUE_FIRST_PAD,
+        selectedPad: showOpening ? null : FTUE_FIRST_PAD,
         runId: store.get().runId + 1,
         ftueActive: true,
         ftueBeat: 'placeFirst',
         pulsePads: null,
+        dialogue: showOpening
+            ? { id: OPENING_DIALOGUE.id, voice: OPENING_DIALOGUE.voice, lines: OPENING_DIALOGUE.lines, index: 0 }
+            : null,
     };
 }
 
@@ -220,6 +244,10 @@ export function upgradeTower(padIndex: number): void {
         // scratch one line later.
         if (store.get().ftueBeat === 'upgrade0' && padIndex === FTUE_FIRST_PAD) {
             store.patch({ ftueBeat: null, selectedPad: null });
+            // Round 1 (docs/Ideas.md §1 beat 4, "First upgrade bought"):
+            // once-per-player, so a Retry after the beat is already in
+            // dialogueSeen no-ops here.
+            queueDialogue('first-upgrade', true);
         }
         syncStore();
         track('tower_upgraded', {

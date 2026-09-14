@@ -239,4 +239,14 @@ export const CONFIG = {
         /** Game-over placement: bonus gems = ceil(gemsEarned * this). */
         gemBonusFactor: 0.5,
     },
+
+    /**
+     * Rounds 0+1: Ramu's dialogue-box pass (docs/Ideas.md §1/§6b/§6d). One
+     * flag gates every trigger (data/dialogue.ts, dialogueController.ts) —
+     * false makes a full run show nothing and fire no dialogue_* events,
+     * with zero other code paths touched (kill switch for this whole pass).
+     */
+    narrative: {
+        enabled: true,
+    },
 } as const;

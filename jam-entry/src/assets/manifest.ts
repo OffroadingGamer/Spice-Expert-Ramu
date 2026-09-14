@@ -84,6 +84,17 @@ export const MANIFEST: Manifest = {
                 // part 2: no callers left, remove the alias, not just the
                 // call site.
                 { alias: 'burrow', src: 'images/burrow.png' },
+                // Rounds 0+1 (docs/Ideas.md §6b/§6d): Ramu's layered sprite —
+                // body + face, 320x320 (uniform-scaled from 1024x1024
+                // sources, alpha 0 corners; see the byte table in the
+                // round's report). Only the block-1 body and the default
+                // idle face are critical — the opening dialogue (Round 1)
+                // and the eventual chef sprite (Round 2) both need them at
+                // boot. The other 8 bodies + 3 faces are 'deferred' below,
+                // warmed a block early by ensureBlockAssets (towerScene.ts)
+                // the same way the dish/backdrop assets already are.
+                { alias: 'chef-body-cafe', src: 'images/chef/body-cafe.png' },
+                { alias: 'chef-face-a', src: 'images/chef/face-warm.png' },
             ],
         },
         {
@@ -236,6 +247,23 @@ export const MANIFEST: Manifest = {
                 { alias: 'bg-block-7', src: 'images/bg-block-7.jpg' },
                 { alias: 'bg-block-8', src: 'images/bg-block-8.jpg' },
                 { alias: 'bg-block-9', src: 'images/bg-block-9.jpg' },
+                // Rounds 0+1: the other 8 costumes (blocks 2-9) + 3 non-idle
+                // faces (B-wry, C-moved, W-worried — see the critical tier
+                // above for A-warm/CAFE). Slug matches the body's own block
+                // (data/blocks.ts's labels, lowercased/hyphenated); face
+                // letter matches §6b's A/B/C/W naming, not the source
+                // filename.
+                { alias: 'chef-body-north-indian', src: 'images/chef/body-north-indian.png' },
+                { alias: 'chef-body-south-indian', src: 'images/chef/body-south-indian.png' },
+                { alias: 'chef-body-italian', src: 'images/chef/body-italian.png' },
+                { alias: 'chef-body-north-east', src: 'images/chef/body-north-east.png' },
+                { alias: 'chef-body-ne-fusion', src: 'images/chef/body-ne-fusion.png' },
+                { alias: 'chef-body-italian-fusion', src: 'images/chef/body-italian-fusion.png' },
+                { alias: 'chef-body-desi-fusion', src: 'images/chef/body-desi-fusion.png' },
+                { alias: 'chef-body-overtime', src: 'images/chef/body-overtime.png' },
+                { alias: 'chef-face-b', src: 'images/chef/face-wry.png' },
+                { alias: 'chef-face-c', src: 'images/chef/face-moved.png' },
+                { alias: 'chef-face-w', src: 'images/chef/face-worried.png' },
             ],
         },
     ],
