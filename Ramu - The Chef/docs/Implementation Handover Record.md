@@ -49,8 +49,8 @@ of the present.**
 | **FTUE opening pad** | **`FTUE_FIRST_PAD = 4`** (B3, `damage ×1.5`), then pads 3 and 2 |
 | **Sealed files** | `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` |
 | **`data/waves.ts`** | ⚠️ **RE-SEALED.** Unsealed for the v1.69.0 block-1 retune only |
-| **Credits (Sep 14, ~11:00 IST)** | **193,756** = BACK-TO-WORK ~**91,700** (exp. **Sep 15**, hour unverified) + **50,000 refund from RUN support** (landed Sep 14, **expiry unverified — read the studio page**) + 27,200 (exp. Dec) + 25,000 starter (labelled "exp. Aug 29", still counted) + daily |
-| **Paid campaign** | 📤 **`kitchen-rush-meta` SUBMITTED 21:28 IST Sep 14** — Meta, **Android**, **$82**, 2 days = 91,100 credits. `pending-review`, $0 spent (verified live). Creatives: 3 squares reused free + 2 vertical + 2 landscape for **1,962 credits**. **Hard cutoff: cancel if not flighted by 23:00 IST Sep 15** (owner: implementation agent; its cron `5f540037` is session-local — the user triggers the check). Reddit: rejected, $0 |
+| **Credits (Sep 15, 17:45 IST)** | **93,273** = 50,000 grant (Dec 13) + 15,000 grant (Dec 8) + 25,000 starter + 3,173 quests + 100 daily. **BACK-TO-WORK is gone: its last ~91,000 funded the Meta flight** on its final day. Durable pool untouched |
+| **Paid campaign** | 🛫 **`kitchen-rush-meta` FLIGHTED** (RUN flighted it Sep 15; charged 91,100). Meta/Android, $82, ends **Sep 16**. Day 1: 1,466 impr · 49 clicks · 3.34 % CTR · **7 installs · CPI $2.72**. Cutoff moot. Implementation agent pulls daily `stats`; marketing agent reads them |
 | **Art leg (Sep 14)** | ✅ **DONE** — `Art/_gen/chef-final/`: 9 bodies + 4 faces + scroll, **7,003 credits**, verified. Faces are aligned eyebrow-to-jaw bands. ⚠️ Expressions read at **≥ 160 px, not 96** — spec amended in Ideas.md §6b. Nothing ships before judging |
 | **Video leg (Sep 14)** | ✅ **PUBLISHED** — *Twelve Glasses*, 45 s portrait, Video Studio, live ~00:08 IST Sep 15, ~20 min before the close. Share `https://w.run/s/UvNAAno`. Agent-reported ≈43k credits; ⚠️ **not visible in `rundot credits`** (balance 184,274 reconciles without it) — Studio may bill a separate pool. Docs tracked in `VideoGen Leg/`; media gitignored. ✅ **RUN support confirmed Sep 15: automatically in consideration** — no form, no listing; Editor's Picks $300/$100/$100. Share link handed to the marketing agent for the organic calendar |
 
@@ -2405,3 +2405,41 @@ Nine files (`ServiceGauge.tsx` new). Sealed untouched; balance **35 / 36 / 11 / 
 
 **Left for Round 4:** bubble anchors to `#chef-head-button` on phones where the idle sprite
 is hidden, to the idle portrait where it isn't.
+---
+
+### 2026-09-15 — Meta flighted on the lot's last day; the board says 4th, 21 behind 3rd
+
+**Verified live 17:45 IST.** `kitchen-rush-meta`: `Status: flighted`, `Flighted by U05RZL2DR2N`,
+`spent $25.52`, `ends 2026-09-16`. Day-1 `stats`: **1,466 impressions · 1,121 reach · 49
+clicks · 3.34 % CTR · 6 conversions · 7 installs · CPI $2.72 · CPA $4.25.**
+
+#### The reconciliation
+| | |
+|---|---|
+| Balance before | 184,274 (Sep 15 morning) |
+| Flight debit | **91,100** = $82 × 1.05 × 1,000 + 5,000 fee — the formula from Retro 107, to the credit |
+| Balance after | 93,174 + 100 daily = **93,273** — matches the studio page exactly |
+| Lot drawn | BACK-TO-WORK's remaining ~91,000 (soonest-expiring-first, confirmed: the lot no longer appears; every other lot is intact at full value) |
+
+✅ **The expiring lot funded the campaign on the last day it could.** The Sep 13 decision
+("submit before RUN answers; a late flight can't drain the durable pool") and the Sep 14
+re-sizing both held. The studio page's *"Studio model 86,101 / 5 calls"* and *"5,000 / 2
+calls"* are the ad spend and the flight fee under a generic label.
+
+✅ **Watch item closed:** *"Runtime AI usage: Spice Expert: Ramu 106,390 / 132 calls"* is
+every credit billed against the game id — campaign, creatives, chef art — not player AI use.
+The game calls no AI surface (verified Sep 13). Attribution label; not a leak.
+
+#### The board (jam page, 17:45 IST, **3d 6h 46m** to close)
+| # | Entry | Daily uniques | Prize |
+|---|---|---|---|
+| 1 | Back That Thing Up! | 1,276 | $1,000 |
+| 2 | 9 to Thrive | 1,122 | $600 |
+| 3 | The Grind | **562** | $300 |
+| **4** | **Spice Expert: Ramu** | **541** (793 total plays) | **$200** |
+| 5 | GT Rush: Coastal Life | 512 | $100 |
+| 6 | The Good Life | 434 | — |
+
+⚠️ **Prizes go five deep**, not three — Central had carried "three" from the prize-pool
+line. 3rd is **21 ahead**; 5th is 29 behind. Remaining Meta spend ~$56 ≈ 20 installs at
+day-1 CPI; three organic posting days remain. The read is the marketing agent's.
