@@ -39,7 +39,7 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.75.0** (progression rounds; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.76.0** (progression rounds — all five build rounds done; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
 | **Endgame criterion** | `maxed-meta` must lose between levels **85–110** (currently 90) |
@@ -2498,3 +2498,29 @@ playtest fixes (Ideas.md §6d amendment): bubble icons ≥ 40 px with names, scr
 a closed-by-default 2-column grid with 3-sliced art, upgrade preview in a translucent bubble,
 and the wave-1 top-right overlap. After Round 5 returns: **the user plays end-to-end and
 decides public.**
+---
+
+### 2026-09-16 — Round 5 returned → Private v1.76.0 — build rounds complete; human verification next
+
+**Status:** ✅ **RETURNED, VERIFIED, COMMITTED.** Private **1.76.0**; Review/Public **1.69.0**.
+Five files, +632/−108. Sealed untouched; balance **35 / 36 / 11 / 4 / 90**; `tsc` clean; no
+sidecars; no new art.
+
+| Part | Verified |
+|---|---|
+| Prop bundle | `syncTowerFx()`: recoil (80/60/60 ms, base-anchored), heat flash (pooled additive glow, tinted per archetype, 1-frame under reduced motion), projectile trails (pooled, destroyed in the same alive-set diff as the projectile), wave-only bob + steam. Shot detection by diffing projectile origins against tower launch points — the sealed `shot` event carries no position |
+| FPS | frame-count over 5 s, production build, CPU-throttled Chromium: 4× 60.0→60.1 · 12× 58.9→58.6 · 20× 36.0→37 — no regression. ⚠️ **Desktop proxy, not a phone** |
+| Bubble | 40 px icons with names; row 2 grows in flow, no speed-row overlap |
+| Scroll | closed-by-default across levels 1/6/11/21/51/61 (`strayOpenCount 0`, fixed by a render-time reset); 1 / 2 / 2×3 grids at levels 1 / 51 / 81; **3-slice via CSS `border-image`** on the existing asset; **pad 0 tapped through the open panel and placed a prop** — the item Round 4 verified only architecturally |
+| Preview | translucent bubble, white/85 current → green new, legible over dishes |
+| Overlap | named: the **coin-shortfall toast** (`grantFtueShortfall`), `absolute top-24` — now flows in the HUD column, 21 px clear of the WAVE chip |
+
+#### For the human verification pass
+1. **FPS on a real mid phone** — the one budget item without device evidence.
+2. **Recoil squash by eye** — 80–160 ms is too short for a screenshot; indirect proof only.
+3. Merged double-dish names ("Idli / Dosa") truncate at `6rem`; not stress-tested across all
+   block 6–9 pairings.
+4. `safe = 0` → green from the first kill: intended, unchanged.
+
+**The plan's build rounds are complete.** Per Ideas.md §6d: the user plays 1.76.0 end-to-end
+and decides whether it goes to Review → Public, as **v1.70.0**'s successor.
