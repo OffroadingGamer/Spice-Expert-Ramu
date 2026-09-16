@@ -406,12 +406,12 @@ specified and wrong as a product. Removed.
    (bar stays) · **B** *recommended* — **the service gauge becomes a ring around the 44 px
    head**, amber arc → green past the SAFE tick, bar removed, mute = grey ring, Round 4's
    bubble grows from Ramu · **C** speech tab docked to the board's top-left corner (must be
-   measured against the A row). **Awaiting the user's pick.**
+   measured against the A row). ✅ **User picked B (Sep 16).**
 4. 📋 **Prop feedback proposals** (props read as inert): 1 recoil squash on fire (80 ms,
    1.08×0.90) · 2 heat flash, tinted per archetype · 3 projectile trail · 4 idle bob + steam
    only during a wave · 5 dish hit-flash on HP drop · 6 target-lock ring. All scene-side
    (new-projectile diff, `shot` events, HP deltas); no engine change, no art.
-   **Recommended bundle 1 + 2 + 4 as Round 5**, 5 as second tier. **Awaiting the user's pick.**
+   ✅ **User picked bundle 1 + 2 + 3 + 4 as Round 5 (Sep 16)**; 5 and 6 parked.
 
 **Round 3 — decided: horizontal fill under the wave chip**, not a bar in the gutter. Same
 maths (SAFE = units − (lives − 1)), amber → green, resets per wave. Top-left, directly under

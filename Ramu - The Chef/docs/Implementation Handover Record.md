@@ -2443,3 +2443,15 @@ The game calls no AI surface (verified Sep 13). Attribution label; not a leak.
 ⚠️ **Prizes go five deep**, not three — Central had carried "three" from the prize-pool
 line. 3rd is **21 ahead**; 5th is 29 behind. Remaining Meta spend ~$56 ≈ 20 installs at
 day-1 CPI; three organic posting days remain. The read is the marketing agent's.
+---
+
+### 2026-09-16 — Round 4 issued: centre box, beat 3 → dock, upgrade preview, ring gauge, wave bubble + scroll
+
+**Issued.** Decisions from the 1.74.0 playtest plus the user's picks: **chef HUD option B** (the
+service gauge becomes a ring around the 44 px head; bar removed) and **prop-feedback bundle
+1 + 2 + 3 + 4 as Round 5**. 🔒 Private only. Round 4 is the last before **human
+verification decides public** (Ideas.md §6d rule) — Round 5 is queued behind it as UI polish.
+Scope: dialogue box to screen centre, tap-anywhere; beat 3 closes → dock opens on pad 4;
+green post-upgrade preview above the selected prop; `ServiceGauge` bar → ring; wave bubble
+on the head with dish icons → scroll submenu in the top band (§7 data path; `scroll.png`
+prepped at 720 wide).
