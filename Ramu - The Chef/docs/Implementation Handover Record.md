@@ -39,7 +39,7 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.74.0** (progression rounds; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.75.0** (progression rounds; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
 | **Endgame criterion** | `maxed-meta` must lose between levels **85–110** (currently 90) |
@@ -2455,3 +2455,36 @@ Scope: dialogue box to screen centre, tap-anywhere; beat 3 closes → dock opens
 green post-upgrade preview above the selected prop; `ServiceGauge` bar → ring; wave bubble
 on the head with dish icons → scroll submenu in the top band (§7 data path; `scroll.png`
 prepped at 720 wide).
+---
+
+### 2026-09-16 — Round 4 returned → Private v1.75.0 — the plan's last build round
+
+**Status:** ✅ **RETURNED, VERIFIED, COMMITTED.** Private **1.75.0**; Review/Public **1.69.0**.
+Twelve files (`ServiceRing.tsx`, `WaveBubble.tsx` new; `ServiceGauge.tsx` deleted;
+`public/images/ui/scroll.png` 720×305, 144,106 B). Sealed untouched; balance **35 / 36 / 11 / 4 /
+90**; `tsc` and `vite build` clean; no sidecars.
+
+| Part | Verified |
+|---|---|
+| A centre box | dead-centre at 403 and 768 (rect 160–608 × 420–604 on 768×1024); portrait/text/padding all advance; Skip doesn't |
+| B beat 3 → dock | `{null,null,build}` → tap → `{4,'upgrade0',build}` → purchase → `{null,null,build}` → plain Ready → wave 2. `openUpgrade0Beat()` lifted out of `applyFtueWaveEnd` so it runs on the close, not the clear |
+| C preview | Stock Pot Lv1: `18 → 25 dmg` / `1.6 → 1.8/s`, equal to the rail's post-purchase display |
+| D ring | level 3 `{17, 0, 8}` amber with tick; level 1 `{6, 0, 0}` green, no tick; muted `#6b6b70`. Needed a `store.dialogueMuted` mirror — the controller's flag was invisible to React |
+| E bubble + scroll | trigger inline after the ring; submenu at `x 12, y 128, w 379, h 52` under the WAVE row, chip (y 73–101) and speed buttons clear; `Coffee ●●●●● 🪙 5 ×6`; outside-tap close via a non-blocking `pointerdown` listener |
+
+⚠️ **One item not landed live:** a pad tap *through* the open submenu. Verified architecturally
+(no backdrop, no `preventDefault`), not by screenshot. **First thing to poke in the human pass.**
+
+#### Three flags for the human verification pass — Central's position
+1. **Blocks 6–9 have two dishes per archetype;** each submenu row shows the entry's full count,
+   not a split. The spec gave no split rule. Position: show the count **once per archetype row**
+   with both icons, rather than twice — a Round 5 nit if the user agrees.
+2. **`safe = 0` → green from the start of the wave.** Intended: it means "this wave cannot end
+   the run" (Central, Sep 15). Leave.
+3. Row 2 has no wrap fallback if a RUSH label runs long. Pre-existing; noted.
+
+✅ The agent followed the handover over two stale lines in Ideas.md (the wave-chip fallback,
+the 3 s auto-dismiss) and said so. Both lines are superseded by §6d's amendment.
+
+**Next:** Round 5 (prop bundle 1 + 2 + 3 + 4), then the user plays 1.7x end-to-end and decides
+public.
