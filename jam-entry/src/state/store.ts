@@ -157,6 +157,15 @@ export interface AppState {
      *  (impossible today, but see ftueGrantNonce's own doc for the same
      *  reasoning) must still be able to re-trigger it. */
     unmuteCueNonce: number;
+    /** Round 4 Part D (docs/Ideas.md §6d): a reactive mirror of
+     *  dialogueController.ts's own module-private `dialogueMuted` — that
+     *  module's isDialogueMuted() is a plain read, invisible to React (the
+     *  same class of problem store.ts's own engineReady field exists to
+     *  solve). ServiceRing.tsx reads this to grey the ring regardless of
+     *  fill. Kept in sync by muteDialogue()/unmuteDialogue()/
+     *  resetDialogueQueue() (dialogueController.ts) — never patched
+     *  anywhere else. */
+    dialogueMuted: boolean;
 }
 
 const INITIAL: AppState = {
@@ -198,6 +207,7 @@ const INITIAL: AppState = {
     dialogue: null,
     gauge: null,
     unmuteCueNonce: 0,
+    dialogueMuted: false,
 };
 
 /**

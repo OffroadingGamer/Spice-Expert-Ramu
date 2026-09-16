@@ -52,7 +52,7 @@
  * (store.pulsePads) also stops being FTUE-exclusive: it fires after every
  * wave clear from wave 4 on (towerScene.ts's applyPostWavePulse).
  */
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useState } from 'react';
 import { setMusicVolume, setSfxVolume, sfx, switchCue } from '../audio/audio.ts';
 import { buyKitchenAction, getEngine, kitchenActionPrice, startWave } from '../game/actions.ts';
 import { blockForLevel } from '../game/data/blocks.ts';
@@ -63,28 +63,9 @@ import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import { ChefHeadIcon, ChefPortraitIdle } from './ChefPortrait.tsx';
 import DialogueBox from './DialogueBox.tsx';
-import ServiceGauge from './ServiceGauge.tsx';
+import ServiceRing from './ServiceRing.tsx';
 import Slider from './Slider.tsx';
-
-/** Round 3 (docs/Ideas.md §6a): the service gauge's width must equal the
- *  ESCAPES+CASH chip row's own rendered width (the widest element of that
- *  group) — measured live off that row's own ref rather than guessed,
- *  same ResizeObserver posture as usePadsScreenPos/useRailClearancePx
- *  elsewhere in this codebase. */
-function useElementWidth<T extends HTMLElement>(): [RefObject<T | null>, number] {
-    const ref = useRef<T | null>(null);
-    const [width, setWidth] = useState(0);
-    useEffect(() => {
-        const el = ref.current;
-        if (!el) return;
-        const compute = () => setWidth(el.getBoundingClientRect().width);
-        compute();
-        const ro = new ResizeObserver(compute);
-        ro.observe(el);
-        return () => ro.disconnect();
-    }, []);
-    return [ref, width];
-}
+import { useWaveBubble, WaveBubbleSubmenu, WaveBubbleTrigger } from './WaveBubble.tsx';
 
 /** Live screen positions of a set of pads, tracking the canvas's own
  *  contain-fit + board-centering transform — stage.ts's designToScreen() is
@@ -140,7 +121,7 @@ export default function Hud() {
     const ftueGrantAmount = useStore((s) => s.ftueGrantAmount);
     const ftueGrantNonce = useStore((s) => s.ftueGrantNonce);
     const dialogue = useStore((s) => s.dialogue);
-    const [chipRowRef, chipRowWidth] = useElementWidth<HTMLDivElement>();
+    const waveBubble = useWaveBubble();
     // Blocker round audit: the Kitchen Actions row below reads getEngine()
     // during render, same non-reactive-read shape StationRail.tsx's own doc
     // comment describes in full. Not the reported repro path (this row only
@@ -210,11 +191,7 @@ export default function Hud() {
             <div className="flex flex-col gap-2 px-3">
                 {/* row 1: status + hamburger */}
                 <div className="flex items-center justify-between gap-2">
-                    {/* Round 3 (docs/Ideas.md §6a) measures THIS row's own
-                        rendered width live (chipRowWidth) so the service
-                        gauge below can match it exactly — the widest element
-                        of the group, per the handover. */}
-                    <div id="hud-chip-row" ref={chipRowRef} className="flex min-w-0 gap-2">
+                    <div id="hud-chip-row" className="flex min-w-0 gap-2">
                         {/* Round 3 HUD relabel (docs/LevelBlocks.md §11): 🚪 10
                             named nothing; ESCAPES LEFT names what a lost life
                             IS — a customer walking out. Label stacked above
@@ -280,21 +257,32 @@ export default function Hud() {
                             gutter phones (the 403x874 reference included),
                             so this is the one guaranteed to exist everywhere.
                             Placed next to the WAVE chip (not under it) so it
-                            can never collide with the gauge row below, which
-                            owns that space instead. Stable id — Round 4's
-                            chat-bubble anchors to this exact element on
-                            phones where the idle chef is hidden (see this
-                            round's own report). unmuteDialogue() no-ops
-                            while not muted, so this is always safe to tap. */}
-                        <button
-                            type="button"
-                            id="chef-head-button"
-                            aria-label="Ramu — tap to un-mute his dialogue"
-                            onClick={() => { sfx.click(); unmuteDialogue(); }}
-                            className="pointer-events-auto flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-black/55"
-                        >
-                            <ChefHeadIcon />
-                        </button>
+                            can never collide with the row below. Stable id —
+                            Round 4's chat bubble anchors here unconditionally
+                            now (see WaveBubble.tsx — this button is always
+                            present, unlike the idle chef sprite, so it needs
+                            no gutter-width fallback). unmuteDialogue() no-ops
+                            while not muted, so this is always safe to tap.
+                            Round 4 Part D: wrapped in a 52px box so
+                            ServiceRing (the service gauge, now a ring
+                            instead of Round 3's bar) can sit behind the 44px
+                            button itself without resizing it. */}
+                        <div className="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center">
+                            <ServiceRing />
+                            <button
+                                type="button"
+                                id="chef-head-button"
+                                aria-label="Ramu — tap to un-mute his dialogue"
+                                onClick={() => { sfx.click(); unmuteDialogue(); }}
+                                className="pointer-events-auto relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-black/55"
+                            >
+                                <ChefHeadIcon />
+                            </button>
+                        </div>
+                        {/* Round 4 Part E: the wave bubble trigger — plain DOM
+                            flow next to #chef-head-button is "anchored to its
+                            right" by construction (see WaveBubble.tsx). */}
+                        <WaveBubbleTrigger state={waveBubble} />
                     </div>
                     <div className="pointer-events-auto flex shrink-0 overflow-hidden rounded-xl bg-black/55">
                         {([1, 2, 3, 4] as const).map((s) => (
@@ -313,13 +301,16 @@ export default function Hud() {
                     </div>
                 </div>
 
-                {/* Round 3 (docs/Ideas.md §6a/§6d amendment): directly under
-                    the WAVE/RUSH chip by DOM order (this same gap-2 column,
-                    right after row 2), width-matched to the ESCAPES+CASH
-                    row above via chipRowWidth — see useElementWidth. Null
-                    `gauge` (towerScene.ts's syncGauge — before an engine
-                    exists, or once tdPhase is 'lost') renders nothing. */}
-                <ServiceGauge widthPx={chipRowWidth} />
+                {/* Round 4 Part D retires Round 3's bar (ServiceGauge.tsx,
+                    deleted — the service gauge is now ServiceRing.tsx,
+                    around #chef-head-button above). Part E's scroll submenu
+                    takes this row instead — directly under the WAVE/RUSH +
+                    speed row by DOM order, in the "top band between the
+                    WAVE chip and the speed buttons" the handover asks for;
+                    a separate row rather than squeezed between them within
+                    row 2 itself is what guarantees it can never overlap
+                    either. */}
+                <WaveBubbleSubmenu state={waveBubble} />
 
                 {/* Mobile layout round, task 2: the objective/milestone
                     banners used to be separate `absolute top-20` overlays —

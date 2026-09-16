@@ -169,6 +169,32 @@ export function retireFtue(): void {
     store.patch({ ftueActive: false, ftueBeat: null, pulsePads: null });
 }
 
+/**
+ * Round 4 Part B (docs/Ideas.md §6d): opens the upgrade dock on
+ * FTUE_FIRST_PAD with beat 3 ('upgrade0') armed. Used to be towerScene.ts's
+ * applyFtueWaveEnd(1) branch, firing the INSTANT wave 1 cleared — moved here
+ * (and made callable on demand) because Round 4 gives the 'wave1-cleared'
+ * dialogue box the screen to itself first; DialogueBox.tsx now calls this
+ * when the PLAYER closes that box (tap or Skip), not at the wave-clear tick.
+ * Beat 3's requirement is the forced upgrade's own cost — the documented
+ * trap (Tandoor at beat 1 leaves the upgrade unaffordable with flawless
+ * play) — computed from live state, never typed in; grantFtueShortfall
+ * no-ops if already affordable. If FTUE_FIRST_PAD has nothing left to
+ * upgrade (safe today at wave 1 end, guarded in case that changes), there's
+ * nothing to force the player into — retire the script instead.
+ */
+export function openUpgrade0Beat(): void {
+    const engine = slot.current;
+    if (!engine) return;
+    const t = engine.state.towers.find((tw) => tw.padIndex === FTUE_FIRST_PAD);
+    if (t && t.level <= t.def.upgrades.length) {
+        grantFtueShortfall(t.def.upgrades[t.level - 1].cost);
+        store.patch({ selectedPad: FTUE_FIRST_PAD, ftueBeat: 'upgrade0' });
+    } else {
+        retireFtue();
+    }
+}
+
 /** Patch UI-facing engine values into the store (only what changed). */
 export function syncStore(): void {
     const engine = slot.current;

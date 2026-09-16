@@ -264,6 +264,12 @@ export const MANIFEST: Manifest = {
                 { alias: 'chef-face-b', src: 'images/chef/face-wry.png' },
                 { alias: 'chef-face-c', src: 'images/chef/face-moved.png' },
                 { alias: 'chef-face-w', src: 'images/chef/face-worried.png' },
+                // Round 4 Part E (docs/Ideas.md §6d): the wave-intro scroll's
+                // one background asset (Art/_gen/chef-final/scroll.png,
+                // 1584x672) — uniform-scaled to 720 wide (no crop), 305 tall,
+                // 144,106 bytes. Deferred: the submenu can't open before wave
+                // 1 clears at the earliest, well after boot.
+                { alias: 'ui-scroll', src: 'images/ui/scroll.png' },
             ],
         },
     ],

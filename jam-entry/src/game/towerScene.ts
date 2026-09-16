@@ -657,14 +657,19 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
      * three forced beats to four — see the third placement below — so the
      * player opens with THREE placed props, not two, before free play.
      *
-     * Wave 1 end forces FTUE_FIRST_PAD's tower view open with the Upgrade
-     * button cued (StationRail.tsx); wave 2 end pulses every empty pad, then
-     * auto-selects one of them (preferring B2) with the picker cued
-     * (Hud.tsx); wave 3 end repeats that same pulse-and-select pattern
-     * (preferring B1) for a third placement. Wave 4 STARTING (not clearing —
-     * see actions.ts's startWave) retires the script for good. A run that
-     * never reaches wave 4 (e.g. lost on wave 1-3) leaves `ftueActive` true,
-     * so Retry restarts the whole script from beat 1 (EndScreen.tsx).
+     * Wave 1 end used to force FTUE_FIRST_PAD's tower view open with the
+     * Upgrade button cued the instant it cleared — Round 4 (docs/Ideas.md
+     * §6d) moves that to actions.ts's openUpgrade0Beat, called by
+     * DialogueBox.tsx once the player closes the 'wave1-cleared' box, so
+     * that box gets the screen to itself first (see this round's own
+     * report). This function no longer has a cleared === 1 branch as a
+     * result. Wave 2 end pulses every empty pad, then auto-selects one of
+     * them (preferring B2) with the picker cued (Hud.tsx); wave 3 end
+     * repeats that same pulse-and-select pattern (preferring B1) for a
+     * third placement. Wave 4 STARTING (not clearing — see actions.ts's
+     * startWave) retires the script for good. A run that never reaches wave
+     * 4 (e.g. lost on wave 1-3) leaves `ftueActive` true, so Retry restarts
+     * the whole script from beat 1 (EndScreen.tsx).
      *
      * Round E: neither beat below is ever SET unless its target is
      * actually resolvable — the reported hard-lock was a beat set
@@ -675,22 +680,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
      */
     function applyFtueWaveEnd(cleared: number): void {
         if (!store.get().ftueActive) return;
-        if (cleared === 1) {
-            const t = engine.state.towers.find((tw) => tw.padIndex === FTUE_FIRST_PAD);
-            // Beat 3's requirement: the forced upgrade's own cost — this is
-            // the documented trap (Tandoor at beat 1 leaves the upgrade
-            // unaffordable with flawless play). Computed from live state,
-            // never typed in; grantFtueShortfall no-ops if already affordable.
-            if (t && t.level <= t.def.upgrades.length) {
-                grantFtueShortfall(t.def.upgrades[t.level - 1].cost);
-                store.patch({ selectedPad: FTUE_FIRST_PAD, ftueBeat: 'upgrade0' });
-            } else {
-                // FTUE_FIRST_PAD has nothing left to upgrade — safe today
-                // (level 1 of up to 3 at wave 1 end), guarded in case that
-                // changes. Nothing to force the player into; let the script go.
-                retireFtue();
-            }
-        } else if (cleared === 2) {
+        if (cleared === 2) {
             // Round I Task 7: old pad 2 (360,485) is now B2, index 3 — the
             // 10-slot board (config.ts) re-orders A1 A2 B1 B2 B3 C1 C2 C3 D1
             // D2, and B2 is the direct descendant (same mid-board spot, same
@@ -1156,6 +1146,10 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     // same scale (coinPopupStyle above), one row up from this file's own
     // "small overlay text that must stay readable" bar.
     const upgradeMarkerStyle = new TextStyle({ fontSize: 24, fontWeight: 'bold', fill: 0xffffff });
+    // Shared by buildUpgradeMarker (the Lv↑ pill) and Round 4's
+    // syncUpgradePreview below — one number, not two driftable copies, same
+    // "cosmetic clearance from the sprite's own top edge" meaning in both.
+    const UPGRADE_MARKER_GAP = 8;
 
     function upgradeAffordable(t: (typeof engine.state.towers)[number]): boolean {
         if (t.level > t.def.upgrades.length) return false; // max level -- rail's own "Max" guard
@@ -1186,7 +1180,6 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         // node.y - size.h in board space; UPGRADE_MARKER_GAP is pure
         // cosmetic clearance from that edge, not a hit-test boundary.
         const node = towerViews.get(t.padIndex)!;
-        const UPGRADE_MARKER_GAP = 8;
         c.position.set(t.x, node.y - size.h - UPGRADE_MARKER_GAP);
         return c;
     }
@@ -1214,6 +1207,51 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 upgradeMarkers.delete(pad);
             }
         }
+    }
+
+    /**
+     * Round 4 Part C (docs/Ideas.md §6d): while the rail is open for a
+     * tower with a next upgrade, two green lines above it show the
+     * post-upgrade damage/rate — the rail's own numbers (StationRail.tsx:
+     * `Math.round(tower.damage)` / `tower.fireRate.toFixed(1)`), so the two
+     * can never disagree. Takes the Lv↑ marker's exact anchor point
+     * (syncUpgradeMarkers already hides that marker for the selected pad —
+     * "the marker already hides on selection, this takes its place"). Only
+     * ever one instance (there's only ever one selected pad), so this is a
+     * single pooled Container updated in place every tick rather than a
+     * per-pad map like upgradeMarkers above.
+     */
+    const upgradePreviewStyle = new TextStyle({ fontSize: 24, fontWeight: 'bold', fill: 0x34d399 });
+    const upgradePreviewLine1 = new Text({ text: '', style: upgradePreviewStyle });
+    const upgradePreviewLine2 = new Text({ text: '', style: upgradePreviewStyle });
+    upgradePreviewLine1.anchor.set(0.5, 1);
+    upgradePreviewLine2.anchor.set(0.5, 1);
+    const upgradePreview = new Container();
+    upgradePreview.addChild(upgradePreviewLine1, upgradePreviewLine2);
+    upgradePreview.visible = false;
+    markerLayer.addChild(upgradePreview);
+
+    function syncUpgradePreview(): void {
+        const sel = store.get().selectedPad;
+        if (sel === null || engine.state.phase === 'lost') { upgradePreview.visible = false; return; }
+        const t = engine.state.towers.find((tw) => tw.padIndex === sel);
+        // Max level (StationRail's own "Max" guard) has no next step to
+        // preview; deselected/lost are covered by the two checks above.
+        if (!t || t.level > t.def.upgrades.length) { upgradePreview.visible = false; return; }
+        const node = towerViews.get(t.padIndex);
+        if (!node) { upgradePreview.visible = false; return; }
+        const step = t.def.upgrades[t.level - 1];
+        upgradePreviewLine1.text = `${Math.round(t.damage)} → ${Math.round(t.damage * step.damageMult)} dmg`;
+        upgradePreviewLine2.text = `${t.fireRate.toFixed(1)} → ${(t.fireRate * step.fireRateMult).toFixed(1)}/s`;
+        const size = towerDisplaySize[t.def.id][t.level - 1];
+        const anchorY = node.y - size.h - UPGRADE_MARKER_GAP;
+        // Line 1 sits at the marker's own anchor point (bottom-anchored, so
+        // it grows upward from there); line 2 stacks directly above it —
+        // each Text auto-sizes to its own glyph width (anchor.x 0.5 centres
+        // it), so neither line is ever clipped regardless of digit count.
+        upgradePreviewLine1.position.set(t.x, anchorY);
+        upgradePreviewLine2.position.set(t.x, anchorY - upgradePreviewLine1.height - 2);
+        upgradePreview.visible = true;
     }
 
     function drawSelection(): void {
@@ -1384,6 +1422,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         syncProjectiles();
         syncTowers();
         syncUpgradeMarkers();
+        syncUpgradePreview();
         syncPads();
         drawBeams(dt);
         drawSelection();

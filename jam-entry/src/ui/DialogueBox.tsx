@@ -1,10 +1,28 @@
 /**
  * Ramu's dialogue box (docs/Ideas.md §1/§6b/§6d Round 1; §6d's "Round 2b"
- * amendment, Sep 15 2026). Bottom-anchored, same absolute-positioning tier
- * Hud.tsx's Ready column uses — the two are mutually exclusive by
- * construction (Hud.tsx hides Ready whenever `dialogue !== null`, the same
- * condition it already applies for `selectedPad`), so there's no overlap to
- * coordinate against there.
+ * amendment, Sep 15 2026; Round 4, Sep 16 2026, moves it to screen centre
+ * and splits beat 3 from the upgrade dock — see below).
+ *
+ * Round 4 Part A (docs/Ideas.md §6d): centred both axes over the board,
+ * which stays visible and tappable around it — this overlay's wrapper is
+ * pointer-events-none, only the box itself opts back in, same as every
+ * other HUD control. Same max-width as before (Tailwind's max-w-md IS
+ * 28rem, so this is the same number, just no longer a one-off inline
+ * style). The whole box is the Continue button (a tap anywhere inside
+ * advances); Skip stays a real sibling, top-right, INSIDE the box, with
+ * stopPropagation so it never also registers as a tap-to-continue.
+ *
+ * Round 4 Part B (docs/Ideas.md §6d): beat 3 ('wave1-cleared') no longer
+ * stays open through the upgrade0 purchase — it's a plain advance/close
+ * beat now, exactly like 'opening'. Closing it (tap OR skip) is what OPENS
+ * the upgrade dock (actions.ts's openUpgrade0Beat, which is what
+ * towerScene.ts's applyFtueWaveEnd used to do the INSTANT wave 1 cleared —
+ * deferred here so the box gets the screen to itself first, per this
+ * round's own screenshot feedback: "the box opens alone; tapping it shut
+ * opens the upgrade dock"). This retires the narrowed/compact
+ * rail-clearance variant entirely (the old RAIL_MIN_PX/useRailClearancePx
+ * plumbing) — the box and the rail can no longer be on screen at the same
+ * time, so there is nothing left to clear.
  *
  * Round 2c (same day, a playtest correction): the upgrade-reminder toast
  * this file used to render above beat 4 is gone (see towerScene.ts's Lv↑
@@ -20,13 +38,11 @@
  * the rest of the run (and every run after, persisted — see
  * dialogueController.ts's muteDialogue/unmuteDialogue). Because muting is
  * now a real, standalone action rather than a "nothing to skip past"
- * non-event, Skip renders on EVERY box now, including beats 2-4 — tapping it
- * there mutes and closes without starting the wave, which is harmless: each
- * of those beats' own ftueBeat/selectedPad state has already resolved to
- * "Ready would show" by the time its box is up, so closing the box (muted or
- * not) simply reveals the real Ready button underneath. Beat 3's compact
- * strip (waitingOnUpgrade below) also keeps its portrait now, just smaller
- * (100px) — it used to drop to a bare one-line strip with neither.
+ * non-event, Skip renders on EVERY box now, including beats 2-4 — tapping
+ * it there mutes and closes without starting the wave, which is harmless:
+ * each of those beats' own ftueBeat/selectedPad state has already resolved
+ * to "Ready would show" by the time its box is up, so closing the box
+ * (muted or not) simply reveals the real Ready button underneath.
  *
  * Round 2b turns beats 1-4 into the FTUE's own Ready button — the box no
  * longer just advances/closes on every tap:
@@ -36,21 +52,16 @@
  *   - 'stove-lit' (beat 2, opens once placeFirst resolves) and 'wave4-ready'
  *     (beat 4, opens once place3 resolves): tap calls startWave() — the box
  *     IS Ready for these two, exactly like the real button (Hud.tsx).
- *   - 'wave1-cleared' (beat 3, opens on wave-1-cleared): stays open through
- *     the upgrade0 purchase (StationRail is on screen at the same time for
- *     exactly this window — the ONE case this box and the rail coexist, see
- *     useRailClearancePx below). Tap is a no-op while ftueBeat is still
- *     'upgrade0' (nothing to advance to yet); once the purchase resolves it,
- *     tap calls startWave() same as beats 2/4.
+ *   - 'wave1-cleared' (beat 3, opens on wave-1-cleared): Round 4 makes this
+ *     a plain advance/close beat too (see this file's header note above) —
+ *     closing it opens the upgrade dock instead of starting a wave.
  *   - district-2..8 / overtime (beats 5-12): plain advance/close, unchanged.
  * Every box gets the small "tap to continue" hint too.
  *
  * Left side: a 160x160px slot holding Round 2's ChefPortrait (body + face,
  * costume by block, face by this beat's voice — see ChefPortrait.tsx).
- * Shrinks to 100px for beat 3's collision window (waitingOnUpgrade below) —
- * the box narrows to clear the rail there, so there isn't room for the full
- * 160px, but Round 3 explicitly keeps a (smaller) portrait rather than
- * dropping it — a bare text strip read as a different, lesser UI.
+ * Round 4 drops the 100px compact-strip case Round 3 added for beat 3's old
+ * rail-clearance window — every beat renders the full 160px now.
  *
  * The one FTUE-specific wire this whole dialogue pass needs: closing the
  * OPENING beat is what releases the placeFirst picker cue (StationRail's
@@ -60,38 +71,11 @@
  * imports actions.ts, and dialogueController.ts must not import back into
  * it — see that file's own doc comment.
  */
-import { useEffect, useState } from 'react';
 import { advanceDialogue, muteDialogue, skipDialogue } from '../game/dialogueController.ts';
-import { FTUE_FIRST_PAD, startWave } from '../game/actions.ts';
-import { getFit, RAIL_WIDTH_UNITS } from '../game/stage.ts';
+import { FTUE_FIRST_PAD, openUpgrade0Beat, startWave } from '../game/actions.ts';
 import { sfx } from '../audio/audio.ts';
 import { store, useStore } from '../state/store.ts';
 import ChefPortrait from './ChefPortrait.tsx';
-import { RAIL_MIN_PX } from './StationRail.tsx';
-
-/** Live px StationRail.tsx's own right-edge panel plus its right-3 gutter
- *  occupies — RAIL_MIN_PX is exported from there so this isn't a second,
- *  driftable copy of that floor (same "one number" posture as Round 2's
- *  BACKDROP_FADE_S / chefBodyAliasForBlock shares). Only beat 3 needs this —
- *  every other beat's own ftueBeat state keeps the rail closed while its box
- *  is open, so there's nothing to clear. */
-function useRailClearancePx(): number {
-    const [px, setPx] = useState(0);
-    useEffect(() => {
-        const frame = document.getElementById('app-frame');
-        if (!frame) return;
-        const compute = () => {
-            const rect = frame.getBoundingClientRect();
-            const { scale } = getFit(rect.width, rect.height);
-            setPx(Math.max(scale * RAIL_WIDTH_UNITS, RAIL_MIN_PX) + 12);
-        };
-        compute();
-        const ro = new ResizeObserver(compute);
-        ro.observe(frame);
-        return () => ro.disconnect();
-    }, []);
-    return px;
-}
 
 /** After closing the opening beat specifically, release the placeFirst
  *  picker cue — a no-op for every other beat, and a no-op if the player
@@ -104,22 +88,31 @@ function releasePlaceFirstIfOpeningClosed(closedId: string): void {
     }
 }
 
+/** Round 4 Part B: after closing beat 3 ('wave1-cleared') specifically,
+ *  open the upgrade dock on FTUE_FIRST_PAD — what towerScene.ts's
+ *  applyFtueWaveEnd used to do the instant wave 1 cleared, now deferred to
+ *  the moment the player actually dismisses the box (see this file's
+ *  header note). A no-op for every other beat, and a no-op once the FTUE
+ *  has already ended some other way. */
+function openUpgrade0IfWave1ClearedClosed(closedId: string): void {
+    if (closedId === 'wave1-cleared' && store.get().ftueActive) {
+        openUpgrade0Beat();
+    }
+}
+
 export default function DialogueBox() {
     const dialogue = useStore((s) => s.dialogue);
-    // Subscribed so beat 3's tap behaviour (below) flips live the instant
-    // the upgrade0 purchase resolves it — the box is already open and
-    // doesn't otherwise re-render on that transition.
-    const ftueBeat = useStore((s) => s.ftueBeat);
-    const railClearancePx = useRailClearancePx();
     if (!dialogue) return null;
 
     const isLastLine = dialogue.index === dialogue.lines.length - 1;
-    const waitingOnUpgrade = dialogue.id === 'wave1-cleared' && ftueBeat === 'upgrade0';
-    const readyTap = dialogue.id === 'stove-lit' || dialogue.id === 'wave4-ready'
-        || (dialogue.id === 'wave1-cleared' && !waitingOnUpgrade);
+    const readyTap = dialogue.id === 'stove-lit' || dialogue.id === 'wave4-ready';
+
+    const onClosed = (closedId: string) => {
+        releasePlaceFirstIfOpeningClosed(closedId);
+        openUpgrade0IfWave1ClearedClosed(closedId);
+    };
 
     const handleAdvance = () => {
-        if (waitingOnUpgrade) return; // held open through the upgrade0 purchase — nothing to do yet
         if (readyTap) {
             sfx.startWave();
             startWave();
@@ -128,7 +121,7 @@ export default function DialogueBox() {
         }
         sfx.click();
         advanceDialogue();
-        if (isLastLine) releasePlaceFirstIfOpeningClosed(dialogue.id);
+        if (isLastLine) onClosed(dialogue.id);
     };
 
     const handleSkip = () => {
@@ -139,22 +132,11 @@ export default function DialogueBox() {
         // opening-specific case any more.
         muteDialogue();
         skipDialogue();
-        releasePlaceFirstIfOpeningClosed(dialogue.id);
+        onClosed(dialogue.id);
     };
 
     return (
-        <div
-            className={
-                'pointer-events-none absolute inset-x-0 bottom-0 z-20 flex px-3 pb-safe-bottom ' +
-                (waitingOnUpgrade ? 'justify-start' : 'justify-center')
-            }
-        >
-            {/* waitingOnUpgrade left-anchors instead of centering — centering
-                a narrowed box still places its right edge by the CONTAINER's
-                centre, which can still reach into the rail (StationRail.tsx,
-                right-3) depending on viewport width. Left-anchored, the
-                inline maxWidth above is a hard right-edge cap measured from
-                the screen's left edge, which is what actually keeps it clear. */}
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-3">
             {/* Round 2c (docs/Ideas.md §6d amendment) removed the
                 upgrade-reminder toast that used to render here above beat 4
                 — see towerScene.ts's Lv↑ markers instead. */}
@@ -164,21 +146,14 @@ export default function DialogueBox() {
                 and a <button> can't contain another <button> (invalid HTML;
                 browsers hoist the nested one out, breaking both the layout
                 and the tap target). Continue fills the box edge-to-edge. */}
-            <div
-                className="pointer-events-auto relative w-full overflow-hidden rounded-2xl bg-black/80"
-                style={waitingOnUpgrade ? { maxWidth: `calc(100% - ${railClearancePx}px)` } : { maxWidth: '28rem' }}
-            >
+            <div className="pointer-events-auto relative w-full max-w-md overflow-hidden rounded-2xl bg-black/80">
                 <button
                     type="button"
                     aria-label="Continue"
                     onClick={handleAdvance}
                     className="flex w-full items-center gap-3 p-3 text-left"
                 >
-                    {/* Round 3: beat 3's compact strip keeps a portrait now,
-                        just shrunk to 100px (was dropped entirely) — the
-                        line still wraps to as many rows as it needs beside
-                        it, same p/self-center below either size. */}
-                    <ChefPortrait size={waitingOnUpgrade ? 100 : 160} variant="dialogue" />
+                    <ChefPortrait size={160} variant="dialogue" />
                     {/* Round 2c: centred against the portrait (was
                         bottom-hugging via the row's old items-end-by-default —
                         items-center on the row above plus self-center here is

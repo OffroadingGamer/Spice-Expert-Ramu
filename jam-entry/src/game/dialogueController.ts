@@ -46,6 +46,7 @@ let dialogueMuted = false;
 export function resetDialogueQueue(): void {
     queue = [];
     dialogueMuted = getSave().dialogueMuted;
+    store.patch({ dialogueMuted });
 }
 
 /** DialogueBox.tsx's Skip handler calls this for every box now (Round 3)
@@ -55,6 +56,7 @@ export function muteDialogue(): void {
     if (dialogueMuted) return;
     dialogueMuted = true;
     setDialogueMuted(true);
+    store.patch({ dialogueMuted: true });
 }
 
 /** The chef-tap un-mute (idle portrait, or the HUD's chef-head button —
@@ -67,7 +69,7 @@ export function unmuteDialogue(): void {
     if (!dialogueMuted) return;
     dialogueMuted = false;
     setDialogueMuted(false);
-    store.patch({ unmuteCueNonce: store.get().unmuteCueNonce + 1 });
+    store.patch({ dialogueMuted: false, unmuteCueNonce: store.get().unmuteCueNonce + 1 });
 }
 
 /** For anything (tests, a future HUD affordance) that needs to read the
