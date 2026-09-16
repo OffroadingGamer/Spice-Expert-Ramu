@@ -439,6 +439,17 @@ specified and wrong as a product. Removed.
    with a **live remaining count per dish** ("Naan 4/9") from the enemy alive-set diff — only
    if the per-archetype attribution is a straight read; otherwise size + persistence alone.
 
+**Playtest of 1.77.0 (Sep 17) — Round 7:**
+1. Bubble: **remaining count under each dish icon**, not one collective total.
+2. **District dialogue boxes larger, with a `RUSH: <BLOCK>` header line**; portrait nudged up.
+3. **More than three dishes → the trigger pans across all of them in a slow loop** (no `+N`).
+4. **Bottom band re-laid:** chef sprite at **bottom-centre** (this also ends the gutter
+   problem — the bottom band exists on every phone), **Ready to his right**, the three kitchen
+   actions in a row **below him**. **After a boss wave**, a centre panel: *Congratulations* ·
+   *Upcoming dishes* (next block's, icons + names) · **READY** inside it. User chose "Ready
+   beside the chef" over a per-wave panel (Sep 17).
+5. **BGM default 50 %** (`musicVol 0.6 → 0.5`); existing saves keep their own value.
+
 **Round 3 — decided: horizontal fill under the wave chip**, not a bar in the gutter. Same
 maths (SAFE = units − (lives − 1)), amber → green, resets per wave. Top-left, directly under
 `WAVE n / RUSH: …`, width of that chip group.

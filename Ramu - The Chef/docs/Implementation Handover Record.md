@@ -2565,3 +2565,12 @@ The only `fx.sprite.scale.set` left in `towerScene.ts` is the comment describing
 question it did what it was for — the expiring lot became 18 Android installs instead of
 nothing. Unspent ~$12 refunds on completion per RUN's billing rule; confirm on the studio
 page. Paid is done for this jam.
+---
+
+### 2026-09-17 — Round 7 issued: per-dish counts, district headers, dish loop, bottom band + post-boss panel, BGM 50 %
+
+**Issued** from the user's playtest of 1.77.0 (four screenshots + a note). Decisions in
+[Ideas.md](Ideas.md) §6d *Amendment → Playtest of 1.77.0*. 🔒 Private only. The bottom-band
+change moves the chef to bottom-centre — which retires the left-gutter constraint from Round
+2 — with Ready beside him and the kitchen actions below; a post-boss *Congratulations* panel
+carries its own READY.
