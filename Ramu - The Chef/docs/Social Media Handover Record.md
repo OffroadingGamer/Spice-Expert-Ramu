@@ -1300,3 +1300,32 @@ full text and reasoning, including why X is back in scope despite §1's
 Sep 8 "no X, no Reddit" line, in
 [Marketing Strategy.md](Marketing%20Strategy.md) §17. Nothing posted,
 nothing else touched.
+
+### 2026-09-15 ~18:00 IST — First paid-stats read requested, rank slip to 4th
+**From:** User — direct question, day-1 campaign figures + board read
+supplied, asking for this agent's read against §13.6 and any organic
+implication of a 21-point gap to 3rd
+**Status:** ✅ complete — analysis and read only, no action available or
+taken
+
+Figures as given: `kitchen-rush-meta` flighted Sep 15, ends Sep 16; day 1
+1,466 impr / 49 clicks / 3.34% CTR / 7 installs / CPI $2.72 / $25.52 of $82
+spent. Board at 17:45 IST: 4th at 541 DUP ($200 tier), 3rd at 562 (+21),
+5th at 512. Prizes five deep. 3d 6h to judging close.
+
+Live-verified before answering (`rundot marketing status`, `rundot
+credits`, fresh `daily_activity_30d` and `campaign_attribution_funnel_30d`
+exports) — full findings, numbers, and recommendation in
+[Marketing Strategy.md](Marketing%20Strategy.md) §18. Headline: the
+day-1 figures check out against `rundot marketing status` exactly, and the
+full $82 was confirmed debited in one shot at flighting (matches the
+credit drop). **`campaign_attribution_funnel_30d` reads zero on every
+stage for this campaign** despite Meta's self-reported 7 installs —
+flagged as either reporting lag or a fourth attribution surprise, not
+resolved from here. Paid reads as failing §13.6's bar either way. Own
+daily-unique trend (32→27→11-partial) is flat-to-declining, not the lift
+the calendar expected from Sep 14's planned post — flagged, not
+explained. Recommended firing §17's already-drafted RUN Discord
+`#back-to-work` post today as the direct answer to §13.6's escalation
+trigger, now that we've actually slipped behind 3rd rather than merely
+risking it.

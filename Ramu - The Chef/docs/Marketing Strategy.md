@@ -1255,3 +1255,129 @@ r/GameDevelopersOfIndia activity, not instead of it. No change to Sep
 
 **Status:** drafted only, per the standing rule. Nothing posted by this
 agent. Awaiting the user to post under their own name and relay back.
+
+## 18. First paid-stats read + rank slip — Sep 15 2026, ~18:00 IST
+
+Owning this read per Central's Sep 14 return (§16 point 5/6: "you own the
+read of it once it starts"). `whoami` confirmed
+`offroadinggamedev@gmail.com` before any pull.
+
+**Live-verified against the reported day-1 figures:**
+
+```
+rundot marketing status --name kitchen-rush-meta
+  Status               flighted
+  Flighted by          U05RZL2DR2N
+  Budget               $82.00 total · spent $25.52 · ends 2026-09-16
+  Android (Meta) leg    $82.00 total (spent: $25.52)
+```
+
+Matches exactly. `rundot credits` now reads **93,273**, down from the
+188,804 checked Sep 14 22:30 IST — a drop of ~95.5k. That reconciles
+almost entirely against one line in this period's usage breakdown:
+**"unknown" service, 7 calls, 91,101 credits** — within rounding of
+$82 × 1.05 × 1,000 + 5,000 = **91,100**. **This confirms Central's stated
+billing model empirically, not just as a policy statement: the full
+budget was debited in one shot at flighting, not metered against the
+$25.52 of actual ad spend.** The remaining ~4,400-credit gap is other
+tracks' generation draw, same non-issue as before.
+
+**🔴 The finding that matters most: `campaign_attribution_funnel_30d`
+reads zero, for every stage, on `kitchen-rush-meta`.** Not low — literally
+`hermes_install`, `app_session_start`, `deferred_route_observed`,
+`deeplink`, `game_session_start` all show `0` events, `0` sessions, `0`
+players, against Meta's own self-reported 7 installs. Two explanations,
+and this agent can't tell which from here:
+
+1. **Reporting lag** — RUN's own attribution reconciliation (Hermes) runs
+   behind the ad platform's postback, and the 7 installs simply haven't
+   piped through yet. Plausible on a same-day flight.
+2. **A fourth attribution surprise** — same shape as `--network run`
+   (never live) and Reddit (cleared two gates, failed the third): the ad
+   platform reports a number that never lands as a confirmed RUN session.
+
+§13.6's own judging rule is explicit that `campaign_attribution_funnel_30d`
+session starts is the number to judge by, not the ad platform's install
+count — so right now, by the stated rule, this campaign is at **0**, not
+"trending toward &lt;20." **Flagging to Central/Implementation rather than
+guessing**: re-run this query on Sep 16 (the campaign's last day) before
+drawing a final conclusion — if it's still zero after the flight
+concludes, that's the answer; if installs appear retroactively, it was
+lag.
+
+**Even taking Meta's self-reported numbers at face value (best case):**
+day 1 spent $25.52 of $82 (~31%) for 7 installs. Day 2 has ~$56.48 left;
+at the same $3.65/install pace that's ~15 more, **~22 installs for the
+whole 2-day flight** — before any install→session-start funnel loss
+(§13.2's 24% load→menu loss applies here too, on top of whatever fraction
+of app installs ever actually open the app). **That is not on a path to
+55 attributed session starts, or plausibly even the &lt;20 "channel is
+dead" floor once real attribution is counted.** This is the same
+conclusion this agent recorded as a prior in §16 ("done, not worth it") —
+day-1 data now supports it with numbers, not just estimation. No case for
+a Google leg, extending the budget, or treating pause/cancel as live
+options (the campaign already flighted; nothing to cancel, remaining
+unspent budget refunds automatically at Sep 16 conclusion per the
+standing billing model).
+
+**Fresh `daily_activity_30d` pull, unique players by day:**
+
+| Day | Unique players |
+|---|---|
+| Sep 12 | 47 |
+| Sep 13 | 32 (closed; was logged as partial 17) |
+| Sep 14 | **27** |
+| Sep 15 (partial, ~18:00 IST) | 11 |
+
+Sums to 534 through Sep 14 + partial Sep 15, reconciling closely with the
+board's 541 (timing difference between this pull and the 17:45 IST board
+read, not a discrepancy). **🔴 Sep 14 (27) is a decline from Sep 13 (32),
+not the lift the calendar expected from that day's Indie Game Academy post
++ video shoot.** Either that post didn't fire as planned, or it fired
+without the effect Sep 9's channel produced the first time. Flagging, not
+guessing which.
+
+### Read against §13.6, and the 21-point gap
+
+**Paid:** failing, on both the ad platform's own optimistic numbers and
+(so far) RUN's own attribution data. Recommendation unchanged from §16:
+let it conclude Sep 16, take the automatic refund on whatever's unspent,
+do not chase a Google leg. This closes the paid question for this jam —
+no new deliberation needed if it lands where it's currently trending.
+
+**Organic and rank:** the board's move from "holding 3rd" (§13.6's
+framing) to **4th, 21 DUP behind 3rd**, lines up with a stalling daily
+rate (32→27→11-partial), not a widening one from a faster 3rd alone. Two
+things follow:
+
+1. **This is precisely the situation §13.6's escalation trigger was
+   written for** — losing ground to a faster mover — even though the
+   trigger's named example (Employment Crisis, >60/day two days running)
+   may or may not be literally who's in 3rd right now. The response it
+   specifies, "one more RUN Discord post with whatever real update
+   exists," is already loaded and unposted: **§17's `#back-to-work` post
+   about the Twelve Glasses video is genuine, undated-out news, sitting
+   drafted.** Recommend firing it today rather than waiting — it costs
+   nothing new to write, and the calendar already earmarked Sep 15 for
+   exactly this kind of fire.
+2. **The gap's direction (closing vs. widening) can't be read from this
+   snapshot alone** — 541 vs. 562 is cumulative, and this agent doesn't
+   have 3rd's own day-by-day rate, only that they're 21 ahead now. Next
+   pull should capture both entries' day-over-day deltas, not just
+   totals, the same way §7.6/§9/§10 did for SHIFT — otherwise "21 behind"
+   could mean "closing fast" or "falling further behind" and this agent
+   can't tell which from one board read.
+
+**Floor is not the immediate risk.** 5th sits 29 DUP behind us — a bigger
+cushion than our 21-DUP deficit to 3rd — so the live question is
+reclaiming 3rd, not staying in the money. Not a reason for complacency
+(5th's own trend is equally unknown from this snapshot), but it changes
+where urgency should go: push the escalation lever above, don't panic
+about dropping out of prizes.
+
+**Status:** analysis and read only. No campaign action taken (none is
+available — the flight is live and self-concludes Sep 16). No post made by
+this agent. Flagged to Central/Implementation: re-check
+`campaign_attribution_funnel_30d` on Sep 16 before final paid verdict;
+confirm whether Sep 14's Indie Game Academy post actually fired; get 3rd
+and 5th's own daily deltas on the next board pull.
