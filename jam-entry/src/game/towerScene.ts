@@ -661,6 +661,43 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         }
     }
 
+    /**
+     * Round 6 Part B: per-archetype "removed from THIS wave's alive set"
+     * tally, for WaveBubble's live remaining count. Unlike
+     * trackLeaksForStep/trackDeathBounties above, this needs no
+     * disambiguation — it doesn't care WHETHER a missing uid died or
+     * leaked, only WHICH ARCHETYPE it was, and enemyDefByUid already maps
+     * every uid to its archetype exactly (recorded from that uid's own
+     * e.def.id at spawn), so a plain preUids/postUids set difference is
+     * never ambiguous the way "how many of these N missing uids were
+     * leaks" is. Reset (see the tick loop) the instant the wave number
+     * changes, so a lingering count from the previous wave can never bleed
+     * into the next one's display.
+     */
+    let waveDishServed: Record<string, number> = {};
+    let waveDishTallyLevel = engine.state.waveIndex + 1;
+    let dishTallyGen = 0;
+    function trackDishTally(preUids: Set<number>): void {
+        const postUids = new Set(engine.state.enemies.map((e) => e.uid));
+        for (const uid of preUids) {
+            if (postUids.has(uid)) continue;
+            const archetype = enemyDefByUid.get(uid);
+            if (!archetype) continue;
+            waveDishServed[archetype] = (waveDishServed[archetype] ?? 0) + 1;
+            dishTallyGen++;
+        }
+    }
+
+    let syncedDishTallyGen = -1;
+    /** Patches the store only when trackDishTally (or the level-change
+     *  reset below) actually changed something — same "diff before patch"
+     *  discipline as syncGauge/syncStore. */
+    function syncDishTally(): void {
+        if (dishTallyGen === syncedDishTallyGen) return;
+        syncedDishTallyGen = dishTallyGen;
+        store.patch({ waveDishServed: { ...waveDishServed } });
+    }
+
     /** Pending target-pad auto-select after the post-wave-2 pulse (round D
      *  task 1/2) — cleared on scene destroy so a mid-pulse quit can't fire a
      *  store.patch into whatever screen comes next. */
@@ -875,12 +912,24 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
      * Round 5 Part 1: per-pad cosmetic state for the recoil squash, heat
      * flash, and idle cooking loop — one record per placed prop, created
      * alongside its towerViews node (syncTowers below) and torn down with
-     * it. `sprite`/`flash` are the SAME Sprite instances syncTowers already
-     * owns (node.children[2]/[1] — see that function's own doc on the
-     * reordering), stored here directly rather than re-indexed into
+     * it. `sprite`/`flash`/`wrapper` are the SAME instances syncTowers
+     * already owns, stored here directly rather than re-indexed into
      * node.children every tick.
+     *
+     * Round 6 Part A (fixes the recoil scale bug): `sprite` is sized with
+     * sprite.width/height (syncTowers below), which leaves it at whatever
+     * base scale the texture/display-size ratio implies — NEVER a round
+     * number. The old code wrote fx.sprite.scale.set(1.08, 0.90)... straight
+     * onto that sprite, clobbering its real base scale with ~1 and inflating
+     * the prop to the full source texture size on its first shot. `wrapper`
+     * is a plain Container, always created at scale (1,1)/position (0,0),
+     * sitting between `node` (fixed at the tower's board position) and
+     * `sprite` (sized, never touched by FX again) — every FX transform
+     * (recoil scale, idle bob's y) is applied to `wrapper` instead, so the
+     * sprite's own scale is written ONLY by the sizing code in syncTowers.
      */
     interface TowerFx {
+        wrapper: Container;
         sprite: Sprite;
         flash: Sprite;
         /** Seconds since the shot that's driving the current squash;
@@ -1021,7 +1070,15 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             const fx = towerFx.get(t.padIndex);
             if (!fx) continue;
 
-            if (fx.recoilT < RECOIL_TOTAL_S) {
+            // Round 6 acceptance rule ("reduced motion: wrapper scale stays
+            // 1,1 throughout a wave"): the squash is a brief, event-
+            // triggered reaction (Round 5's own reasoning for why it wasn't
+            // gated), but this round's own acceptance bar is explicit, so it
+            // now is. Forced to exactly (1,1) every frame under reduced
+            // motion, regardless of recoilT — never partially eased.
+            if (reducedMotion) {
+                fx.wrapper.scale.set(1, 1);
+            } else if (fx.recoilT < RECOIL_TOTAL_S) {
                 fx.recoilT += dt;
                 let sx: number;
                 let sy: number;
@@ -1042,7 +1099,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                     sy = 1;
                     fx.recoilT = Infinity;
                 }
-                fx.sprite.scale.set(sx, sy);
+                fx.wrapper.scale.set(sx, sy);
             }
 
             if (fx.flashT < HEAT_FLASH_S) {
@@ -1061,14 +1118,19 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 }
             }
 
-            const node = towerViews.get(t.padIndex);
-            if (!node) continue;
-            const baseY = t.y - 14 + SZ.tower / 2;
+            // Round 6 Part A: `node` (towerViews) is positioned ONCE at
+            // creation (syncTowers) and never moved again — the bob now
+            // offsets `wrapper`'s LOCAL y instead, so it can never fight the
+            // recoil squash (a different property of the same Container) and
+            // so anything anchored off node.y (the Lv↑ marker, the upgrade
+            // preview bubble) reads a value that only ever changes when the
+            // tower's own board position does, never a per-frame cosmetic.
+            const baseY = t.y - 14 + SZ.tower / 2; // still needed below: steam spawns in WORLD space, not wrapper-local
             if (inWave && !reducedMotion) {
                 const bob = Math.sin((fxClock / IDLE_BOB_PERIOD_S) * Math.PI * 2 + fx.idlePhase) * IDLE_BOB_AMPLITUDE;
-                node.position.set(t.x, baseY + bob);
+                fx.wrapper.position.set(0, bob);
             } else {
-                node.position.set(t.x, baseY);
+                fx.wrapper.position.set(0, 0);
             }
 
             if (inWave && !reducedMotion) {
@@ -1371,29 +1433,43 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                     .fill({ color: CONFIG.colors.shadow, alpha: 0.22 });
                 // Round 5 Part 1 task 2: the heat-flash glow sits BEHIND the
                 // sprite by construction — added before it in this same
-                // addChild call, not by a separate zIndex — so the sprite/
-                // pips lookups just below shift from children[1]/[2] to
-                // children[2]/[3].
+                // addChild call, not by a separate zIndex.
                 const flash = new Sprite(tex.heatFlash);
                 flash.anchor.set(0.5, 0.7);
                 flash.blendMode = 'add';
                 flash.alpha = 0;
                 flash.visible = false;
+                // Round 6 Part A: `sprite` never sits directly in `node` —
+                // it's nested one level deeper, inside `wrapper`, which is
+                // the ONLY thing syncTowerFx's recoil/bob ever transforms.
+                // `sprite`'s own scale is written exclusively by the sizing
+                // code just below (and the level-change block right after
+                // this one) — never by syncTowerFx. `pips` stays a direct
+                // child of `node` (still index 3, unaffected by the swap of
+                // index 2 from `sprite` to `wrapper`) — it's a static
+                // per-level pip row, not part of the squashing prop art.
                 const sprite = new Sprite();
                 sprite.anchor.set(0.5, 1);
+                const wrapper = new Container();
+                wrapper.addChild(sprite);
                 const pips = new Graphics();
                 pips.y = SZ.tower * 0.08;
-                node.addChild(shadow, flash, sprite, pips);
+                node.addChild(shadow, flash, wrapper, pips);
                 // Old center-anchored sprites sat with their visual bottom
                 // edge at (t.y - 14) + SZ.tower/2 — shift the node's origin
                 // there so the new bottom-anchored foot lands in the same
-                // spot the tower always has.
+                // spot the tower always has. Set ONCE, here — never touched
+                // again (in particular, never by the idle bob, which now
+                // offsets wrapper's local position instead — see
+                // syncTowerFx), so anything anchored off node.y (the Lv↑
+                // marker, the upgrade preview bubble) reads a stable value.
                 node.position.set(t.x, t.y - 14 + SZ.tower / 2);
                 node.zIndex = t.y;
                 world.addChild(node);
                 towerViews.set(t.padIndex, node);
                 towerLevels.set(t.padIndex, 0); // forces the texture apply below on first sync
                 towerFx.set(t.padIndex, {
+                    wrapper,
                     sprite,
                     flash,
                     recoilT: Infinity,
@@ -1404,7 +1480,12 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             }
             if (towerLevels.get(t.padIndex) !== t.level) {
                 towerLevels.set(t.padIndex, t.level);
-                const sprite = node.children[2] as Sprite;
+                // Round 6: read via towerFx (never node.children[N]) — the
+                // sprite's own index shifted when `wrapper` was inserted,
+                // and indexing into towerFx's stored reference can't drift
+                // out of sync with whatever syncTowers's own addChild order
+                // happens to be.
+                const sprite = towerFx.get(t.padIndex)!.sprite;
                 const size = towerDisplaySize[t.def.id][t.level - 1];
                 sprite.texture = towerLevelTex[t.def.id][t.level - 1];
                 sprite.width = size.w;
@@ -1686,6 +1767,16 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         // boundary just crossed) make sure its assets are loading and the
         // NEXT block's are already warming in the background.
         const level = engine.state.waveIndex + 1;
+        // Round 6 Part B: `level` is the exact value store.wave mirrors
+        // (actions.ts:204) — resetting the dish tally the instant it
+        // changes means it's already empty by the time the build phase for
+        // the new wave is even visible, never carrying a stale count over
+        // from the wave that just cleared.
+        if (level !== waveDishTallyLevel) {
+            waveDishTallyLevel = level;
+            waveDishServed = {};
+            dishTallyGen++;
+        }
         const block = blockForLevel(level);
         if (block.id !== trackedBlockId) {
             const priorBlockId = trackedBlockId;
@@ -1764,6 +1855,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 const stepEvents = engine.drainEvents();
                 trackLeaksForStep(stepEvents, preUids);
                 trackDeathBounties(stepEvents, preUids, levelForStep);
+                trackDishTally(preUids);
                 allEvents.push(...stepEvents);
             }
         }
@@ -1772,6 +1864,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         detectShotsAndTriggerFx(allEvents);
         syncStore();
         syncGauge();
+        syncDishTally();
         syncEnemies();
         syncProjectiles();
         syncTowers();

@@ -166,6 +166,18 @@ export interface AppState {
      *  resetDialogueQueue() (dialogueController.ts) — never patched
      *  anywhere else. */
     dialogueMuted: boolean;
+    /** Round 6 Part B (docs/Ideas.md §6d): per-archetype count of enemies
+     *  removed from the CURRENT wave's alive set (death or leak — this
+     *  doesn't distinguish which, only that the dish is no longer on
+     *  board), keyed by archetype id. Patched from towerScene.ts's tick
+     *  loop, straight off the same preUids/postUids diff the coin-popup
+     *  and leak-attribution tracking already runs every substep — no
+     *  second enemy-tracking pass. Reset to {} the instant `wave` changes
+     *  (the same "build phase begins" moment waveAt/blockForLevel key off
+     *  of), so it always describes THIS wave, never a stale one. WaveBubble
+     *  subtracts this from each dish's total to show a live "remaining"
+     *  count. */
+    waveDishServed: Record<string, number>;
 }
 
 const INITIAL: AppState = {
@@ -208,6 +220,7 @@ const INITIAL: AppState = {
     gauge: null,
     unmuteCueNonce: 0,
     dialogueMuted: false,
+    waveDishServed: {},
 };
 
 /**

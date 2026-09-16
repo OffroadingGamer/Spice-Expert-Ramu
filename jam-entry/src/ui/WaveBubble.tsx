@@ -23,13 +23,28 @@
  *   D. (The wave-1 top-right overlap — Hud.tsx's coin-toast fix, not this
  *      file.)
  *
+ * Round 6 Part B: two more folded in —
+ *   - Icons 40 -> 56px (both the trigger and the grid — Round 5 only grew
+ *     the trigger).
+ *   - The bubble now PERSISTS through the whole wave (trigger only — the
+ *     scroll grid still closes the moment the wave starts, see the second
+ *     render-time reset below) instead of hiding the instant combat
+ *     begins, and each cell now shows a LIVE remaining count
+ *     (`remaining`/`count`, ticking down as that archetype is served),
+ *     fed by towerScene.ts's store.waveDishServed — a straight read off
+ *     the engine-event diff that already exists for coin popups, reset the
+ *     instant `wave` changes (see store.ts's own doc on that field).
+ *
  * Data path, exactly §7's: waveAt(index).entries[].enemy -> archetype ->
  * blockForLevel(level).dishes[archetype] slugs -> dish-<slug> aliases
  * already in the manifest, deduped by archetype for the grid / by slug for
- * the trigger. store.wave already equals the UPCOMING level during a build
- * phase (actions.ts's syncStore mirrors engine.state.waveIndex + 1
- * regardless of phase), so none of this needs towerScene.ts's engine
- * instance directly.
+ * the trigger. store.wave already equals the CURRENT level for both the
+ * build AND wave phases of that same wave (actions.ts's syncStore mirrors
+ * engine.state.waveIndex + 1 regardless of phase, and waveIndex only
+ * advances on a wave-clear) — it changes exactly once per wave, at the
+ * moment the NEXT build phase begins, which is what makes it the right key
+ * for "reset for a new wave" below. None of this needs towerScene.ts's
+ * engine instance directly.
  */
 import { useEffect, useRef, useState } from 'react';
 import { MANIFEST } from '../assets/manifest.ts';
@@ -61,7 +76,10 @@ interface TriggerDish {
  *  `icons`/`names` carry ONE entry for blocks 1-5 (one dish per archetype)
  *  and TWO for blocks 6-9 (double-dish) — pips/bounty/count are per-
  *  ARCHETYPE (from the wave entry itself), so a double-dish archetype is
- *  still exactly one cell, never two. */
+ *  still exactly one cell, never two. Round 6 Part B: `count` stays the
+ *  wave's total for this archetype; `remaining` is `count` minus
+ *  store.waveDishServed, ticking down as the wave is fought — count itself
+ *  never changes mid-wave, so both are kept rather than mutating one. */
 interface DishCell {
     key: string;
     icons: string[];
@@ -69,6 +87,7 @@ interface DishCell {
     pips: number;
     bounty: number;
     count: number;
+    remaining: number;
 }
 
 function titleCase(slug: string): string {
@@ -103,6 +122,7 @@ export function useWaveBubble(): WaveBubbleState {
     const tdPhase = useStore((s) => s.tdPhase);
     const wave = useStore((s) => s.wave);
     const dialogue = useStore((s) => s.dialogue);
+    const waveDishServed = useStore((s) => s.waveDishServed);
     const [dismissed, setDismissed] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
 
@@ -131,6 +151,24 @@ export function useWaveBubble(): WaveBubbleState {
         setIsOpen(false);
     }
 
+    // Round 6 Part B: the trigger now persists through the WHOLE wave (see
+    // baseVisible below), but "the scroll still closes on wave start" — and
+    // `wave` itself doesn't change at that moment (it only bumps at the
+    // NEXT wave-clear, per this file's own doc above), so the wave-keyed
+    // reset above can't catch it. A second render-time reset, same pattern,
+    // keyed on tdPhase instead: the moment it leaves 'build', force the
+    // submenu shut (dismissed is untouched — if the trigger was already
+    // dismissed for this wave, it stays dismissed through combat, same as
+    // any other mid-build dismiss).
+    const prevPhaseRef = useRef(tdPhase);
+    if (prevPhaseRef.current !== tdPhase) {
+        prevPhaseRef.current = tdPhase;
+        if (tdPhase !== 'build' && isOpenNow) {
+            isOpenNow = false;
+            setIsOpen(false);
+        }
+    }
+
     const level = wave;
     const waveData = waveAt(level - 1);
     const block = blockForLevel(level);
@@ -152,6 +190,7 @@ export function useWaveBubble(): WaveBubbleState {
         if (seenArchetypes.has(entry.enemy)) continue;
         seenArchetypes.add(entry.enemy);
         const pips = Math.min(5, Math.max(1, Math.ceil((5 * effectiveHp(entry)) / maxEffectiveHp)));
+        const served = waveDishServed[entry.enemy] ?? 0;
         cells.push({
             key: entry.enemy,
             icons: slugs.map((s) => ASSET_SRC.get(`dish-${s}`)).filter((s): s is string => !!s),
@@ -159,21 +198,33 @@ export function useWaveBubble(): WaveBubbleState {
             pips,
             bounty: Math.round(enemyDef(entry.enemy).bounty * bountyMult),
             count: entry.count,
+            remaining: Math.max(0, entry.count - served),
         });
     }
-    const totalCount = waveData.entries.reduce((s, e) => s + e.count, 0);
+    // Round 6 Part B: the trigger's own total now ticks down with the grid
+    // (sum of each archetype's live remaining, not the wave's static
+    // total) — "shows what's left" is this section's own name.
+    const totalCount = cells.reduce((s, c) => s + c.remaining, 0);
 
     // Dialogue wins: waiting (not permanently dismissed) behind an open box
-    // — "the bubble waits until the box closes." Wave start (tdPhase leaves
-    // 'build') also hides both halves; the wave-keyed reset above starts
-    // everything fresh for the NEXT build phase. baseVisible gates BOTH
-    // halves; dismissedNow/isOpenNow then split which of the two (if
-    // either) is showing.
-    const baseVisible = tdPhase === 'build' && dialogue === null;
+    // — "the bubble waits until the box closes." Round 6: the trigger no
+    // longer hides at wave start — it now persists build phase through wave
+    // end (both 'build' and 'wave' are visible), only 'lost' (and a
+    // dialogue box) hide it. The wave-keyed reset above starts everything
+    // fresh for the NEXT build phase; the phase-keyed reset above closes
+    // just the submenu at wave start. baseVisible gates BOTH halves;
+    // dismissedNow/isOpenNow then split which of the two (if either) is
+    // showing.
+    const baseVisible = (tdPhase === 'build' || tdPhase === 'wave') && dialogue === null;
 
     return {
         showTrigger: baseVisible && !dismissedNow && !isOpenNow,
-        showSubmenu: baseVisible && isOpenNow,
+        // Belt-and-suspenders on top of the phase-keyed reset above: the
+        // submenu can never show outside 'build' even if isOpenNow were
+        // somehow still true (e.g. a render this same tick that hasn't
+        // committed the reset's setState yet — isOpenNow the LOCAL override
+        // is already correct in that case, but this costs nothing extra).
+        showSubmenu: baseVisible && isOpenNow && tdPhase === 'build',
         triggerDishes,
         cells,
         totalCount,
@@ -183,15 +234,17 @@ export function useWaveBubble(): WaveBubbleState {
 }
 
 /** The chat bubble over Ramu — up to 3 distinct dish icons (then a +n
- *  badge), each with its recipe name underneath, and the wave's total unit
- *  count. Mounted inline right after #chef-head-button in Hud.tsx's own row
- *  2, so "anchored to the right of #chef-head-button" falls out of plain DOM
- *  flow — no runtime measurement (the arrow-round lesson StationRail.tsx's
- *  own doc argues from: getBoundingClientRect/ResizeObserver cue positioning
- *  has failed on device three rounds running). Round 5 Part A: icons grew
- *  24 -> 40px with a name label under each — row 2 may grow taller as a
- *  result (the handover's own allowance); it can't overlap the speed row
- *  because both are ordinary flex children of the same row, not
+ *  badge), each with its recipe name underneath, and the wave's live
+ *  remaining unit count. Mounted inline right after #chef-head-button in
+ *  Hud.tsx's own row 2, so "anchored to the right of #chef-head-button"
+ *  falls out of plain DOM flow — no runtime measurement (the arrow-round
+ *  lesson StationRail.tsx's own doc argues from: getBoundingClientRect/
+ *  ResizeObserver cue positioning has failed on device three rounds
+ *  running). Round 5 Part A: icons grew 24 -> 40px with a name label under
+ *  each; Round 6 Part B: 40 -> 56px, and the bubble (this trigger) now
+ *  stays mounted through the whole wave, not just build — row 2 may grow
+ *  taller as a result (the handover's own allowance); it can't overlap the
+ *  speed row because both are ordinary flex children of the same row, not
  *  independently positioned. */
 export function WaveBubbleTrigger({ state }: { state: WaveBubbleState }) {
     if (!state.showTrigger) return null;
@@ -214,9 +267,9 @@ export function WaveBubbleTrigger({ state }: { state: WaveBubbleState }) {
                     <img
                         src={d.icon}
                         alt=""
-                        className="h-10 w-10 rounded-full border border-black/40 bg-surface object-contain"
+                        className="h-14 w-14 rounded-full border border-black/40 bg-surface object-contain"
                     />
-                    <span className="max-w-[2.75rem] truncate text-[0.55rem] font-bold text-white/85">{d.name}</span>
+                    <span className="max-w-[3.5rem] truncate text-[0.55rem] font-bold text-white/85">{d.name}</span>
                 </span>
             ))}
             {extra > 0 && <span className="pb-2.5 text-[0.68rem] font-bold text-white/80">+{extra}</span>}
@@ -303,11 +356,11 @@ export function WaveBubbleSubmenu({ state }: { state: WaveBubbleState }) {
                                     key={i}
                                     src={src}
                                     alt=""
-                                    className="h-12 w-12 rounded-full border border-black/30 bg-white/70 object-contain"
+                                    className="h-14 w-14 rounded-full border border-black/30 bg-white/70 object-contain"
                                 />
                             ))}
                         </span>
-                        <span className="max-w-[6rem] truncate text-center text-[0.68rem] font-bold">
+                        <span className="max-w-[7rem] truncate text-center text-[0.68rem] font-bold">
                             {cell.names.join(' / ')}
                         </span>
                         <span className="flex items-center gap-1 text-[0.65rem] font-bold tabular-nums tracking-tighter">
@@ -315,7 +368,12 @@ export function WaveBubbleSubmenu({ state }: { state: WaveBubbleState }) {
                                 {'●'.repeat(cell.pips)}{'○'.repeat(5 - cell.pips)}
                             </span>
                             <span>· 🪙{cell.bounty}</span>
-                            <span>· ×{cell.count}</span>
+                            {/* Round 6 Part B: live remaining/total (e.g.
+                                "4/9"), ticking down as this archetype is
+                                served — replaces the old static "×count". */}
+                            <span aria-label={`${cell.remaining} of ${cell.count} remaining`}>
+                                · {cell.remaining}/{cell.count}
+                            </span>
                         </span>
                     </div>
                 ))}
