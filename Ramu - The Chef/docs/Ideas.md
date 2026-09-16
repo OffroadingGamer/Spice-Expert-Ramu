@@ -449,6 +449,16 @@ specified and wrong as a product. Removed.
    *Upcoming dishes* (next block's, icons + names) · **READY** inside it. User chose "Ready
    beside the chef" over a per-wave panel (Sep 17).
 5. **BGM default 50 %** (`musicVol 0.6 → 0.5`); existing saves keep their own value.
+6. **End screen → "Ramu's debrief" (user chose B of three, Sep 17).** Analysis: the ad
+   offer was the largest, brightest element and sat where a reflexive post-death tap lands,
+   above Retry (interface interference); a 100-rush run rendered as body text; `+400 💎`
+   unexplained with no path to the gem sink; no Ramu. Spec: Ramu at 160 px with **one
+   outcome line** (new best / near best / held / early → faces C / B / A / A), an **order-ticket
+   card** with count-up and best-run delta and the gem breakdown, **Retry as the only filled
+   button** with a **600 ms input lock**, `Upgrade kitchen` · `Menu` as ghosts, and the **ad
+   offer demoted to an opt-in card below** — same gate, same reward, same claim path.
+   Alternatives not taken: A (report card, no Ramu) and C (B + a "next affordable upgrade"
+   strip — parked as a follow-up).
 
 **Round 3 — decided: horizontal fill under the wave chip**, not a bar in the gutter. Same
 maths (SAFE = units − (lives − 1)), amber → green, resets per wave. Top-left, directly under

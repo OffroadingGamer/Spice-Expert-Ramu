@@ -2574,3 +2574,12 @@ page. Paid is done for this jam.
 change moves the chef to bottom-centre — which retires the left-gutter constraint from Round
 2 — with Ready beside him and the kitchen actions below; a post-boss *Congratulations* panel
 carries its own READY.
+---
+
+### 2026-09-17 — Round 7 re-issued with the end-screen rewrite ("Ramu's debrief")
+
+The earlier Round 7 text is superseded. Added item 6: `EndScreen.tsx` rewritten to the
+user's pick (B) — Ramu's outcome line, order-ticket stats with count-up and delta, Retry
+primary with a 600 ms input lock, ghost secondaries, the ad offer demoted to an opt-in card
+with unchanged economics; two new analytics events (`end_screen_shown`, `end_retry_tapped`).
+Decision and analysis in [Ideas.md](Ideas.md) §6d amendment item 6. 🔒 Private only.
