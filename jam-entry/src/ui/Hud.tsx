@@ -234,6 +234,24 @@ export default function Hud() {
                     </button>
                 </div>
 
+                {/* Coin top-up toast (round D, task 3; round 5 playtest fix:
+                    was `absolute left-3 top-24`, a magic offset that landed
+                    squarely on row 2 at 403x874 — half-covering the 1x speed
+                    button and reading as "an FTUE Shift float overlapping
+                    the WAVE chip" (playtest screenshot 1). Same structural
+                    fix as the Ready/Kitchen-Actions column below: a normal
+                    flow row in this same flex-col column, so it can't
+                    overlap row 2 at any viewport/safe-area — it just pushes
+                    row 2 down for the ~2.6s it's visible, same trade the
+                    objective/milestone banners already make lower down. */}
+                {showGrant && (
+                    <div className="pointer-events-none flex justify-start">
+                        <span className="rounded-lg bg-primary px-3 py-1 text-[1.05rem] font-bold text-black">
+                            +{ftueGrantAmount} 🪙 shift float
+                        </span>
+                    </div>
+                )}
+
                 {/* row 2: wave/rush + speed, both shrink-proof. Round 3 HUD
                     relabel (docs/LevelBlocks.md §11): WAVE and RUSH stop
                     being the same counter — WAVE is the absolute level,
@@ -346,16 +364,6 @@ export default function Hud() {
                     </div>
                 )}
             </div>
-
-            {/* Coin top-up toast (round D, task 3): the exact shortfall a
-                forced beat just granted, shown briefly near the coins chip
-                — a different screen region from the canvas/sheet arrow
-                cues below, so it never competes with "where do I tap". */}
-            {showGrant && (
-                <div className="pointer-events-none absolute left-3 top-24 z-10 rounded-lg bg-primary px-3 py-1 text-[1.05rem] font-bold text-black">
-                    +{ftueGrantAmount} 🪙 shift float
-                </div>
-            )}
 
             {/* Mobile layout round, task 1: Ready and the Kitchen Actions row
                 collided on-device three times running (12px overlap, then a

@@ -520,6 +520,59 @@ export function makeIceCubeTexture(renderer: Renderer): Texture {
 }
 
 /**
+ * Round 5 Part 1 (docs/Ideas.md §6d amendment, "prop feedback bundle"): a
+ * solid white radial falloff, ~64px, for the on-fire heat flash — filled
+ * concentric discs (largest/faintest first, smaller/brighter painted on top)
+ * rather than makeGlowTexture's stroked RINGS above: that shape is a rim-
+ * light on purpose (built for a halo behind an enemy tray); this wants a
+ * plain bright-centre bloom instead, so discs are the right primitive here,
+ * not a defect repeat of the rim-light finding. One shared, untinted texture
+ * — towerScene.ts tints it per archetype via sprite.tint.
+ */
+export function makeHeatFlashTexture(renderer: Renderer): Texture {
+    return gen(renderer, (g) => {
+        const s = 64 * SS;
+        const cx = s / 2;
+        const steps = 12;
+        for (let i = steps; i >= 1; i--) {
+            const t = i / steps;
+            g.circle(cx, cx, cx * t).fill({ color: 0xffffff, alpha: (1 - t) ** 1.6 });
+        }
+    });
+}
+
+/**
+ * Round 5 Part 1 task 3: a projectile trail — a narrow strip fading from
+ * opaque (head) to transparent (tail), stacked as thin horizontal bands
+ * (same "no native gradient fill in this codebase" posture as every other
+ * procedural texture here). towerScene.ts anchors this at (0.5, 0), sets its
+ * height to the design-unit trail length every frame, and rotates it to face
+ * back along the projectile's own travel direction — the texture itself is
+ * drawn tall/thin so the anchor math has one fixed source shape to scale.
+ */
+export function makeProjTrailTexture(renderer: Renderer): Texture {
+    return gen(renderer, (g) => {
+        const w = 6 * SS;
+        const h = 32 * SS;
+        const steps = 10;
+        for (let i = 0; i < steps; i++) {
+            const t = i / (steps - 1);
+            const bandH = h / steps + 1;
+            g.rect(0, t * h, w, bandH).fill({ color: 0xffffff, alpha: 0.7 * (1 - t) });
+        }
+    });
+}
+
+/** Round 5 Part 1 task 4: one small white puff for the idle cooking loop's
+ *  steam — pooled and reused (towerScene.ts), so this is drawn once. */
+export function makeSteamPuffTexture(renderer: Renderer): Texture {
+    return gen(renderer, (g) => {
+        const s = 20 * SS;
+        g.circle(s / 2, s / 2, s / 2).fill({ color: 0xffffff, alpha: 0.85 });
+    });
+}
+
+/**
  * Playtest round, task 3: the solid stone pad/gold-pad decal (formerly shown
  * under a PLACED tower) was retired — an occupied pad now shows no decal at
  * all (see towerScene.ts's syncPads). The 'pad'/'pad-gold' manifest aliases

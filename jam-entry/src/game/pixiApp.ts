@@ -30,5 +30,10 @@ export async function createPixiApp(host: HTMLElement): Promise<Application> {
         // at module scope, and integer design resolutions.
     });
     host.appendChild(app.canvas);
+    // Dev/QA hook, same "host global" pattern as store.ts/actions.ts's own
+    // globalThis slots — lets a device/perf check read app.ticker.FPS (or
+    // anything else Pixi-side) from outside without plumbing a new prop
+    // through every scene. Never read by game logic itself.
+    (globalThis as typeof globalThis & { __spice_ramu_app__?: Application }).__spice_ramu_app__ = app;
     return app;
 }

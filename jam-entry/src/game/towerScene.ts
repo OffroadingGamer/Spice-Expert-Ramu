@@ -36,12 +36,15 @@ import {
     makeEnemyTexture,
     makeGlowTexture,
     makeGrassTexture,
+    makeHeatFlashTexture,
     makeIceCubeTexture,
     makePadGhostTexture,
     makePadGoldGhostTexture,
     makeProjBearTexture,
     makeProjFoxTexture,
     makeProjOwlTexture,
+    makeProjTrailTexture,
+    makeSteamPuffTexture,
     makeTowerLevelSizes,
     makeTowerLevelTextures,
 } from './textures.ts';
@@ -121,7 +124,22 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             owl: makeProjOwlTexture(app.renderer),
             bear: makeProjBearTexture(app.renderer),
         } as Record<string, Texture>,
+        // Round 5 Part 1 (docs/Ideas.md §6d amendment, "prop feedback
+        // bundle"): one shared procedural texture per effect, reused via
+        // sprite pooling below — never a texture per prop/shot.
+        heatFlash: makeHeatFlashTexture(app.renderer),
+        projTrail: makeProjTrailTexture(app.renderer),
+        steamPuff: makeSteamPuffTexture(app.renderer),
     };
+
+    /** Round 5 Part 1: read once per scene — a run doesn't live long enough
+     *  for the OS setting to change mid-run, so no live matchMedia listener
+     *  is needed. Gates ONLY the idle cooking loop's bob/steam and cuts the
+     *  heat flash to a single frame, exactly the amendment's own reduced-
+     *  motion scope — recoil squash and the projectile trail are brief
+     *  (<=200ms) one-shot reactions to a player-caused event, not a looping
+     *  ambient animation, so they're outside that scope. */
+    const reducedMotion = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
     /**
      * Visual round, task 2 (docs/LevelBlocks.md §10): each station's three
@@ -853,6 +871,222 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     const towerViews = new Map<number, Container>(); // by padIndex
     const towerLevels = new Map<number, number>();
 
+    /**
+     * Round 5 Part 1: per-pad cosmetic state for the recoil squash, heat
+     * flash, and idle cooking loop — one record per placed prop, created
+     * alongside its towerViews node (syncTowers below) and torn down with
+     * it. `sprite`/`flash` are the SAME Sprite instances syncTowers already
+     * owns (node.children[2]/[1] — see that function's own doc on the
+     * reordering), stored here directly rather than re-indexed into
+     * node.children every tick.
+     */
+    interface TowerFx {
+        sprite: Sprite;
+        flash: Sprite;
+        /** Seconds since the shot that's driving the current squash;
+         *  Infinity while idle (scale already settled back to 1,1). */
+        recoilT: number;
+        /** Same shape, for the heat-flash fade. */
+        flashT: number;
+        /** Per-pad phase offset so the idle bob doesn't move every prop in
+         *  lockstep — rolled once at placement, stable for the tower's life. */
+        idlePhase: number;
+        /** Counts down to the next steam puff while phase is 'wave'. */
+        steamTimer: number;
+    }
+    const towerFx = new Map<number, TowerFx>();
+
+    const RECOIL_PHASE1_S = 0.08;
+    const RECOIL_PHASE2_S = 0.06;
+    const RECOIL_PHASE3_S = 0.06;
+    const RECOIL_TOTAL_S = RECOIL_PHASE1_S + RECOIL_PHASE2_S + RECOIL_PHASE3_S;
+    // Reduced motion doesn't drop the heat flash (see reducedMotion's own
+    // doc) — it cuts its DURATION to one rendered frame, still a real fade,
+    // just not a sustained one.
+    const HEAT_FLASH_S = reducedMotion ? 1 / 60 : 0.12;
+    const HEAT_FLASH_TINT: Record<string, number> = {
+        fox: 0xffffff, // steam-white, Stock Pot
+        owl: CONFIG.colors.lightning, // spark-yellow, Pressure Cooker
+        bear: CONFIG.colors.fire, // flame-orange, Cooktop
+        squirrel: 0xfbbf24, // amber, Sauce Pot (ServiceRing's own AMBER)
+    };
+    const IDLE_BOB_PERIOD_S = 2.2;
+    const IDLE_BOB_AMPLITUDE = 2;
+    const STEAM_DURATION_S = 2.2;
+    const STEAM_RISE_PX = 34;
+    // Spawns faster than one lifetime so ~2-3 puffs are alive per prop at
+    // once, each staggered (steamTimer's own per-pad jitter below), matching
+    // the handover's "2-3 puffs, staggered" without a fixed puff count.
+    const STEAM_INTERVAL_S = STEAM_DURATION_S / 2.6;
+    const STEAM_POOL_SIZE = 48; // 9 props x ~3 puffs, headroom included
+
+    interface SteamPuff { sprite: Sprite; life: number; active: boolean; startX: number; startY: number }
+    const steamPool: SteamPuff[] = [];
+    for (let i = 0; i < STEAM_POOL_SIZE; i++) {
+        const sprite = new Sprite(tex.steamPuff);
+        sprite.anchor.set(0.5);
+        sprite.visible = false;
+        sprite.blendMode = 'add';
+        sprite.zIndex = 6000; // above towers/enemies, same "always on top" posture as beams/projectiles
+        world.addChild(sprite);
+        steamPool.push({ sprite, life: 0, active: false, startX: 0, startY: 0 });
+    }
+
+    /** Spawns nothing once every pooled slot is busy — same cap posture as
+     *  spawnCoinPopup above. */
+    function spawnSteamPuff(x: number, y: number): void {
+        const slot = steamPool.find((p) => !p.active);
+        if (!slot) return;
+        slot.active = true;
+        slot.life = 0;
+        slot.startX = x;
+        slot.startY = y;
+        slot.sprite.visible = true;
+    }
+
+    function updateSteamPuffs(dt: number): void {
+        for (const p of steamPool) {
+            if (!p.active) continue;
+            p.life += dt;
+            if (p.life >= STEAM_DURATION_S) {
+                p.active = false;
+                p.sprite.visible = false;
+                continue;
+            }
+            const u = p.life / STEAM_DURATION_S;
+            p.sprite.position.set(p.startX, p.startY - STEAM_RISE_PX * u);
+            p.sprite.scale.set(0.6 + 0.6 * u);
+            // alpha 0 -> 0.7 -> 0: ramps to peak by 25% of the lifetime, then
+            // fades the rest of the way out.
+            const peak = 0.25;
+            p.sprite.alpha = u < peak ? 0.7 * (u / peak) : 0.7 * Math.max(0, 1 - (u - peak) / (1 - peak));
+        }
+    }
+
+    /** Restarts both the recoil squash and the heat flash for one pad,
+     *  cleanly — called from detectShotsAndTriggerFx below, whether that
+     *  pad already mid-tween or idle (the handover's own "restart cleanly
+     *  if it fires again mid-tween"). */
+    function triggerShotFx(padIndex: number): void {
+        const fx = towerFx.get(padIndex);
+        if (!fx) return;
+        fx.recoilT = 0;
+        fx.flashT = 0;
+    }
+
+    /**
+     * Round 5 Part 1 tasks 1/2: detect a shot per PROP (not per tower TYPE —
+     * EngineEvent's own 'shot'/'beam' carry only towerId, never padIndex) by
+     * matching each new projectile's launch point (sx, sy) — or each beam
+     * event's own points[0] — against a live tower's (x, y-30), the exact
+     * launch-offset formula sim/engine.ts uses for both (line ~552/498,
+     * sealed, read here only as plain state, never imported). Diffed once
+     * per RENDERED frame (prevProjUids persists across ticks, not reset per
+     * substep) — the tween this drives is cosmetic, so multiple shots from
+     * one pad inside a single 4x-speed frame just restart it once, which
+     * reads fine.
+     */
+    let prevProjUids = new Set<number>();
+    function detectShotsAndTriggerFx(evts: EngineEvent[]): void {
+        const firedPads = new Set<number>();
+        for (const e of evts) {
+            if (e.type !== 'beam') continue;
+            const origin = e.points[0];
+            const t = engine.state.towers.find(
+                (tw) => Math.abs(tw.x - origin.x) < 1 && Math.abs(tw.y - 30 - origin.y) < 1,
+            );
+            if (t) firedPads.add(t.padIndex);
+        }
+        for (const p of engine.state.projectiles) {
+            if (prevProjUids.has(p.uid)) continue;
+            const t = engine.state.towers.find(
+                (tw) => Math.abs(tw.x - p.sx) < 1 && Math.abs(tw.y - 30 - p.sy) < 1,
+            );
+            if (t) firedPads.add(t.padIndex);
+        }
+        for (const pad of firedPads) triggerShotFx(pad);
+        prevProjUids = new Set(engine.state.projectiles.map((p) => p.uid));
+    }
+
+    /**
+     * Round 5 Part 1 tasks 1/2/4: advances every placed prop's recoil
+     * squash, heat flash, and (wave-phase-only) idle bob + steam puffs.
+     * Runs every tick with the frame's own real dt — same "never scaled by
+     * game speed" posture as fadeBackdrop/updateCoinPopups above, so these
+     * read at a constant, readable pace regardless of the speed multiplier.
+     */
+    function syncTowerFx(dt: number): void {
+        const inWave = engine.state.phase === 'wave';
+        for (const t of engine.state.towers) {
+            const fx = towerFx.get(t.padIndex);
+            if (!fx) continue;
+
+            if (fx.recoilT < RECOIL_TOTAL_S) {
+                fx.recoilT += dt;
+                let sx: number;
+                let sy: number;
+                if (fx.recoilT < RECOIL_PHASE1_S) {
+                    const u = fx.recoilT / RECOIL_PHASE1_S;
+                    sx = 1 + 0.08 * u;
+                    sy = 1 - 0.1 * u;
+                } else if (fx.recoilT < RECOIL_PHASE1_S + RECOIL_PHASE2_S) {
+                    const u = (fx.recoilT - RECOIL_PHASE1_S) / RECOIL_PHASE2_S;
+                    sx = 1.08 - 0.12 * u; // 1.08 -> 0.96
+                    sy = 0.9 + 0.15 * u; // 0.90 -> 1.05
+                } else if (fx.recoilT < RECOIL_TOTAL_S) {
+                    const u = (fx.recoilT - RECOIL_PHASE1_S - RECOIL_PHASE2_S) / RECOIL_PHASE3_S;
+                    sx = 0.96 + 0.04 * u; // 0.96 -> 1
+                    sy = 1.05 - 0.05 * u; // 1.05 -> 1
+                } else {
+                    sx = 1;
+                    sy = 1;
+                    fx.recoilT = Infinity;
+                }
+                fx.sprite.scale.set(sx, sy);
+            }
+
+            if (fx.flashT < HEAT_FLASH_S) {
+                fx.flashT += dt;
+                const u = Math.min(1, fx.flashT / HEAT_FLASH_S);
+                fx.flash.visible = true;
+                fx.flash.tint = HEAT_FLASH_TINT[t.def.id] ?? 0xffffff;
+                fx.flash.alpha = 0.9 * (1 - u);
+                const size = towerDisplaySize[t.def.id][t.level - 1];
+                const base = Math.max(size.w, 64);
+                fx.flash.width = base * (1 + 0.3 * u);
+                fx.flash.height = base * (1 + 0.3 * u);
+                if (u >= 1) {
+                    fx.flash.visible = false;
+                    fx.flashT = Infinity;
+                }
+            }
+
+            const node = towerViews.get(t.padIndex);
+            if (!node) continue;
+            const baseY = t.y - 14 + SZ.tower / 2;
+            if (inWave && !reducedMotion) {
+                const bob = Math.sin((fxClock / IDLE_BOB_PERIOD_S) * Math.PI * 2 + fx.idlePhase) * IDLE_BOB_AMPLITUDE;
+                node.position.set(t.x, baseY + bob);
+            } else {
+                node.position.set(t.x, baseY);
+            }
+
+            if (inWave && !reducedMotion) {
+                fx.steamTimer -= dt;
+                if (fx.steamTimer <= 0) {
+                    fx.steamTimer = STEAM_INTERVAL_S * (0.8 + Math.random() * 0.4);
+                    const size = towerDisplaySize[t.def.id][t.level - 1];
+                    spawnSteamPuff(t.x + (Math.random() - 0.5) * 20, baseY - size.h * 0.7);
+                }
+            }
+        }
+    }
+
+    /** Real-time clock (never scaled by game speed), driving the idle bob's
+     *  sine phase — a plain running total, same posture as every other
+     *  cosmetic timer in this file. */
+    let fxClock = 0;
+
     function syncEnemies(): void {
         const alive = new Set<number>();
         for (const e of engine.state.enemies) {
@@ -1020,6 +1254,18 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         }
     }
 
+    /** Round 5 Part 1 task 3: per-projectile trail colour, mirroring each
+     *  archetype's own projectile texture tint (textures.ts). Beam towers
+     *  (squirrel) never reach here — they have no ProjInst. */
+    const TRAIL_TINT: Record<string, number> = {
+        fox: CONFIG.colors.arrow,
+        owl: CONFIG.colors.frost,
+        bear: CONFIG.colors.boulder,
+    };
+    const TRAIL_LENGTH = 26;
+    interface ProjTrail { sprite: Sprite; prevX: number; prevY: number }
+    const projTrails = new Map<number, ProjTrail>();
+
     function syncProjectiles(): void {
         const alive = new Set<number>();
         for (const p of engine.state.projectiles) {
@@ -1036,18 +1282,50 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             }
             // the bear's boulder lobs: a cosmetic vertical arc from launch
             // progress (the sim itself flies straight, so balance is unmoved)
+            let px = p.x;
+            let py = p.y;
             if (p.arc) {
                 const travelled = Math.hypot(p.x - p.sx, p.y - p.sy);
                 const progress = Math.min(1, travelled / Math.max(1, p.flight));
-                s.position.set(p.x, p.y - Math.sin(Math.PI * progress) * 55);
-            } else {
-                s.position.set(p.x, p.y);
+                py = p.y - Math.sin(Math.PI * progress) * 55;
             }
+            s.position.set(px, py);
+
+            // Round 5 Part 1 task 3: one pooled sprite per LIVE projectile
+            // (never per frame), pointed back along wherever it actually
+            // moved since last frame — reusing the arc-adjusted (px, py)
+            // above keeps the trail glued to the bear's cosmetic lob too,
+            // not just the sim's straight-line (p.x, p.y).
+            let trail = projTrails.get(p.uid);
+            if (!trail) {
+                const ts = new Sprite(tex.projTrail);
+                ts.anchor.set(0.5, 0);
+                ts.tint = TRAIL_TINT[p.towerId] ?? 0xffffff;
+                ts.width = SZ.projectile * 0.5;
+                ts.height = TRAIL_LENGTH;
+                ts.zIndex = 4999; // just under the projectile itself
+                world.addChild(ts);
+                trail = { sprite: ts, prevX: p.sx, prevY: p.sy };
+                projTrails.set(p.uid, trail);
+            }
+            const dx = px - trail.prevX;
+            const dy = py - trail.prevY;
+            if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
+                trail.sprite.rotation = Math.atan2(-dy, -dx) - Math.PI / 2;
+            }
+            trail.sprite.position.set(px, py);
+            trail.prevX = px;
+            trail.prevY = py;
         }
         for (const [uid, s] of projViews) {
             if (!alive.has(uid)) {
                 s.destroy();
                 projViews.delete(uid);
+                const trail = projTrails.get(uid);
+                if (trail) {
+                    trail.sprite.destroy();
+                    projTrails.delete(uid);
+                }
             }
         }
     }
@@ -1077,6 +1355,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 node.destroy({ children: true });
                 towerViews.delete(pad);
                 towerLevels.delete(pad);
+                towerFx.delete(pad);
             }
         }
         for (const t of engine.state.towers) {
@@ -1090,11 +1369,21 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 const shadow = new Graphics();
                 shadow.ellipse(0, -SZ.tower * 0.08, SZ.tower * 0.42, SZ.tower * 0.15)
                     .fill({ color: CONFIG.colors.shadow, alpha: 0.22 });
+                // Round 5 Part 1 task 2: the heat-flash glow sits BEHIND the
+                // sprite by construction — added before it in this same
+                // addChild call, not by a separate zIndex — so the sprite/
+                // pips lookups just below shift from children[1]/[2] to
+                // children[2]/[3].
+                const flash = new Sprite(tex.heatFlash);
+                flash.anchor.set(0.5, 0.7);
+                flash.blendMode = 'add';
+                flash.alpha = 0;
+                flash.visible = false;
                 const sprite = new Sprite();
                 sprite.anchor.set(0.5, 1);
                 const pips = new Graphics();
                 pips.y = SZ.tower * 0.08;
-                node.addChild(shadow, sprite, pips);
+                node.addChild(shadow, flash, sprite, pips);
                 // Old center-anchored sprites sat with their visual bottom
                 // edge at (t.y - 14) + SZ.tower/2 — shift the node's origin
                 // there so the new bottom-anchored foot lands in the same
@@ -1104,15 +1393,23 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 world.addChild(node);
                 towerViews.set(t.padIndex, node);
                 towerLevels.set(t.padIndex, 0); // forces the texture apply below on first sync
+                towerFx.set(t.padIndex, {
+                    sprite,
+                    flash,
+                    recoilT: Infinity,
+                    flashT: Infinity,
+                    idlePhase: Math.random() * Math.PI * 2,
+                    steamTimer: Math.random() * STEAM_INTERVAL_S,
+                });
             }
             if (towerLevels.get(t.padIndex) !== t.level) {
                 towerLevels.set(t.padIndex, t.level);
-                const sprite = node.children[1] as Sprite;
+                const sprite = node.children[2] as Sprite;
                 const size = towerDisplaySize[t.def.id][t.level - 1];
                 sprite.texture = towerLevelTex[t.def.id][t.level - 1];
                 sprite.width = size.w;
                 sprite.height = size.h;
-                const pips = node.children[2] as Graphics;
+                const pips = node.children[3] as Graphics;
                 pips.clear();
                 for (let i = 0; i < t.level; i++) {
                     pips.circle((i - (t.level - 1) / 2) * 14, 0, 5).fill(CONFIG.colors.arrow);
@@ -1210,26 +1507,68 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     }
 
     /**
-     * Round 4 Part C (docs/Ideas.md §6d): while the rail is open for a
-     * tower with a next upgrade, two green lines above it show the
-     * post-upgrade damage/rate — the rail's own numbers (StationRail.tsx:
-     * `Math.round(tower.damage)` / `tower.fireRate.toFixed(1)`), so the two
-     * can never disagree. Takes the Lv↑ marker's exact anchor point
-     * (syncUpgradeMarkers already hides that marker for the selected pad —
-     * "the marker already hides on selection, this takes its place"). Only
-     * ever one instance (there's only ever one selected pad), so this is a
-     * single pooled Container updated in place every tick rather than a
-     * per-pad map like upgradeMarkers above.
+     * Round 4 Part C (docs/Ideas.md §6d), Round 5 Part 2C (playtest of
+     * 1.75.0): while the rail is open for a tower with a next upgrade, two
+     * lines above it show the post-upgrade damage/rate — the rail's own
+     * numbers (StationRail.tsx: `Math.round(tower.damage)` /
+     * `tower.fireRate.toFixed(1)`), so the two can never disagree. Takes the
+     * Lv↑ marker's exact anchor point (syncUpgradeMarkers already hides that
+     * marker for the selected pad — "the marker already hides on selection,
+     * this takes its place"). Only ever one instance (there's only ever one
+     * selected pad), so this is a single pooled Container updated in place
+     * every tick rather than a per-pad map like upgradeMarkers above.
+     *
+     * Round 5: the playtest found the bare green text illegible mid-wave
+     * over dishes/projectiles — wrapped in a translucent dark bubble
+     * (rgba(0,0,0,.7), matching the wave-bubble trigger's own black/80
+     * family) so it reads on any background. Each line is now TWO Text
+     * objects side by side (current value + arrow in white/85, the new
+     * value in green) rather than one — Pixi's plain Text has no rich-text
+     * mixed-colour run, so "18 → " and "25 dmg" are drawn and measured
+     * separately, then laid out left-to-right and the pair centred as a
+     * unit under the anchor point.
      */
-    const upgradePreviewStyle = new TextStyle({ fontSize: 24, fontWeight: 'bold', fill: 0x34d399 });
-    const upgradePreviewLine1 = new Text({ text: '', style: upgradePreviewStyle });
-    const upgradePreviewLine2 = new Text({ text: '', style: upgradePreviewStyle });
-    upgradePreviewLine1.anchor.set(0.5, 1);
-    upgradePreviewLine2.anchor.set(0.5, 1);
+    const upgradePreviewWhiteStyle = new TextStyle({ fontSize: 24, fontWeight: 'bold', fill: 0xffffff });
+    const upgradePreviewGreenStyle = new TextStyle({ fontSize: 24, fontWeight: 'bold', fill: 0x34d399 });
+    const upgradePreviewBg = new Graphics();
+    const upgradePreviewLine1White = new Text({ text: '', style: upgradePreviewWhiteStyle });
+    const upgradePreviewLine1Green = new Text({ text: '', style: upgradePreviewGreenStyle });
+    const upgradePreviewLine2White = new Text({ text: '', style: upgradePreviewWhiteStyle });
+    const upgradePreviewLine2Green = new Text({ text: '', style: upgradePreviewGreenStyle });
+    upgradePreviewLine1White.alpha = 0.85;
+    upgradePreviewLine2White.alpha = 0.85;
+    // Bottom-left anchor on every part — lets each line be laid out
+    // left-to-right at a shared baseline (anchor.y 1) before the whole pair
+    // is shifted to centre under the anchor point (see below).
+    for (const part of [upgradePreviewLine1White, upgradePreviewLine1Green, upgradePreviewLine2White, upgradePreviewLine2Green]) {
+        part.anchor.set(0, 1);
+    }
     const upgradePreview = new Container();
-    upgradePreview.addChild(upgradePreviewLine1, upgradePreviewLine2);
+    upgradePreview.addChild(
+        upgradePreviewBg,
+        upgradePreviewLine1White,
+        upgradePreviewLine1Green,
+        upgradePreviewLine2White,
+        upgradePreviewLine2Green,
+    );
     upgradePreview.visible = false;
     markerLayer.addChild(upgradePreview);
+
+    const UPGRADE_PREVIEW_PAD_X = 6;
+    const UPGRADE_PREVIEW_PAD_Y = 4;
+    const UPGRADE_PREVIEW_LINE_GAP = 2;
+
+    /** Lays out one line's white/green pair left-to-right, centred as a
+     *  unit at local x=0, with its bottom (baseline) at local y=`bottomY` —
+     *  returns the line's own height, so the caller can stack the next line
+     *  above it. */
+    function layoutPreviewLine(white: Text, green: Text, bottomY: number): number {
+        const total = white.width + green.width;
+        const x0 = -total / 2;
+        white.position.set(x0, bottomY);
+        green.position.set(x0 + white.width, bottomY);
+        return Math.max(white.height, green.height);
+    }
 
     function syncUpgradePreview(): void {
         const sel = store.get().selectedPad;
@@ -1241,16 +1580,30 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         const node = towerViews.get(t.padIndex);
         if (!node) { upgradePreview.visible = false; return; }
         const step = t.def.upgrades[t.level - 1];
-        upgradePreviewLine1.text = `${Math.round(t.damage)} → ${Math.round(t.damage * step.damageMult)} dmg`;
-        upgradePreviewLine2.text = `${t.fireRate.toFixed(1)} → ${(t.fireRate * step.fireRateMult).toFixed(1)}/s`;
+        upgradePreviewLine1White.text = `${Math.round(t.damage)} → `;
+        upgradePreviewLine1Green.text = `${Math.round(t.damage * step.damageMult)} dmg`;
+        upgradePreviewLine2White.text = `${t.fireRate.toFixed(1)} → `;
+        upgradePreviewLine2Green.text = `${(t.fireRate * step.fireRateMult).toFixed(1)}/s`;
         const size = towerDisplaySize[t.def.id][t.level - 1];
         const anchorY = node.y - size.h - UPGRADE_MARKER_GAP;
-        // Line 1 sits at the marker's own anchor point (bottom-anchored, so
-        // it grows upward from there); line 2 stacks directly above it —
-        // each Text auto-sizes to its own glyph width (anchor.x 0.5 centres
-        // it), so neither line is ever clipped regardless of digit count.
-        upgradePreviewLine1.position.set(t.x, anchorY);
-        upgradePreviewLine2.position.set(t.x, anchorY - upgradePreviewLine1.height - 2);
+        // Line 1 (damage) sits at the marker's own anchor point, bottom-most;
+        // line 2 (fire rate) stacks directly above it.
+        const line1Height = layoutPreviewLine(upgradePreviewLine1White, upgradePreviewLine1Green, 0);
+        const line2Height = layoutPreviewLine(upgradePreviewLine2White, upgradePreviewLine2Green, -(line1Height + UPGRADE_PREVIEW_LINE_GAP));
+        const blockWidth = Math.max(
+            upgradePreviewLine1White.width + upgradePreviewLine1Green.width,
+            upgradePreviewLine2White.width + upgradePreviewLine2Green.width,
+        );
+        const blockHeight = line1Height + UPGRADE_PREVIEW_LINE_GAP + line2Height;
+        upgradePreviewBg.clear();
+        upgradePreviewBg.roundRect(
+            -blockWidth / 2 - UPGRADE_PREVIEW_PAD_X,
+            -blockHeight - UPGRADE_PREVIEW_PAD_Y,
+            blockWidth + UPGRADE_PREVIEW_PAD_X * 2,
+            blockHeight + UPGRADE_PREVIEW_PAD_Y * 2,
+            8,
+        ).fill({ color: 0x000000, alpha: 0.7 });
+        upgradePreview.position.set(t.x, anchorY);
         upgradePreview.visible = true;
     }
 
@@ -1416,11 +1769,15 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         }
         playEvents(allEvents);
         trackWaveClears(allEvents);
+        detectShotsAndTriggerFx(allEvents);
         syncStore();
         syncGauge();
         syncEnemies();
         syncProjectiles();
         syncTowers();
+        fxClock += dt;
+        syncTowerFx(dt);
+        updateSteamPuffs(dt);
         syncUpgradeMarkers();
         syncUpgradePreview();
         syncPads();
@@ -1459,6 +1816,9 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             freeTexture(tex.glow.red);
             freeTexture(tex.glow.gold);
             for (const t of Object.values(tex.projectiles)) freeTexture(t);
+            freeTexture(tex.heatFlash);
+            freeTexture(tex.projTrail);
+            freeTexture(tex.steamPuff);
         },
     };
 }

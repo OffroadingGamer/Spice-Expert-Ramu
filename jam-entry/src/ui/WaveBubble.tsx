@@ -8,12 +8,28 @@
  * own row between that row and the speed row — without lifting this into
  * the global store.
  *
+ * Round 5 (playtest of 1.75.0): four fixes folded in, each noted at its own
+ * site below —
+ *   A. Trigger icons grew 24 -> 40px, each with its recipe name underneath.
+ *   B. The submenu is a closed-by-default GRID (not an always-open list):
+ *      one cell per recipe (icon/name/pips·bounty·count), 1 cell left-
+ *      anchored / 2 side by side / 3+ wraps to two columns — and blocks 6-9
+ *      (two dishes per archetype) collapse to ONE cell with both icons and
+ *      one shared count, since pips/bounty/count all come from the
+ *      archetype's own wave entry, not from either dish individually. Also
+ *      fixes the "open on wave 4 build with no tap" report — see
+ *      useWaveBubble's own doc on the render-time reset below.
+ *   C. (StationRail's upgrade preview bubble — towerScene.ts, not this file.)
+ *   D. (The wave-1 top-right overlap — Hud.tsx's coin-toast fix, not this
+ *      file.)
+ *
  * Data path, exactly §7's: waveAt(index).entries[].enemy -> archetype ->
  * blockForLevel(level).dishes[archetype] slugs -> dish-<slug> aliases
- * already in the manifest, deduped by slug. store.wave already equals the
- * UPCOMING level during a build phase (actions.ts's syncStore mirrors
- * engine.state.waveIndex + 1 regardless of phase), so none of this needs
- * towerScene.ts's engine instance directly.
+ * already in the manifest, deduped by archetype for the grid / by slug for
+ * the trigger. store.wave already equals the UPCOMING level during a build
+ * phase (actions.ts's syncStore mirrors engine.state.waveIndex + 1
+ * regardless of phase), so none of this needs towerScene.ts's engine
+ * instance directly.
  */
 import { useEffect, useRef, useState } from 'react';
 import { MANIFEST } from '../assets/manifest.ts';
@@ -34,10 +50,22 @@ const ASSET_SRC = new Map(
 
 const MAX_BUBBLE_ICONS = 3;
 
-interface DishRow {
+/** One distinct dish, for the trigger's small icon strip. */
+interface TriggerDish {
     slug: string;
     name: string;
     icon: string | undefined;
+}
+
+/** One archetype's worth of the wave roster, for a submenu grid cell.
+ *  `icons`/`names` carry ONE entry for blocks 1-5 (one dish per archetype)
+ *  and TWO for blocks 6-9 (double-dish) — pips/bounty/count are per-
+ *  ARCHETYPE (from the wave entry itself), so a double-dish archetype is
+ *  still exactly one cell, never two. */
+interface DishCell {
+    key: string;
+    icons: string[];
+    names: string[];
     pips: number;
     bounty: number;
     count: number;
@@ -59,7 +87,8 @@ export interface WaveBubbleState {
     showTrigger: boolean;
     /** The unrolled scroll panel. */
     showSubmenu: boolean;
-    rows: DishRow[];
+    triggerDishes: TriggerDish[];
+    cells: DishCell[];
     totalCount: number;
     /** Trigger tap: opens the submenu. */
     open: () => void;
@@ -77,13 +106,30 @@ export function useWaveBubble(): WaveBubbleState {
     const [dismissed, setDismissed] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
 
-    // A new build phase (a new upcoming wave) always starts fresh — "stays
-    // until the wave starts or the player taps it," so the previous wave's
-    // tap/dismiss must never bleed into the next one.
-    useEffect(() => {
+    // Round 5 playtest fix: a new build phase (a new upcoming wave) always
+    // starts fresh — "stays until the wave starts or the player taps it," so
+    // the previous wave's tap/dismiss must never bleed into the next one.
+    // The ORIGINAL fix for this was a `useEffect(() => {...}, [wave])` —
+    // correct eventually, but an effect runs AFTER the wave-change render
+    // has already committed and painted, so a screenshot (or a frame of
+    // real playback) taken in that single window could still catch the
+    // PREVIOUS wave's isOpen=true submenu on screen for wave 4's build —
+    // exactly the reported "open on wave 4 build with no tap." Comparing a
+    // ref during RENDER and calling the setters right here is React's own
+    // documented pattern for "derived state that must reset when an input
+    // changes" (see react.dev, "Adjusting state when a prop changes") — it
+    // forces an immediate re-render before paint, so there's no frame left
+    // in which the stale value could ever be shown.
+    const prevWaveRef = useRef(wave);
+    let dismissedNow = dismissed;
+    let isOpenNow = isOpen;
+    if (prevWaveRef.current !== wave) {
+        prevWaveRef.current = wave;
+        dismissedNow = false;
+        isOpenNow = false;
         setDismissed(false);
         setIsOpen(false);
-    }, [wave]);
+    }
 
     const level = wave;
     const waveData = waveAt(level - 1);
@@ -92,39 +138,44 @@ export function useWaveBubble(): WaveBubbleState {
     const effectiveHp = (e: WaveEntry) => enemyDef(e.enemy).hp * (e.hpMult ?? waveData.hpMult ?? 1);
     const maxEffectiveHp = Math.max(...waveData.entries.map(effectiveHp));
 
-    const seen = new Set<string>();
-    const rows: DishRow[] = [];
+    const seenSlugs = new Set<string>();
+    const triggerDishes: TriggerDish[] = [];
+    const seenArchetypes = new Set<string>();
+    const cells: DishCell[] = [];
     for (const entry of waveData.entries) {
-        for (const slug of block.dishes[entry.enemy] ?? []) {
-            if (seen.has(slug)) continue;
-            seen.add(slug);
-            const pips = Math.min(5, Math.max(1, Math.ceil((5 * effectiveHp(entry)) / maxEffectiveHp)));
-            rows.push({
-                slug,
-                name: titleCase(slug),
-                icon: ASSET_SRC.get(`dish-${slug}`),
-                pips,
-                bounty: Math.round(enemyDef(entry.enemy).bounty * bountyMult),
-                count: entry.count,
-            });
+        const slugs = block.dishes[entry.enemy] ?? [];
+        for (const slug of slugs) {
+            if (seenSlugs.has(slug)) continue;
+            seenSlugs.add(slug);
+            triggerDishes.push({ slug, name: titleCase(slug), icon: ASSET_SRC.get(`dish-${slug}`) });
         }
+        if (seenArchetypes.has(entry.enemy)) continue;
+        seenArchetypes.add(entry.enemy);
+        const pips = Math.min(5, Math.max(1, Math.ceil((5 * effectiveHp(entry)) / maxEffectiveHp)));
+        cells.push({
+            key: entry.enemy,
+            icons: slugs.map((s) => ASSET_SRC.get(`dish-${s}`)).filter((s): s is string => !!s),
+            names: slugs.map(titleCase),
+            pips,
+            bounty: Math.round(enemyDef(entry.enemy).bounty * bountyMult),
+            count: entry.count,
+        });
     }
     const totalCount = waveData.entries.reduce((s, e) => s + e.count, 0);
 
     // Dialogue wins: waiting (not permanently dismissed) behind an open box
     // — "the bubble waits until the box closes." Wave start (tdPhase leaves
-    // 'build') also hides both halves; the wave-keyed effect above resets
+    // 'build') also hides both halves; the wave-keyed reset above starts
     // everything fresh for the NEXT build phase. baseVisible gates BOTH
-    // halves; dismissed/isOpen then split which of the two (if either) is
-    // showing — dismissed must never suppress the submenu itself (only the
-    // trigger returning after a close), which is what an earlier version of
-    // this hook got wrong by folding both into one visible flag.
+    // halves; dismissedNow/isOpenNow then split which of the two (if
+    // either) is showing.
     const baseVisible = tdPhase === 'build' && dialogue === null;
 
     return {
-        showTrigger: baseVisible && !dismissed && !isOpen,
-        showSubmenu: baseVisible && isOpen,
-        rows,
+        showTrigger: baseVisible && !dismissedNow && !isOpenNow,
+        showSubmenu: baseVisible && isOpenNow,
+        triggerDishes,
+        cells,
         totalCount,
         open: () => setIsOpen(true),
         close: () => { setIsOpen(false); setDismissed(true); },
@@ -132,49 +183,71 @@ export function useWaveBubble(): WaveBubbleState {
 }
 
 /** The chat bubble over Ramu — up to 3 distinct dish icons (then a +n
- *  badge) and the wave's total unit count. Mounted inline right after
- *  #chef-head-button in Hud.tsx's own row 2, so "anchored to the right of
- *  #chef-head-button" falls out of plain DOM flow — no runtime measurement
- *  (the arrow-round lesson StationRail.tsx's own doc argues from: getBoundingClientRect/
- *  ResizeObserver cue positioning has failed on device three rounds running). */
+ *  badge), each with its recipe name underneath, and the wave's total unit
+ *  count. Mounted inline right after #chef-head-button in Hud.tsx's own row
+ *  2, so "anchored to the right of #chef-head-button" falls out of plain DOM
+ *  flow — no runtime measurement (the arrow-round lesson StationRail.tsx's
+ *  own doc argues from: getBoundingClientRect/ResizeObserver cue positioning
+ *  has failed on device three rounds running). Round 5 Part A: icons grew
+ *  24 -> 40px with a name label under each — row 2 may grow taller as a
+ *  result (the handover's own allowance); it can't overlap the speed row
+ *  because both are ordinary flex children of the same row, not
+ *  independently positioned. */
 export function WaveBubbleTrigger({ state }: { state: WaveBubbleState }) {
     if (!state.showTrigger) return null;
-    const shown = state.rows.slice(0, MAX_BUBBLE_ICONS);
-    const extra = state.rows.length - shown.length;
+    const shown = state.triggerDishes.slice(0, MAX_BUBBLE_ICONS);
+    const extra = state.triggerDishes.length - shown.length;
     return (
         <button
             type="button"
             aria-label="Upcoming wave"
             onClick={state.open}
-            className="pointer-events-auto relative flex shrink-0 items-center gap-1 rounded-2xl bg-black/80 py-1.5 pr-2.5 pl-3 active:scale-95"
+            className="pointer-events-auto relative flex shrink-0 items-end gap-1.5 rounded-2xl bg-black/80 py-1.5 pr-2.5 pl-3 active:scale-95"
         >
             {/* Tail toward #chef-head-button, on the bubble's own left edge. */}
             <span
                 aria-hidden="true"
                 className="absolute top-1/2 -left-[5px] h-2.5 w-2.5 -translate-y-1/2 rotate-45 bg-black/80"
             />
-            <span className="flex -space-x-1.5">
-                {shown.map((row) => (
+            {shown.map((d) => (
+                <span key={d.slug} className="flex flex-col items-center gap-0.5">
                     <img
-                        key={row.slug}
-                        src={row.icon}
+                        src={d.icon}
                         alt=""
-                        className="h-6 w-6 rounded-full border border-black/40 bg-surface object-contain"
+                        className="h-10 w-10 rounded-full border border-black/40 bg-surface object-contain"
                     />
-                ))}
-            </span>
-            {extra > 0 && <span className="text-[0.68rem] font-bold text-white/80">+{extra}</span>}
-            <span className="ml-0.5 text-[0.72rem] font-bold text-white">{state.totalCount}</span>
+                    <span className="max-w-[2.75rem] truncate text-[0.55rem] font-bold text-white/85">{d.name}</span>
+                </span>
+            ))}
+            {extra > 0 && <span className="pb-2.5 text-[0.68rem] font-bold text-white/80">+{extra}</span>}
+            <span className="pb-2.5 ml-0.5 text-[0.72rem] font-bold text-white">{state.totalCount}</span>
         </button>
     );
 }
 
-/** The scroll submenu — its own row directly under the WAVE/RUSH + speed
- *  row (Round 4 Part D vacates the ServiceGauge bar's old slot there), one
- *  row per distinct dish. Closes on tap outside WITHOUT consuming the tap
- *  (a document-level pointerdown check, not a modal backdrop) — "never
- *  blocks pad placement or the rail" means the same tap that dismisses this
- *  must still land on whatever pad/rail button is underneath it. */
+/** Round 5 Part B: the scroll submenu — closed until tapped (see
+ *  useWaveBubble's render-time reset above for why it can no longer be
+ *  caught open on its own), a GRID of one cell per recipe (two columns once
+ *  there's more than one), inside a 3-sliced ui-scroll panel (CSS
+ *  border-image: the LEFT/RIGHT `border-image-slice` bands are the rolled
+ *  ends, the `fill` keyword paints the source's own centre strip — already
+ *  clear of both rolls — stretched across the content+padding box as the
+ *  parchment background; no separate middle asset, and the rolls never
+ *  smear because they're never stretched, only the parchment is). Its own
+ *  row directly under the WAVE/RUSH + speed row (Round 4 Part D vacates the
+ *  ServiceGauge bar's old slot there).
+ *
+ *  Round 5: dropped `pointer-events-auto` — this panel has nothing
+ *  interactive inside it (no buttons, just text/images), so leaving it
+ *  `pointer-events-none` (inherited from Hud's root wrapper) means a tap
+ *  physically landing on the panel's own screen area passes straight
+ *  through to whatever's underneath (the canvas, for pad selection) instead
+ *  of being captured by this DOM element first — "never blocks pad
+ *  placement," now true for a pad that happens to render BEHIND the panel
+ *  too, not just one tapped outside its bounds. The outside-tap close below
+ *  is unaffected: the document-level listener still receives the bubbled
+ *  event and reads its real target regardless of this element's own
+ *  pointer-events value. */
 export function WaveBubbleSubmenu({ state }: { state: WaveBubbleState }) {
     const panelRef = useRef<HTMLDivElement>(null);
     const [unrolled, setUnrolled] = useState(false);
@@ -202,23 +275,48 @@ export function WaveBubbleSubmenu({ state }: { state: WaveBubbleState }) {
     return (
         <div
             ref={panelRef}
-            className="pointer-events-auto relative overflow-hidden rounded-xl transition-[clip-path] duration-[350ms] ease-out motion-reduce:duration-[0ms]"
+            className="relative min-h-[132px] transition-[clip-path] duration-[350ms] ease-out motion-reduce:duration-[0ms]"
             style={{
-                backgroundImage: `url(${ASSET_SRC.get('ui-scroll')})`,
-                backgroundSize: '100% 100%',
+                borderStyle: 'solid',
+                borderColor: 'transparent',
+                borderWidth: '0 30px',
+                borderImageSource: `url(${ASSET_SRC.get('ui-scroll')})`,
+                borderImageSlice: '0 11% fill',
+                borderImageRepeat: 'stretch',
+                // Round 5: 10px felt tight against the scroll art's own
+                // baked-in border lines at a single row (icon/pips nearly
+                // touching them) -- 16px gives real breathing room without
+                // meaningfully growing the panel for the common multi-row case.
+                padding: '16px 14px',
                 clipPath: unrolled ? 'inset(0)' : 'inset(0 100% 0 0)',
             }}
         >
-            <div className="flex flex-col gap-1 p-3">
-                {state.rows.map((row) => (
-                    <div key={row.slug} className="flex items-center gap-2 text-[0.72rem] font-bold text-black">
-                        <img src={row.icon} alt="" className="h-7 w-7 shrink-0 object-contain" />
-                        <span className="min-w-0 flex-1 truncate">{row.name}</span>
-                        <span aria-label={`toughness ${row.pips} of 5`} className="shrink-0 tracking-tighter">
-                            {'●'.repeat(row.pips)}{'○'.repeat(5 - row.pips)}
+            <div
+                className="grid gap-x-3 gap-y-2"
+                style={{ gridTemplateColumns: 'repeat(2, max-content)', justifyContent: 'start' }}
+            >
+                {state.cells.map((cell) => (
+                    <div key={cell.key} className="flex flex-col items-center gap-1 text-black">
+                        <span className="flex -space-x-2">
+                            {cell.icons.map((src, i) => (
+                                <img
+                                    key={i}
+                                    src={src}
+                                    alt=""
+                                    className="h-12 w-12 rounded-full border border-black/30 bg-white/70 object-contain"
+                                />
+                            ))}
                         </span>
-                        <span className="shrink-0 tabular-nums">🪙{row.bounty}</span>
-                        <span className="shrink-0 tabular-nums">×{row.count}</span>
+                        <span className="max-w-[6rem] truncate text-center text-[0.68rem] font-bold">
+                            {cell.names.join(' / ')}
+                        </span>
+                        <span className="flex items-center gap-1 text-[0.65rem] font-bold tabular-nums tracking-tighter">
+                            <span aria-label={`toughness ${cell.pips} of 5`}>
+                                {'●'.repeat(cell.pips)}{'○'.repeat(5 - cell.pips)}
+                            </span>
+                            <span>· 🪙{cell.bounty}</span>
+                            <span>· ×{cell.count}</span>
+                        </span>
                     </div>
                 ))}
             </div>
