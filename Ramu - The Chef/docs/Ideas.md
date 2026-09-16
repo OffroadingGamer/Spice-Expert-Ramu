@@ -395,6 +395,24 @@ specified and wrong as a product. Removed.
    always present** — the un-mute tap on every device and Round 4's bubble anchor. Mute
    persists in the save (a player who muted stays muted across Retry).
 
+**Playtest of 1.74.0 (Sep 16) — two decisions, two proposal sets:**
+1. ✅ **Dialogue box moves to screen centre.** Same Skip and continue hint; **a tap anywhere
+   inside the box advances.**
+2. ✅ **Beat 3 first, dock after.** The box opens alone; tapping it shut opens the upgrade dock
+   on pad 4. **While the dock is open for a prop, green text above that prop shows the
+   post-upgrade values** (`damage × damageMult`, `rate × fireRateMult` from the upgrade step).
+   After the purchase, the plain Ready. Beat 3 no longer stays open through the purchase.
+3. 📋 **Chef-in-HUD options** (drawn for the user): **A** head as a badge inside the WAVE chip
+   (bar stays) · **B** *recommended* — **the service gauge becomes a ring around the 44 px
+   head**, amber arc → green past the SAFE tick, bar removed, mute = grey ring, Round 4's
+   bubble grows from Ramu · **C** speech tab docked to the board's top-left corner (must be
+   measured against the A row). **Awaiting the user's pick.**
+4. 📋 **Prop feedback proposals** (props read as inert): 1 recoil squash on fire (80 ms,
+   1.08×0.90) · 2 heat flash, tinted per archetype · 3 projectile trail · 4 idle bob + steam
+   only during a wave · 5 dish hit-flash on HP drop · 6 target-lock ring. All scene-side
+   (new-projectile diff, `shot` events, HP deltas); no engine change, no art.
+   **Recommended bundle 1 + 2 + 4 as Round 5**, 5 as second tier. **Awaiting the user's pick.**
+
 **Round 3 — decided: horizontal fill under the wave chip**, not a bar in the gutter. Same
 maths (SAFE = units − (lives − 1)), amber → green, resets per wave. Top-left, directly under
 `WAVE n / RUSH: …`, width of that chip group.
