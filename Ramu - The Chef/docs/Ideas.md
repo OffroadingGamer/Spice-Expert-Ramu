@@ -429,6 +429,16 @@ specified and wrong as a product. Removed.
    element; user reports an FTUE "Shift" float overlapping the WAVE chip). Reproduce at 403
    wide, name the element, fix the layout or z-order.
 
+**Playtest of 1.76.0 (Sep 16) — Round 6, user chose Type 2:**
+1. 🔴 **Recoil squash inflated props ~16× and left them there.** `sprite.width = size` gives a
+   base scale ≈ 0.06; the tween wrote **absolute** `scale.set(1.08, 0.9)` … `set(1, 1)`. Fix,
+   structural: **every tower sprite lives in a wrapper `Container`; all FX tween the wrapper
+   (always 1-based); nothing tweens the sprite.** Acceptance rule from now on: **the resting
+   state is measured** — scale before first shot == scale after, numerically.
+2. **Wave bubble: icons 56 px, persists for the whole wave** (until the next build phase),
+   with a **live remaining count per dish** ("Naan 4/9") from the enemy alive-set diff — only
+   if the per-archetype attribution is a straight read; otherwise size + persistence alone.
+
 **Round 3 — decided: horizontal fill under the wave chip**, not a bar in the gutter. Same
 maths (SAFE = units − (lives − 1)), amber → green, resets per wave. Top-left, directly under
 `WAVE n / RUSH: …`, width of that chip group.

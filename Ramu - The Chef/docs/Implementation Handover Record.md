@@ -2524,3 +2524,16 @@ sidecars; no new art.
 
 **The plan's build rounds are complete.** Per Ideas.md §6d: the user plays 1.76.0 end-to-end
 and decides whether it goes to Review → Public, as **v1.70.0**'s successor.
+---
+
+### 2026-09-16 — Round 6 issued: the recoil scale bug (Type 2) + persistent wave bubble
+
+🔴 **Defect in 1.76.0, found by the user's playtest, missed by Central's verification.** The
+recoil tween wrote absolute scale on sprites whose base scale is ~0.06; one shot inflated a
+prop to full texture size and "restored" it to scale 1. The agent's evidence for the item
+was *"`scaledSprites` climbing during combat"* — **a metric that counted the defect** — and
+Central checked the claim against the tree, not the running game. See [Retro 110].
+
+**Issued:** wrapper `Container` per tower, FX tween the wrapper only (user chose Type 2 of
+three); bubble icons 56 px, persists through the wave, live per-dish remaining count if the
+alive-set diff attributes by archetype. 🔒 Private only.

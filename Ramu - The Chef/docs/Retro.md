@@ -2677,3 +2677,21 @@ uniques are the score; the trend matters more than any single day.
      days and a rejected submission. ➕ What did work: nothing was charged, and support
      refunded 50,000 credits unasked. **Reporting a broken path clearly and early cost nothing
      and paid.**
+
+110. 🔴 **A metric that goes up when the animation runs is not evidence the animation is
+     correct — and a claim verified against the tree is not verified against the screen.**
+     Sep 16 2026. Round 5's recoil squash wrote absolute `scale.set(1.08, 0.9)` on sprites
+     whose base scale was ~0.06, inflating every prop ~16× on its first shot and "restoring"
+     it to scale 1 — full texture size. The agent's acceptance evidence was *"`scaledSprites`
+     climbing as recoil animated"*: the count of sprites with non-unit scale, rising. **That
+     number was the bug.** Central then verified the round by confirming the functions,
+     constants and diff existed in the tree — every claim true, the game visibly broken. ✅
+     **Two rules.** (1) For any tween, **measure the resting state**: the property's value
+     before the first trigger must equal its value after the tween ends, numerically, and a
+     screenshot must show a triggered instance beside an untriggered one at equal size. (2)
+     When a return's evidence is a derived metric, ask what the metric would read **if the
+     feature were broken in the most likely way** — here, exactly the same. ⚠️ The
+     structural fix (Type 2: FX on a wrapper container, never on the sized sprite) is the
+     one that makes the bug impossible rather than merely fixed; Retro 105's lesson again —
+     the artefact under test is the running system, and "restores to 1" is precisely the
+     kind of line a grep cannot judge.
