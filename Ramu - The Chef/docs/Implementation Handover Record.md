@@ -39,7 +39,7 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.76.0** (progression rounds — all five build rounds done; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.77.0** (progression rounds + the Round 6 fix — awaiting the user's end-to-end play; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
 | **Endgame criterion** | `maxed-meta` must lose between levels **85–110** (currently 90) |
@@ -50,7 +50,7 @@ of the present.**
 | **Sealed files** | `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` |
 | **`data/waves.ts`** | ⚠️ **RE-SEALED.** Unsealed for the v1.69.0 block-1 retune only |
 | **Credits (Sep 15, 17:45 IST)** | **93,273** = 50,000 grant (Dec 13) + 15,000 grant (Dec 8) + 25,000 starter + 3,173 quests + 100 daily. **BACK-TO-WORK is gone: its last ~91,000 funded the Meta flight** on its final day. Durable pool untouched |
-| **Paid campaign** | 🛫 **`kitchen-rush-meta` FLIGHTED** (RUN flighted it Sep 15; charged 91,100). Meta/Android, $82, ends **Sep 16**. Day 1: 1,466 impr · 49 clicks · 3.34 % CTR · **7 installs · CPI $2.72**. Cutoff moot. Implementation agent pulls daily `stats`; marketing agent reads them |
+| **Paid campaign** | ✅ **`kitchen-rush-meta` COMPLETE** (ended Sep 16). **$70.05 of $82 spent · 4,228 impr · 171 clicks · 4.04 % CTR · 18 installs · CPI $3.66.** Unspent remainder refunds on completion per RUN's rule — verify on the studio page. Paid is done for this jam (marketing agent's prior, Sep 14) |
 | **Art leg (Sep 14)** | ✅ **DONE** — `Art/_gen/chef-final/`: 9 bodies + 4 faces + scroll, **7,003 credits**, verified. Faces are aligned eyebrow-to-jaw bands. ⚠️ Expressions read at **≥ 160 px, not 96** — spec amended in Ideas.md §6b. Nothing ships before judging |
 | **Video leg (Sep 14)** | ✅ **PUBLISHED** — *Twelve Glasses*, 45 s portrait, Video Studio, live ~00:08 IST Sep 15, ~20 min before the close. Share `https://w.run/s/UvNAAno`. Agent-reported ≈43k credits; ⚠️ **not visible in `rundot credits`** (balance 184,274 reconciles without it) — Studio may bill a separate pool. Docs tracked in `VideoGen Leg/`; media gitignored. ✅ **RUN support confirmed Sep 15: automatically in consideration** — no form, no listing; Editor's Picks $300/$100/$100. Share link handed to the marketing agent for the organic calendar |
 
@@ -2537,3 +2537,31 @@ Central checked the claim against the tree, not the running game. See [Retro 110
 **Issued:** wrapper `Container` per tower, FX tween the wrapper only (user chose Type 2 of
 three); bubble icons 56 px, persists through the wave, live per-dish remaining count if the
 alive-set diff attributes by archetype. 🔒 Private only.
+---
+
+### 2026-09-17 — Round 6 returned → Private v1.77.0; Meta campaign complete
+
+**Round 6 — ✅ RETURNED, VERIFIED, COMMITTED.** Private **1.77.0**; Review/Public **1.69.0**.
+Three files. Sealed untouched; balance **35 / 36 / 11 / 4 / 90**; `tsc` clean; no sidecars.
+The only `fx.sprite.scale.set` left in `towerScene.ts` is the comment describing the bug.
+
+| | Measured |
+|---|---|
+| Base sprite scale | **0.678** (Central had estimated ~0.06 — mechanism right, magnitude wrong; the inflation was ~1.5× on the sprite's own scale, larger on screen because the texture is larger than its display box) |
+| Resting state | wrapper `(1,1) → (1.067, 0.917) → (1,1)`; sprite `0.67797` constant across 3 s |
+| Fired vs never-fired | pixel-identical; both upgrade to `63.73 × 79.32` |
+| Anchors mid-squash | `node.y 213.00`, preview `y 125.00` — one value each across 541–962 frames |
+| Reduced motion | wrapper deviation from (1,1) over 721 frames: **0** |
+| Bubble | 56 px; persists through the wave; `Chai 6 → 5` on the first kill; resets at build; level 81 shows 5 cells / 10 icons / `54/54` |
+| Steam puff tween (line ~958) | **correct as written** — `Sprite(tex.steamPuff)` never has width set, base is (1,1) |
+
+**Next:** the user plays 1.77.0 end-to-end and decides Review → Public.
+
+#### Meta campaign, final (verified live Sep 17)
+`Status: flighted`, ended 2026-09-16. **$70.05 of $82 spent · 4,228 impressions · 2,833 reach ·
+171 clicks · 4.04 % CTR · 10.53 % CVR · 18 installs · CPI $3.66 · CPA $4.38.** Day 1 alone was
+7 installs at $2.72; day 2 added 11 at a higher CPI. Against the marketing agent's criterion
+(≥ 55 attributed session starts) the paid leg **did not meet its bar**; against the credit
+question it did what it was for — the expiring lot became 18 Android installs instead of
+nothing. Unspent ~$12 refunds on completion per RUN's billing rule; confirm on the studio
+page. Paid is done for this jam.
