@@ -1,6 +1,6 @@
 # Social Media Handover Record
 
-**Last updated:** Sep 15 2026
+**Last updated:** Sep 17 2026
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Marketing Strategy.md](Marketing%20Strategy.md)
 
@@ -1329,3 +1329,90 @@ explained. Recommended firing §17's already-drafted RUN Discord
 `#back-to-work` post today as the direct answer to §13.6's escalation
 trigger, now that we've actually slipped behind 3rd rather than merely
 risking it.
+
+### 2026-09-17 — Central Agent's closing handover: campaign final, closing read requested
+**From:** Central Agent, via the user
+**Status:** ✅ complete — closing read written, copy drafted, awaiting one
+input from the user (current board standing) before final sync
+
+Full text as received:
+
+> Handover — Central Agent → Marketing Agent · Meta/Android campaign
+> complete · Sep 17 2026
+> Scope: the final numbers for kitchen-rush-meta, what they mean against
+> your own criteria, and what's yours in the last ~30 hours. Analysis and
+> one write-up requested — nothing here asks you to prepare, submit,
+> post, or fund.
+>
+> 1. Final numbers — verified live by Central, Sep 17
+> Campaign: kitchen-rush-meta · Meta / Android · $82 / 2 days · flighted
+> Sep 15, ended Sep 16. Spend: $70.05 of $82.00 — the flight ran its two
+> days and did not exhaust the budget. Delivery: 4,228 impressions · 2,833
+> reach · 171 clicks · 4.04% CTR. Conversion: 10.53% CVR · 16 conversions
+> · 18 installs · CPI $3.66 · CPA $4.38. By day — Sep 15: $25.52, 49
+> clicks, 7 installs, CPI $2.72 · Sep 16: +$44.53, +122 clicks, +11
+> installs. D1/attributed sessions: unreported in RUN's stats — RUN says
+> ads can lag through the last finalized UTC day.
+> Credits: the flight drew 91,100 from the BACK-TO-WORK lot on its last
+> valid day, exactly as sized. The unspent ~$12 should refund on
+> completion under RUN's rule; balance still reads 93,273 as of this
+> morning — please note in your write-up whether the refund has landed
+> when you next look.
+>
+> 2. Against your criteria (§13.6)
+> Paid: ≥55 attributed session starts. Not met on what RUN reports — 18
+> installs, session starts unreported. Even at a generous install→play
+> rate this lands well under 55. Say so plainly. What it was for: turning
+> an expiring lot into players rather than nothing — 18 Android installs
+> for credits that would have evaporated at midnight, neither a win nor a
+> loss on the prize board. CTR 4.04% is a strong number for the creatives
+> you built; the weak link was the app-install funnel for a 73%-mobile-web
+> audience, which you flagged on Sep 14 before it flew. Worth recording as
+> the lesson: the creative worked, the objective didn't fit.
+>
+> 3. The board
+> Last verified by Central at 17:45 IST Sep 15: 4th, 541 daily uniques,
+> $200; 3rd at 562 (+21); 5th at 512 (−29). Central can't read the jam
+> page from the CLI — read it yourself and put the current standing in
+> the write-up. Judging closes Sep 18 12:00 PT = 00:30 IST Sep 19.
+>
+> 4. What's yours now
+> Closing read in Marketing Strategy.md: the table above, the criteria
+> verdict, the current board, and the lesson. One section, dated. Hand
+> back and Central syncs. Last organic days as approved: Sep 17
+> r/SoloDevelopment, Sep 18 AM personal push — with both links (game +
+> Twelve Glasses). No new channels this late. Post-jam recommendation, one
+> paragraph: should this game ever run paid again, and if so on what
+> objective and network? Your Sep 14 prior was "paid is done for this
+> jam" — this is the longer-horizon version of that question. Keep it to
+> what the data supports.
+>
+> 5. Boundaries unchanged
+> Your two docs only; draft, don't post; no prepare/generate/submit; no
+> git. Nothing further is being funded.
+
+**Live-verified before writing anything:** `rundot marketing status`
+matches Central's spend/delivery numbers exactly. `campaign_attribution_funnel_30d`
+re-pulled — still zero on every stage, two days after flight end (same
+zero as the Sep 15 read). `rundot credits` unchanged at 93,273 — the
+~$12 refund has not visibly landed; flagged rather than assumed either
+way. Fresh `daily_activity_30d`: Sep 15 revised up to 43 (from the
+11-partial figure logged Sep 15), Sep 16 at 22 — cumulative total through
+Sep 16 is 588, already above the 562 that 3rd held two days ago, though
+this doesn't confirm current rank on its own.
+
+**Actioned:** full closing read, criteria verdict ("paid did not meet its
+own bar," said plainly), the lesson (creative worked, objective didn't
+fit), and a post-jam paid recommendation (web-traffic objective only, on
+meta or google, only once attribution is confirmed populating — not a
+flat no, not soon either) written to
+[Marketing Strategy.md](Marketing%20Strategy.md) §19. Copy drafted for
+both remaining organic days (r/SoloDevelopment, Sep 18 personal push),
+both carrying the game link and the Twelve Glasses video link. **One item
+held for the user:** a fresh board read — this agent can't fetch the jam
+page any more than Central can, so §19's board section is written with
+the Sep 16 cumulative-total signal as context but no confirmed current
+rank. Nothing posted, prepared, generated, submitted, or funded.
+
+**Next:** waiting on the user for the current standing, then this hands
+back to Central for the doc sync per point 4.

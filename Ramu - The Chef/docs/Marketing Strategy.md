@@ -1,6 +1,6 @@
 # Marketing Strategy
 
-**Last updated:** Sep 15 2026
+**Last updated:** Sep 17 2026
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)
 
@@ -1381,3 +1381,139 @@ this agent. Flagged to Central/Implementation: re-check
 `campaign_attribution_funnel_30d` on Sep 16 before final paid verdict;
 confirm whether Sep 14's Indie Game Academy post actually fired; get 3rd
 and 5th's own daily deltas on the next board pull.
+
+## 19. Closing read — kitchen-rush-meta final, criteria verdict, post-jam call — Sep 17 2026
+
+Trigger: Central's closing handover. `whoami` confirmed
+`offroadinggamedev@gmail.com` before any pull.
+
+### Final numbers — verified live, matches Central exactly
+
+```
+rundot marketing status --name kitchen-rush-meta
+  Status               flighted
+  Budget               $82.00 total · spent $70.05 · ends 2026-09-16
+  Android (Meta) leg    $82.00 total (spent: $70.05)
+```
+
+Spend $70.05 of $82 (2 days, Sep 15–16): Sep 15 $25.52 / 49 clicks / 7
+installs / CPI $2.72; **Sep 16 +$44.53 / +122 clicks / +11 installs** —
+day 2 delivered faster and cheaper than day 1's pace projected in §18.
+Totals: 4,228 impressions, 2,833 reach, 171 clicks (4.04% CTR), 16
+conversions, **18 installs**, CPI $3.66, CPA $4.38.
+
+**`campaign_attribution_funnel_30d` re-checked Sep 17, a day after the
+flight ended: still zero on every stage** (`hermes_install`,
+`app_session_start`, `deeplink`, `game_session_start`) — same as the Sep
+15 read in §18. Central reports RUN's own explanation is a lag through
+the last finalized UTC day, which is plausible and not contradicted here,
+but two full days past flight end with nothing landed is the point where
+"lag" and "never lands" stop being distinguishable from this seat. Not
+resolvable further from this agent's tools.
+
+**Refund — flagged as asked, not yet landed.** `rundot credits` still
+reads **93,273**, unchanged from the Sep 15 check. $82 − $70.05 = $11.95
+unspent (~12,548 credits at the flighting rate) has not shown up as a
+balance increase as of this pull. Either the refund hasn't processed yet
+or it nets against other concurrent draw from the shared pool (same
+non-reconciliable-line-by-line situation as §16) — can't tell which from
+a balance snapshot alone. Worth another look after a day or two with no
+other spend in between, if anyone wants a clean read.
+
+### Against §13.6 — paid: not met
+
+**≥ 55 attributed session starts required; RUN reports zero, four days
+running.** Verdict stands even under the most generous framing: 18
+installs is the ceiling on any install→session-start conversion, and 18
+is already under 55 before any funnel loss is applied. **Said plainly, as
+asked: paid did not meet its own bar.**
+
+**What it was for, and what it bought:** BACK-TO-WORK's remaining value
+was going to evaporate at expiry regardless. 18 Android installs for
+credits that would otherwise have gone to zero is the honest frame —
+neither a win nor a loss against the board, a wash against the lot.
+
+**The lesson, for the record:** CTR (4.04%) says the creative did its
+job — this isn't a "bad ad" story. The mismatch flagged in §15 before the
+campaign flew is exactly what shows up in the result: an app-install
+objective sold to an audience that's 73% mobile-web. The funnel step that
+should have converted installs into plays never got the chance to prove
+itself either way, because the objective pointed at the wrong 27% of the
+audience from the start. **Creative worked. Objective didn't fit.**
+
+### Board — needs a fresh read, with context in the meantime
+
+Central can't read the jam page from the CLI either, so this agent can't
+supply a verified current rank without one more input:
+**@user — could you drop a fresh board screenshot or the current
+standing?** In the meantime, this agent's own `daily_activity_30d` pull
+gives a lower-bound signal:
+
+| Day | Unique players |
+|---|---|
+| Sep 14 | 27 |
+| Sep 15 | **43** (revised up from the 11-partial read in §18) |
+| Sep 16 | 22 |
+
+Cumulative total through Sep 16 (Sep 3–16 inclusive) = **588** — already
+above the 562 that 3rd held at the Sep 15 17:45 IST read Central cited.
+That doesn't confirm rank — 3rd's own total has almost certainly grown
+over the same two days too — but it's a real positive signal against the
+21-point-gap framing in §18: our own pace picked up (27→43→22) right when
+it needed to. Final call on standing waits on the fresh read above.
+
+### Organic — Sep 17 and Sep 18, both links, no new channels
+
+Per Central's instruction, sticking to the approved calendar, not adding
+anything this late. Both the game link and the Twelve Glasses video link
+go in each post, per the Sep 15 instruction that produced §17.
+
+**Drafted — r/SoloDevelopment** (devlog framing, genuine context per the
+sub's own rule — flagging only for the user to confirm this account
+hasn't already posted there twice this week per §7.1.1's cap, since this
+agent can't check that from here):
+> Two days left in RUN's September Jam. Spent part of an expiring credit
+> lot on a small paid test (Meta, Android install) alongside the usual
+> organic push — CTR held up fine on the creative, but an app-install
+> objective was the wrong fit for an audience that's mostly mobile-web.
+> Filing that under "match the objective to where your players actually
+> are" if anyone's weighing a paid test for a jam entry.
+> Also put together a 45s short for RUN's Story & Video track this week,
+> if you want the quick version: https://w.run/s/UvNAAno
+> And the game itself, if you haven't tried it (phone browser, no
+> install): https://w.run/puneetmakes/spice-expert-ramu
+
+**Drafted — Sep 18 AM personal-network push:**
+> Judging closes tonight for RUN's September Jam — last call if you want
+> to give Spice Expert: Ramu a try:
+> https://w.run/puneetmakes/spice-expert-ramu
+> Also made a short video for it this week, Twelve Glasses:
+> https://w.run/s/UvNAAno
+> Thank you to everyone who played, shared, or sent feedback this
+> month — genuinely means a lot.
+
+### Post-jam recommendation — should this game ever run paid again?
+
+**Only on a web-traffic objective, and only once there's a working
+attribution baseline to size against — not a flat no, but not soon
+either.** The data this jam produced supports exactly one causal claim:
+Meta/Android-install underperformed for a 73%-mobile-web audience, at
+4.04% CTR on creative that clearly wasn't the bottleneck. It does not
+support a claim about Meta or Google *in general*, because the objective
+tested was never the right one to begin with — this was a test of "does
+app-install fit a web audience," and the answer is no, not a test of
+"does paid UA work for this game." If a future round of paid is
+considered: pick a **traffic/web objective** (not install) on
+**meta or google** (Reddit and `run` are still unproven — Reddit never
+flighted at all, `run` was never live), fund it enough to actually clear
+whatever review/learning-phase the CLI's own creative guide describes,
+and confirm `campaign_attribution_funnel_30d` is populating *before*
+trusting it as the judge — this jam's flight went four days without a
+single attributed row and that was never resolved. Sep 14's prior
+("paid is done for this jam") still holds for the remaining ~30 hours;
+this is the longer-horizon answer Central asked for, not a reopening of
+that call now.
+
+**Status:** analysis and drafted copy only, per the standing rule.
+Nothing posted, prepared, generated, submitted, or funded by this agent.
+Handing back for Central to sync once the board read above comes in.
