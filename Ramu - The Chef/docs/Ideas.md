@@ -413,6 +413,22 @@ specified and wrong as a product. Removed.
    (new-projectile diff, `shot` events, HP deltas); no engine change, no art.
    ✅ **User picked bundle 1 + 2 + 3 + 4 as Round 5 (Sep 16)**; 5 and 6 parked.
 
+**Playtest of 1.75.0 (Sep 16) — folded into Round 5 with the prop bundle:**
+1. **Bubble trigger icons are too small** (24 px). Dish icons **≥ 40 px with the recipe name
+   below each**, left-anchored next to the ring.
+2. **The scroll submenu is a grid, closed by default.** Opens only on a bubble tap. One cell
+   per recipe: **icon on top, name below**, then pips · bounty · count. **Two columns:** one
+   recipe = one cell left-anchored; two = side by side; more = 2×N rows. The scroll art is
+   **3-sliced** (left roll · stretched parchment · right roll) so the ends never smear; the
+   panel is as tall as its rows, never a thin strip. Blocks 6–9: one cell per archetype with
+   both icons and one count.
+3. **Upgrade preview goes in a translucent dark bubble** (rounded, `rgba(0,0,0,.7)`), so it
+   reads over dishes and projectiles; text colour chosen for contrast against that bubble,
+   not against the board.
+4. **Something overlaps the top-right speed row on wave 1** (`1x` half-covered by an orange
+   element; user reports an FTUE "Shift" float overlapping the WAVE chip). Reproduce at 403
+   wide, name the element, fix the layout or z-order.
+
 **Round 3 — decided: horizontal fill under the wave chip**, not a bar in the gutter. Same
 maths (SAFE = units − (lives − 1)), amber → green, resets per wave. Top-left, directly under
 `WAVE n / RUSH: …`, width of that chip group.

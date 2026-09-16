@@ -2488,3 +2488,13 @@ the 3 s auto-dismiss) and said so. Both lines are superseded by §6d's amendment
 
 **Next:** Round 5 (prop bundle 1 + 2 + 3 + 4), then the user plays 1.7x end-to-end and decides
 public.
+---
+
+### 2026-09-16 — Round 5 issued: prop feedback bundle + four 1.75.0 playtest fixes
+
+**Issued.** 🔒 Private only. Prop bundle **1 + 2 + 3 + 4** (recoil squash, tinted heat flash,
+projectile trail, idle bob + steam during waves) from the Sep 16 proposals; plus the 1.75.0
+playtest fixes (Ideas.md §6d amendment): bubble icons ≥ 40 px with names, scroll submenu as
+a closed-by-default 2-column grid with 3-sliced art, upgrade preview in a translucent bubble,
+and the wave-1 top-right overlap. After Round 5 returns: **the user plays end-to-end and
+decides public.**
