@@ -3049,3 +3049,16 @@ Four findings confirmed in the tree and **now part of the R13 spec:**
    one/other forms for the 10 `pl` rows.
 Ten least-sure strings listed at the end of the doc for the user's Hindi review — that review
 is the long pole for R17 and can start now. Committed as-is (the agent's file, my commit).
+
+---
+
+### 2026-09-18 ~03:45 IST — Shard projection returned: `docs/shard-projection.md`
+
+Read-only sim pass, verified against my own `npm run balance`: block 1 is ten leak-free levels
+in both `fox-spam` and `balanced`; chai on the order at 1,3,4,6,7,8,9,10 = **8 shards at level
+10**, coffee identical → **two scrolls at the block-1 boss, run 1**. Ideas §10.4's "~10 chai" was
+an estimate; corrected to the measured 8. Beyond the café nothing passes 5 in a run (gobhi 5,
+jeera/palak 4, naan 3); the +2 boss sweetener pads rajma/beans to 6 without moving any
+first-unlock level. **R14 consequence:** shards persist across runs (already the design), and
+the lull after level 10 is where the "+1 ✦" pip and the Kitchen card's progress fraction have
+to carry the feeling of progress. Committed as-is.

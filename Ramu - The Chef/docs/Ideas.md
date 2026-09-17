@@ -778,7 +778,10 @@ player burns the 15/day budget).
 full service** — at wave clear, if every dish on the order was served (no leak), **+1 shard for
 each recipe on that order**; **8 shards per scroll**; **or 150 gems** (≈ one good run's whole gem
 yield = one meta level foregone). Levels 1–12 are full serves by design (block-1 criterion) →
-~10 chai shards in run 1 → **first scroll during run 1**, then one new recipe every 1–2 runs;
+**8 chai and 8 coffee shards by level 10** (measured, `docs/shard-projection.md`, Sep 18 — not the
+~10 first estimated) → **two scrolls at the block-1 boss in run 1**; no other dish passes 5 in a
+~35-level run (gobhi 5, jeera/palak 4, naan 3), so scroll 3+ needs shards to persist across runs
+— roughly two North-Indian scrolls in run 2, then one to two per run;
 39 dishes at ~1.5 runs/day ≈ 2 months. Shown on the wave bubble after a full-service clear
 (*"+1 ✦"*), redeemed in the Kitchen on a scroll card that also offers the gem price. A *drip* (1
 shard per dish served, 100/scroll; rare dishes never come). C *boss drops* (3 shards of the
