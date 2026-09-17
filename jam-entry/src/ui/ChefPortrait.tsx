@@ -86,8 +86,17 @@ const SLOW_LOAD_WARN_MS = 3000;
  *  cost, unlike BOTTOM_BAND) alongside BOTTOM_BAND 340 -> 460. Re-measured
  *  (Node-side reimpl of stage.ts's own getFit math, same technique round 7
  *  used) with the 34px inset applied: +12.8px margin (was -19.8px) at
- *  403x874, and 768x1024 (never the tight case) stayed comfortably positive. */
-const IDLE_SIZE = 88;
+ *  403x874, and 768x1024 (never the tight case) stayed comfortably positive.
+ *
+ * Round 12 Part 1.2 (docs/Ideas.md §6d, "Playtest of 1.83.0" item 3): 88 ->
+ * 132 (x1.5) — the playtest read the idle portrait as too small to be a
+ * focal point. The narrow-gutter floor rule above and the hidden-on-lost
+ * behaviour are unchanged; Hud.tsx Part 1.3 moves Ready above (not beside)
+ * the portrait in the same round specifically to give this bigger size room
+ * without widening the bottom band's row. See this round's own report for
+ * the re-measured clearance against stage.ts's BOTTOM_BAND (460, untouched
+ * this round) at 360x780 and 403x874. */
+const IDLE_SIZE = 132;
 
 function usePrefersReducedMotion(): boolean {
     const [reduced, setReduced] = useState(() => {

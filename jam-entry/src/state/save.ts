@@ -86,7 +86,23 @@ export interface SaveData {
      *  ever fire twice for one save, unlike beats 1-12 which reset every
      *  run. */
     seenBeats: string[];
+    /** Round 12 Part 3.2 (docs/Ideas.md §6d, "Playtest of 1.83.0" item 5,
+     *  pick B): the last-seen rank on each (mode, period) leaderboard,
+     *  keyed `"<mode>:<period>"`, so Leaderboard.tsx can show a rank-delta
+     *  arrow on re-open. Additive, migration-safe like seenBeats — an old
+     *  save with no such field just starts with none recorded (every board
+     *  reads as "first visit", not an error). */
+    rankMemory: RankMemory;
 }
+
+/** One remembered rank plus the UTC day it was recorded on. `utcDay` is only
+ *  read back for the daily period — see diffAndRecordRank below for why. */
+export interface RankMemoryEntry {
+    rank: number;
+    utcDay: string;
+}
+
+export type RankMemory = Record<string, RankMemoryEntry>;
 
 function emptyMeta(): MetaLevels {
     const meta: MetaLevels = {};
@@ -111,6 +127,7 @@ const DEFAULTS: SaveData = {
     dialogueMuted: false,
     playerName: null,
     seenBeats: [],
+    rankMemory: {},
 };
 
 let data: SaveData = structuredClone(DEFAULTS);
@@ -186,6 +203,17 @@ function parse(raw: string | null): SaveData | null {
             seenBeats: Array.isArray(parsed.seenBeats)
                 ? parsed.seenBeats.filter((s): s is string => typeof s === 'string')
                 : [],
+            rankMemory: (() => {
+                const raw = (parsed.rankMemory ?? {}) as Record<string, unknown>;
+                const out: RankMemory = {};
+                for (const [k, v] of Object.entries(raw)) {
+                    const entry = v as Partial<RankMemoryEntry> | null | undefined;
+                    if (entry && Number.isFinite(entry.rank) && typeof entry.utcDay === 'string') {
+                        out[k] = { rank: Math.floor(entry.rank as number), utcDay: entry.utcDay };
+                    }
+                }
+                return out;
+            })(),
         };
     } catch {
         return null;
@@ -317,6 +345,37 @@ export function renamePlayer(name: string): boolean {
     data = { ...data, playerName: trimmed };
     flushSave();
     return true;
+}
+
+function utcDayKey(): string {
+    const d = new Date();
+    return `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
+}
+
+/**
+ * Round 12 Part 3.2: compares `currentRank` on one (mode,period) board
+ * against the rank recorded the last time this board was open, then
+ * overwrites it with the current one — read-old/write-new in a single call,
+ * so a caller can't accidentally read back its own fresh write as history.
+ * Returns the signed delta (positive = improved/lower rank number, negative
+ * = worse), or null when there's nothing meaningful to compare: a genuine
+ * first-ever visit to this board, an unchanged rank (folded into null too —
+ * the handover's own "same ... nothing" case), or — daily period only — a
+ * stored rank left over from a PRIOR UTC day. That last case matters
+ * because the daily board itself resets at UTC midnight: a rank from
+ * yesterday's now-defunct board isn't a real "you moved" signal, it's an
+ * apples-to-oranges comparison against a board that no longer exists.
+ */
+export function diffAndRecordRank(key: string, currentRank: number, isDaily: boolean): number | null {
+    const today = utcDayKey();
+    const prev = data.rankMemory[key];
+    const staleDaily = isDaily && !!prev && prev.utcDay !== today;
+    const comparable = prev && !staleDaily ? prev.rank : null;
+    data = { ...data, rankMemory: { ...data.rankMemory, [key]: { rank: currentRank, utcDay: today } } };
+    flushSave();
+    if (comparable === null) return null;
+    const delta = comparable - currentRank;
+    return delta === 0 ? null : delta;
 }
 
 /** Cost in gems of buying INTO the next level, given the current level. */

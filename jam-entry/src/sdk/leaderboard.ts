@@ -35,11 +35,12 @@ export type BoardMode = 'kills' | 'waves';
 
 export const BOARD_MODES: BoardMode[] = ['kills', 'waves'];
 
-/** Round 11 Part 2.3: display copy only — the mode KEYS (kills/waves) are
+/** Round 11 Part 2.3 / Round 12 Part 1.1 (docs/Ideas.md §6d, "Playtest of
+ *  1.83.0" item 1): display copy only — the mode KEYS (kills/waves) are
  *  unchanged everywhere else (board instance ids, submitRunScores, etc). */
 export const BOARD_LABELS: Record<BoardMode, string> = {
-    kills: 'Pests cleared',
-    waves: 'Rushes held',
+    kills: 'Dishes served',
+    waves: 'Waves held',
 };
 
 /** True when the RUN host is present (boards can exist at all). */
@@ -255,6 +256,9 @@ function toEntry(e: {
  * 'daily' explicitly and must never fall back to this default on failure
  * (see that file's own doc on why a failed daily read shows its own empty
  * state rather than silently reusing an alltime fetch).
+ *
+ * Round 12 Part 3.1: contextAhead/contextBehind 2 -> 3, matching the
+ * near-you slice's own spec ("three rows above and three below").
  */
 export async function fetchBoard(mode: BoardMode, period: BoardPeriod = 'alltime'): Promise<BoardView | null> {
     if (!sdkReady()) return null;
@@ -263,8 +267,8 @@ export async function fetchBoard(mode: BoardMode, period: BoardPeriod = 'alltime
             mode,
             period,
             topCount: 10,
-            contextAhead: 2,
-            contextBehind: 2,
+            contextAhead: 3,
+            contextBehind: 3,
         });
         return {
             top: r.context.topEntries.map(toEntry),

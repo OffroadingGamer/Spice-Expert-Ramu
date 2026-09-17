@@ -419,13 +419,20 @@ export default function Hud() {
                     now draws over any placed, upgrade-affordable prop,
                     every wave, not just wave 4. */}
 
-                {/* Row 1: the chef portrait, bottom-centre, with Ready
-                    immediately to its right — items-center vertically
-                    centres Ready on the 120px portrait by construction (the
-                    row's cross-axis alignment), matching the handover's
-                    "vertically centred on him" without a manual offset. */}
-                <div className="flex items-center gap-3">
-                    <ChefPortraitIdle />
+                {/* Row 1: Round 12 Part 1.3 (docs/Ideas.md §6d, "Playtest of
+                    1.83.0" item 4) moved Ready from beside the portrait to
+                    ABOVE it, once Part 1.2 rescaled the portrait to 132px —
+                    at that size, beside it pushed the row's total width past
+                    what 360px-wide phones have to spare. flex-col
+                    items-center stacks the two and horizontally centres the
+                    narrower of them on the wider by construction (same
+                    "flow does the centring, not a manual offset" posture the
+                    old inline comment already called out for the vertical
+                    case) — whichever of Ready/the portrait is wider, the
+                    other lands centred under/over it with no hand-measured
+                    offset either could drift from. Gap is the spec's own
+                    6*mu, replacing the old fixed gap-3. */}
+                <div className="flex flex-col items-center" style={{ gap: 6 * mu }}>
                     {showInlineReady && (
                         /* Ready: enlarged for a bigger tap target, sized down at
                             narrow (~400 CSS px) widths via the sm: breakpoint
@@ -465,6 +472,7 @@ export default function Hud() {
                             </button>
                         </div>
                     )}
+                    <ChefPortraitIdle />
                 </div>
 
                 {/* Row 2: Kitchen Actions — the coin sink. One wave's effect,

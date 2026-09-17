@@ -91,9 +91,32 @@ export const PLAYFIELD_HEIGHT = Math.max(...CONFIG.path.map((p) => p.y));
  * without a heavy board-scale cost, enough IDLE_SIZE trim to close the rest
  * 1:1. Re-measured with the inset applied, not assumed — see the round's
  * own report for the resulting margin at both reference viewports.
+ *
+ * Round 12 Part 1.2/1.3 (docs/Ideas.md section 6d, "Playtest of 1.83.0"
+ * items 3-4): 460 -> 2400, a much bigger jump than any prior round's, and
+ * this time IDLE_SIZE is NOT the offsetting lever -- it grew too (88 ->
+ * 132, ChefPortrait.tsx), on explicit instruction, so it isn't available
+ * as the "cheap" half of the fix the way Round 8's was. Worse, Hud.tsx
+ * Part 1.3 moved Ready from BESIDE the portrait to ABOVE it: the reserved
+ * column's DOM height didn't just grow by the portrait's own +44px, it
+ * grew by the portrait's full 132px PLUS Ready's own ~66-80px stacked on
+ * top of it, replacing what used to be a single row sized by whichever of
+ * the two was taller (previously ~88px total). Screenshotted at 360x780
+ * (the tightest viewport) before this change: the belt's last vertical
+ * segment ran visibly behind/through the Ready button -- not a coordinate-
+ * math false positive, an actual rendered overlap. 900 and 1400 were tried
+ * first and both still showed the same overlap on screen; 2400 is the
+ * first value that clears it with a measured ~20px margin at 360x780 (the
+ * binding case -- 403x874 and 744x1315 clear with much more room). The
+ * cost is real and worth flagging for a future round: board scale at
+ * 360x780 drops from 0.343 to 0.171, roughly half -- see this round's own
+ * report. IDLE_SIZE can't be traded back down (that's the explicit 1.2
+ * instruction) and Ready's own size wasn't touched (not asked for this
+ * round), so unlike Round 8 this fix has no cheaper second lever available
+ * within this round's scope.
  */
 export const TOP_BAND = 170;
-export const BOTTOM_BAND = 460;
+export const BOTTOM_BAND = 2400;
 
 /** Total design-unit height the contain-fit guarantees is visible. */
 export const FIT_HEIGHT = PLAYFIELD_HEIGHT + TOP_BAND + BOTTOM_BAND;
