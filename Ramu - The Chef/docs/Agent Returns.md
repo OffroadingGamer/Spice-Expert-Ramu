@@ -110,7 +110,7 @@ One open call for you: the 18px contact sheet shows all three are still distingu
 
 ## 2026-09-18 ~02:55 IST — Audio round 5 — audio agent (thread 561638a3)
 
-Outcome: delivered, measured, unheard — pending the user's listen; Retro 112 (the 90-credit figure was Central's error).
+Outcome: delivered, measured; **user listened Sep 18 — keep both.** Ship in R14 / R15. Retro 112 (the 90-credit figure was Central's error).
 
 Both files generated, measured, and delivered. All boundaries verified — no git actions taken beyond read-only checks, nothing landed in public/, no src/ edits (the jam-entry/src/ changes showing in git status are the concurrent implementation agent's work, untouched by me).
 

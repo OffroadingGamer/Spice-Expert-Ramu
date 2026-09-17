@@ -3026,7 +3026,7 @@ Also visible in the tree now, untouched by me: `docs/i18n/` (localisation agent,
 sidecars in `sfx-final`, sizes consistent with the durations, log complete, boundary held. Not
 verifiable here: duration/pitch (no MP3 decoder on this machine) — **and nobody has listened**;
 the user's ear is the acceptance (scroll: clean bell on A/E over the menu music; continue:
-"back to work", not a win). ⏳ Pending the user's listen before either ships.
+"back to work", not a win). ✅ **User listened Sep 18 ~04:50 IST: keep both.** They ship with R14 (`sfx-scroll-unlock`) and R15 (`sfx-continue`) via the implementation agent (masters → `public/audio/`, no sidecars).
 **Handover error owned:** "90 credits fixed" came from an estimate run without `--duration`
 (defaults to 30 s); SFX cost ≈ 3 credits/s. Rule: estimate with the exact parameters of the
 call. Credits reconciled at **98,209**; the art log's −5 / −3 gaps were these two cues.
