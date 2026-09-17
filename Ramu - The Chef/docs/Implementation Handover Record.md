@@ -42,7 +42,7 @@ of the present.**
 | **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.83.0** (Rounds 0–11 — Round 11 verified Sep 18 ~00:10 IST; awaiting the user's playtest; 🔒 Private-only until human verification — Ideas.md §6d) |
 | **Jam (Sep 17, ~21:50 IST)** | **6th, 613 daily uniques** (901 total plays) at ~21:50 IST Sep 17 — out of the money by 16: 5th Pest Control Tycoon 629 ($100), 4th GT Rush 902 ($200), 7th The Good Life 479. Judging closes **Sep 18 12:00 PT = 00:30 IST Sep 19** (1d 02h 37m at the reading). Public is frozen at 1.69.0 through judging. |
 | **In flight** | **Round 12** → Private 1.84.0: Ranks restyle **B (pass counter)** + Dishes served / Waves held + podium on a base + portrait ×1.5 with Ready above + near-you slice / delta arrow. R13 belt chevrons + i18n table; queue per Ideas.md §10 shifted by one. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
-| **Repo** | Commits since `4858e3b` (14, through the Round 11 record) are **local, unpushed** — `backdrop-dawn.jpg` (Archita's painting) would enter the public repo; the user decides. |
+| **Repo** | **Pushed Sep 18 ~02:15 IST** (`4858e3b..591031d`, 17 commits) on the user's word — `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is now in the public repo. Secret scan over the whole range: clean, control positive. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
 | **Endgame criterion** | `maxed-meta` must lose between levels **85–110** (currently 90) |
@@ -2984,3 +2984,15 @@ The user asked what could run beside Round 12; four handovers delivered in chat 
 None touches `jam-entry/src`; I commit the two doc outputs after review; art/audio outputs
 reach `public/` only through an implementation round. Marketing holds until judging closes
 (00:30 IST Sep 19).
+
+---
+
+### 2026-09-18 ~02:15 IST — Pushed `4858e3b..591031d` (17 commits)
+
+User: "document up to now and push." Scan over the full unpushed range with the 3-line positive
+control: no keys, no unlisted game ids, no UserId, no sidecars, no gitignored folders. Added
+files entering the public repo: `board/{belt-tile,pass-entry,pass-exit}.png`,
+`menu/backdrop-dawn.jpg`, and five new source files (`sdk/profile.ts`, `ui/NameDialog.tsx`,
+`ui/RenameDialog.tsx`, `ui/SettingsCard.tsx`, `ui/useMenuUnit.ts`). `origin/main` = `591031d`.
+Five threads in flight: Round 12 (1.84.0), localisation inventory, shard projection, art
+round 3, audio round 5.
