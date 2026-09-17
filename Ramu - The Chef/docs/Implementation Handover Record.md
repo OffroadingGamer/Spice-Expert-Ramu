@@ -2962,3 +2962,25 @@ pick; belt chevrons + i18n table shift to Round 13.
 Handover in chat: Part 1 the four 1.83.0 fixes; Part 2 the B look on the shipped
 `menu-backdrop` (walnut board, brass rim, brass podium on a shelf, order-ticket rows, one orange
 bar); Part 3 near-you slice + rank-delta arrow. No new art; no config change; no sealed files.
+
+---
+
+### 2026-09-18 ~02:00 IST — Four parallel dispatches beside Round 12
+
+The user asked what could run beside Round 12; four handovers delivered in chat and fired up:
+1. **Localisation inventory** (new thread, read-only on `jam-entry/src`): every user-facing
+   string with key / English / file:line / context / Hindi draft → one new file
+   `docs/i18n/strings.md`. Feeds R13 (table) and R17 (Hindi); the user's Hindi review is the
+   long pole.
+2. **Shard cadence projection** (new thread, read-only): `npm run balance` + `waves.ts` →
+   `docs/shard-projection.md` — checks Ideas §10.4's "first scroll during run 1" claim per
+   level for `balanced` and `fox-spam`. Feeds R14.
+3. **Art round 3** (art agent): laurel, recipe scroll, shard glyph — 147 credits each with
+   `--remove-background`, ≤ 882 budget, style lock `ui-final/chef-hat.png`, acceptance = a
+   contact sheet at 64 px and 18 px. Output `Art/_gen/ranks-kitchen-final/`.
+4. **Audio round 5** (thread `561638a3`): two SFX via `rundot generate sfx` (90 credits fixed,
+   ≤ 540 budget) — `sfx-scroll-unlock` (1.2–1.8 s) and `sfx-continue` (0.8–1.2 s), A minor
+   resolution, rejected on listening not measurement. Output `Audio/_gen/sfx-final/`.
+None touches `jam-entry/src`; I commit the two doc outputs after review; art/audio outputs
+reach `public/` only through an implementation round. Marketing holds until judging closes
+(00:30 IST Sep 19).
