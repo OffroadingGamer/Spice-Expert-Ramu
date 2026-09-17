@@ -761,7 +761,7 @@ enemy/prop/upgrade names, HUD, beats, end-screen lines); Settings language row (
 the kitchen?"*; persisted; instant switch. Agent drafts, **native reviewer signs off** (the user
 for Hindi; Tamil needs a reader). OS fonts on Android/iOS; Noto Sans Devanagari/Tamil as deferred
 web fallback (~150 KB each). Two rounds: table + English first (no visible change), then Hindi;
-Tamil when reviewed. Test RUN's moderation on non-Latin text in Private. B *UI only* (dialogue
+Tamil when reviewed. Test RUN's moderation on non-Latin text in Private. **Inventory done Sep 18 (`docs/i18n/strings.md`, 244 live strings, Hindi drafts in place); four R13 constraints recorded in the handover record (dish keys by slug, costume alias by block id, name pattern to `\p{L}`, plural forms).** B *UI only* (dialogue
 stays English — the wrong half). C *runtime machine translation* (credits per player, gated off
 for guests — non-starter).
 

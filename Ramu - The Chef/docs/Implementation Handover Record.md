@@ -3029,3 +3029,23 @@ the user's ear is the acceptance (scroll: clean bell on A/E over the menu music;
 **Handover error owned:** "90 credits fixed" came from an estimate run without `--duration`
 (defaults to 30 s); SFX cost ≈ 3 credits/s. Rule: estimate with the exact parameters of the
 call. Credits reconciled at **98,209**; the art log's −5 / −3 gaps were these two cues.
+
+---
+
+### 2026-09-18 ~03:30 IST — Localisation inventory returned: `docs/i18n/strings.md`
+
+298 rows (244 live, 54 Test Mode sectioned off), 272 with a Hindi draft, keys unique, secret
+scan clean; six file:line spot-checks — five resolve, `LoadingScreen.tsx:95` is stale (line 26).
+Four findings confirmed in the tree and **now part of the R13 spec:**
+1. Dish names are `titleCase(slug)` at two sites (`PostBossPanel.tsx:84`, `WaveBubble.tsx:238`)
+   → `dish.<slug>` keys, both sites become lookups; sealed `enemies.ts` names never render, so
+   no unseal is needed.
+2. `chefBodyAliasForBlock` derives the costume alias from the English block label
+   (`blocks.ts:167`) → alias keyed on block id before labels are translatable.
+3. `NAME_PATTERN = /^[A-Za-z .']*$/` in NameDialog + RenameDialog rejects Devanagari/Tamil →
+   widen to Unicode letters (`\p{L}`), then test RUN moderation on a Devanagari `displayName`
+   in Private before R17.
+4. No plural branching anywhere ("1 rushes held") → `t()` takes a count and the table carries
+   one/other forms for the 10 `pl` rows.
+Ten least-sure strings listed at the end of the doc for the user's Hindi review — that review
+is the long pole for R17 and can start now. Committed as-is (the agent's file, my commit).
