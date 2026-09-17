@@ -52,7 +52,7 @@ of the present.**
 | **FTUE opening pad** | **`FTUE_FIRST_PAD = 4`** (B3, `damage ×1.5`), then pads 3 and 2 |
 | **Sealed files** | `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` |
 | **`data/waves.ts`** | ⚠️ **RE-SEALED.** Unsealed for the v1.69.0 block-1 retune only |
-| **Credits (Sep 18, ~02:40 IST)** | **98,209** (`rundot credits`). Was 93,273 on Sep 15; **+6,093 arrived before art round 2** (not the Meta remainder at the flight's rate — ledger to be read), then **−561** hatch/belt round, **−593** art round 3 (588 by calls; −5 mid-round and −3 after it unattributed — watch). Durable pool: 50,000 grant (Dec 13) + 15,000 grant (Dec 8) + 25,000 starter + quests/daily |
+| **Credits (Sep 18, ~02:40 IST)** | **98,209** (`rundot credits`). Was 93,273 on Sep 15; **+6,093 arrived before art round 2** (not the Meta remainder at the flight's rate — ledger to be read), then **−561** hatch/belt round, **−593** art round 3 (588 by calls) and **−8** audio round 5 (the −5 and −3 the art log saw were the two SFX). Only the +6,093 remains unexplained. Durable pool: 50,000 grant (Dec 13) + 15,000 grant (Dec 8) + 25,000 starter + quests/daily |
 | **Paid campaign** | ✅ **`kitchen-rush-meta` COMPLETE** (ended Sep 16). **$70.05 of $82 spent · 4,228 impr · 171 clicks · 4.04 % CTR · 18 installs · CPI $3.66.** Unspent remainder refunds on completion per RUN's rule — verify on the studio page. Paid is done for this jam (marketing agent's prior, Sep 14) |
 | **Art round 2 (Sep 17)** | ✅ **DONE** — `Art/_gen/pass-final/`: `pass-entry.png`, `pass-exit.png` (1024², take 1 each), `belt-tile.png` (128², procedural, `#3a3a44`, seamless both axes). **561 credits.** Awaiting the hatch-wiring implementation round |
 | **Art leg (Sep 14)** | ✅ **DONE** — `Art/_gen/chef-final/`: 9 bodies + 4 faces + scroll, **7,003 credits**, verified. Faces are aligned eyebrow-to-jaw bands. ⚠️ Expressions read at **≥ 160 px, not 96** — spec amended in Ideas.md §6b. Nothing ships before judging |
@@ -3014,3 +3014,18 @@ entry; scroll + shard → R14 (Kitchen scroll card, "+1 ✦" pip). Credits 98,80
 Also visible in the tree now, untouched by me: `docs/i18n/` (localisation agent, in progress),
 `docs/AudioGenPrompts.md` (audio agent, in progress), Round 12's src edits incl. a new
 `ui/blurredBackdrop.ts`.
+
+---
+
+### 2026-09-18 ~03:00 IST — Audio round 5 returned: two stings, measured not heard
+
+`Audio/_gen/sfx-final/sfx-scroll-unlock.mp3` (reported 1.480 s, peak −0.21 dBFS, 5 credits) and
+`sfx-continue.mp3` (1.000 s, peak −5.91 dBFS, 3 credits); takes + sidecars stay in
+`Audio/_gen/sfx/`; log appended to `docs/AudioGenPrompts.md`. Verified by me: files present, no
+sidecars in `sfx-final`, sizes consistent with the durations, log complete, boundary held. Not
+verifiable here: duration/pitch (no MP3 decoder on this machine) — **and nobody has listened**;
+the user's ear is the acceptance (scroll: clean bell on A/E over the menu music; continue:
+"back to work", not a win). ⏳ Pending the user's listen before either ships.
+**Handover error owned:** "90 credits fixed" came from an estimate run without `--duration`
+(defaults to 30 s); SFX cost ≈ 3 credits/s. Rule: estimate with the exact parameters of the
+call. Credits reconciled at **98,209**; the art log's −5 / −3 gaps were these two cues.

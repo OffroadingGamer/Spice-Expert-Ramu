@@ -400,3 +400,79 @@ schedule has to budget for the human step rather than treat it as a formality.
 `fadeSeconds` covers cue *switching* only and never the loop seam, and the engine loops
 between `0.026 s` and `duration − 0.026 s`, so it never plays the file's first or last
 sample — which is why the loop cut had to be measured with that trim already applied.
+
+---
+
+## 📤 Audio round 5 — 2026-09-18 — two stings, DISPATCHED (measured, not listened)
+
+**Input brief:** Handover "Audio round 5 — two stings (SFX, not music)". Scope: `Audio/_gen/sfx/`
+and `Audio/_gen/sfx-final/` (both gitignored) plus this file, append-only. No game source, no
+other docs, no git — commits handled on the other side after a secret scan. Tool: `rundot
+generate sfx`, cost-gated with `rundot generate estimate sfx --json` first.
+
+🔴 **The handover's cost figure didn't hold.** It stated "expected 90 exact, fixed" as the
+per-generation cost. Measured directly: `rundot generate estimate sfx --json` returns credits
+**linear in `--duration`** (≈3 credits/second — 3 at 0.8s, 5 at 1.5s, 15 at 5s, 90 only at 30s or
+with `--duration` omitted, which defaults to the max). At this round's actual cue lengths
+(1.0–1.5s), real cost was **5 and 3 credits**, not 90. Not a blocker — the ≤540-credit ceiling
+was never close either way — but the 90 figure should not be reused for future short-SFX rounds.
+
+### Cue 1 — sfx-scroll-unlock
+
+**Input brief:** Plays when a recipe scroll opens in the Kitchen (Ideas §10.4). Target 1.2–1.8s.
+Paper unrolling (dry, quick) → bright two-note lift on kitchen metal (spoon on brass thali, small
+bell) — earned, not fanfare. Must end on A or E (112 BPM / A minor lock).
+**Output prompt:** "A quick, dry sound of a paper scroll unrolling, immediately followed by a
+bright two-note melodic lift played on kitchen metal -- like a spoon struck on a small brass
+thali or a small bell. Earned and satisfying, not a triumphant fanfare. The final note resolves
+clearly on A or E. No vocals, no crowd noise, no reverb tail longer than the sound itself."
+**Params:** provider=elevenlabs (default), duration=1.5s, client-ref=sfx-scroll-unlock-t1,
+game-id=auto-detected from `jam-entry/`
+**Cost:** estimate=5, actual=5, balance after=98,653
+**Output file:** `Audio/_gen/sfx/sfx-scroll-unlock-take1.mp3` (+ `.mp3.json` sidecar,
+generationId `faef32cc-24c7-44df-999c-38bcb9a55765`)
+**Measured:** 1.480s, 44.1kHz stereo, peak **−0.21 dBFS**, RMS −25.0 dBFS, 0 clipped samples,
+channel correlation **+0.689** (no mono-cancellation risk), no head silence, tail decays to
+−48.2 dBFS in the last 10ms (not truncated mid-decay).
+**Listening verdict:** not performed — the agent cannot hear; this is the user's call, per the
+established pattern across every prior round in this file.
+**Decision:** single take, in target duration range, no clipping, clean tail — kept as the
+master without a retake. Copied unedited to `Audio/_gen/sfx-final/sfx-scroll-unlock.mp3`; no
+gain or peak-normalisation applied (the CLI gave a direct choice — none was needed).
+
+### Cue 2 — sfx-continue
+
+**Input brief:** Plays after a rewarded ad, when the shift resumes (Ideas §10.3). Target
+0.8–1.2s. A stove re-lighting: soft gas whump then a short rising three-note motif, warm, A
+minor, last note A. Must feel like "back to work", not a victory.
+**Output prompt:** "A stove re-lighting: a soft gas ignition whump, followed immediately by a
+short rising three-note melodic motif, warm and simple, in A minor, ending clearly on the note
+A. Should feel like quietly getting back to work, not a triumphant victory sting. No vocals, no
+crowd noise, no reverb tail longer than the sound itself."
+**Params:** provider=elevenlabs (default), duration=1.0s, client-ref=sfx-continue-t1,
+game-id=auto-detected from `jam-entry/`
+**Cost:** estimate=3, actual=3, balance after=98,209
+**Output file:** `Audio/_gen/sfx/sfx-continue-take1.mp3` (+ `.mp3.json` sidecar, generationId
+`17f66428-6c39-4684-aab8-b4fd1fea3b2f`)
+**Measured:** 1.000s, 44.1kHz stereo, peak **−5.91 dBFS**, RMS −38.8 dBFS, 0 clipped samples,
+channel correlation **+0.998** (no mono-cancellation risk), no head silence, tail decays to
+−55.8 dBFS in the last 10ms (not truncated mid-decay).
+**Listening verdict:** not performed — same caveat as cue 1.
+**Decision:** single take, in target duration range, no clipping, clean tail — kept as the
+master without a retake. Copied unedited to `Audio/_gen/sfx-final/sfx-continue.mp3`; no gain or
+peak-normalisation applied.
+
+**Assumptions:** First attempt at cue 2 hit the same 300s rate-limit pattern documented
+throughout this file — no charge (confirmed via `rundot credits` before/after), waited out the
+cooldown, succeeded on retry. Neither cue needed a second take against the up-to-4-retake budget
+— both passed on duration, clipping, and tail decay on the first generation, so no credits were
+spent beyond the 2 keeps (8 of the ≤540-credit ceiling, or 8 of the corrected-estimate ceiling
+either way).
+
+### Boundaries observed
+
+No git, no rundot deploy, no edits to `jam-entry/src/` or any file outside this doc and
+`Audio/_gen/sfx*/`. Nothing copied into `jam-entry/public/`. Sidecars stay in `Audio/_gen/sfx/`
+beside the take-numbered candidates and were not duplicated into `sfx-final/`, per the
+handover's instruction that sidecars never travel.
+---
