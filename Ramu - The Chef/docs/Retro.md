@@ -1592,6 +1592,15 @@ uniques are the score; the trend matters more than any single day.
 |---|---|---|---|---|---|
 | Sep 3 | **9** (first reported as 2 — export lag) | 9 | #3 | v1.0.0 public, v1.0.1 UI fixes | — **nowhere** |
 | Sep 4 | **26** at 12:14, 13:24, 14:00 and 16:19 IST, day still open. ⚠️ `game_loaded` says **47 distinct players** — see item 32 | **35** (probably low) | #3 (15 plays) | **v1.1.0** title fix + 15 assets · **v1.2.0** payload 16.30 → 0.64 MB · **v1.2.1** telemetry · **v1.2.2** sampled SFX · **v1.2.3** SFX mapping fix | **RUN Discord `#back-to-work` — first post ever.** LinkedIn scheduled |
+| Sep 9 | — | — | **#4** ($200), passed by SHIFT 371 vs 368 | v1.42.0 hotfix public | — |
+| Sep 12 | — | — | — | **v1.69.0 public** — last public deploy; block-1 retune | — |
+| Sep 15–16 | — | — | — | Meta/Android flight `kitchen-rush-meta`: $70.05, 4,228 impr, 171 clicks, 18 installs, CPI $3.66 | paid |
+| Sep 17, 14:10 IST | **605** | 888 total plays | **#5** ($100) | Private 1.79–1.81 (not public) | — |
+| Sep 17, 21:50 IST | **613** | 901 total plays | **#6** — 16 behind #5 (629) | — | — |
+
+⚠️ This table was not kept daily after Sep 4; the readings above are the ones the record holds. Daily
+uniques on this board are the platform's rolling figure, not our analytics. Final standing lands
+after **00:30 IST Sep 19**.
 
 ---
 

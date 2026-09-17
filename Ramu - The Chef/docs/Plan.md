@@ -1,5 +1,9 @@
 # Plan — Spice Expert: Ramu
 
+> 🏁 **Closed at the Sep 14 build deadline.** Every item below is the jam plan as it stood on Sep 10 and is kept as
+> dated history. Post-jam work is planned in [Ideas.md](Ideas.md) §10 and tracked in the
+> [Implementation Handover Record](Implementation%20Handover%20Record.md); [Tasks.md](Tasks.md) mirrors the present.
+
 > **Forward-looking.** What we intend to do, in what order, by when.
 > Companion docs: [Tasks.md](Tasks.md) (status at a glance) · [GDD.md](GDD.md) (what the game is) ·
 > [Specs.md](Specs.md) (how it is built) · [Retro.md](Retro.md) (what actually happened).

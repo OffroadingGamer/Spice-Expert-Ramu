@@ -5,6 +5,28 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
+**Last updated:** Sep 17 2026, ~22:00 IST — by Central. **The authoritative present is the CURRENT
+STATE block of [Implementation Handover Record.md](Implementation%20Handover%20Record.md);** this
+header mirrors it.
+
+**Live:** **Public 1.69.0** (frozen through judging) · Review 1.69.0 · **Private 1.81.0** — Rounds 0–9 of
+the post-jam progression pass (dialogue + Chef Ramu, ring gauge, wave scroll, prop FX, bottom band,
+end-screen debrief, dawn-backdrop main menu in mock units, hatches + belt, settings dialog, pad
+cues, player name). 🔒 Private-only until the user plays end-to-end and decides public; promotion
+is post-jam via the implementation agent's `update-tag review`.
+
+**In flight:** **Round 10** → 1.82.0 (heat gauge, four FTUE beats, name at boot, pulse removed,
+Settings look A, rename, pause card). **Queued:** R11 Ranks + daily period · R12 belt chevrons +
+i18n table · R13 recipe shards · R14 rewarded continue · R15 Play + unlock badge · R16 Hindi · IAP
+after — all picked Sep 17, Ideas.md §10.
+
+**Jam:** **6th, 613 daily uniques** (901 total plays) at ~21:50 IST Sep 17 — out of the money by 16: 5th Pest Control Tycoon 629 ($100), 4th GT Rush 902 ($200), 7th The Good Life 479. Judging closes **Sep 18 12:00 PT = 00:30 IST Sep 19** (1d 02h 37m at the reading). Paid Meta flight complete ($70.05, 18 installs). *Twelve
+Glasses* in consideration for Story & Video. Credits 98,805.
+
+**Baseline:** balance **35 / 36 / 11 / 4 / 90**, sealed `sim/engine.ts` · `data/{enemies,towers,waves}.ts`.
+
+<details><summary>Header as it stood on Sep 10–11 (kept as dated history)</summary>
+
 **Last updated:** Sep 10 2026, evening IST
 **Live:** **v1.7.0 public** · <https://w.run/puneetmakes/spice-expert-ramu> — went public Sep 5 2026 with the full audio layer; was v1.2.3 from Sep 4
 **LIVE: v1.42.0 public** since Sep 9 — Challenge Mode only; the belt is gated behind `?test=1`. ✅ **The scripted FTUE, the visible win condition, the readable HUD and the hard-lock fix are all in front of real players.** Approval took well under an hour ([Specs.md](Specs.md) §9a).
@@ -24,6 +46,8 @@ public route and it now has a scripted FTUE, stated win/lose and audio sliders.
 Test Mode build, and the gate is what makes v1.39.0 not one. [GDD.md](GDD.md) §10.11c
 **Jam board:** **rank #2** · 427 plays · **325 Daily Unique Plays** vs rank #1's **658** and rank #3's **279** — [Plan.md](Plan.md) §5.8 (full board read Sep 8 2026)
 **Deadline:** Sep 19, 00:30 IST · **Scoring day rolls 05:30 IST** · 🛑 **Delivery gate: four cuisine nodes** — KitchenMode §6.8
+
+</details>
 
 ---
 

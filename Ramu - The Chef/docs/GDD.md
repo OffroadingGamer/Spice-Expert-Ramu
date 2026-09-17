@@ -661,7 +661,7 @@ else in the round, and it holds.**
 
 **Round A2 — what made the build promotable.** Three things: the campaign-milestone banner,
 sliders on the last pause screen that still had mute icons (`TestBelt.tsx`), and the
-**dev gate**. `MainMenu.tsx`'s *primary* orange "Play Game" button routed straight to
+**dev gate**. `MainMenu.tsx`'s *primary* orange "Play Game" button (Sep 8 naming; the button became "Start shift" in the Sep 17 menu, Ideas.md §9, and is decided to become "Play" — §10.5) routed straight to
 `phase: 'testbelt'` — the public menu's main call to action dropped every player into an
 unfinished Test Mode belt. `devMode.ts` latches `?test=1` to `localStorage` (so it survives
 the host stripping the query string) and Challenge Mode takes primary styling when the belt
@@ -1122,3 +1122,25 @@ return loop (§10.9)**. Everything else stays living.
 | Sep 3, 14:45 PT | Craft pass trimmed 8 h → 5 h | Absorbs the level run's ~8–9 h and keeps the project inside the 40–60 h budget, at ~55 h | Editor's Pick odds marginally reduced; plays ceiling raised. Plays are $2,200 across 5 places vs $300 at 1 — same trade already made on Sep 3, 12:55 |
 | Sep 4, 22:05 IST | **Art direction: Kitchen Props for the room, Kitchen Essentials for the line; KayKit Phase 2a cut** | Both purchased 2D packs were sliced and the Props pack recoloured onto the Essentials palette, which worked as measured (b\* +2.3 → +12.3, chroma 12.1 → 21.3) and still left them unusable side by side: Essentials items are a median **94×124 px** of painterly front-elevation art, Props items **32×32 px** of flat **isometric** pixels. A palette can be transferred; a resolution cannot. Rather than discard \$4 of art, the two registers are separated **by depth** — Props behind the belt as set-dressing at its own scale, Essentials on the belt | **§11a is retired.** KayKit renders would have been a *third* source at a fourth resolution and technique. §10.1–10.3 core loop, §10.9 return loop and the [PropList.md](PropList.md) §4 interaction graph are **all unchanged** — the graph is built entirely on Essentials ingredient sprites, and Props has no ingredients at all. Frees the Sep 10–12 craft pass of a Blender render job. Detail and the two rejected options: [PropSpriteIndex.md](PropSpriteIndex.md) §5 |
 | Sep 4, 23:10 IST | **The belt game view ships as a second mode, not a replacement** | The live v1.2.3 is scoring at rank #3 on a plays-ranked board, and the belt rewrites the sim rather than re-skinning it — replacing it in place would bet the entry on untested work with 15 days left. Eight architecture calls were taken in one pass rather than discovered during the build | Primary `Play` is **unchanged**, so §7's CP4 (*first-timer to the fun in 30 s*) is untouched; a secondary `Kitchen (beta)` sits beneath it. The belt carries the GDD's frozen **five** walkouts while the tower defence keeps its shipped ten. 🛑 A stop rule was set in the same pass: **playable end to end by Sep 10 or cut**, because the return loop is unbuilt and is what the scoring metric rewards. Full record and the rejected alternatives: [KitchenMode.md](KitchenMode.md) |
+
+---
+
+## 16. Post-jam progression pass — Sep 13–17 2026 (addendum)
+
+Everything below shipped **Private-only** (1.70.0 → 1.81.0) while Public stays at 1.69.0 through judging;
+the design of record is [Ideas.md](Ideas.md) §6d (every playtest decision, dated), §9 (main menu) and
+§10 (the six post-jam studies, all picked Sep 17). This section is the index, not the spec.
+
+| Rounds | Build | What |
+|---|---|---|
+| 0–1 | 1.70.0 | Chef Ramu (9 block costumes × 4 faces, RUN-generated) and the dialogue system: 12 beats, queue, Skip = mute |
+| 2–2c | 1.71–1.73 | FTUE flow — the box is the Ready button; beat 3 first, upgrade dock after; Lv↑ markers; legibility rule (403×874) |
+| 3–4 | 1.74–1.75 | Service ring gauge in the HUD; prop feedback bundle (recoil, flash, trail, steam); wave bubble with per-dish counts |
+| 5–7 | 1.76–1.78 | Scroll-grid wave bubble; tween wrapper containers (Retro 110); bottom band 340 with the chef at centre; post-boss panel; end-screen "Ramu's debrief"; BGM 50 % |
+| 8–8b | 1.79–1.80 | Main menu on Archita Sharma's dawn backdrop, layout A, laid out in **mock units** (Retro 111); four playtest fixes |
+| 9 | 1.81.0 | Pass hatches + belt tread; Settings dialog; empty-pad green/red cue; guest name + greeting; anonymous rows shortened |
+| 10 (in flight) | 1.82.0 | Heat gauge (boss meter), four FTUE beats, name at boot, pulse removed, Settings look A, rename, pause card |
+| 11–16 (queued) | — | Ranks with a Daily tab · belt chevrons + i18n table · recipe shards · rewarded continue · Play + unlock badge · Hindi · IAP (content, not power) |
+
+**Naming today:** the menu's primary is *Start shift* (→ *Play*), the meta screen is *The Kitchen*, the boards are *Ranks*; the
+tower game is the only public mode (the belt/Kitchen Mode of §10.3a stays behind `?test=1`).

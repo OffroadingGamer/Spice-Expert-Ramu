@@ -10,7 +10,7 @@
 > reason in [Retro.md](Retro.md).
 
 **Last updated:** Sep 9 2026, 01:30 IST
-**Implementation status:** ▶ **LIVE — v1.7.0 public + approved** (since Sep 5, 14:10:21 IST, §8a.11). ⚠️ This header read **v1.2.3** until Sep 7 while §8a.11 recorded the truth — a handover quoted the header and shipped the wrong number to an agent.
+**Implementation status (Sep 17 2026):** Public **1.69.0** (frozen through judging) · Private **1.81.0**. **This document is the Sep 3–11 architecture spec; the present is the CURRENT STATE block of [Implementation Handover Record.md](Implementation%20Handover%20Record.md).** The line that stood here from Sep 5 ("LIVE — v1.7.0 public + approved") is retired.
 https://w.run/puneetmakes/spice-expert-ramu · game `PpB5gECS0AMU49mGYAKM`
 
 ### Live state snapshot
@@ -198,6 +198,8 @@ declared anchor box, atlas budget, and mobile decode cost.
 > products while this is a web build. The user owns the pack and has confirmed their
 > licence permits this use; Phase 2a is unblocked. Credit KayKit on the credits screen
 > regardless — Plan §7 item 19.
+>
+> ✅ **Attribution position as of Sep 17 2026:** KayKit was cut on Sep 4 (item 2a) and never shipped; **no NCS track ships** (`audio.ts`: bgm is the audio agent's RUN-generated `bgm-menu.mp3`, SFX are the CC0 five plus RUN-generated samples). **There is no credits screen** — the only live obligation is Archita Sharma's backdrop credit, met on the main menu and in the Settings dialog (Round 8, Ideas.md §9). If later content carries an obligation, Settings grows a Credits row.
 
 
 ### 5a. 🔒 Asset payload budget — added Sep 4, 07:20 PT

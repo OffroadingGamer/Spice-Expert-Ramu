@@ -135,7 +135,7 @@ says the thing without stating it.
 
 ---
 
-## 2. Main menu revamp — background art + clean UI behaviours
+## 2. Main menu revamp — background art + clean UI behaviours — ➡️ superseded by §9 (shipped 1.79.0–1.80.0)
 
 User request, Sep 13 2026. Same gate as everything else in this file: **after the build is
 live and stable.**
@@ -162,7 +162,7 @@ the player sees between runs, and the same art direction serves both.
 
 ---
 
-## 3. Prop game feel — proposed Sep 13 2026, no option chosen yet
+## 3. Prop game feel — proposed Sep 13 2026 — ✅ bundle 1+2+3+4 picked Sep 16, shipped 1.75.0 (Type 2 wrapper fix 1.77.0)
 
 User: *"Props are lacking game feel, propose ideas that can be implemented that would make
 them feel more robust and functioning."* Six proposals were put to the user; **none has been
@@ -239,7 +239,7 @@ cannot recover the jam's departed players.
 
 ---
 
-## 6. Progression gauge + Chef Ramu — proposed Sep 13 2026, for speculation
+## 6. Progression gauge + Chef Ramu — proposed Sep 13 2026 — ✅ shipped as Rounds 0–9 (1.70.0–1.81.0); §6d holds every decision
 
 User, after playtesting 1.69.0: *"There's no visual progression system."* Three parts,
 **decoupled so each can ship alone.** Sequencing across §6 and §7: **scroll → gauge →
@@ -396,7 +396,7 @@ specified and wrong as a product. Removed.
    reduced width; never a one-line strip. (Portrait may drop to ~100 px there.)
 2. **Skip = mute.** One Skip silences every later box for the run; **tapping the chef**
    re-enables from the next wave. While muted, beats 2/3/4 fall back to the plain Ready.
-   ⚠️ Central's proposal, pending user override: because the idle sprite is hidden on the
+   ✅ (built in Rounds 2–3 as `#chef-head-button`, then the idle chef moved to bottom-centre in Round 7) — the original proposal: because the idle sprite is hidden on the
    reference phone (39 px gutter), add a **~44 px chef-head button in the HUD top-left,
    always present** — the un-mute tap on every device and Round 4's bubble anchor. Mute
    persists in the save (a player who muted stays muted across Retry).
@@ -568,7 +568,7 @@ phones where the idle chef is hidden (gutter < 72 px — the 403×874 reference)
 anchors to the **wave chip** instead. §7's data path is unchanged.
 
 
-## 7. Wave-intro scroll — proposed Sep 13 2026, for speculation
+## 7. Wave-intro scroll — proposed Sep 13 2026 — ✅ shipped as the wave bubble's scroll grid, 1.76.0
 
 **Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll
 follows on dismiss or skips that wave.

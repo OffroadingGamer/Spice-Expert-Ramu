@@ -3,6 +3,11 @@
 
 # Tower Defense Template: Pixi.js v8 + React 19 + Tailwind v4
 
+> ⚠️ **This project has diverged from the template below** (Spice Expert: Ramu, Sep 2026). Before any change read
+> `../Ramu - The Chef/docs/Implementation Handover Record.md` — its CURRENT STATE block (versions, balance baseline,
+> sealed files) is authoritative — then `docs/Ideas.md` §6d/§9/§10 for the design of record. The template notes
+> below still describe the engine, the data files and the platform systems accurately.
+
 A batteries-included 2D tower defense for RUN.game. Everything gameplay-true
 lives in a pure, render-free simulation engine driven by four data files;
 the Pixi scene is a view over it, and `npm run balance` runs the SAME engine

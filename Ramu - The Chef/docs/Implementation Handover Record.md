@@ -40,6 +40,9 @@ of the present.**
 | | |
 |---|---|
 | **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.81.0** (Rounds 0–9 — main menu accepted Sep 17; awaiting the user's end-to-end play; 🔒 Private-only until human verification — Ideas.md §6d) |
+| **Jam (Sep 17, ~21:50 IST)** | **6th, 613 daily uniques** (901 total plays) at ~21:50 IST Sep 17 — out of the money by 16: 5th Pest Control Tycoon 629 ($100), 4th GT Rush 902 ($200), 7th The Good Life 479. Judging closes **Sep 18 12:00 PT = 00:30 IST Sep 19** (1d 02h 37m at the reading). Public is frozen at 1.69.0 through judging. |
+| **In flight** | **Round 10** → Private 1.82.0 (heat gauge, FTUE beats, name at boot, pulse removed, Settings A, rename, pause card). Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. |
+| **Repo** | Commits since `4858e3b` are **local, unpushed** — `backdrop-dawn.jpg` (Archita's painting) would enter the public repo; the user decides. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
 | **Endgame criterion** | `maxed-meta` must lose between levels **85–110** (currently 90) |
@@ -2805,3 +2808,20 @@ flight.
 Ideas.md §10 marked picked. Open: the 10.3 damage nerf needs an explicit **unseal** of
 `engine.ts` from the user; default is +6 walkouts / no nerf, engine sealed. Round 10 in flight;
 nothing new dispatched until it returns. Eight local commits unpushed (backdrop JPEG question).
+
+---
+
+### 2026-09-17 — Board at ~21:50 IST: dropped to 6th; docs audit applied
+
+Screenshot from the user: **6th, 613 daily uniques** (901 total plays) at ~21:50 IST Sep 17 — out of the money by 16: 5th Pest Control Tycoon 629 ($100), 4th GT Rush 902 ($200), 7th The Good Life 479. Judging closes **Sep 18 12:00 PT = 00:30 IST Sep 19** (1d 02h 37m at the reading). Down from 5th (605) at 14:10 — Pest Control gained 155 in the
+afternoon to our 8. Forwarded to the marketing agent for §19 by the user.
+
+**Docs audit** (Central, all 18 docs + READMEs): Tasks.md header rewritten to the present (Sep 10
+header kept inside a details block); Retro §4 metrics rows Sep 9–17 added with a not-kept-daily
+note; Specs.md status line retired and an attribution-position note added (no credits screen; no
+NCS shipped; Archita's credit is the only live obligation, met); Ideas.md §2/3/6/7 headers marked
+superseded/shipped, the chef-head 'pending' line resolved, §8 moved last; this block gained Jam /
+In flight / Repo rows; GDD.md gained a post-jam addendum and corrected menu naming; Plan.md and
+`jam-entry/CLAUDE.md` gained closure/divergence banners. Reference docs (KitchenMode, LevelBlocks,
+LevelEconomy, PropList, RecipeList, both sprite indexes, AudioGenPrompts) verified current for what
+they cover.
