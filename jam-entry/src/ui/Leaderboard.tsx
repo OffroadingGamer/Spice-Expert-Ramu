@@ -32,9 +32,12 @@ function Avatar({ entry, size }: { entry: BoardEntry; size: string }) {
             />
         );
     }
+    // Round 9 Part 4: the initial now comes from displayName, not the raw
+    // username — an anonymous_<id> row showed "A" (for "anonymous_...")
+    // next to a name/short-id that never starts with A.
     return (
         <div className={`${size} flex shrink-0 items-center justify-center rounded-full bg-white/10 font-black`}>
-            {(entry.username || '?').charAt(0).toUpperCase()}
+            {(entry.displayName || '?').charAt(0).toUpperCase()}
         </div>
     );
 }
@@ -66,7 +69,7 @@ function Row({ entry, highlight }: { entry: BoardEntry; highlight: boolean }) {
             )}
             <Avatar entry={entry} size="h-9 w-9" />
             <span className="min-w-0 flex-1 truncate font-bold">
-                {entry.username}
+                {entry.displayName}
                 {highlight && <span className="ml-2 text-[1.1rem] font-semibold text-primary">you</span>}
             </span>
             <span className="shrink-0 font-black tabular-nums text-primary">{entry.score}</span>

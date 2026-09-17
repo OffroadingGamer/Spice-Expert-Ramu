@@ -39,7 +39,7 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.80.0** (Rounds 0–8b — main menu accepted Sep 17; awaiting the user's end-to-end play; 🔒 Private-only until human verification — Ideas.md §6d) |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.81.0** (Rounds 0–9 — main menu accepted Sep 17; awaiting the user's end-to-end play; 🔒 Private-only until human verification — Ideas.md §6d) |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
 | **Endgame criterion** | `maxed-meta` must lose between levels **85–110** (currently 90) |
@@ -2738,3 +2738,37 @@ cheapest cost read from `towers.ts`), name entry at the start of the FTUE with S
 `metadata.displayName`, and the anonymous display rule. Rounds 10 (heat gauge + four FTUE
 beats) and 11 (Ranks + daily period) follow. Commit `0281d7d` (Rounds 8/8b) is local, **not
 pushed** — the backdrop JPEG entering the public repo is the user's call.
+---
+
+### 2026-09-17 — Round 9 returned → Private v1.81.0 (hatches + belt, settings dialog, pad cues, name)
+
+**Status:** ✅ returned, verified from source, committed. Balance 35/36/11/4/90, tsc clean, no
+sidecars, sealed files + `kitchenScene.ts` untouched, Review/Public 1.69.0.
+
+**Landed.** Hatches sized from opaque bounds (entry 216×213, exit 128×183 on the 1024 canvas;
+scale = 86 / opaque height; on-board opaque widths 87 and 60 units, cap 160), road caps covered
+at 403×874 and 768×1024. Belt inner pass is a Pixi texture stroke (`textureSpace: 'global'`,
+`addressMode: 'repeat'`). Settings is a 200-mu cream dialog; `useMenuUnit()` lifted to
+`ui/useMenuUnit.ts`; `Slider` gained a theme prop; the credit line got an 11 px floor
+(`Math.max(11, 8 × mu)` — 7 × mu would have been 10.5 px at the mu floor). Pad cue: green at
+coins ≥ cheapest (`Math.min` over `TOWERS`, = 60), red and inert below, bonus pads keep the gold
+outer ring; verified by pixel clusters at 200 → 20 coins. FTUE pads reasoned from code:
+`grantFtueShortfall` funds the target pad before the pulse, so the cue is always green there.
+Name: `sdk/profile.ts` `readIdentity()`; guest = null profile / `isAnonymous` / `anonymous_`
+prefix; dialog on Start shift, Skip → two plain words; persisted; RUN accounts skip it.
+Greeting bubble narrowed 120 → 85 mu after a measured 31.9 px overlap with the stack at 360
+wide; now 7.5 px clear there, 8.4 at 403. Board rows: `metadata.displayName` → `u2…x9z` rule
+→ username.
+
+**Central's handover errors, both caught by the agent:** `RundotGameAPI.profile.getCurrentProfile()`
+does not exist on the public surface (it is a host-class method in the d.ts); the real call is
+`RundotGameAPI.getProfile()`, synchronous, throws. And **the name dialog is in the wrong place**:
+`main.tsx` boot step 6 sends a first-ever session straight into the scripted run, so a new
+guest never sees Start shift before the FTUE — the user's note said the FTUE *starts* with the
+name; Central put it on the button. Moves to the start of the scripted run in **Round 10**
+(FTUE round anyway).
+
+**Open for the user:** the belt tread renders but is barely perceptible (belt strip luminance
+43–80, σ 3.9 vs the floor grain's 14.5). The tile is procedural, so a bolder pass costs no
+credits — Central recommends asking the art agent for a second tile at roughly double the rib
+contrast and swapping the file, no code change.

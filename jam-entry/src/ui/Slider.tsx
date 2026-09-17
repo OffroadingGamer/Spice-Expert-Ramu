@@ -4,18 +4,30 @@
  * duplication rule (explicit user ruling) — §2.5 still stands everywhere
  * else. `compact` only changes sizing; neither existing caller's appearance
  * changes (Settings: default, Hud: compact, both pre-dating this file).
+ *
+ * Round 9 Part 2: `theme` added — the percentage readout was hardcoded
+ * `text-white/60`, invisible against Settings.tsx's new cream dialog card
+ * (the label span itself has no colour class, so it already inherited the
+ * card's chocolate text fine). Hud/TestBelt pass nothing, so their existing
+ * dark-background appearance is untouched (default 'dark').
  */
-export default function Slider({ label, value, onChange, compact }: {
+export default function Slider({ label, value, onChange, compact, theme = 'dark' }: {
     label: string;
     value: number;
     onChange: (v: number) => void;
     compact?: boolean;
+    theme?: 'dark' | 'cream';
 }) {
     return (
         <div className={compact ? 'flex w-56 flex-col gap-1' : 'flex flex-col gap-2'}>
             <div className="flex items-center justify-between">
                 <span className={compact ? 'text-lg font-bold' : 'text-xl font-bold'}>{label}</span>
-                <span className="text-[1.1rem] tabular-nums text-white/60">{Math.round(value * 100)}%</span>
+                <span
+                    className={'text-[1.1rem] tabular-nums ' + (theme === 'cream' ? 'text-[color:var(--color-chocolate)]' : 'text-white/60')}
+                    style={theme === 'cream' ? { opacity: 0.7 } : undefined}
+                >
+                    {Math.round(value * 100)}%
+                </span>
             </div>
             <input
                 type="range"

@@ -59,7 +59,12 @@ function art(alias: string, fallback: () => Texture): Texture {
  * whole-texture box rather than degenerately fitting a zero-size region.
  */
 const contentBBoxCache = new Map<string, { x: number; y: number; w: number; h: number }>();
-function alphaContentBBox(renderer: Renderer, alias: string, tex: Texture): { x: number; y: number; w: number; h: number } {
+/** Exported for towerScene.ts's hatch-sizing (Round 9 Part 1): the entry/exit
+ *  decals must be sized off their OWN opaque extent — the road's rounded cap
+ *  must be fully covered regardless of how much transparent canvas margin
+ *  each PNG carries — the same measurement this file already does for dish
+ *  sprites (artSquare above). */
+export function alphaContentBBox(renderer: Renderer, alias: string, tex: Texture): { x: number; y: number; w: number; h: number } {
     const cached = contentBBoxCache.get(alias);
     if (cached) return cached;
     const { pixels, width, height } = renderer.extract.pixels(tex);

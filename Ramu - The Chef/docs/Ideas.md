@@ -505,7 +505,7 @@ specified and wrong as a product. Removed.
    affordable, **red** when it is beyond the current coins, and a red pad **does not respond to
    taps** until the coins reach the cheapest price (no picker opens; a coin-shortfall toast is
    fine).
-6. **Name entry at the start of the FTUE:** *"What do they call you?"* with a text field and a
+6. **Name entry at the start of the FTUE** (⚠️ Round 9 put it on Start shift, which a first-ever session never sees — boot enters the scripted run directly; Round 10 moves it to the start of that run, before the opening beat)**:** *"What do they call you?"* with a text field and a
    **Skip** that auto-assigns a `FirstName LastName` name (no digits, no symbols). The name
    shows in the menu bubble and goes on the leaderboard. **RUN account players keep their RUN
    username** (`profile.isAnonymous !== true`); guests get the chosen/assigned name, carried

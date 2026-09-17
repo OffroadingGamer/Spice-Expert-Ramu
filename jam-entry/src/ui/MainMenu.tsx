@@ -5,14 +5,27 @@
  * below is `value * mu`, where `mu = clamp(1, min(innerWidth/240,
  * innerHeight/520), 3)` — the mock frame was 240x520, so mu is "how many
  * mock-pixels fit in one device pixel," recomputed on resize/orientation
- * (useMenuUnit() below). Nothing about Round 8's actual design changed,
- * only the units it was expressed in — see this round's own report for the
- * measured ratios against the approved mock.
+ * (useMenuUnit(), lifted to ./useMenuUnit.ts in Round 9 Part 2 — Settings.tsx
+ * needs the same unit now, so it stopped being a single-file concern).
+ * Nothing about Round 8's actual design changed, only the units it was
+ * expressed in — see that round's own report for the measured ratios
+ * against the approved mock.
  *
  * The wordmark switched from SVG-with-textLength (which force-stretched the
  * glyphs to an exact width) to plain sized text: only the font-size is
  * specified now, and the rendered width is whatever the browser's own glyph
  * metrics produce — "let the width fall out," per the handover.
+ *
+ * Round 9 Part 4 (docs/Ideas.md §6d, "Playtest of 1.80.0" items 2/6): a
+ * greeting speech bubble over Ramu's portrait ("Welcome, {name}") and the
+ * guest name-entry dialog, gated on the Start shift tap — see NameDialog.tsx
+ * and this round's own report for a discovered wrinkle: main.tsx's boot
+ * step 6 starts the very first-ever session straight into 'playing'
+ * (scriptedRunStart) WITHOUT ever routing through this menu's Start shift
+ * button, so a brand-new guest's first run has no name yet (greeting reads
+ * "Welcome, chef" by default) — the dialog first fires on their first
+ * RETURN to this menu, not their first run. Flagged, not silently patched
+ * around (main.tsx's boot sequencing is out of this round's scope).
  */
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { MANIFEST } from '../assets/manifest.ts';
@@ -25,6 +38,8 @@ import { devModeEnabled } from '../state/devMode.ts';
 import { store, useStore } from '../state/store.ts';
 import ChefPortrait from './ChefPortrait.tsx';
 import GemCounter from './GemCounter.tsx';
+import NameDialog from './NameDialog.tsx';
+import { useMenuUnit } from './useMenuUnit.ts';
 
 // Reuses the manifest's own alias->src entries — ChefPortrait.tsx's own
 // established pattern (this codebase duplicates this tiny map per file
@@ -58,40 +73,6 @@ function openArtistCredit(): void {
     } catch (err) {
         console.warn('[MainMenu] could not open artist credit link', err);
     }
-}
-
-/** Mock frame the approved §9 design was drawn at — mu converts its px to
- *  device px. Local to this file (the menu is the only mu consumer;
- *  boundaries note says a shared hook file needs flagging — this avoids
- *  that by staying a plain function + useState/useEffect here, same
- *  small-utility-duplication convention as usePrefersReducedMotion
- *  elsewhere in this codebase). */
-const MOCK_W = 240;
-const MOCK_H = 520;
-const MU_MIN = 1;
-const MU_MAX = 3;
-
-function computeMu(): number {
-    try {
-        const raw = Math.min(window.innerWidth / MOCK_W, window.innerHeight / MOCK_H);
-        return Math.min(MU_MAX, Math.max(MU_MIN, raw));
-    } catch {
-        return MU_MIN;
-    }
-}
-
-function useMenuUnit(): number {
-    const [mu, setMu] = useState(computeMu);
-    useEffect(() => {
-        const onResize = () => setMu(computeMu());
-        window.addEventListener('resize', onResize);
-        window.addEventListener('orientationchange', onResize);
-        return () => {
-            window.removeEventListener('resize', onResize);
-            window.removeEventListener('orientationchange', onResize);
-        };
-    }, []);
-    return mu;
 }
 
 /** Ghost-button style (The Kitchen / Ranks / the dev-only test-mode
@@ -132,6 +113,9 @@ export default function MainMenu() {
     const likeAvailable = useStore((s) => s.likeAvailable);
     const commentsAvailable = useStore((s) => s.commentsAvailable);
     const isLiked = useStore((s) => s.isLiked);
+    const isGuest = useStore((s) => s.isGuest);
+    const runUsername = useStore((s) => s.runUsername);
+    const playerName = useStore((s) => s.playerName);
     // Round A2, task 4: Test Mode is unfinished — gated behind ?test=1
     // (devMode.ts). Styled as a ghost, ABOVE Start shift — the spec's
     // "only filled button" rule applies regardless of dev flags, and this
@@ -140,6 +124,26 @@ export default function MainMenu() {
     const backdropSrc = ASSET_SRC.get('menu-backdrop');
     const costumeBlock = blockForLevel(Math.max(1, bestWave));
     const mu = useMenuUnit();
+    // Round 9 Part 4: gates Start shift — see NameDialog.tsx and this
+    // round's own report for the discovered wrinkle (main.tsx's boot-time
+    // auto-start bypasses this button entirely on a brand-new session).
+    const [showNameDialog, setShowNameDialog] = useState(false);
+    const greetingName = isGuest ? (playerName ?? 'chef') : (runUsername ?? 'chef');
+
+    const beginShift = () => {
+        // GDD §10.11 (round D): the scripted three-wave FTUE is persistent —
+        // every run enters scripted, not just the player's first.
+        store.patch({ phase: 'playing', ...scriptedRunStart() });
+    };
+
+    const handleStartShift = () => {
+        sfx.click();
+        if (isGuest && playerName === null) {
+            setShowNameDialog(true);
+            return;
+        }
+        beginShift();
+    };
 
     // fires once per mount, i.e. every time phase transitions into 'menu'
     useEffect(() => {
@@ -246,6 +250,78 @@ export default function MainMenu() {
                 <ChefPortrait size={120 * mu} variant="dialogue" face="a" block={costumeBlock} />
             </div>
 
+            {/* Round 9 Part 4 (docs/Ideas.md §6d item 2): the greeting
+                bubble over Ramu's head. Anchored ABOVE the portrait (portrait
+                height 120*mu + a gap) rather than to a fixed top offset, so
+                it tracks the portrait at every mu.
+                Width: the spec's own ceiling is 120*mu, but at 360 wide
+                (mu 1.5) that's 180px — measured against the real stack
+                (which right-anchors starting at x=147 at that width), a
+                bubble anywhere near that cap genuinely overlapped it
+                (measured overlap: 31.9px, with 37.3px of shared vertical
+                range — a real defect, not a near-miss). 85*mu keeps the
+                bubble's right edge left of the stack's own left edge at
+                every measured width (403/360/739/768) with several px of
+                clearance to spare — chosen from the actual numbers, not
+                the spec's ceiling. A very long typed/assigned name (up to
+                16 chars, two words) wraps rather than overflowing, since
+                width is 'fit-content' capped by this maxWidth, not a
+                fixed box. */}
+            <div
+                className="absolute"
+                style={{
+                    left: 8 * mu,
+                    bottom: `calc(${120 * mu}px + env(safe-area-inset-bottom, 0px) + ${14 * mu}px)`,
+                    maxWidth: 85 * mu,
+                }}
+            >
+                <div className="relative">
+                    <div
+                        style={{
+                            width: 'fit-content',
+                            maxWidth: 85 * mu,
+                            backgroundColor: 'var(--color-cream)',
+                            color: 'var(--color-chocolate)',
+                            border: `${mu < 1.5 ? 1 : 1 * mu}px solid var(--color-chocolate)`,
+                            borderRadius: 8 * mu,
+                            padding: `${5 * mu}px ${8 * mu}px`,
+                            fontSize: 9 * mu,
+                            fontWeight: 700,
+                        }}
+                    >
+                        Welcome, {greetingName}
+                    </div>
+                    {/* tail, pointing down toward the portrait: a slightly
+                        larger chocolate triangle behind a smaller cream one
+                        gives the tail the same 1*mu-ish outline as the
+                        bubble body. */}
+                    <div
+                        style={{
+                            position: 'absolute',
+                            left: 14 * mu,
+                            bottom: -6 * mu,
+                            width: 0,
+                            height: 0,
+                            borderLeft: `${6 * mu}px solid transparent`,
+                            borderRight: `${6 * mu}px solid transparent`,
+                            borderTop: `${7 * mu}px solid var(--color-chocolate)`,
+                        }}
+                    />
+                    <div
+                        style={{
+                            position: 'absolute',
+                            left: 15 * mu,
+                            bottom: -4.5 * mu,
+                            width: 0,
+                            height: 0,
+                            borderLeft: `${5 * mu}px solid transparent`,
+                            borderRight: `${5 * mu}px solid transparent`,
+                            borderTop: `${6 * mu}px solid var(--color-cream)`,
+                        }}
+                    />
+                </div>
+            </div>
+
             {/* The single right-hand action stack. Order per the spec:
                 BEST . RUSH n -> Start shift (the only filled button) ->
                 The Kitchen -> Ranks -> Backdrop credit -> Like/Comments.
@@ -293,13 +369,7 @@ export default function MainMenu() {
                         color: 'var(--color-chocolate)',
                         border: `${1 * mu}px solid var(--color-chocolate)`,
                     }}
-                    onClick={() => {
-                        sfx.click();
-                        // GDD §10.11 (round D): the scripted three-wave FTUE
-                        // is persistent — every run enters scripted, not
-                        // just the player's first.
-                        store.patch({ phase: 'playing', ...scriptedRunStart() });
-                    }}
+                    onClick={handleStartShift}
                 >
                     Start shift
                 </button>
@@ -355,6 +425,10 @@ export default function MainMenu() {
                     </div>
                 )}
             </div>
+
+            {showNameDialog && (
+                <NameDialog onDone={() => { setShowNameDialog(false); beginShift(); }} />
+            )}
         </div>
     );
 }

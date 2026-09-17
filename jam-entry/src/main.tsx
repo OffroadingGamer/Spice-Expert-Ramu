@@ -5,6 +5,7 @@ import App from './ui/App.tsx';
 import { store } from './state/store.ts';
 import { loadSave, flushSave } from './state/save.ts';
 import { initSdk, registerLifecycles, sdkReady } from './sdk/runSdk.ts';
+import { readIdentity } from './sdk/profile.ts';
 import { track } from './sdk/analytics.ts';
 import { refreshEngagement } from './sdk/engagement.ts';
 import { generateTowerIconsWhenSafe } from './game/towerIcons.ts';
@@ -36,12 +37,19 @@ async function boot() {
     // 2. Load persisted progress before first render, so the first screen
     //    reflects real progress instead of popping it in after a beat.
     const save = await loadSave();
+    // Round 9 Part 4: identity is read here (after initSdk, before first
+    // render) rather than lazily in MainMenu.tsx — same "reflects real
+    // progress instead of popping it in" reasoning as the save fields above.
+    const identity = readIdentity();
     store.patch({
         bestWave: save.bestWave,
         gems: save.gems,
         metaLevels: save.meta,
         musicVol: save.audio.music,
         sfxVol: save.audio.sfx,
+        isGuest: identity.isGuest,
+        runUsername: identity.username,
+        playerName: save.playerName,
     });
     // Audio unlocks on the first user gesture (autoplay policy).
     initAudio(save.audio);

@@ -72,6 +72,12 @@ export interface SaveData {
      *  a Retry (or a fresh tab on the same device) doesn't quietly re-arm
      *  dialogue a player explicitly turned off. */
     dialogueMuted: boolean;
+    /** Round 9 Part 4 (docs/Ideas.md §6d item 6): the guest-chosen or
+     *  Skip-assigned name, null until the name dialog has resolved once.
+     *  Never written for a RUN account (their `username` is used live,
+     *  never persisted here) — see setPlayerName below. Shown once; there
+     *  is no rename UI this round, so once set this never changes again. */
+    playerName: string | null;
 }
 
 function emptyMeta(): MetaLevels {
@@ -95,6 +101,7 @@ const DEFAULTS: SaveData = {
     ftue: { challengeDone: false, firstTowerId: null },
     kitchen: { bestLevel: 0, propsOwned: [], shiftsCompleted: 0, hats: 0, clears: {} },
     dialogueMuted: false,
+    playerName: null,
 };
 
 let data: SaveData = structuredClone(DEFAULTS);
@@ -164,6 +171,9 @@ function parse(raw: string | null): SaveData | null {
             ftue,
             kitchen,
             dialogueMuted: parsed.dialogueMuted === true,
+            playerName: typeof parsed.playerName === 'string' && parsed.playerName.trim().length > 0
+                ? parsed.playerName.trim().slice(0, 16)
+                : null,
         };
     } catch {
         return null;
@@ -249,6 +259,18 @@ export function completeFtue(): void {
 export function setDialogueMuted(muted: boolean): void {
     if (data.dialogueMuted === muted) return;
     data = { ...data, dialogueMuted: muted };
+    flushSave();
+}
+
+/** Round 9 Part 4: records the guest's chosen or Skip-assigned name.
+ *  Idempotent — same posture as setFtueFirstTower above — the name is
+ *  "shown once", so a later call (there shouldn't be one this round, no
+ *  rename UI) can never overwrite it. */
+export function setPlayerName(name: string): void {
+    if (data.playerName !== null) return;
+    const trimmed = name.trim().slice(0, 16);
+    if (trimmed.length === 0) return;
+    data = { ...data, playerName: trimmed };
     flushSave();
 }
 

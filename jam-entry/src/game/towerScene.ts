@@ -30,6 +30,7 @@ import { dialogueForBlock } from './data/dialogue.ts';
 import { queueDialogue } from './dialogueController.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
 import {
+    alphaContentBBox,
     dishContentExtent,
     freeTexture,
     makeBurrowTexture,
@@ -427,33 +428,87 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         for (let i = 1; i < CONFIG.path.length; i++) g.lineTo(CONFIG.path[i].x, CONFIG.path[i].y);
         g.stroke({ width, color, cap: 'round', join: 'round' });
     };
+    const traceRoadPath = (g: Graphics) => {
+        g.moveTo(CONFIG.path[0].x, CONFIG.path[0].y);
+        for (let i = 1; i < CONFIG.path.length; i++) g.lineTo(CONFIG.path[i].x, CONFIG.path[i].y);
+    };
     drawRoad(road, SZ.pathWidth + 14, CONFIG.colors.pathEdge);
-    drawRoad(road, SZ.pathWidth, CONFIG.colors.pathDirt);
+    // Round 9 Part 1: the inner 72-unit pass is now a texture stroke — the
+    // belt-tile art (128², seamless both axes, 1 texture px = 1 board unit —
+    // no matrix) tiled via textureSpace: 'global'. TextureSource defaults to
+    // 'clamp-to-edge', which would smear the tile's single edge pixel across
+    // the whole belt instead of repeating it, so addressMode is set to
+    // 'repeat' explicitly before the first use. Falls back to the old flat
+    // pathDirt fill whenever the art isn't in Assets.cache (defensive only —
+    // 'belt-tile' is 'critical').
+    if (Assets.cache.has('belt-tile')) {
+        const beltTex = Assets.get<Texture>('belt-tile');
+        beltTex.source.addressMode = 'repeat';
+        traceRoadPath(road);
+        road.stroke({ width: SZ.pathWidth, texture: beltTex, textureSpace: 'global', cap: 'round', join: 'round' });
+    } else {
+        drawRoad(road, SZ.pathWidth, CONFIG.colors.pathDirt);
+    }
     board.addChild(road);
 
-    // burrows at both ends of the road, so bugs appear and vanish INTO
-    // something no matter where the board sits vertically.
+    // Entry/exit hatches at both ends of the road, so bugs appear and vanish
+    // INTO something no matter where the board sits vertically.
     // Delivered-audio round, task 5: a round line cap extends a stroke by
     // half its own width BEYOND each endpoint (same reasoning kitchenScene.ts's
     // round-12a comment already documents for its own belt-cap fix) — here
     // that's (SZ.pathWidth + 14) / 2 = 43 units past both (170,90) and
-    // (540,1300), each approached on a vertical path segment. The old fixed
-    // 64-tall hole only covered 32 of that, so the road's rounded end
-    // visibly poked out past the decal by 11 units at both burrows. Sized
-    // from the measured protrusion, not guessed: height covers the full
-    // cap radius on both sides (2x), width keeps the original 110/64
-    // aspect ratio exactly.
+    // (540,1300), each approached on a vertical path segment, so the decal's
+    // opaque extent must be >= 2*capRadius = 86 tall, centred on the
+    // endpoint, to fully cover it.
     const capRadius = (SZ.pathWidth + 14) / 2;
+    const HATCH_MIN_OPAQUE_H = capRadius * 2;
+    // Keeps the decal off pad 1 (A1, 270,195) and the road's first turn —
+    // measured against the nearest pad's edge, not guessed.
+    const HATCH_MAX_OPAQUE_W = 160;
     const holeHeight = capRadius * 2;
     const holeWidth = holeHeight * (110 / 64);
-    for (const end of [CONFIG.path[0], CONFIG.path[CONFIG.path.length - 1]]) {
-        const hole = new Sprite(tex.burrow);
-        hole.anchor.set(0.5);
-        hole.width = holeWidth;
-        hole.height = holeHeight;
-        hole.position.set(end.x, end.y);
-        board.addChild(hole);
+
+    /**
+     * Round 9 Part 1 (docs/Ideas.md §6d playtest note 4): real hatch art
+     * (pass-entry.png / pass-exit.png) replacing the procedural burrow —
+     * sized off its own OPAQUE content (alphaContentBBox, textures.ts),
+     * never the raw 256² canvas, since the two PNGs carry very different
+     * transparent margins (measured: entry's opaque box is 216x213 — near-
+     * square; exit's is 128x183 — tall, the door). Scale is chosen so the
+     * opaque height exactly clears HATCH_MIN_OPAQUE_H; a console warning
+     * (not a thrown error — this must never brick a run over art) fires if
+     * that scale pushes the opaque width past HATCH_MAX_OPAQUE_W, which
+     * didn't happen for either PNG at these dimensions (see this round's
+     * own report for the measured numbers). Falls back to the old
+     * procedural burrow decal whenever the real alias isn't in
+     * Assets.cache — both are 'critical', so this is defensive only.
+     */
+    function placeHatch(alias: string, endpoint: { x: number; y: number }): void {
+        if (!Assets.cache.has(alias)) {
+            const hole = new Sprite(tex.burrow);
+            hole.anchor.set(0.5);
+            hole.width = holeWidth;
+            hole.height = holeHeight;
+            hole.position.set(endpoint.x, endpoint.y);
+            board.addChild(hole);
+            return;
+        }
+        const hatchTex = Assets.get<Texture>(alias);
+        const bbox = alphaContentBBox(app.renderer, alias, hatchTex);
+        const scale = HATCH_MIN_OPAQUE_H / bbox.h;
+        const opaqueW = bbox.w * scale;
+        if (opaqueW > HATCH_MAX_OPAQUE_W) {
+            console.warn(`[towerScene] hatch "${alias}" opaque width ${opaqueW.toFixed(1)} exceeds the ${HATCH_MAX_OPAQUE_W}-unit cap at the height floor`);
+        }
+        const sprite = new Sprite(hatchTex);
+        sprite.anchor.set(0.5);
+        sprite.width = hatchTex.width * scale;
+        sprite.height = hatchTex.height * scale;
+        sprite.position.set(endpoint.x, endpoint.y);
+        board.addChild(sprite);
     }
+    placeHatch('pass-entry', CONFIG.path[0]);
+    placeHatch('pass-exit', CONFIG.path[CONFIG.path.length - 1]);
 
     // Visual round, task 4: every pad STARTS as a dotted ghost slot (gold vs
     // plain keeps the bonus distinction alive while empty) and flips to the
@@ -468,6 +523,72 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         p.position.set(pad.x, pad.y);
         board.addChild(p);
         padViews.push(p);
+    }
+
+    /**
+     * Round 9 Part 3 (docs/Ideas.md §6d, "Playtest of 1.80.0" item 5): an
+     * empty-pad affordability cue — the pad's own ellipse outline, a
+     * concentric inner ellipse (rx 22, ry 12), and an inward-pointing arrow
+     * above the centre, all in green (affordable) or red (not). Drawn as a
+     * SEPARATE Graphics layer per pad (not folded into padViews' ghost
+     * Sprite) so its colour can be redrawn independently of the dashed
+     * ghost texture swap syncPads() already does. Cheapest cost is read
+     * from TOWERS (sealed, read-only) exactly like applyPostWavePulse
+     * above — one shared derivation, not a second literal.
+     */
+    const cheapestTowerCost = Math.min(...TOWERS.map((def) => def.cost));
+    const CUE_AFFORD_COLOR = 0x22c55e;
+    const CUE_DENY_COLOR = 0xef4444;
+    const CUE_STROKE = 6;
+    const padCueViews: Graphics[] = [];
+    for (const pad of CONFIG.pads) {
+        const g = new Graphics();
+        g.position.set(pad.x, pad.y);
+        board.addChild(g);
+        padCueViews.push(g);
+    }
+
+    /** Draws the glyph at the LOCAL origin (the Graphics node is already
+     *  positioned at the pad's board coordinates) — an arrow pointing down
+     *  into the pad, tip resting on the outer ellipse's own top edge, so it
+     *  reads as "place here" rather than a free-floating chevron. `outerColor`
+     *  is separate from `innerColor`: a bonus pad keeps its gold OUTER ring
+     *  (the existing padGhostGold decal already signals "bonus" there, so
+     *  the cue doesn't fight it) while the inner ellipse + arrow still carry
+     *  the plain green/red affordability read. */
+    function drawPadCueGlyph(g: Graphics, outerColor: number, innerColor: number): void {
+        g.clear();
+        const rxOuter = SZ.pad.w / 2;
+        const ryOuter = SZ.pad.h / 2;
+        g.ellipse(0, 0, rxOuter, ryOuter).stroke({ width: CUE_STROKE, color: outerColor });
+        g.ellipse(0, 0, 22, 12).stroke({ width: CUE_STROKE, color: innerColor });
+        const tipY = -ryOuter;
+        const archY = tipY - 26;
+        g.moveTo(-12, archY).lineTo(0, tipY).lineTo(12, archY).stroke({ width: CUE_STROKE, color: innerColor, cap: 'round', join: 'round' });
+    }
+
+    /** Re-evaluates every empty pad's cue colour ONLY when coins actually
+     *  change (never per frame — every tower purchase/sale also changes
+     *  coins, so this naturally catches occupancy changes too without a
+     *  second dirty flag). -1 primes the very first tick's draw. */
+    let lastCueCoins = -1;
+    function syncPadCues(): void {
+        const coins = engine.state.coins;
+        if (coins === lastCueCoins) return;
+        lastCueCoins = coins;
+        const affordable = coins >= cheapestTowerCost;
+        const innerColor = affordable ? CUE_AFFORD_COLOR : CUE_DENY_COLOR;
+        const occupied = new Set(engine.state.towers.map((t) => t.padIndex));
+        for (let i = 0; i < CONFIG.pads.length; i++) {
+            const g = padCueViews[i];
+            if (occupied.has(i)) {
+                g.visible = false;
+                continue;
+            }
+            g.visible = true;
+            const outerColor = CONFIG.pads[i].bonus ? CONFIG.colors.gold : innerColor;
+            drawPadCueGlyph(g, outerColor, innerColor);
+        }
     }
 
     // selection highlight + range preview for the selected pad
@@ -894,6 +1015,13 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 hit = i;
                 break;
             }
+        }
+        // Round 9 Part 3: a RED (unaffordable) empty pad ignores taps
+        // outright — no picker, no selection change at all (not even a
+        // deselect of whatever else was selected).
+        if (hit !== null) {
+            const isOccupied = engine.state.towers.some((tw) => tw.padIndex === hit);
+            if (!isOccupied && engine.state.coins < cheapestTowerCost) return;
         }
         store.patch({ selectedPad: hit === store.get().selectedPad ? null : hit });
     };
@@ -1751,8 +1879,12 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             const previousBestWave = store.get().bestWave;
             // waveIndex counts fully CLEARED waves at this point
             const { gemsEarned, save } = recordRunEnd(engine.state.waveIndex);
-            // fire-and-forget: both boards, server keeps each player's best
-            submitRunScores(engine.state.kills, engine.state.waveIndex, engine.state.elapsed);
+            // fire-and-forget: both boards, server keeps each player's best.
+            // Round 9 Part 4: a guest's chosen/assigned name (state/save.ts)
+            // rides along as metadata.displayName; a RUN account submits
+            // exactly as before (undefined — their own username is used).
+            const guestDisplayName = store.get().isGuest ? (store.get().playerName ?? undefined) : undefined;
+            submitRunScores(engine.state.kills, engine.state.waveIndex, engine.state.elapsed, guestDisplayName);
             store.patch({
                 bestWave: save.bestWave,
                 previousBestWave,
@@ -1880,6 +2012,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         syncUpgradeMarkers();
         syncUpgradePreview();
         syncPads();
+        syncPadCues();
         drawBeams(dt);
         drawSelection();
         checkEnd();

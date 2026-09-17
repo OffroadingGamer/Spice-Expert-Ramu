@@ -189,6 +189,17 @@ export interface AppState {
      *  it's only ever read while tdPhase === 'lost', and re-captured fresh
      *  at the start of every checkEnd(). */
     previousBestWave: number;
+    /** Round 9 Part 4 (docs/Ideas.md §6d item 6): player identity, read
+     *  once at boot (sdk/profile.ts) — doesn't change mid-session, but
+     *  lives in the store (not a plain module read) so the menu's greeting
+     *  bubble/name-dialog gate re-render correctly once it lands. */
+    isGuest: boolean;
+    /** The RUN account's username, or null for a guest. */
+    runUsername: string | null;
+    /** The guest's chosen/assigned name (state/save.ts), mirrored here —
+     *  null until the name dialog has resolved once. Always null for a RUN
+     *  account (its `runUsername` is used instead, never this field). */
+    playerName: string | null;
 }
 
 const INITIAL: AppState = {
@@ -239,6 +250,9 @@ const INITIAL: AppState = {
     dialogueMuted: false,
     waveDishServed: {},
     previousBestWave: 0,
+    isGuest: true,
+    runUsername: null,
+    playerName: null,
 };
 
 /**

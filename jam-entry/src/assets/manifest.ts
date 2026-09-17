@@ -105,6 +105,18 @@ export const MANIFEST: Manifest = {
                 // spec's ~150 KB / 160 KB budget. See MainMenu.tsx for the
                 // mandatory on-screen + credits-sheet attribution.
                 { alias: 'menu-backdrop', src: 'images/menu/backdrop-dawn.jpg' },
+                // Round 9 Part 1 (docs/Ideas.md §6d playtest note 4): real
+                // entry/exit hatch art replacing the procedural burrow decal,
+                // and a seamless belt-tread tile for the road's inner stroke
+                // (towerScene.ts). All three are visible from wave 1's first
+                // frame, so 'critical' like the dish/tower-prop/menu-backdrop
+                // art above. Source: Art/_gen/pass-final/ (art round, Sep 17):
+                // pass-entry.png/pass-exit.png downscaled 1024²->256² (alpha
+                // preserved, no crop); belt-tile.png copied as-is (128²,
+                // already seamless both axes).
+                { alias: 'pass-entry', src: 'images/board/pass-entry.png' },
+                { alias: 'pass-exit', src: 'images/board/pass-exit.png' },
+                { alias: 'belt-tile', src: 'images/board/belt-tile.png' },
             ],
         },
         {

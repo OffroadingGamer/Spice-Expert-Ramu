@@ -34,15 +34,23 @@ export function leaderboardsAvailable(): boolean {
  * Submit a finished run to both boards, fire-and-forget. The server keeps
  * each player's best per board, so every run can be submitted; zero scores
  * are skipped (the config's minScore is 1).
+ *
+ * Round 9 Part 4 (docs/Ideas.md §6d item 6): `guestDisplayName` — when
+ * provided (a guest's chosen/assigned name only; callers pass undefined for
+ * a RUN account, which submits exactly as before) — is attached as
+ * `metadata: { displayName }` on BOTH board submissions, so a guest's host
+ * `anonymous_<id>` username can be overridden on the board (Leaderboard.tsx
+ * reads it back via toEntry's displayName below).
  */
-export function submitRunScores(kills: number, wavesCleared: number, seconds: number): void {
+export function submitRunScores(kills: number, wavesCleared: number, seconds: number, guestDisplayName?: string): void {
     if (!sdkReady()) return;
     const duration = Math.max(1, Math.round(seconds));
+    const metadata = guestDisplayName ? { displayName: guestDisplayName } : undefined;
     const submit = (mode: BoardMode, score: number) => {
         if (score <= 0) return;
         try {
             RundotGameAPI.leaderboard
-                .submitScore({ score, duration, mode, period: PERIOD })
+                .submitScore({ score, duration, mode, period: PERIOD, metadata })
                 .catch((err) => console.warn(`[leaderboard] ${mode} submit failed`, err));
         } catch (err) {
             console.warn(`[leaderboard] ${mode} submit failed`, err);
@@ -59,6 +67,33 @@ export interface BoardEntry {
     avatarUrl: string | null;
     rank: number | null;
     score: number;
+    /** Round 9 Part 4: the name this row should actually SHOW — computed
+     *  once here (not re-derived per render in Leaderboard.tsx) per the
+     *  handover's own priority order: metadata.displayName (a guest who
+     *  chose/was assigned a name via NameDialog.tsx) > the anonymous_<id>
+     *  short form (Ideas.md §6d item 7's decided display rule — the same
+     *  live-board reality the 75%-anonymous finding described) > the raw
+     *  username unchanged. */
+    displayName: string;
+}
+
+const ANONYMOUS_PREFIX = 'anonymous_';
+
+/** Ideas.md §6d item 7: strip the prefix, show the id's first two chars, an
+ *  ellipsis, and its last three (`u2…Bq1` style). */
+function anonymousShortForm(username: string): string {
+    const id = username.slice(ANONYMOUS_PREFIX.length);
+    if (id.length <= 5) return id; // too short to usefully abbreviate — show as-is
+    return `${id.slice(0, 2)}…${id.slice(-3)}`;
+}
+
+/** Exported for this round's own verification script (see the report) —
+ *  Leaderboard.tsx never calls this directly, it reads BoardEntry.displayName. */
+export function displayNameFor(username: string, metadata: Record<string, unknown> | null | undefined): string {
+    const metaName = metadata?.displayName;
+    if (typeof metaName === 'string' && metaName.trim().length > 0) return metaName;
+    if (username.startsWith(ANONYMOUS_PREFIX)) return anonymousShortForm(username);
+    return username;
 }
 
 /** Everything the leaderboard screen renders, in one shape. */
@@ -75,7 +110,7 @@ export interface BoardView {
 
 function toEntry(e: {
     profileId: string; username: string; avatarUrl: string | null;
-    rank: number | null; score: number;
+    rank: number | null; score: number; metadata?: Record<string, unknown> | null;
 }): BoardEntry {
     return {
         profileId: e.profileId,
@@ -83,6 +118,7 @@ function toEntry(e: {
         avatarUrl: e.avatarUrl,
         rank: e.rank,
         score: e.score,
+        displayName: displayNameFor(e.username, e.metadata),
     };
 }
 
