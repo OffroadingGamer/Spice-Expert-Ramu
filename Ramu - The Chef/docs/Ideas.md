@@ -631,7 +631,8 @@ anchors to the **wave chip** instead. §7's data path is unchanged.
    screen) · **C** ticket rail (steel rail, top three as clipped tickets, receipt monospace).
    Research adds two cheap items for the pick: a **"near you" slice** (three rows above/below
    when off the first page) and a **rank-delta arrow** on the own row since the last visit.
-   ⏳ Awaiting the pick.
+   ✅ **Picked Sep 18 ~01:00 IST: B, the pass counter.** Near-you slice and delta arrow folded in as
+   Round 12 Part 3 (Central's recommendation; strike if unwanted).
 
 ## 7. Wave-intro scroll — proposed Sep 13 2026 — ✅ shipped as the wave bubble's scroll grid, 1.76.0
 
