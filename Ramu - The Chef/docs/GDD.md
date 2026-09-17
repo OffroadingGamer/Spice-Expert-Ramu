@@ -1140,7 +1140,8 @@ the design of record is [Ideas.md](Ideas.md) §6d (every playtest decision, date
 | 8–8b | 1.79–1.80 | Main menu on Archita Sharma's dawn backdrop, layout A, laid out in **mock units** (Retro 111); four playtest fixes |
 | 9 | 1.81.0 | Pass hatches + belt tread; Settings dialog; empty-pad green/red cue; guest name + greeting; anonymous rows shortened |
 | 10 | 1.82.0 | Heat gauge (boss meter), four FTUE beats, name at boot, pulse removed, Settings look A, rename, pause card |
-| 11–16 (queued) | — | Ranks with a Daily tab · belt chevrons + i18n table · recipe shards · rewarded continue · Play + unlock badge · Hindi · IAP (content, not power) |
+| 11 | 1.83.0 | Ranks service board with a Daily tab (daily period added); heat gauge centred in the visible gap; block-clear card ×1.15; scroll chips readable; card alpha 0.9 |
+| 12–16 (queued) | — | belt chevrons + i18n table · recipe shards · rewarded continue · Play + unlock badge · Hindi · IAP (content, not power) |
 
 **Naming today:** the menu's primary is *Start shift* (→ *Play*), the meta screen is *The Kitchen*, the boards are *Ranks*; the
 tower game is the only public mode (the belt/Kitchen Mode of §10.3a stays behind `?test=1`).

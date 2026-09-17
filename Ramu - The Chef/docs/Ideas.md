@@ -514,7 +514,9 @@ specified and wrong as a product. Removed.
 7. **Leaderboard revamp with a Daily tab that opens first**, All-time second. The SDK's
    `daily` period (UTC rollover) is added to `rundot/leaderboard.config.json` — additive; the
    two all-time boards must be read back before and after the deploy to prove they did not
-   reset. Each run submits to both periods. **Picked Sep 17: B · Service board** (over A
+   reset. Each run submits to both periods. ✅ **Shipped 1.83.0 (Round 11, Sep 18)** — boards
+   read before/after, unchanged; `SubmitScoreParams.period` is per call, so four spaced submits
+   per run end. **Picked Sep 17: B · Service board** (over A
    order tickets, C rota sheet): chocolate ground; header "RANKS"; period pills **Today ·
    All time** (Today opens first, not persisted); board pair as underlined text **Rushes
    held · Pests cleared** (renamed from Waves Cleared / Enemies Defeated); **podium** for the
@@ -569,7 +571,7 @@ phones where the idle chef is hidden (gutter < 72 px — the 403×874 reference)
 anchors to the **wave chip** instead. §7's data path is unchanged.
 
 
-**Playtest of 1.82.0 (Sep 17, ~23:00 IST) — decided, for Round 11:**
+**Playtest of 1.82.0 (Sep 17, ~23:00 IST) — decided, for Round 11 — ✅ shipped 1.83.0 (Sep 18):**
 
 1. **The order scroll must stay visible during the `recipe-widget` beat.** Today
    `WaveBubble.tsx` hides the bubble behind any open dialogue ("dialogue wins", `baseVisible =

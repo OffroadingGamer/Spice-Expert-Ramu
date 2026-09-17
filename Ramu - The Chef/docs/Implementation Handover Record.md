@@ -39,10 +39,10 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.82.0** (Rounds 0–10 — Round 10 verified Sep 17 ~22:40 IST; awaiting the user's playtest; 🔒 Private-only until human verification — Ideas.md §6d) |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.83.0** (Rounds 0–11 — Round 11 verified Sep 18 ~00:10 IST; awaiting the user's playtest; 🔒 Private-only until human verification — Ideas.md §6d) |
 | **Jam (Sep 17, ~21:50 IST)** | **6th, 613 daily uniques** (901 total plays) at ~21:50 IST Sep 17 — out of the money by 16: 5th Pest Control Tycoon 629 ($100), 4th GT Rush 902 ($200), 7th The Good Life 479. Judging closes **Sep 18 12:00 PT = 00:30 IST Sep 19** (1d 02h 37m at the reading). Public is frozen at 1.69.0 through judging. |
-| **In flight** | **Round 11** → Private 1.83.0: six playtest fixes of 1.82.0 (Ideas.md §6d) + Ranks service board (2B) + `daily` period, additive config, boards read before/after. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
-| **Repo** | Commits since `4858e3b` (10, through `f56f2ef`) are **local, unpushed** — `backdrop-dawn.jpg` (Archita's painting) would enter the public repo; the user decides. |
+| **In flight** | Nothing dispatched. Next: **Round 12** (belt chevrons 10.1 C + i18n string table) after the user plays 1.83.0 — first Ranks with real rows and a first daily entry. Queued R12–R16 per Ideas.md §10. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
+| **Repo** | Commits since `4858e3b` (14, through the Round 11 record) are **local, unpushed** — `backdrop-dawn.jpg` (Archita's painting) would enter the public repo; the user decides. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
 | **Endgame criterion** | `maxed-meta` must lose between levels **85–110** (currently 90) |
@@ -2902,3 +2902,42 @@ the agent first tests in Private whether omitting `period` fans out to every con
 period; if not, four spaced submissions per run end (2 modes × 2 periods, 5 s apart) and the
 rename resubmit covers daily too. 🔒 Both all-time boards saved with `rundot leaderboard scores
 --save` before and after the config deploy; a reset stops the round.
+---
+
+### 2026-09-18 ~00:10 IST — Round 11 returned and verified: Private **1.83.0**
+
+**Verified from source:** tags Private 1.83.0 / Review 1.69.0 / Public 1.69.0 · balance 35 / 36 /
+11 / 4 / 90 · `tsc --noEmit` and `npm run build` clean · no `.json` under `public/` · sealed
+files, `kitchenScene.ts`, `package*.json` unchanged · `rundot/leaderboard.config.json` diff is
+exactly one added line (`"daily": { "displayName": "Today", "type": "daily" }`) · **both
+all-time boards read by me after the deploy: unchanged** (waves 101 players, kills 95, last
+submission Sep 16 15:42 UTC, tops 106 / 6,231) · new instances
+`PpB5gECS0AMU49mGYAKM_waves_daily` and `_kills_daily` exist and are empty. Committed `053cbcf`.
+
+**Checked in the tree:** `WaveBubble.tsx:288` exempts only `dialogue.id === 'recipe-widget'`,
+submenu still requires `dialogue === null` · no `—` left in any `lines:` array · gauge centre =
+`max(visibleLeft + 16 + 20, (visibleLeft + 127) / 2)` with `visibleLeft = −root.x / scale`,
+recomputed on `stage.onResize` (agent measured 118 / 56 / 49.5 / 139 px at 744 / 403 / 360 /
+768 wide, resize moved it 83 px live) · `PostBossPanel.tsx` carries the exact ×1.15 values ·
+scroll chips 64 px icons, 11 / 12 px text; Hud row 2 is one `flex-wrap` row with `ml-auto` on
+the speed buttons (the agent found a −23.8 px overlap at 360 wide that shrinking alone could
+not fix — the WAVE chip and ring/head already fill the row) · `SettingsCard` background
+`rgba(253, 250, 231, 0.90)` · `BOARD_PERIODS = ['alltime', 'daily']`, submit loop per (mode,
+period) through the 5 s queue; rename resubmit covers all four · `Leaderboard.tsx` rebuilt:
+podium 62 mu × 78 / 66 / 58, pills Today / All time, bar min-height 44, countdown to UTC
+midnight, daily fetch failure never falls back to all-time data.
+
+**Handover error owned:** I wrote the belt's left edge as `170 − SZ.pathWidth/2` (= 134) while
+every worked number used 127 = `170 − (pathWidth + 14) / 2`, the drawn outer edge. The agent
+used 127 and said so.
+
+**Unverified — flagged, not faked:** (a) whether a submit with `period` omitted fans out to
+every configured period — untestable headlessly; the explicit-per-period path shipped, so the
+question is moot unless we want fewer calls; (b) podium, row highlight and the bar's
+rank / gap / countdown against non-empty data — the sandbox returns empty boards; **the user's
+playtest of 1.83.0 is that test** (Ranks → Today after one run: their row, the countdown, and
+the all-time podium with three real rows). (c) The live guest rename resubmit — still needs a
+guest session. **Quirk:** `rundot leaderboard config` still echoes the alltime-only JSON after
+the deploy though both daily instances answer — treat that command's output as possibly stale.
+
+**Next:** user plays 1.83.0 → annotated screenshots → Round 12 (belt chevrons + i18n table).
