@@ -78,6 +78,14 @@ export interface SaveData {
      *  never persisted here) — see setPlayerName below. Shown once; there
      *  is no rename UI this round, so once set this never changes again. */
     playerName: string | null;
+    /** Round 10 Part 2 (docs/Ideas.md §6d, "Playtest of 1.80.0" item 4): ids
+     *  of one-time-ever FTUE beats (data/dialogue.ts's 'recipe-widget',
+     *  'heat-gauge-intro', 'prop-placement') already shown — same
+     *  persistence shape as dialogueMuted above, checked by
+     *  dialogueController.ts's queueDialogueOnce so none of these three can
+     *  ever fire twice for one save, unlike beats 1-12 which reset every
+     *  run. */
+    seenBeats: string[];
 }
 
 function emptyMeta(): MetaLevels {
@@ -102,6 +110,7 @@ const DEFAULTS: SaveData = {
     kitchen: { bestLevel: 0, propsOwned: [], shiftsCompleted: 0, hats: 0, clears: {} },
     dialogueMuted: false,
     playerName: null,
+    seenBeats: [],
 };
 
 let data: SaveData = structuredClone(DEFAULTS);
@@ -174,6 +183,9 @@ function parse(raw: string | null): SaveData | null {
             playerName: typeof parsed.playerName === 'string' && parsed.playerName.trim().length > 0
                 ? parsed.playerName.trim().slice(0, 16)
                 : null,
+            seenBeats: Array.isArray(parsed.seenBeats)
+                ? parsed.seenBeats.filter((s): s is string => typeof s === 'string')
+                : [],
         };
     } catch {
         return null;
@@ -262,16 +274,49 @@ export function setDialogueMuted(muted: boolean): void {
     flushSave();
 }
 
+/** Round 10 Part 2: has this once-ever FTUE beat already been shown (any
+ *  prior run, this save)? dialogueController.ts's queueDialogueOnce reads
+ *  this before deciding whether to queue at all. */
+export function hasSeenBeatOnce(id: string): boolean {
+    return data.seenBeats.includes(id);
+}
+
+/** Marks a once-ever FTUE beat as shown — idempotent, same posture as
+ *  setFtueFirstTower/completeFtue above. */
+export function markBeatSeenOnce(id: string): void {
+    if (data.seenBeats.includes(id)) return;
+    data = { ...data, seenBeats: [...data.seenBeats, id] };
+    flushSave();
+}
+
 /** Round 9 Part 4: records the guest's chosen or Skip-assigned name.
- *  Idempotent — same posture as setFtueFirstTower above — the name is
- *  "shown once", so a later call (there shouldn't be one this round, no
- *  rename UI) can never overwrite it. */
+ *  Idempotent — the name is "shown once" for the initial dialog, so a
+ *  second call from that flow can never overwrite it. Round 10 Part 6 adds
+ *  a real rename flow (renamePlayer, below) for changing an already-set
+ *  name — a SEPARATE function, not a flag on this one, so this function's
+ *  own "first answer wins" contract for the initial dialog can't be
+ *  weakened by a future caller passing some "allow overwrite" bit by
+ *  mistake. */
 export function setPlayerName(name: string): void {
     if (data.playerName !== null) return;
     const trimmed = name.trim().slice(0, 16);
     if (trimmed.length === 0) return;
     data = { ...data, playerName: trimmed };
     flushSave();
+}
+
+/** Round 10 Part 6: the rename flow (RenameDialog.tsx) — unlike
+ *  setPlayerName above, this ALWAYS overwrites (that's the point of a
+ *  rename). Guests only; RenameDialog.tsx never calls this for a RUN
+ *  account (their username is never persisted here). Returns false for an
+ *  empty/whitespace-only name so the caller can treat that as Cancel rather
+ *  than silently clearing a real name. */
+export function renamePlayer(name: string): boolean {
+    const trimmed = name.trim().slice(0, 16);
+    if (trimmed.length === 0) return false;
+    data = { ...data, playerName: trimmed };
+    flushSave();
+    return true;
 }
 
 /** Cost in gems of buying INTO the next level, given the current level. */

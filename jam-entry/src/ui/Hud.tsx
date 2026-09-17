@@ -40,6 +40,13 @@
  * Main Menu. The kit's plain "Paused" card is suppressed while it is open
  * so the two overlays never stack.
  *
+ * Round 10 Part 7 (docs/Ideas.md §6d, "Playtest of 1.81.0" item 4): the
+ * shift menu is rebuilt on the same "look A" card shell Settings.tsx uses
+ * (SettingsCard.tsx) — title "SHIFT PAUSED", the two sliders, credit line,
+ * no Name row (renaming mid-run isn't offered); Continue (filled green)
+ * above Main Menu (red-outline ghost), scrim tap = Continue. Main Menu's
+ * own behaviour (straight to the menu, no confirm) is unchanged.
+ *
  * Round A (Challenge-mode FTUE, GDD §10.11): an objective banner fires per
  * run (keyed on runId — Retry counts as a new run), and the lives chip is
  * labelled (Round 3: relabelled again, ESCAPES LEFT — see docs/LevelBlocks.md §11).
@@ -47,23 +54,18 @@
  * Round D: the FTUE is a persistent, walled script through wave 4
  * (onboarding-balance round: was wave 3, before a third forced placement
  * extended the script by one wave — store.ftueBeat drives the walls, see
- * actions.ts/towerScene.ts). Two cue kinds, never both at once (one voice):
- *   - The empty-pad pulse is a canvas cue, positioned via stage.ts's
- *     designToScreen() — the same contain-fit transform stage.ts and
- *     towerScene.ts use internally, read here but never written, and never
- *     re-derived by hand (round C, task 2).
- *   - Every forced-beat arrow (upgrade0, and — final round — placeFirst/
- *     place2/place3 too) is a DOM cue anchored to a live element inside
- *     StationRail.tsx by getBoundingClientRect() instead, and lives entirely
- *     there. Final round: the picker beats used to point a canvas arrow at
- *     the target pad here, redundant with the selected-pad ring (which
- *     already shows which pad) and pointing at the wrong place besides —
- *     the player still has to tap a card in the rail, not the pad again.
+ * actions.ts/towerScene.ts). Every forced-beat arrow (upgrade0, placeFirst,
+ * place2, place3) is a DOM cue anchored to a live element inside
+ * StationRail.tsx by getBoundingClientRect() instead, and lives entirely
+ * there.
  *
  * Round E: the picker-beat arrow's pad is store.ftueBeatPad, not a
- * hardcoded pad — see store.ts/towerScene.ts. The empty-pad pulse
- * (store.pulsePads) also stops being FTUE-exclusive: it fires after every
- * wave clear from wave 4 on (towerScene.ts's applyPostWavePulse).
+ * hardcoded pad — see store.ts/towerScene.ts. Round 10 Part 4: the orange
+ * empty-pad pulse that used to fire after every wave clear (and cover the
+ * FTUE's own place2/place3 delay) is removed entirely — towerScene.ts's
+ * per-pad green/red affordability cue (syncPadCues, Round 9 Part 3) is the
+ * one empty-pad signal now, everywhere, so this file no longer tracks or
+ * renders anything pulse-related.
  */
 import { useEffect, useState } from 'react';
 import { setMusicVolume, setSfxVolume, sfx, switchCue } from '../audio/audio.ts';
@@ -71,44 +73,16 @@ import { buyKitchenAction, getEngine, kitchenActionPrice, startWave } from '../g
 import { blockForLevel } from '../game/data/blocks.ts';
 import { CONFIG } from '../game/config.ts';
 import { unmuteDialogue } from '../game/dialogueController.ts';
-import { designToScreen } from '../game/stage.ts';
 import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import { ChefHeadIcon, ChefPortraitIdle } from './ChefPortrait.tsx';
 import DialogueBox from './DialogueBox.tsx';
 import PostBossPanel, { usePostBossPanel } from './PostBossPanel.tsx';
 import ServiceRing from './ServiceRing.tsx';
+import { Card, CardCredit, CardDivider, CardScrim, CardTitle } from './SettingsCard.tsx';
 import Slider from './Slider.tsx';
+import { useMenuUnit } from './useMenuUnit.ts';
 import { useWaveBubble, WaveBubbleSubmenu, WaveBubbleTrigger } from './WaveBubble.tsx';
-
-/** Live screen positions of a set of pads, tracking the canvas's own
- *  contain-fit + board-centering transform — stage.ts's designToScreen() is
- *  the one source of truth for this (round C, task 2: a hand-rolled second
- *  copy of this formula here caused a near-miss review). Used for the
- *  empty-pad pulse below; the FTUE arrow moved off canvas entirely (final
- *  round, task 1 — see the header comment) so this no longer also serves it. */
-function usePadsScreenPos(padIndices: number[]): Array<{ x: number; y: number }> {
-    const key = padIndices.join(',');
-    const [positions, setPositions] = useState<Array<{ x: number; y: number }>>([]);
-    useEffect(() => {
-        const frame = document.getElementById('app-frame');
-        if (!frame || padIndices.length === 0) { setPositions([]); return; }
-        const compute = () => {
-            const rect = frame.getBoundingClientRect();
-            setPositions(padIndices.map((i) => {
-                const pad = CONFIG.pads[i];
-                return designToScreen(pad.x, pad.y, rect.width, rect.height);
-            }));
-        };
-        compute();
-        const ro = new ResizeObserver(compute);
-        ro.observe(frame);
-        return () => ro.disconnect();
-        // padIndices is re-created every render; `key` is its stable identity.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [key]);
-    return positions;
-}
 
 /** Danger threshold for the lives chip's red pulse: ≤30% of starting lives
  *  is the conventional "danger zone" cutoff (enough runway left to react,
@@ -129,12 +103,12 @@ export default function Hud() {
     const selectedPad = useStore((s) => s.selectedPad);
     const runId = useStore((s) => s.runId);
     const ftueBeat = useStore((s) => s.ftueBeat);
-    const pulsePads = useStore((s) => s.pulsePads) ?? [];
     const ftueActive = useStore((s) => s.ftueActive);
     const backdropTransitioning = useStore((s) => s.backdropTransitioning);
     const ftueGrantAmount = useStore((s) => s.ftueGrantAmount);
     const ftueGrantNonce = useStore((s) => s.ftueGrantNonce);
     const dialogue = useStore((s) => s.dialogue);
+    const mu = useMenuUnit();
     const waveBubble = useWaveBubble();
     const bossPanel = usePostBossPanel();
     // Blocker round audit: the Kitchen Actions row below reads getEngine()
@@ -148,10 +122,6 @@ export default function Hud() {
     const [showObjective, setShowObjective] = useState(true);
     const [showMilestone, setShowMilestone] = useState(false);
     const [showGrant, setShowGrant] = useState(false);
-    // Final round, task 1: every forced-beat arrow (placeFirst/place2/
-    // place3 included) lives inside StationRail.tsx — see this file's
-    // header comment.
-    const pulsePositions = usePadsScreenPos(pulsePads);
 
     // Coin top-up toast (round D, task 3): re-show on every grant, even a
     // repeat amount — nonce, not the amount, is what keys the effect.
@@ -364,21 +334,21 @@ export default function Hud() {
                     shared `gap-2` is the only spacing rule, and it already
                     applies correctly whether 0, 1, or 2 of the rows above
                     grow. Objective and milestone are mutually exclusive
-                    (each guards on !showMilestone / the FTUE/pulse state so
-                    only one ever speaks at once — round 19's belt mistake
-                    was two cues teaching the same moment), so at most one of
+                    (each guards on !showMilestone / the FTUE state so only
+                    one ever speaks at once — round 19's belt mistake was
+                    two cues teaching the same moment), so at most one of
                     these two slots is ever occupied. Copy round: the
                     objective banner now reads the live `lives` count instead
                     of a fixed number, so it stays accurate even if it's
                     still on screen when the player takes an early hit. */}
-                {showObjective && ftueBeat === null && pulsePads.length === 0 && !showMilestone && (
+                {showObjective && ftueBeat === null && !showMilestone && (
                     <div className="pointer-events-auto flex justify-center" onClick={() => setShowObjective(false)}>
                         <p className="max-w-xs rounded-xl bg-black/70 px-4 py-2 text-center text-[1.05rem] font-semibold leading-snug">
                             Don't miss an order — you only have {lives} ❤️🏃 before you lose.
                         </p>
                     </div>
                 )}
-                {showMilestone && ftueBeat === null && pulsePads.length === 0 && (
+                {showMilestone && ftueBeat === null && (
                     <div className="pointer-events-auto flex justify-center" onClick={() => setShowMilestone(false)}>
                         <p className="max-w-xs rounded-xl bg-primary px-4 py-2 text-center text-[1.05rem] font-semibold leading-snug text-black">
                             Full shift held. Everything from here is overtime — how far can you push it?
@@ -507,71 +477,70 @@ export default function Hud() {
 
             <PostBossPanel state={bossPanel} />
 
-            {/* Empty-pad pulse: during the FTUE, a beat over every empty pad
-                right after wave 2 clears, before it resolves to the target
-                pad (towerScene.ts's applyFtueWaveEnd). Round E generalises
-                the same field/render to fire after EVERY wave clear once
-                the FTUE is done, persisting for the whole build phase
-                (towerScene.ts's applyPostWavePulse) — a continuous
-                animate-ping read as too noisy sustained that long, so this
-                uses the gentler animate-pulse (a slow opacity breathe)
-                instead; motion-safe: still applies either way. */}
-            {pulsePositions.map((pos, i) => (
-                <div
-                    key={pulsePads[i]}
-                    className="pointer-events-none absolute z-10 rounded-full bg-primary/60 motion-safe:animate-pulse"
-                    style={{ left: pos.x - 24, top: pos.y - 24, width: 48, height: 48 }}
-                />
-            ))}
-
             {/* Round 1 (docs/Ideas.md §1/§6d): mounted here per the
                 handover, at the top of Hud's own render order so its z-20
                 bottom bar draws above the Ready column it's mutually
                 exclusive with (both z-20; later in DOM order wins ties). */}
             <DialogueBox />
 
-            {/* Shift menu. Backdrop tap closes it. */}
+            {/* Shift menu — Round 10 Part 7: the "look A" card shell (same
+                one Settings.tsx uses), no Name row, scrim tap = Continue
+                (not Back — Continue IS this card's safe/default action). */}
             {menuOpen && (
-                <div
-                    className="pointer-events-auto absolute inset-0 z-20 flex flex-col items-center justify-center gap-10 bg-black/75 px-6 pt-safe-top pb-safe-bottom"
-                    onClick={closeMenu}
-                >
-                    <div className="flex flex-col items-center gap-8" onClick={(e) => e.stopPropagation()}>
-                        <h2 className="text-2xl font-bold text-primary">Shift paused</h2>
-                        <div className="flex flex-col gap-5">
-                            <Slider compact label="Music" value={musicVol} onChange={(v) => applyVolumes(v, sfxVol)} />
+                <CardScrim onTap={closeMenu} zIndex={20}>
+                    <Card mu={mu}>
+                        <CardTitle mu={mu}>Shift paused</CardTitle>
+                        <div className="flex flex-col" style={{ gap: 10 * mu }}>
+                            <Slider theme="cream" mu={mu} label="🎵 Music" value={musicVol} onChange={(v) => applyVolumes(v, sfxVol)} />
                             <Slider
-                                compact
-                                label="Sound"
+                                theme="cream"
+                                mu={mu}
+                                label="🔊 Sound"
                                 value={sfxVol}
                                 onChange={(v) => { applyVolumes(musicVol, v); sfx.click(); }}
                             />
                         </div>
-                        <button
-                            type="button"
-                            className="rounded-2xl bg-white/15 px-10 py-3 text-xl font-bold text-white transition-transform active:scale-95"
-                            onClick={closeMenu}
-                        >
-                            Back to shift
-                        </button>
-                    </div>
-
-                    <div className="absolute inset-x-0 bottom-0 flex justify-center px-6 pb-safe-bottom">
-                        <button
-                            type="button"
-                            className="mb-3 w-64 rounded-2xl bg-white/10 px-10 py-4 text-xl font-bold text-white/85 transition-transform active:scale-95"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                sfx.click();
-                                switchCue('menu');
-                                setMenuOpen(false);
-                                store.patch({ paused: false, phase: 'menu', selectedPad: null });
-                            }}
-                        >
-                            Main Menu
-                        </button>
-                    </div>
-                </div>
+                        <CardDivider />
+                        <CardCredit mu={mu} />
+                        <div className="flex flex-col items-stretch" style={{ gap: 7 * mu }}>
+                            <button
+                                type="button"
+                                className="font-bold shadow-lg transition-transform active:scale-95"
+                                style={{
+                                    padding: `${12 * mu}px ${6 * mu}px`,
+                                    fontSize: 12 * mu,
+                                    borderRadius: 10 * mu,
+                                    backgroundColor: '#22c55e',
+                                    color: 'var(--color-chocolate)',
+                                    border: `${2 * mu}px solid var(--color-chocolate)`,
+                                }}
+                                onClick={closeMenu}
+                            >
+                                Continue
+                            </button>
+                            <button
+                                type="button"
+                                className="font-bold transition-transform active:scale-95"
+                                style={{
+                                    padding: `${8 * mu}px ${6 * mu}px`,
+                                    fontSize: 10 * mu,
+                                    borderRadius: 10 * mu,
+                                    backgroundColor: 'var(--color-cream)',
+                                    color: '#ef4444',
+                                    border: `${2 * mu}px solid #ef4444`,
+                                }}
+                                onClick={() => {
+                                    sfx.click();
+                                    switchCue('menu');
+                                    setMenuOpen(false);
+                                    store.patch({ paused: false, phase: 'menu', selectedPad: null });
+                                }}
+                            >
+                                Main Menu
+                            </button>
+                        </div>
+                    </Card>
+                </CardScrim>
             )}
 
             {/* The kit's plain paused card, suppressed while the shift menu owns the screen */}

@@ -15,6 +15,24 @@
  * block.id. No beat is once-per-player any more (the amendment retired
  * dialogueSeen) — beats 1-4 ride ftueActive (already every run), 5-12 reset
  * with runId as before.
+ *
+ * Round 10 Part 2 (docs/Ideas.md §6d, "Playtest of 1.80.0" item 4): four
+ * more beats — 'recipe-widget', 'heat-gauge-intro', 'prop-placement' below,
+ * plus the EXISTING 'upgrade0' DOM cue (BuildSheet's own Upgrade-button
+ * arrow, not a beat in this table — Central's own item 4 confirmed the
+ * existing beat already teaches this, no new entry needed). Unlike beats
+ * 1-12 above, these three fire ONCE EVER PER SAVE, not once per run —
+ * dialogueController.ts's queueDialogueOnce (not the plain queueDialogue
+ * every other beat here uses) persists a seen-flag per id in state/save.ts,
+ * mirroring dialogueMuted's own persistence shape. Trigger sites: 'recipe-
+ * widget' from WaveBubble.tsx's useWaveBubble (first render where the
+ * bubble is populated for wave 1's build phase), 'heat-gauge-intro' from
+ * towerScene.ts's trackWaveClears (queued immediately before 'wave1-
+ * cleared' on e.cleared === 1, so it drains first), 'prop-placement' from
+ * DialogueBox.tsx's releasePlaceFirstIfOpeningClosed and actions.ts's
+ * scriptedRunStart (whichever moment the placeFirst picker cue actually
+ * becomes live — right after the opening beat closes, or immediately if
+ * the opening is off/muted).
  */
 export interface DialogueBeat {
     id: string;
@@ -31,10 +49,28 @@ export const DIALOGUE_BEATS: DialogueBeat[] = [
         lines: ["Some days the tin is empty. Today's one of them."],
     },
     {
+        id: 'prop-placement',
+        trigger: 'place-first-armed',
+        voice: 'A',
+        lines: ['Green ring means you can afford it. Tap one and pick a prop. Red means save up.'],
+    },
+    {
         id: 'stove-lit',
         trigger: 'place-first-resolved',
         voice: 'A',
         lines: ["But the stove still lights. That's enough to start."],
+    },
+    {
+        id: 'recipe-widget',
+        trigger: 'wave-bubble-first-shown',
+        voice: 'A',
+        lines: ['That scroll up top is the order. Every dish on it walks in this rush — count them off as you serve.'],
+    },
+    {
+        id: 'heat-gauge-intro',
+        trigger: 'rush-1-cleared-pre-upgrade',
+        voice: 'A',
+        lines: ['See the heat on the left? Every rush you survive turns it up a notch. When it hits the flame — the big one walks in. Be ready.'],
     },
     {
         id: 'wave1-cleared',

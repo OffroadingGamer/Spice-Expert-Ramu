@@ -15,6 +15,14 @@ import { sdkReady } from './runSdk.ts';
 /** The all-time period key from rundot/leaderboard.config.json. */
 const PERIOD = 'alltime';
 
+/** `SdkLeaderboardEntry`/`SdkSubmitScoreResult` aren't re-exported from the `/api`
+ *  entry point (only from a deeper, unstable chunk path) — derived here by
+ *  inference off the live API surface instead of importing an unexported
+ *  type name, so this stays correct if the SDK's own internal chunking
+ *  ever changes. */
+type SdkLeaderboardEntry = Awaited<ReturnType<typeof RundotGameAPI.leaderboard.getPodiumScores>>['context']['topEntries'][number];
+type SdkSubmitScoreResult = Awaited<ReturnType<typeof RundotGameAPI.leaderboard.submitScore>>;
+
 /** The two boards, as mode keys from rundot/leaderboard.config.json. */
 export type BoardMode = 'kills' | 'waves';
 
@@ -28,6 +36,34 @@ export const BOARD_LABELS: Record<BoardMode, string> = {
 /** True when the RUN host is present (boards can exist at all). */
 export function leaderboardsAvailable(): boolean {
     return sdkReady();
+}
+
+/**
+ * Round 10 Part 6: rundot/leaderboard.config.json's own antiCheat block sets
+ * `minTimeBetweenSubmissionsSec: 5` — this is that real, documented number,
+ * not a guess (the SDK's own `RateLimitedError` export gave no threshold on
+ * its own). Space every submitScore call (across BOTH this function and
+ * resubmitBestWithName below; one module-wide queue, not per-caller) at
+ * least this far apart rather than ever firing two back-to-back. Reserving
+ * `nextSlotAt` synchronously (before the only await) is what makes this
+ * safe against two calls landing in the same tick — see spacedSubmitScore
+ * below.
+ */
+const MIN_SUBMIT_SPACING_MS = 5000;
+let nextSubmitSlotAt = 0;
+
+async function spacedSubmitScore(params: Parameters<typeof RundotGameAPI.leaderboard.submitScore>[0]) {
+    const now = Date.now();
+    const slot = Math.max(now, nextSubmitSlotAt);
+    nextSubmitSlotAt = slot + MIN_SUBMIT_SPACING_MS;
+    const wait = slot - now;
+    if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
+    try {
+        return await RundotGameAPI.leaderboard.submitScore(params);
+    } catch (err) {
+        console.warn(`[leaderboard] ${params.mode ?? 'unknown'} submit failed`, err);
+        return null;
+    }
 }
 
 /**
@@ -48,16 +84,68 @@ export function submitRunScores(kills: number, wavesCleared: number, seconds: nu
     const metadata = guestDisplayName ? { displayName: guestDisplayName } : undefined;
     const submit = (mode: BoardMode, score: number) => {
         if (score <= 0) return;
-        try {
-            RundotGameAPI.leaderboard
-                .submitScore({ score, duration, mode, period: PERIOD, metadata })
-                .catch((err) => console.warn(`[leaderboard] ${mode} submit failed`, err));
-        } catch (err) {
-            console.warn(`[leaderboard] ${mode} submit failed`, err);
-        }
+        void spacedSubmitScore({ score, duration, mode, period: PERIOD, metadata });
     };
     submit('kills', Math.floor(kills));
     submit('waves', Math.floor(wavesCleared));
+}
+
+/** Round 10 Part 6: one board's rename-resubmit outcome, for the report's
+ *  before/after read. */
+export interface RenameResubmitResult {
+    mode: BoardMode;
+    /** The player's entry on this board before resubmitting, or null if
+     *  they have no ranked score on it yet (nothing to rename — skipped). */
+    before: SdkLeaderboardEntry | null;
+    /** The server's response to the resubmit, or null if it was skipped
+     *  (no `before`) or the call itself failed. */
+    after: SdkSubmitScoreResult | null;
+}
+
+/**
+ * Round 10 Part 6: on rename, re-submit the player's CURRENT BEST on both
+ * boards with the new `metadata.displayName` — never a new score (this must
+ * never move a player's rank; it only refreshes what name their existing
+ * rank shows under). "Current best" is read from the server itself
+ * (getPodiumScores' own playerEntry), not derived from local save data —
+ * the save only tracks bestWave, not best kills, and even bestWave is a
+ * per-run local mirror that could in principle drift from whatever the
+ * server actually accepted (keep-best, anti-cheat rejections, etc.) — the
+ * server's own idea of "your best" is the only source that can't be wrong
+ * about what's about to get relabelled. Resubmits the SAME score and
+ * duration the server already has, changing only metadata — whether the
+ * server refreshes metadata on an equal-score resubmit is undocumented,
+ * which is exactly what this round's own live test (see the report)
+ * checks. A board the player has no entry on yet is skipped outright
+ * (nothing to rename).
+ */
+export async function resubmitBestWithName(displayName: string): Promise<RenameResubmitResult[]> {
+    if (!sdkReady()) return [];
+    const results: RenameResubmitResult[] = [];
+    for (const mode of BOARD_MODES) {
+        let before: SdkLeaderboardEntry | null = null;
+        try {
+            const r = await RundotGameAPI.leaderboard.getPodiumScores({
+                mode, period: PERIOD, topCount: 0, contextAhead: 0, contextBehind: 0,
+            });
+            before = r.context.playerEntry ?? null;
+        } catch (err) {
+            console.warn(`[leaderboard] ${mode} rename read failed`, err);
+        }
+        if (!before || before.score <= 0) {
+            results.push({ mode, before: null, after: null });
+            continue;
+        }
+        const after = await spacedSubmitScore({
+            score: before.score,
+            duration: before.duration,
+            mode,
+            period: PERIOD,
+            metadata: { displayName },
+        });
+        results.push({ mode, before, after });
+    }
+    return results;
 }
 
 /** One row of the board view. */

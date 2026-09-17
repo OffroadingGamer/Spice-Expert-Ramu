@@ -19,7 +19,7 @@ import {
     type Ticker,
 } from 'pixi.js';
 import { CONFIG } from './config.ts';
-import { WAVES, waveAt } from './data/waves.ts';
+import { WAVES, isBossLevel, waveAt } from './data/waves.ts';
 import { enemyDef } from './data/enemies.ts';
 import { BLOCKS, blockForLevel, chefBodyAliasForBlock, type Block } from './data/blocks.ts';
 import { MANIFEST } from '../assets/manifest.ts';
@@ -27,7 +27,7 @@ import { createEngine, posAt, PATH_LENGTH, type EngineEvent } from './sim/engine
 import { registerEngine, syncStore, getTowersPlacedThisRun, grantFtueShortfall, retireFtue, FTUE_FIRST_PAD } from './actions.ts';
 import { TOWERS } from './data/towers.ts';
 import { dialogueForBlock } from './data/dialogue.ts';
-import { queueDialogue } from './dialogueController.ts';
+import { queueDialogue, queueDialogueOnce } from './dialogueController.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
 import {
     alphaContentBBox,
@@ -295,7 +295,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     const backdropLayer = new Container();
     const backdropSprites: Sprite[] = [];
     let currentBackdropAlias: string | null = null;
-    /** Cleared on scene destroy, same posture as ftuePulseTimer below — a
+    /** Cleared on scene destroy, same posture as ftueDelayTimer below — a
      *  stray callback must never patch backdropTransitioning into whatever
      *  run (or menu) comes next. */
     let backdropLockTimer: ReturnType<typeof setTimeout> | null = null;
@@ -533,8 +533,12 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
      * SEPARATE Graphics layer per pad (not folded into padViews' ghost
      * Sprite) so its colour can be redrawn independently of the dashed
      * ghost texture swap syncPads() already does. Cheapest cost is read
-     * from TOWERS (sealed, read-only) exactly like applyPostWavePulse
-     * above — one shared derivation, not a second literal.
+     * from TOWERS (sealed, read-only) — one shared derivation, not a
+     * second literal. Round 10 Part 4: this cue is now the ONLY empty-pad
+     * signal in the game — the orange pulse (which used to cover the FTUE's
+     * own place2/place3 delay and every post-wave-4 build phase) is gone;
+     * this cue was already live everywhere a pulse used to be, so nothing
+     * here needed to change to absorb that responsibility.
      */
     const cheapestTowerCost = Math.min(...TOWERS.map((def) => def.cost));
     const CUE_AFFORD_COLOR = 0x22c55e;
@@ -589,6 +593,234 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             const outerColor = CONFIG.pads[i].bonus ? CONFIG.colors.gold : innerColor;
             drawPadCueGlyph(g, outerColor, innerColor);
         }
+    }
+
+    /**
+     * Round 10 Part 1 (docs/Ideas.md §6d, "Playtest of 1.80.0" item 3): the
+     * heat gauge (boss meter) — a segmented tube in the board's left margin
+     * (path edge at x67, first pad at x205, per Ideas.md §9 item 3 — this
+     * sits entirely inside x 12-52, well clear of both). Colours are local
+     * consts, not CONFIG.colors entries, matching the pad cue's own posture
+     * right above (CUE_AFFORD_COLOR/CUE_DENY_COLOR) — these are menu-
+     * palette hexes (chocolate/cream), not part of the board's own tower/
+     * enemy palette CONFIG.colors curates.
+     */
+    const GAUGE_CHOCOLATE = 0x2a1d10;
+    const GAUGE_CREAM = 0xfdfae7;
+    const GAUGE_ORANGE = 0xf97316;
+    const GAUGE_RED = 0xef4444;
+
+    const GAUGE_TUBE_X = 12;
+    const GAUGE_TUBE_Y0 = 470;
+    const GAUGE_TUBE_Y1 = 1270;
+    const GAUGE_TUBE_W = 40; // x 12-52
+    const GAUGE_TUBE_RADIUS = 20;
+    const GAUGE_SEG_W = 28;
+    const GAUGE_SEG_H = 70;
+    const GAUGE_SEG_GAP = 10;
+    const GAUGE_SEG_COUNT = 10;
+    const GAUGE_SEG_X = GAUGE_TUBE_X + (GAUGE_TUBE_W - GAUGE_SEG_W) / 2;
+    // The ten segments (+ nine gaps) don't exactly fill the tube's own
+    // 800-unit span (790) — split the 10-unit remainder evenly top/bottom
+    // rather than pin the stack to one edge.
+    const GAUGE_SEG_MARGIN = ((GAUGE_TUBE_Y1 - GAUGE_TUBE_Y0) - (GAUGE_SEG_COUNT * GAUGE_SEG_H + (GAUGE_SEG_COUNT - 1) * GAUGE_SEG_GAP)) / 2;
+    const GAUGE_CAP_X = 32;
+    const GAUGE_CAP_Y = 440;
+    const GAUGE_CAP_R = 40;
+    const GAUGE_FILL_S = 0.2;
+    const GAUGE_DRAIN_S = 0.3;
+    const GAUGE_BREATH_S = 1.2;
+
+    /** Bottom edge (design y) of segment i, 0 = the bottom-most segment. */
+    function gaugeSegBottomY(i: number): number {
+        return GAUGE_TUBE_Y1 - GAUGE_SEG_MARGIN - i * (GAUGE_SEG_H + GAUGE_SEG_GAP);
+    }
+
+    function lerpColor(a: number, b: number, t: number): number {
+        const ar = (a >> 16) & 0xff;
+        const ag = (a >> 8) & 0xff;
+        const ab = a & 0xff;
+        const br = (b >> 16) & 0xff;
+        const bg = (b >> 8) & 0xff;
+        const bb = b & 0xff;
+        return (Math.round(ar + (br - ar) * t) << 16) | (Math.round(ag + (bg - ag) * t) << 8) | Math.round(ab + (bb - ab) * t);
+    }
+
+    const gaugeTube = new Graphics();
+    gaugeTube
+        .roundRect(GAUGE_TUBE_X, GAUGE_TUBE_Y0, GAUGE_TUBE_W, GAUGE_TUBE_Y1 - GAUGE_TUBE_Y0, GAUGE_TUBE_RADIUS)
+        .fill({ color: GAUGE_CREAM, alpha: 0.12 })
+        .stroke({ width: 4, color: GAUGE_CREAM, alpha: 0.35 });
+    board.addChild(gaugeTube);
+
+    const gaugeSegments: Graphics[] = [];
+    for (let i = 0; i < GAUGE_SEG_COUNT; i++) {
+        const g = new Graphics();
+        board.addChild(g);
+        gaugeSegments.push(g);
+    }
+
+    /** The cap's own circle backing — chocolate fill, orange stroke —
+     *  persists regardless of what's drawn inside it (the flame glyph or
+     *  the boss sprite): "the cap SHOWS the boss enemy's sprite" (spec) reads
+     *  as the cap's own CONTENT swapping, not the cap disappearing. Drawn
+     *  once; static. */
+    const gaugeCapBase = new Graphics();
+    gaugeCapBase.circle(GAUGE_CAP_X, GAUGE_CAP_Y, GAUGE_CAP_R).fill(GAUGE_CHOCOLATE).stroke({ width: 6, color: GAUGE_ORANGE });
+    board.addChild(gaugeCapBase);
+
+    /** The flame glyph — two overlapping teardrops (procedural, like every
+     *  other placeholder shape in this file; no new art was authorized this
+     *  round) — toggled off while the boss sprite is showing instead.
+     *  Drawn once; static, so it's not redrawn per frame like the
+     *  segments/boss cap are. */
+    const gaugeCapFlame = new Graphics();
+    {
+        const cx = GAUGE_CAP_X;
+        const cy = GAUGE_CAP_Y;
+        gaugeCapFlame
+            .moveTo(cx, cy + 20)
+            .bezierCurveTo(cx - 18, cy + 12, cx - 13, cy - 8, cx, cy - 22)
+            .bezierCurveTo(cx + 3, cy - 12, cx + 8, cy - 5, cx + 3, cy + 3)
+            .bezierCurveTo(cx + 11, cy - 2, cx + 15, cy + 10, cx, cy + 20)
+            .fill(GAUGE_ORANGE);
+        gaugeCapFlame
+            .moveTo(cx, cy + 13)
+            .bezierCurveTo(cx - 9, cy + 8, cx - 6, cy - 4, cx, cy - 12)
+            .bezierCurveTo(cx + 6, cy - 4, cx + 9, cy + 8, cx, cy + 13)
+            .fill(CONFIG.colors.arrow); // warm inner tongue, reusing the existing projectile-arrow hex
+    }
+    board.addChild(gaugeCapFlame);
+
+    /** While the boss is on the belt, the cap shows its sprite instead of
+     *  the flame — the block's own stag dish (data/blocks.ts), the same
+     *  archetype/dish pair block 1's own "teaching boss" already uses
+     *  (data/waves.ts). Shares tex.enemies' cache/key scheme with
+     *  enemyTextureFor above (same Map, same `${archetype}:${dish}` key),
+     *  so this never duplicates a texture stag has already spawned with
+     *  this run, and proactively warms the cache if it hasn't yet. */
+    function bossCapTexture(level: number): Texture {
+        const block = blockForLevel(level);
+        const dish = block.dishes.stag?.[0] ?? 'chai';
+        const key = `stag:${dish}`;
+        let t = tex.enemies.get(key);
+        if (!t) {
+            t = makeEnemyTexture(app.renderer, 'stag', dish);
+            tex.enemies.set(key, t);
+        }
+        return t;
+    }
+
+    const gaugeCapBoss = new Sprite();
+    gaugeCapBoss.anchor.set(0.5);
+    gaugeCapBoss.position.set(GAUGE_CAP_X, GAUGE_CAP_Y);
+    gaugeCapBoss.visible = false;
+    board.addChild(gaugeCapBoss);
+
+    // Label font size chosen against stage.ts's real design->screen factor
+    // (getFit(): ~0.385 at 403 wide, BOARD_SCALE included) so the ≥11px
+    // floor clears with margin rather than landing right on it — 32 design
+    // units -> ~12.3px at 403 wide (measured, not assumed; see this round's
+    // own report).
+    const gaugeLabel = new Text({ text: '0/10', style: new TextStyle({ fontSize: 32, fontWeight: 'bold', fill: GAUGE_CREAM }) });
+    gaugeLabel.anchor.set(0.5, 0);
+    gaugeLabel.alpha = 0.7;
+    gaugeLabel.position.set(GAUGE_CAP_X, GAUGE_TUBE_Y1 + 26);
+    board.addChild(gaugeLabel);
+
+    /** 0-10, the settled target the display animates toward — (level-1)%10
+     *  normally, forced to 10 while the boss is on the belt or during
+     *  Overtime (both render as a fully-full tube, per spec). */
+    let gaugeTargetFilled = 0;
+    /** 0-10, the animated float actually drawn — segment i's own fill
+     *  fraction is clamp(gaugeDisplayLevel - i, 0, 1), so ONE continuous
+     *  value drives both the 200ms fill-in (target rises by 1) and the
+     *  300ms drain (target snaps to 0 at a block boundary) — a rising
+     *  target reads as the newest segment growing in from its own slot's
+     *  bottom edge; a falling target reads as the whole column's fill
+     *  level dropping, which is what "drain" means for a liquid-style
+     *  gauge like this one. */
+    let gaugeDisplayLevel = 0;
+    let gaugeAnimFrom = 0;
+    let gaugeAnimT = Infinity; // >= gaugeAnimDuration = settled, no tween running
+    let gaugeAnimDuration = GAUGE_FILL_S;
+
+    function syncHeatGauge(dt: number): void {
+        const level = engine.state.waveIndex + 1;
+        const phase = engine.state.phase;
+        // Overtime (block 9, levels 81+) overrides everything below: always
+        // full, flame only, never the boss sprite, never breathing — per
+        // spec, not merely "whatever the boss-on-belt branch would compute
+        // at these levels" (isBossLevel keeps firing every 10th Overtime
+        // level too; Overtime's own override takes priority over it).
+        const inOvertime = blockForLevel(level).id === 9;
+        const bossOnBelt = !inOvertime && isBossLevel(level) && phase === 'wave';
+        const rushesCleared = (level - 1) % 10;
+        const target = inOvertime || bossOnBelt ? GAUGE_SEG_COUNT : rushesCleared;
+
+        if (target !== gaugeTargetFilled) {
+            gaugeAnimFrom = gaugeDisplayLevel;
+            gaugeAnimDuration = target > gaugeTargetFilled ? GAUGE_FILL_S : GAUGE_DRAIN_S;
+            gaugeAnimT = 0;
+            gaugeTargetFilled = target;
+        }
+        if (gaugeAnimT < gaugeAnimDuration) {
+            gaugeAnimT += dt;
+            const u = Math.min(1, gaugeAnimT / gaugeAnimDuration);
+            const eased = 1 - Math.pow(1 - u, 3); // ease-out cubic, matching this file's other hand-rolled eases
+            gaugeDisplayLevel = gaugeAnimFrom + (gaugeTargetFilled - gaugeAnimFrom) * eased;
+            if (u >= 1) gaugeDisplayLevel = gaugeTargetFilled;
+        } else {
+            gaugeDisplayLevel = gaugeTargetFilled;
+        }
+        // Overtime forces the settled, fully-full state outright rather
+        // than animating into it — a level 80->81 boundary would otherwise
+        // start a 300ms drain this override immediately overrides anyway;
+        // "tube stays full" reads as literally never anything but full
+        // once Overtime begins, not "drains once, then snaps full."
+        if (inOvertime) {
+            gaugeDisplayLevel = GAUGE_SEG_COUNT;
+            gaugeAnimT = Infinity;
+        }
+
+        for (let i = 0; i < GAUGE_SEG_COUNT; i++) {
+            const g = gaugeSegments[i];
+            g.clear();
+            const bottomY = gaugeSegBottomY(i);
+            g.roundRect(GAUGE_SEG_X, bottomY - GAUGE_SEG_H, GAUGE_SEG_W, GAUGE_SEG_H, 4).fill({ color: GAUGE_CREAM, alpha: 0.08 });
+            const fraction = Math.max(0, Math.min(1, gaugeDisplayLevel - i));
+            if (fraction > 0) {
+                const fillH = GAUGE_SEG_H * fraction;
+                const color = lerpColor(GAUGE_ORANGE, GAUGE_RED, i / (GAUGE_SEG_COUNT - 1));
+                let alpha = 1;
+                // Segment 9 (1-based; index 8 here) breathes once it's
+                // SETTLED at target 9 — i.e. from the moment its own fill-in
+                // finishes until the boss level's own wave phase starts
+                // (bossOnBelt/inOvertime never reach target 9, so this can't
+                // overlap either of those branches).
+                if (i === 8 && gaugeTargetFilled === 9 && gaugeAnimT >= gaugeAnimDuration) {
+                    alpha = 0.85 + 0.15 * Math.sin((fxClock / GAUGE_BREATH_S) * Math.PI * 2);
+                }
+                g.roundRect(GAUGE_SEG_X, bottomY - fillH, GAUGE_SEG_W, fillH, 4).fill({ color, alpha });
+            }
+        }
+
+        gaugeCapBoss.visible = bossOnBelt;
+        gaugeCapFlame.visible = !bossOnBelt;
+        if (bossOnBelt) {
+            gaugeCapBoss.texture = bossCapTexture(level);
+            // Round 10 report fix: 1.7x (68 units) rendered SMALLER than
+            // the flame's own 80-unit-diameter circle, reading as an
+            // undersized, barely-visible blob against the cap's backing —
+            // 2.15x fills/slightly exceeds the circle, matching the
+            // flame's own visual weight (measured via a cropped screenshot,
+            // not guessed).
+            const size = GAUGE_CAP_R * 2.15;
+            gaugeCapBoss.width = size;
+            gaugeCapBoss.height = size;
+        }
+
+        gaugeLabel.text = `${inOvertime || bossOnBelt ? GAUGE_SEG_COUNT : rushesCleared}/10`;
     }
 
     // selection highlight + range preview for the selected pad
@@ -819,10 +1051,12 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         store.patch({ waveDishServed: { ...waveDishServed } });
     }
 
-    /** Pending target-pad auto-select after the post-wave-2 pulse (round D
-     *  task 1/2) — cleared on scene destroy so a mid-pulse quit can't fire a
-     *  store.patch into whatever screen comes next. */
-    let ftuePulseTimer: ReturnType<typeof setTimeout> | null = null;
+    /** Pending target-pad auto-select delay after wave 2/3 clears (round D
+     *  task 1/2; round 10 Part 4 dropped the pulse that used to fill this
+     *  window — the delay and the auto-select it resolves to are
+     *  unchanged) — cleared on scene destroy so a quit mid-delay can't fire
+     *  a store.patch into whatever screen comes next. */
+    let ftueDelayTimer: ReturnType<typeof setTimeout> | null = null;
 
     /**
      * GDD §10.11's scripted FTUE (round D: persistent — every run, not just
@@ -839,10 +1073,13 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
      * DialogueBox.tsx once the player closes the 'wave1-cleared' box, so
      * that box gets the screen to itself first (see this round's own
      * report). This function no longer has a cleared === 1 branch as a
-     * result. Wave 2 end pulses every empty pad, then auto-selects one of
-     * them (preferring B2) with the picker cued (Hud.tsx); wave 3 end
-     * repeats that same pulse-and-select pattern (preferring B1) for a
-     * third placement. Wave 4 STARTING (not clearing — see actions.ts's
+     * result. Wave 2 end used to pulse every empty pad before auto-
+     * selecting one (preferring B2) with the picker cued — round 10 Part 4
+     * drops the pulse (the pad's own green/red affordability cue,
+     * syncPadCues below, is the signal now, in the FTUE too), keeping the
+     * same short delay and the same auto-select; wave 3 end repeats that
+     * same delay-and-select pattern (preferring B1) for a third placement.
+     * Wave 4 STARTING (not clearing — see actions.ts's
      * startWave) retires the script for good. A run that never reaches wave
      * 4 (e.g. lost on wave 1-3) leaves `ftueActive` true, so Retry restarts
      * the whole script from beat 1 (EndScreen.tsx).
@@ -889,12 +1126,15 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             // player affords is guaranteed placeable at the target pad.
             grantFtueShortfall(Math.min(...TOWERS.map((def) => def.cost)));
             // Ready/Close/Sell wall from the moment wave 2 clears (before
-            // the target pad is even selected) through the pulse, not just
-            // after.
-            store.patch({ selectedPad: null, ftueBeat: 'place2', ftueBeatPad: target, pulsePads: emptyPads });
-            ftuePulseTimer = setTimeout(() => {
-                ftuePulseTimer = null;
-                store.patch({ selectedPad: target, pulsePads: null });
+            // the target pad is even selected) through the delay below.
+            // Round 10 Part 4: the pulse that used to cover this delay is
+            // gone (the pad's own green/red cue is the signal now) — the
+            // timer and the auto-select survive unchanged, only the
+            // pulsePads patches are dropped.
+            store.patch({ selectedPad: null, ftueBeat: 'place2', ftueBeatPad: target });
+            ftueDelayTimer = setTimeout(() => {
+                ftueDelayTimer = null;
+                store.patch({ selectedPad: target });
             }, 900);
         } else if (cleared === 3) {
             // Onboarding-balance round: the third forced placement — same
@@ -915,32 +1155,12 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 return;
             }
             grantFtueShortfall(Math.min(...TOWERS.map((def) => def.cost)));
-            store.patch({ selectedPad: null, ftueBeat: 'place3', ftueBeatPad: target, pulsePads: emptyPads });
-            ftuePulseTimer = setTimeout(() => {
-                ftuePulseTimer = null;
-                store.patch({ selectedPad: target, pulsePads: null });
+            store.patch({ selectedPad: null, ftueBeat: 'place3', ftueBeatPad: target });
+            ftueDelayTimer = setTimeout(() => {
+                ftueDelayTimer = null;
+                store.patch({ selectedPad: target });
             }, 900);
         }
-    }
-
-    /**
-     * Round E task 2: pulse every empty pad after every wave clear once the
-     * FTUE is done owning the screen — persists through the whole build
-     * phase (actions.ts's startWave() clears it when the next wave
-     * starts; placeTower() drops a pad from it the instant that pad
-     * fills). Never fires while the FTUE is active (it owns its own cue
-     * via applyFtueWaveEnd above — one voice, round 19) or when the player
-     * can't even afford the cheapest tower (a pulse inviting an action
-     * nobody can take is worse than none).
-     */
-    function applyPostWavePulse(): void {
-        const cheapest = Math.min(...TOWERS.map((def) => def.cost));
-        if (store.get().coins < cheapest) return;
-        const emptyPads = CONFIG.pads
-            .map((_, i) => i)
-            .filter((i) => !engine.state.towers.some((tw) => tw.padIndex === i));
-        if (emptyPads.length === 0) return;
-        store.patch({ pulsePads: emptyPads });
     }
 
     function trackWaveClears(evts: EngineEvent[]): void {
@@ -953,6 +1173,11 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             });
             if (e.cleared === 1) {
                 trackFunnelStep(5, 'wave_1_cleared', 'run', 2);
+                // Round 10 Part 2: the heat-gauge FTUE beat, queued BEFORE
+                // wave1-cleared so it drains first if both apply — once-
+                // ever per save (queueDialogueOnce), unlike wave1-cleared's
+                // own every-run queueDialogue call right below.
+                queueDialogueOnce('heat-gauge-intro');
                 // Round 2b (docs/Ideas.md §6d amendment): every run now
                 // (dialogueSeen is gone) — stays open through the upgrade0
                 // purchase that applyFtueWaveEnd(1) arms right below;
@@ -981,8 +1206,6 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 // acceptance numbers.
                 engine.state.lives = CONFIG.economy.startLives;
                 applyFtueWaveEnd(e.cleared);
-            } else {
-                applyPostWavePulse();
             }
         }
     }
@@ -2013,6 +2236,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         syncUpgradePreview();
         syncPads();
         syncPadCues();
+        syncHeatGauge(dt);
         drawBeams(dt);
         drawSelection();
         checkEnd();
@@ -2025,7 +2249,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 ended = true;
                 trackRunEnd('quit');
             }
-            if (ftuePulseTimer) { clearTimeout(ftuePulseTimer); ftuePulseTimer = null; }
+            if (ftueDelayTimer) { clearTimeout(ftueDelayTimer); ftueDelayTimer = null; }
             if (backdropLockTimer) { clearTimeout(backdropLockTimer); backdropLockTimer = null; }
             store.patch({ backdropTransitioning: false }); // never leave Ready latched locked past this scene
             resetMusicDuck(); // same guarantee, for the music: never leave it latched ducked past this scene

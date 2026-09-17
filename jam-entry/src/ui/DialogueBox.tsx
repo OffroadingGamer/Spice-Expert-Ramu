@@ -87,7 +87,7 @@
  * imports actions.ts, and dialogueController.ts must not import back into
  * it — see that file's own doc comment.
  */
-import { advanceDialogue, muteDialogue, skipDialogue } from '../game/dialogueController.ts';
+import { advanceDialogue, muteDialogue, queueDialogueOnce, skipDialogue } from '../game/dialogueController.ts';
 import { FTUE_FIRST_PAD, openUpgrade0Beat, startWave } from '../game/actions.ts';
 import { BLOCKS } from '../game/data/blocks.ts';
 import { sfx } from '../audio/audio.ts';
@@ -118,11 +118,21 @@ const HEADER_BOX_MIN_PX = Math.round(184 * 1.15);
 /** After closing the opening beat specifically, release the placeFirst
  *  picker cue — a no-op for every other beat, and a no-op if the player
  *  somehow left placeFirst already (nothing else can this early in a run,
- *  but this stays a plain state check rather than an assumption). */
+ *  but this stays a plain state check rather than an assumption).
+ *  Round 10 Part 2: this is also the moment the placeFirst picker cue
+ *  actually becomes visible, so the 'prop-placement' once-ever beat queues
+ *  right here. This function only ever runs when the opening beat WAS
+ *  shown (closedId can only be 'opening' if that beat actually opened),
+ *  which itself requires narrative on and not muted — the exact same two
+ *  conditions queueDialogueOnce/queueDialogue re-check internally, so there
+ *  is no separate "opening was skipped/off" trigger site to also cover:
+ *  whenever the opening never shows, no beat in this whole system shows
+ *  either, prop-placement included, consistent with every other beat here. */
 function releasePlaceFirstIfOpeningClosed(closedId: string): void {
     const s = store.get();
     if (closedId === 'opening' && s.ftueActive && s.ftueBeat === 'placeFirst') {
         store.patch({ selectedPad: FTUE_FIRST_PAD });
+        queueDialogueOnce('prop-placement');
     }
 }
 

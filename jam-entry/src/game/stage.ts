@@ -117,8 +117,8 @@ export interface Stage {
  * Final polish round, task 1: shrink the whole board render by this factor
  * after playtesting found it reading too large. Folded into getFit() itself
  * (below) rather than a second scale on towerScene.ts's boardRoot — Hud.tsx's
- * FTUE cues (the picker-beat arrow, the empty-pad pulse) are DOM, positioned
- * via designToScreen(), and never see a Pixi-container-only scale; a factor
+ * FTUE cue (the picker-beat arrow) is DOM, positioned via designToScreen(),
+ * and never sees a Pixi-container-only scale; a factor
  * applied only inside towerScene.ts would desync the two silently (the cues
  * would keep pointing at the OLD, unscaled pad positions). Deriving scale,
  * offsetX, designHeight and boardY all from the same reduced number, in one

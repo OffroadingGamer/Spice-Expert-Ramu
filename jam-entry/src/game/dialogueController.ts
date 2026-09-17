@@ -26,7 +26,7 @@
  */
 import { store } from '../state/store.ts';
 import { track } from '../sdk/analytics.ts';
-import { getSave, setDialogueMuted } from '../state/save.ts';
+import { getSave, hasSeenBeatOnce, markBeatSeenOnce, setDialogueMuted } from '../state/save.ts';
 import { CONFIG } from './config.ts';
 import { dialogueById, type DialogueBeat } from './data/dialogue.ts';
 
@@ -104,6 +104,24 @@ export function queueDialogue(id: string): void {
         return;
     }
     openBeat(beat);
+}
+
+/**
+ * Round 10 Part 2 (docs/Ideas.md §6d, "Playtest of 1.80.0" item 4): for the
+ * three new FTUE beats that must never fire twice per save (unlike every
+ * beat above, which resets every run). The persisted check happens BEFORE
+ * queueDialogue's own enabled/muted guard so a beat that would have been
+ * suppressed this run (flag off, or muted) does NOT burn its once-ever slot
+ * — it stays eligible to actually show on some later run where neither
+ * condition holds. The seen-flag is written only once queueDialogue's own
+ * guard confirms the beat WILL actually be shown (immediately or after the
+ * current queue drains) — never on a call that silently no-ops.
+ */
+export function queueDialogueOnce(id: string): void {
+    if (hasSeenBeatOnce(id)) return;
+    if (!CONFIG.narrative.enabled || dialogueMuted) return;
+    markBeatSeenOnce(id);
+    queueDialogue(id);
 }
 
 /** Advance the open beat by one line, or close it on the last line. Reset on

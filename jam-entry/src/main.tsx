@@ -83,7 +83,28 @@ async function boot() {
     //    scripted-run payload MainMenu.tsx's Challenge Mode button and
     //    EndScreen.tsx's Retry use (actions.ts's scriptedRunStart) — this is
     //    a fresh mount into 'playing', same as MainMenu's case.
-    store.patch({ phase: 'playing', ...scriptedRunStart() });
+    //    Round 10 Part 3 (docs/Ideas.md §6d, "Playtest of 1.81.0" item 1):
+    //    the guest name dialog moves HERE from MainMenu's Start shift tap —
+    //    Round 9's own report flagged that a brand-new session never visits
+    //    the menu before this point, so gating the dialog only on Start
+    //    shift left it unreachable on a true first-ever session. `identity`/
+    //    `save.playerName` were already read above (step 2); a guest with no
+    //    saved name gets `bootNameDialogOpen: true` and `paused: true` in
+    //    the SAME patch that arms the scripted run — App.tsx mounts
+    //    NameDialog.tsx off that flag and un-pauses on Skip/That's me, so
+    //    the run is genuinely frozen (GameCanvas.tsx stops its own ticker
+    //    off `paused`, whether or not the canvas has finished mounting yet)
+    //    until the player resolves it, and only then does the opening beat
+    //    (already armed by scriptedRunStart below) become visible. MainMenu's
+    //    own Start-shift guard is untouched — a guest who somehow still has
+    //    no name after this gets asked there too.
+    const needsBootNameDialog = identity.isGuest && save.playerName === null;
+    store.patch({
+        phase: 'playing',
+        ...scriptedRunStart(),
+        bootNameDialogOpen: needsBootNameDialog,
+        paused: needsBootNameDialog,
+    });
 
     // 7. Host lifecycle hooks. Register AFTER boot so handlers never race
     //    half-initialized state.

@@ -118,3 +118,65 @@ body {
 @utility pb-safe-bottom {
     padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
 }
+
+/* ---------------------------------------------------------------------------
+   Round 10 Part 5 (docs/Ideas.md §6d, "Playtest of 1.81.0" item 2, "Settings
+   look A · Order ticket"): the cream-card native range-input skin. Track/knob
+   sizing rides CSS custom properties set inline per element (Slider.tsx),
+   scaled by the card's own mu unit — nothing here is a fixed px. Duplicated
+   webkit/moz blocks are required (no shared shorthand exists across engines
+   for range-input pseudo-elements); ::-moz-range-progress gives Firefox a
+   real orange fill track natively, while WebKit/Blink (no -webkit-slider-fill
+   equivalent) fake the same fill with a gradient on the track background,
+   split at --slider-pct (recomputed by React on every value change).
+--------------------------------------------------------------------------- */
+.slider-cream {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    background: transparent;
+    padding-block: var(--slider-pad, 0px);
+    margin: 0;
+    display: block;
+}
+.slider-cream::-webkit-slider-runnable-track {
+    height: var(--slider-track-h);
+    border-radius: calc(var(--slider-track-h) / 2);
+    background: linear-gradient(
+        to right,
+        #f97316 0%,
+        #f97316 var(--slider-pct),
+        rgba(42, 29, 16, 0.15) var(--slider-pct),
+        rgba(42, 29, 16, 0.15) 100%
+    );
+}
+.slider-cream::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: var(--slider-knob);
+    height: var(--slider-knob);
+    border-radius: 50%;
+    background: var(--color-cream);
+    border: var(--slider-knob-stroke) solid var(--color-chocolate);
+    margin-top: calc((var(--slider-track-h) - var(--slider-knob)) / 2);
+    cursor: pointer;
+}
+.slider-cream::-moz-range-track {
+    height: var(--slider-track-h);
+    border-radius: calc(var(--slider-track-h) / 2);
+    background: rgba(42, 29, 16, 0.15);
+}
+.slider-cream::-moz-range-progress {
+    height: var(--slider-track-h);
+    border-radius: calc(var(--slider-track-h) / 2);
+    background: #f97316;
+}
+.slider-cream::-moz-range-thumb {
+    width: var(--slider-knob);
+    height: var(--slider-knob);
+    border-radius: 50%;
+    background: var(--color-cream);
+    border: var(--slider-knob-stroke) solid var(--color-chocolate);
+    cursor: pointer;
+    box-sizing: border-box;
+}

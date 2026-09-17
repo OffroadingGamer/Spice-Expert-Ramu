@@ -17,6 +17,9 @@ import Leaderboard from './Leaderboard.tsx';
 import Settings from './Settings.tsx';
 import GameCanvas from '../game/GameCanvas.tsx';
 import TestBelt from './TestBelt.tsx';
+import NameDialog from './NameDialog.tsx';
+import RenameDialog from './RenameDialog.tsx';
+import { store } from '../state/store.ts';
 
 export default function App() {
     const phase = useStore((s) => s.phase);
@@ -24,6 +27,8 @@ export default function App() {
     const metaOpen = useStore((s) => s.metaOpen);
     const ranksOpen = useStore((s) => s.ranksOpen);
     const settingsOpen = useStore((s) => s.settingsOpen);
+    const bootNameDialogOpen = useStore((s) => s.bootNameDialogOpen);
+    const renameOpen = useStore((s) => s.renameOpen);
     return (
         <div id="app-frame" className="bg-surface text-white">
             {phase === 'loading' && <LoadingScreen />}
@@ -42,6 +47,23 @@ export default function App() {
             {metaOpen && <MetaUpgrades />}
             {ranksOpen && <Leaderboard />}
             {settingsOpen && <Settings />}
+            {/* Round 10 Part 3: the guest name dialog now opens at the START
+                of the scripted run (main.tsx step 6 sets both this flag and
+                paused:true in the same patch) rather than being gated on
+                MainMenu's Start shift tap — mounted here, not inside the
+                'playing' block, so it renders regardless of which phase the
+                flag happened to be set during. onDone only clears the flag
+                and unpauses; the opening dialogue beat was already armed in
+                the SAME boot patch that set this flag (actions.ts's
+                scriptedRunStart), so it's simply the next thing the
+                (now-unpaused) run reveals. */}
+            {bootNameDialogOpen && (
+                <NameDialog onDone={() => store.patch({ bootNameDialogOpen: false, paused: false })} />
+            )}
+            {/* Round 10 Part 6: opened from the menu's greeting bubble or
+                Settings' Name row (guests only) — an overlay, same posture
+                as Settings/MetaUpgrades/Leaderboard above. */}
+            {renameOpen && <RenameDialog />}
         </div>
     );
 }

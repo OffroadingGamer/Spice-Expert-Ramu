@@ -90,14 +90,6 @@ export interface AppState {
      *  occupied or the board was full. Stale/unused whenever ftueBeat is
      *  'placeFirst', 'upgrade0', or null. */
     ftueBeatPad: number;
-    /** Empty pad indices currently mid-pulse — round E generalises this
-     *  from the FTUE's own post-wave-2/post-wave-3 transitions (still used
-     *  there, just before each beat's target/its fallback auto-selects) to
-     *  firing after EVERY wave clear once the FTUE is done (persists
-     *  through the whole build phase; actions.ts's startWave() clears it
-     *  when the next wave starts, and placeTower() drops a pad from it the
-     *  instant that pad fills). null when nothing is pulsing. */
-    pulsePads: number[] | null;
     /** Last FTUE coin top-up (round D, task 3): the exact shortfall granted
      *  so a forced beat's requirement was affordable, shown briefly as a
      *  toast. ftueGrantNonce bumps on every grant (amounts can repeat
@@ -200,6 +192,25 @@ export interface AppState {
      *  null until the name dialog has resolved once. Always null for a RUN
      *  account (its `runUsername` is used instead, never this field). */
     playerName: string | null;
+    /** Round 10 Part 3 (docs/Ideas.md §6d, "Playtest of 1.80.0" item 6):
+     *  the guest name dialog, moved off the menu's Start shift tap and onto
+     *  the scripted run's own boot (main.tsx step 6) — a first-ever session
+     *  never sees the menu, so gating it there alone left it unreachable on
+     *  that session (Round 9's own report flagged this). Set true by
+     *  main.tsx when a fresh 'playing' boot finds a guest with no saved
+     *  name; NameDialog.tsx (mounted unconditionally by App.tsx, same
+     *  posture as Settings/MetaUpgrades/Leaderboard) clears it on Skip/
+     *  That's me. MainMenu's own Start shift guard is unchanged — a guest
+     *  who somehow still has no name after this (e.g. the dialog is
+     *  dismissed without resolving, not currently possible but defensive)
+     *  still gets asked there. */
+    bootNameDialogOpen: boolean;
+    /** Round 10 Part 6: the rename dialog (Settings-card styled, "Your
+     *  name") — opened by tapping the menu's greeting bubble or Settings'
+     *  Name row, guests only, never during a run (both call sites already
+     *  only exist on the menu). Mirrors settingsOpen/ranksOpen's own
+     *  "overlay, not a phase" posture. */
+    renameOpen: boolean;
 }
 
 const INITIAL: AppState = {
@@ -235,7 +246,6 @@ const INITIAL: AppState = {
     ftueActive: false,
     ftueBeat: null,
     ftueBeatPad: 3, // Round I Task 7: old pad 2 is now B2, index 3 (config.ts)
-    pulsePads: null,
     ftueGrantAmount: 0,
     ftueGrantNonce: 0,
     towerIcons: {},
@@ -253,6 +263,8 @@ const INITIAL: AppState = {
     isGuest: true,
     runUsername: null,
     playerName: null,
+    bootNameDialogOpen: false,
+    renameOpen: false,
 };
 
 /**

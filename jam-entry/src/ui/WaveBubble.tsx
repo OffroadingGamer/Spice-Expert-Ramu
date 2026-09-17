@@ -69,6 +69,7 @@ import { CONFIG } from '../game/config.ts';
 import { blockForLevel } from '../game/data/blocks.ts';
 import { enemyDef } from '../game/data/enemies.ts';
 import { waveAt, type WaveEntry } from '../game/data/waves.ts';
+import { queueDialogueOnce } from '../game/dialogueController.ts';
 import { useStore } from '../state/store.ts';
 
 // Reuses the manifest's own alias->src entries (ChefPortrait.tsx/
@@ -249,6 +250,21 @@ export function useWaveBubble(): WaveBubbleState {
             remaining,
         });
     }
+
+    // Round 10 Part 2 (docs/Ideas.md §6d, "Playtest of 1.80.0" item 4): the
+    // "recipe widget" FTUE beat — the first time this bubble is actually
+    // populated during wave 1's build phase. queueDialogueOnce persists its
+    // own once-ever-per-save flag (state/save.ts), so re-mounting this hook
+    // on a later run (wave/tdPhase legitimately return to these same values
+    // on every Retry, which wouldn't otherwise re-trigger a dep-keyed effect
+    // anyway) can never fire it twice — the effect below is deliberately
+    // "call it every time the condition is true" rather than "only on the
+    // very first render", with queueDialogueOnce itself as the sole gate.
+    useEffect(() => {
+        if (wave === 1 && tdPhase === 'build' && triggerDishes.length > 0) {
+            queueDialogueOnce('recipe-widget');
+        }
+    }, [wave, tdPhase, triggerDishes.length]);
 
     // Dialogue wins: waiting (not permanently dismissed) behind an open box
     // — "the bubble waits until the box closes." Round 6: the trigger no

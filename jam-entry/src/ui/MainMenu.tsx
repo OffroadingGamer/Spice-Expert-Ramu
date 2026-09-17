@@ -18,14 +18,20 @@
  *
  * Round 9 Part 4 (docs/Ideas.md §6d, "Playtest of 1.80.0" items 2/6): a
  * greeting speech bubble over Ramu's portrait ("Welcome, {name}") and the
- * guest name-entry dialog, gated on the Start shift tap — see NameDialog.tsx
- * and this round's own report for a discovered wrinkle: main.tsx's boot
- * step 6 starts the very first-ever session straight into 'playing'
- * (scriptedRunStart) WITHOUT ever routing through this menu's Start shift
- * button, so a brand-new guest's first run has no name yet (greeting reads
- * "Welcome, chef" by default) — the dialog first fires on their first
- * RETURN to this menu, not their first run. Flagged, not silently patched
- * around (main.tsx's boot sequencing is out of this round's scope).
+ * guest name-entry dialog. Round 9 gated the dialog on the Start shift tap
+ * and flagged a wrinkle: main.tsx's boot step 6 starts a brand-new session
+ * straight into 'playing' without ever routing through this button, so a
+ * first-ever guest saw no dialog on their actual first run. Round 10 Part 3
+ * fixes this at the source — the dialog now opens at the START of the
+ * scripted run itself (main.tsx step 6, App.tsx mounts it off
+ * store.bootNameDialogOpen) — so `handleStartShift`'s own guard below is now
+ * a rare fallback (a guest who somehow still has no name by the time they
+ * reach the menu) rather than the primary trigger.
+ *
+ * Round 10 Part 6: the greeting bubble is now also a BUTTON — tapping it
+ * (guests) opens the rename card (RenameDialog.tsx, via store.renameOpen);
+ * for a RUN account it shows a brief toast instead ("Your name comes from
+ * your RUN profile.") since the game never overrides a RUN username.
  */
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { MANIFEST } from '../assets/manifest.ts';
@@ -128,6 +134,10 @@ export default function MainMenu() {
     // round's own report for the discovered wrinkle (main.tsx's boot-time
     // auto-start bypasses this button entirely on a brand-new session).
     const [showNameDialog, setShowNameDialog] = useState(false);
+    // Round 10 Part 6: the RUN-account toast on a bubble tap — local,
+    // ephemeral, same shape as Hud.tsx's own ftueGrant toast (a plain
+    // useState timeout, not a shared toast system this codebase doesn't have).
+    const [showRunNameToast, setShowRunNameToast] = useState(false);
     const greetingName = isGuest ? (playerName ?? 'chef') : (runUsername ?? 'chef');
 
     const beginShift = () => {
@@ -143,6 +153,19 @@ export default function MainMenu() {
             return;
         }
         beginShift();
+    };
+
+    /** Round 10 Part 6: the greeting bubble's own tap — guests open the
+     *  rename card; a RUN account (whose username the game never overrides)
+     *  gets an informational toast instead. */
+    const handleBubbleTap = () => {
+        sfx.click();
+        if (isGuest) {
+            store.patch({ renameOpen: true });
+        } else {
+            setShowRunNameToast(true);
+            setTimeout(() => setShowRunNameToast(false), 2600);
+        }
     };
 
     // fires once per mount, i.e. every time phase transitions into 'menu'
@@ -266,7 +289,10 @@ export default function MainMenu() {
                 the spec's ceiling. A very long typed/assigned name (up to
                 16 chars, two words) wraps rather than overflowing, since
                 width is 'fit-content' capped by this maxWidth, not a
-                fixed box. */}
+                fixed box.
+                Round 10 Part 6: the bubble body is now a real <button> —
+                tapping it opens the rename card for a guest, or shows the
+                RUN-account toast just below the stack. */}
             <div
                 className="absolute"
                 style={{
@@ -276,7 +302,10 @@ export default function MainMenu() {
                 }}
             >
                 <div className="relative">
-                    <div
+                    <button
+                        type="button"
+                        onClick={handleBubbleTap}
+                        className="text-left transition-transform active:scale-95"
                         style={{
                             width: 'fit-content',
                             maxWidth: 85 * mu,
@@ -290,7 +319,24 @@ export default function MainMenu() {
                         }}
                     >
                         Welcome, {greetingName}
-                    </div>
+                    </button>
+                    {showRunNameToast && (
+                        <div
+                            className="absolute whitespace-nowrap"
+                            style={{
+                                left: 0,
+                                top: `calc(100% + ${6 * mu}px)`,
+                                backgroundColor: 'rgba(42,29,16,0.9)',
+                                color: 'var(--color-cream)',
+                                borderRadius: 8 * mu,
+                                padding: `${5 * mu}px ${8 * mu}px`,
+                                fontSize: 8 * mu,
+                                fontWeight: 700,
+                            }}
+                        >
+                            Your name comes from your RUN profile.
+                        </div>
+                    )}
                     {/* tail, pointing down toward the portrait: a slightly
                         larger chocolate triangle behind a smaller cream one
                         gives the tail the same 1*mu-ish outline as the

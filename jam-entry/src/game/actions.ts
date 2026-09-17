@@ -128,7 +128,6 @@ export function scriptedRunStart(): Partial<AppState> {
         runId: store.get().runId + 1,
         ftueActive: true,
         ftueBeat: 'placeFirst',
-        pulsePads: null,
         dialogue: showOpening
             ? { id: OPENING_DIALOGUE.id, voice: OPENING_DIALOGUE.voice, lines: OPENING_DIALOGUE.lines, index: 0 }
             : null,
@@ -166,7 +165,7 @@ function isFtueBeatResolvable(): boolean {
  */
 export function retireFtue(): void {
     completeFtue();
-    store.patch({ ftueActive: false, ftueBeat: null, pulsePads: null });
+    store.patch({ ftueActive: false, ftueBeat: null });
 }
 
 /**
@@ -264,12 +263,6 @@ export function placeTower(padIndex: number, towerId: string): void {
         if (padIndex === FTUE_FIRST_PAD && store.get().ftueActive) {
             setFtueFirstTower(towerId);
         }
-        // Round E task 2: a pad that fills stops pulsing, whether it was
-        // pulsing as the FTUE's own cue or the general post-wave pulse.
-        const pulsePads = store.get().pulsePads;
-        if (pulsePads?.includes(padIndex)) {
-            store.patch({ pulsePads: pulsePads.filter((p) => p !== padIndex) });
-        }
     }
 }
 
@@ -330,10 +323,6 @@ export function startWave(): void {
     if (store.get().backdropTransitioning) return;
     if (slot.current?.startWave()) {
         syncStore();
-        // Round E task 2: whatever was pulsing (the FTUE's own cue or the
-        // general post-wave pulse) belongs to the build phase that just
-        // ended — the next wave starts with a clean board.
-        store.patch({ pulsePads: null });
         track('level_start', { wave: slot.current.state.waveIndex + 1 });
         if (!runAnalytics.firstWaveStarted) {
             runAnalytics.firstWaveStarted = true;
