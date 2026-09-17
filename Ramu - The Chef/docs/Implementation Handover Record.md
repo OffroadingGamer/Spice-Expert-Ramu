@@ -39,10 +39,10 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.81.0** (Rounds 0–9 — main menu accepted Sep 17; awaiting the user's end-to-end play; 🔒 Private-only until human verification — Ideas.md §6d) |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.82.0** (Rounds 0–10 — Round 10 verified Sep 17 ~22:40 IST; awaiting the user's playtest; 🔒 Private-only until human verification — Ideas.md §6d) |
 | **Jam (Sep 17, ~21:50 IST)** | **6th, 613 daily uniques** (901 total plays) at ~21:50 IST Sep 17 — out of the money by 16: 5th Pest Control Tycoon 629 ($100), 4th GT Rush 902 ($200), 7th The Good Life 479. Judging closes **Sep 18 12:00 PT = 00:30 IST Sep 19** (1d 02h 37m at the reading). Public is frozen at 1.69.0 through judging. |
-| **In flight** | **Round 10** → Private 1.82.0 (heat gauge, FTUE beats, name at boot, pulse removed, Settings A, rename, pause card). Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. |
-| **Repo** | Commits since `4858e3b` are **local, unpushed** — `backdrop-dawn.jpg` (Archita's painting) would enter the public repo; the user decides. |
+| **In flight** | Nothing dispatched. Next: **Round 11** (Ranks service board + daily period) once the user has played 1.82.0. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
+| **Repo** | Commits since `4858e3b` (10, through `f56f2ef`) are **local, unpushed** — `backdrop-dawn.jpg` (Archita's painting) would enter the public repo; the user decides. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
 | **Endgame criterion** | `maxed-meta` must lose between levels **85–110** (currently 90) |
@@ -2827,3 +2827,59 @@ LevelEconomy, PropList, RecipeList, both sprite indexes, AudioGenPrompts) verifi
 they cover.
 
 **Proposal pages (private, not the spec of record):** heat gauge + Ranks `https://claude.ai/artifact/QSnf1MtvwnKG7xdcMwDHgh` · Settings + rename `https://claude.ai/artifact/N4NFRyujvZteqrYqCCnsqV` · six studies `https://claude.ai/artifact/Ccn4SSMfuFLJAVC7Lr3UKY` · (earlier) menu `…/6Hwx18NsmYEyhxDbhnskjn`, chef/prop `…/24TCNvib7mWLhmyWTFhfwh`.
+---
+
+### 2026-09-17 ~22:40 IST — Round 10 returned and verified: Private **1.82.0**
+
+**Verified from source:** `rundot game list-tags` Private 1.82.0 / Review 1.69.0 / Public 1.69.0 ·
+`npm run balance` 35 / 36 / 11 / 4 / 90 · `tsc --noEmit` and `npm run build` clean · no `.json`
+under `public/` · `engine.ts`, `enemies.ts`, `towers.ts`, `waves.ts`, `kitchenScene.ts`,
+`package*.json`, `rundot/leaderboard.config.json` unchanged · both live all-time boards unchanged
+(last submission still Sep 16 15:42 UTC; PuneetMakes 106 / 6,231 on top). Committed `6d7779f`.
+
+**What shipped (checked in the tree):**
+- **Heat gauge** (`towerScene.ts` ~606–830): tube x 12–52, y 470–1270; 10 segments 28 × 70, gap
+  10, margin (800 − 790) / 2 = 5 each end; orange → red per segment; fill 200 ms, drain 300 ms,
+  breath 1.2 s. `filled = (level − 1) % 10`; boss on belt = `!inOvertime && isBossLevel && phase
+  === 'wave'` forces full and swaps the flame for the block's boss sprite; Overtime (block 9) is
+  always full, flame only, never breathing — a boolean short-circuit, not a per-level test.
+  Breathing only when segment 9 is *settled* (`gaugeAnimT >= duration`), so the resting-state
+  rule (Retro 110) holds by construction; the agent also sampled resting frames 500 ms apart.
+  Agent's judgment call, accepted: "9 (breathing)" = level 10's build phase (the formula never
+  yields 9 during level 9). Two bugs the agent caught pre-deploy: boss cap first rendered
+  smaller than the flame (a speck); swapping the whole cap lost the backing circle — restructured
+  as persistent circle + toggled flame/boss content layer.
+- **Four FTUE beats:** `queueDialogueOnce(id)` (`dialogueController.ts:120`) backed by
+  `save.seenBeats` — `recipe-widget`, `prop-placement`, `heat-gauge-intro` are once-per-save;
+  `opening`, `stove-lit`, `wave1-cleared` stay every-run. Fresh-save order observed by the agent:
+  name → opening → recipe-widget → prop-placement → stove-lit → heat-gauge-intro → wave1-cleared
+  → upgrade0.
+- **Name at boot:** `main.tsx:101` `needsBootNameDialog = identity.isGuest && save.playerName ===
+  null` → `bootNameDialogOpen: true, paused: true`; NameDialog un-pauses on Skip / That's me.
+- **Pulse removed:** `applyPostWavePulse` and `pulsePads` gone from every call site (one
+  historical comment remains); FTUE place2/place3 still auto-select their pad.
+- **SettingsCard.tsx** shared shell (scrim/card/title/divider/credit/ghost button; card 200 × mu;
+  credit `max(11, 8 × mu)`; scrim `pointer-events-auto` — the second pre-deploy bug: inside
+  Hud's `pointer-events-none` root the pause scrim tap did nothing). Native range inputs
+  re-skinned as `.slider-cream` (`app.css:133`), 44 px touch height. Pause card = same shell,
+  "SHIFT PAUSED", no Name row, green filled **Continue** over red-outline **Main Menu**, scrim
+  tap = Continue.
+- **Rename:** bubble tap / Settings Name row (guests only; RUN accounts show plain name, no ✎)
+  → `RenameDialog.tsx` (maxLength 16) → `resubmitBestWithName` (`sdk/leaderboard.ts:122`) reads
+  the server's own `playerEntry` per mode via `getPodiumScores`, resubmits the **same score and
+  duration** with `metadata.displayName`, 5 s apart (`MIN_SUBMIT_SPACING_MS = 5000` = the config's
+  `minTimeBetweenSubmissionsSec`). Keep-best means the row can never worsen.
+
+**Not verified — flagged, not faked:** the live resubmit on the real board (the user's 106).
+Every headless path resolves to the mock identity and an empty sandbox board. **The user's
+playtest of 1.82.0 is the test:** rename from the menu bubble, then Ranks should show the new
+name on the 106 row; I read both boards before and after (read-only CLI) to confirm the score
+and duration did not change.
+
+**Docs:** marketing agent's §19 closure (6th, 613, 16 behind 5th; Meta flight closed at $70.05)
+synced as `f56f2ef` after the secret scan. Nit for that agent: §19 now cites "the
+588-through-Sep-16 figure above" but its own edit deleted the table that held it.
+
+**Next:** user plays 1.82.0 → annotated screenshots → fixes fold into **Round 11** (Ranks
+service board, Daily tab first, `daily` period added to `rundot/leaderboard.config.json`
+additively; both all-time boards read before/after the config deploy).

@@ -547,7 +547,8 @@ specified and wrong as a product. Removed.
    16; empty or unchanged = Cancel; never during a run. Save writes `playerName`, redraws the
    bubble, and **re-submits the current best to both modes with the new
    `metadata.displayName`** (the board is keep-best; whether an equal-score resubmit refreshes
-   metadata is undocumented — tested once in Round 10 with the user's own 106; if the server
+   metadata is undocumented — Round 10 could not test it headlessly (mock identity only); the
+   user's first rename on 1.82.0 with their own 106 is the test; if the server
    ignores it the public row updates on the next accepted score, the "you" row at once).
    **RUN accounts**: the bubble is still a button; it shows a toast *"Your name comes from your
    RUN profile."* The game never overrides a RUN username.

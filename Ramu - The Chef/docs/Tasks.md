@@ -15,8 +15,9 @@ end-screen debrief, dawn-backdrop main menu in mock units, hatches + belt, setti
 cues, player name). 🔒 Private-only until the user plays end-to-end and decides public; promotion
 is post-jam via the implementation agent's `update-tag review`.
 
-**In flight:** **Round 10** → 1.82.0 (heat gauge, four FTUE beats, name at boot, pulse removed,
-Settings look A, rename, pause card). **Queued:** R11 Ranks + daily period · R12 belt chevrons +
+**Round 10 returned Sep 17 ~22:40 IST → Private 1.82.0** (heat gauge, four FTUE beats, name at
+boot, pulse removed, Settings look A, rename, pause card) — verified and committed; the live
+rename resubmit is untested until the user plays. **In flight:** nothing. **Queued:** R11 Ranks + daily period · R12 belt chevrons +
 i18n table · R13 recipe shards · R14 rewarded continue · R15 Play + unlock badge · R16 Hindi · IAP
 after — all picked Sep 17, Ideas.md §10.
 

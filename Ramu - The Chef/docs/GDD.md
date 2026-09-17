@@ -1139,7 +1139,7 @@ the design of record is [Ideas.md](Ideas.md) §6d (every playtest decision, date
 | 5–7 | 1.76–1.78 | Scroll-grid wave bubble; tween wrapper containers (Retro 110); bottom band 340 with the chef at centre; post-boss panel; end-screen "Ramu's debrief"; BGM 50 % |
 | 8–8b | 1.79–1.80 | Main menu on Archita Sharma's dawn backdrop, layout A, laid out in **mock units** (Retro 111); four playtest fixes |
 | 9 | 1.81.0 | Pass hatches + belt tread; Settings dialog; empty-pad green/red cue; guest name + greeting; anonymous rows shortened |
-| 10 (in flight) | 1.82.0 | Heat gauge (boss meter), four FTUE beats, name at boot, pulse removed, Settings look A, rename, pause card |
+| 10 | 1.82.0 | Heat gauge (boss meter), four FTUE beats, name at boot, pulse removed, Settings look A, rename, pause card |
 | 11–16 (queued) | — | Ranks with a Daily tab · belt chevrons + i18n table · recipe shards · rewarded continue · Play + unlock badge · Hindi · IAP (content, not power) |
 
 **Naming today:** the menu's primary is *Start shift* (→ *Play*), the meta screen is *The Kitchen*, the boards are *Ranks*; the
