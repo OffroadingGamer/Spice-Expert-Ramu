@@ -43,6 +43,7 @@ of the present.**
 | **Jam (Sep 17, ~21:50 IST)** | **6th, 613 daily uniques** (901 total plays) at ~21:50 IST Sep 17 — out of the money by 16: 5th Pest Control Tycoon 629 ($100), 4th GT Rush 902 ($200), 7th The Good Life 479. Judging closes **Sep 18 12:00 PT = 00:30 IST Sep 19** (1d 02h 37m at the reading). Public is frozen at 1.69.0 through judging. |
 | **In flight** | **Round 12b** → Private 1.85.0: HUD bands reserved in **pixels** (fixes the half-scale board), laurel PNG wired. Then the user plays 1.85.0 → R13 belt chevrons + i18n table (four constraints from the inventory) → R14 shards (projection measured) → R15 continue → R16 Play/badge → R17 Hindi. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
 | **Repo** | **Pushed Sep 18 ~02:15 IST** (`4858e3b..591031d`, 17 commits) on the user's word — `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is now in the public repo. Secret scan over the whole range: clean, control positive. |
+| **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
 | **Endgame criterion** | `maxed-meta` must lose between levels **85–110** (currently 90) |
@@ -3091,3 +3092,13 @@ project declares no custom font; the agent used the existing bold system stack.
 **Not verifiable headlessly (as R10/R11):** podium and rows with real scores; the daily
 rank-memory rollover branch (code-reviewed only). The laurel is a 🏵️ glyph — art round 3's
 `laurel.png` arrived after this handover was issued; wired in 12b.
+
+---
+
+### 2026-09-18 ~04:40 IST — Returns ledger started (`docs/Agent Returns.md`)
+
+User: "Record every return handover as these agents get compacted after every task." New
+standing rule: each return is pasted verbatim into the ledger before verification; the record
+keeps Central's verification and decisions and links to the ledger. Backfilled: R10, R11, art
+round 3, audio round 5, localisation inventory, shard projection, R12. Pending returns at this
+moment: **Round 12b** only (plus the marketing agent's post-close entry after 00:30 IST Sep 19).
