@@ -17,7 +17,7 @@ is post-jam via the implementation agent's `update-tag review`.
 
 **Round 10 returned Sep 17 ~22:40 IST → Private 1.82.0** (heat gauge, four FTUE beats, name at
 boot, pulse removed, Settings look A, rename, pause card) — verified and committed; the live
-rename resubmit is untested until the user plays. **In flight:** nothing. **Queued:** R11 Ranks + daily period · R12 belt chevrons +
+rename resubmit is untested until the user plays. **In flight:** **Round 11** → 1.83.0 (six playtest fixes of 1.82.0 + Ranks service board + daily period). **Queued:** R11 Ranks + daily period · R12 belt chevrons +
 i18n table · R13 recipe shards · R14 rewarded continue · R15 Play + unlock badge · R16 Hindi · IAP
 after — all picked Sep 17, Ideas.md §10.
 

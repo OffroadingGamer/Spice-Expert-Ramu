@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.82.0** (Rounds 0–10 — Round 10 verified Sep 17 ~22:40 IST; awaiting the user's playtest; 🔒 Private-only until human verification — Ideas.md §6d) |
 | **Jam (Sep 17, ~21:50 IST)** | **6th, 613 daily uniques** (901 total plays) at ~21:50 IST Sep 17 — out of the money by 16: 5th Pest Control Tycoon 629 ($100), 4th GT Rush 902 ($200), 7th The Good Life 479. Judging closes **Sep 18 12:00 PT = 00:30 IST Sep 19** (1d 02h 37m at the reading). Public is frozen at 1.69.0 through judging. |
-| **In flight** | Nothing dispatched. Next: **Round 11** (Ranks service board + daily period) once the user has played 1.82.0. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
+| **In flight** | **Round 11** → Private 1.83.0: six playtest fixes of 1.82.0 (Ideas.md §6d) + Ranks service board (2B) + `daily` period, additive config, boards read before/after. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
 | **Repo** | Commits since `4858e3b` (10, through `f56f2ef`) are **local, unpushed** — `backdrop-dawn.jpg` (Archita's painting) would enter the public repo; the user decides. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
@@ -2883,3 +2883,22 @@ synced as `f56f2ef` after the secret scan. Nit for that agent: §19 now cites "t
 **Next:** user plays 1.82.0 → annotated screenshots → fixes fold into **Round 11** (Ranks
 service board, Daily tab first, `daily` period added to `rundot/leaderboard.config.json`
 additively; both all-time boards read before/after the config deploy).
+---
+
+### 2026-09-17 ~23:05 IST — Playtest of 1.82.0 decided (seven screenshots); Round 11 issued
+
+Five annotations, two unannotated boards. Decisions in Ideas.md §6d "Playtest of 1.82.0":
+scroll visible during the `recipe-widget` beat (root cause: `WaveBubble.tsx` hides the bubble
+behind every dialogue); em dashes out of Ramu's lines; heat gauge centred in the visible
+belt-to-edge gap (letterbox-aware via `getFit`); block-clear card ×1.15 with exact values;
+order-scroll chips lifted to the 11 px floor (names were 8.8 px, counts 9.6 px); cream card at
+90 % alpha. Boards accepted as rendered. The live rename resubmit stays open — the user's RUN
+account can't rename; a guest session is the test.
+
+**Round 11 handover** (→ Private 1.83.0) delivered in chat: Part 1 the six fixes; Part 2 the
+Ranks service board per Ideas item 7 with the `daily` period added additively to
+`rundot/leaderboard.config.json`. `SubmitScoreParams.period` is a single string per call, so
+the agent first tests in Private whether omitting `period` fans out to every configured
+period; if not, four spaced submissions per run end (2 modes × 2 periods, 5 s apart) and the
+rename resubmit covers daily too. 🔒 Both all-time boards saved with `rundot leaderboard scores
+--save` before and after the config deploy; a reset stops the round.

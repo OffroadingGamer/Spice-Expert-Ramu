@@ -569,6 +569,43 @@ phones where the idle chef is hidden (gutter < 72 px — the 403×874 reference)
 anchors to the **wave chip** instead. §7's data path is unchanged.
 
 
+**Playtest of 1.82.0 (Sep 17, ~23:00 IST) — decided, for Round 11:**
+
+1. **The order scroll must stay visible during the `recipe-widget` beat.** Today
+   `WaveBubble.tsx` hides the bubble behind any open dialogue ("dialogue wins", `baseVisible =
+   … && dialogue === null`), so the beat that says *"That scroll up top is the order"* points
+   at nothing. Fix: the trigger bubble stays visible while `dialogue?.id === 'recipe-widget'`
+   (submenu still closed; every other beat keeps hiding it).
+2. **No em dashes in Ramu's lines.** `heat-gauge-intro` → *"When it hits the flame, the big one
+   walks in."* The same rule applied to `recipe-widget` (*"…walks in this rush. Count them off
+   as you serve."*) — the user marked the heat line; the second is the same voice rule, flagged.
+3. **Heat gauge moves into the middle of the visible gap between the belt and the screen's
+   left edge.** The stage is contain-fit and letterboxed (`stage.ts getFit`), so design x = 12
+   sits ~24 % in from the left on a 744-wide screen while the gap is empty. Spec: gauge centre
+   x = midpoint of `visibleLeft` (= −offsetX / scale in design units, ≤ 0) and the belt's
+   leftmost edge (170 − pathWidth/2 = **127**), clamped so the tube's left edge ≥ visibleLeft +
+   16; recomputed on every layout/resize; cap, tube and "n/10" label move together. At 744 ×
+   1315 that is ≈ 118 px from the left edge; with no letterbox it is centre 63.5 (tube 43–84).
+4. **Block-clear card (`PostBossPanel.tsx`) ×1.15 — the box and every element inside it.**
+   Exact: max-width 28 → 32.2 rem; padding 20 → 23 px; title 20 → 23 px; body 15.2 → 17.5;
+   eyebrow 10.9 → 12.5; dish icons 48 → 55 px; dish names 9.9 → **11.4 px** (over the 11 px
+   floor; max-width 4 → 4.6 rem); gaps 12 → 14; Ready button padding 16 → 18 px vertical, font
+   20 → 23. Still `w-full` inside the 12 px side gutters at phone width; ten dishes (Overtime)
+   must wrap to two rows without clipping at 360 × 780.
+5. **Both the order scroll and the card's dish list must be readable by mobile-web players.**
+   The scroll's chips today: icon 56 px, name **8.8 px**, count **9.6 px** — both under the 11 px
+   floor. Spec: icon 64 px, name ≥ 11 px, count ≥ 12 px, submenu text ≥ 11 px; overflow keeps
+   using the existing carousel; the bubble must not collide with the speed buttons at 360 × 780
+   with three dishes on the order (level 81: Naan · Idli · Jeera Rice). Card side covered by 4.
+6. **The cream card (shared `SettingsCard.tsx` shell) is not opaque:** background
+   `rgba(253, 250, 231, 0.90)`; scrim, text, sliders and buttons unchanged. Applies to Settings,
+   pause and rename alike (one shell).
+7. **Ranks (both boards, unannotated):** the anonymous rule (`b4…1L2`) and the "you" tag render
+   as specified — accepted as-is; Round 11's service board replaces the layout anyway.
+8. ⚠️ **The live rename test is still open:** the user plays on a RUN account (PuneetMakes, "you"
+   row), and RUN accounts cannot rename — the resubmit path only runs for guests. It gets tested
+   the first time a guest renames on 1.82.0+; I read the boards after.
+
 ## 7. Wave-intro scroll — proposed Sep 13 2026 — ✅ shipped as the wave bubble's scroll grid, 1.76.0
 
 **Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll
