@@ -2719,3 +2719,22 @@ SDK `daily` period is additive to the config; `profile.isAnonymous` separates gu
 accounts; `metadata.displayName` carries a guest's name onto the board. Proposed split:
 **Round 9** hatch wiring + settings dialog + pad cues + name entry/greeting; **Round 10** boss
 meter + FTUE beats; **Round 11** leaderboard tabs + daily period.
+---
+
+### 2026-09-17 — Picks: boss meter **B · Heat gauge**, Ranks **B · Service board**; anonymous-name rule; Round 9 issued
+
+The user picked both recommendations (specs now in Ideas.md §6d items 3 and 7) and added a
+display rule for the existing `anonymous_<id>` entries: first two characters of the id, an
+ellipsis, last three. Central read the live board first (`rundot leaderboard scores
+…_waves_alltime`, read-only): 101 public players, ~75 % anonymous, top score 106 (the user's
+own), last submission Sep 16 15:42 UTC — so the rule affects most rows and is worth doing; it
+is client-side only, nothing on the server changes.
+
+**Round 9 issued** (implementation agent, Private → **1.81.0**): hatch wiring (`pass-entry`,
+`pass-exit` replace the burrow decals; `belt-tile` becomes a texture stroke on the inner path
+pass, rim stroke unchanged), Settings as a dialog, empty-pad cue (green affordable / red inert,
+cheapest cost read from `towers.ts`), name entry at the start of the FTUE with Skip → auto
+`FirstName LastName`, the menu greeting bubble, guest names to the board via
+`metadata.displayName`, and the anonymous display rule. Rounds 10 (heat gauge + four FTUE
+beats) and 11 (Ranks + daily period) follow. Commit `0281d7d` (Rounds 8/8b) is local, **not
+pushed** — the backdrop JPEG entering the public repo is the user's call.

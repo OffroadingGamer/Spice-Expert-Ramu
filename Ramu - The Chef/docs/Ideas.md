@@ -490,8 +490,14 @@ specified and wrong as a product. Removed.
    *"Welcome, ‹name›"* — the name from item 6.
 3. **Boss meter:** a **vertical bar on the left of the playfield** that rises level by level to
    the block's boss (every 10th level, `isBossLevel`). The board's left 67 design units are
-   free (path edge at 67, first pad at 205). **Proposal pending** — three drawings + a
-   recommendation, then the pick.
+   free (path edge at 67, first pad at 205). **Picked Sep 17: B · Heat gauge** (over A ticket
+   spike, C service bell) — a segmented tube at x 12–52, y 470–1270 in board units, ten
+   28 × 70 segments filling orange → red bottom-up (`(level − 1) % 10`), flame cap r 40 at
+   (32, 440) that shows the boss face while the boss is on the belt, `n/10` label at 26 units,
+   segment 9 breathes (alpha .7 ↔ 1, 1.2 s; resting state measured), 300 ms drain at the
+   block boundary, full in Overtime. FTUE beat after the first rush: *"See the heat on the
+   left? Every rush you survive turns it up a notch. When it hits the flame — the big one
+   walks in. Be ready."* Drawn in the private proposals page (not the spec of record).
 4. **FTUE teaches four things it does not teach today:** the recipe widget (wave bubble), the
    boss meter, upgrades, and prop placement. One beat each, in the existing dialogue system.
 5. **Empty pads need a cue.** Today a ghost slot is near-invisible. Decided: a **concentric
@@ -508,8 +514,19 @@ specified and wrong as a product. Removed.
 7. **Leaderboard revamp with a Daily tab that opens first**, All-time second. The SDK's
    `daily` period (UTC rollover) is added to `rundot/leaderboard.config.json` — additive; the
    two all-time boards must be read back before and after the deploy to prove they did not
-   reset. Each run submits to both periods. **Proposal pending** — three styles + a
-   recommendation, then the pick.
+   reset. Each run submits to both periods. **Picked Sep 17: B · Service board** (over A
+   order tickets, C rota sheet): chocolate ground; header "RANKS"; period pills **Today ·
+   All time** (Today opens first, not persisted); board pair as underlined text **Rushes
+   held · Pests cleared** (renamed from Waves Cleared / Enemies Defeated); **podium** for the
+   top three (cards 62 mu wide, heights 78/66/58; #1 orange 25 % + outline; fewer than three
+   entries → plain rows); the current `Row` below; a **sticky orange bar**: "#n today · s
+   rushes" left, "d to #(n−1) · resets hh mm" right (All time: no clock; no run today: "No
+   shift yet today — start one" and the bar is Start shift). Daily rollover is UTC midnight =
+   05:30 IST.
+   **Anonymous entries (decided Sep 17):** the live boards are ~75 % `anonymous_<id>` (101
+   players on waves/all-time). Display rule, client-side only: strip `anonymous_`, show the
+   id's **first two characters, an ellipsis, and its last three** (`u2…Bq1` style). A guest
+   with a chosen name (item 6) shows that name instead. Server entries untouched.
 8. The Kitchen (meta upgrades) sub-section also needs changes — the user will annotate it
    separately.
 
