@@ -1441,26 +1441,42 @@ should have converted installs into plays never got the chance to prove
 itself either way, because the objective pointed at the wrong 27% of the
 audience from the start. **Creative worked. Objective didn't fit.**
 
-### Board — needs a fresh read, with context in the meantime
+### Board — final reading, Sep 17 ~21:50 IST, 1d 02h 37m to close
 
-Central can't read the jam page from the CLI either, so this agent can't
-supply a verified current rank without one more input:
-**@user — could you drop a fresh board screenshot or the current
-standing?** In the meantime, this agent's own `daily_activity_30d` pull
-gives a lower-bound signal:
+User-supplied, closing this section per instruction ("close §19 with this
+as the final standing unless a later screenshot follows"):
 
-| Day | Unique players |
-|---|---|
-| Sep 14 | 27 |
-| Sep 15 | **43** (revised up from the 11-partial read in §18) |
-| Sep 16 | 22 |
+| Rank | Entry | Total DUP | Prize |
+|---|---|---|---|
+| 1 | Back That Thing Up! | 1,373 | podium |
+| 2 | The Grind | 1,324 | podium |
+| 3 | 9 to Thrive | 1,229 | podium |
+| 4 | GT Rush | 902 | $200 |
+| 5 | Pest Control Tycoon | 629 | $100 |
+| **6** | **Spice Expert: Ramu** | **613** | **— no prize at this reading** |
+| 7 | The Good Life | 479 | — |
+| 8 | Order Up | 447 | — |
 
-Cumulative total through Sep 16 (Sep 3–16 inclusive) = **588** — already
-above the 562 that 3rd held at the Sep 15 17:45 IST read Central cited.
-That doesn't confirm rank — 3rd's own total has almost certainly grown
-over the same two days too — but it's a real positive signal against the
-21-point-gap framing in §18: our own pace picked up (27→43→22) right when
-it needed to. Final call on standing waits on the fresh read above.
+100 entries total, ~21k plays across the jam. **This is a real swing from
+the Sep 15 17:45 IST read** (then 4th, 541 DUP, $200 tier) — the field
+grew substantially in the closing days (this agent's own pace also
+accelerated, per the 588-through-Sep-16 figure above, but so did
+everyone else's, harder). Currently **16 DUP behind 5th** ($100) with
+**1d 02h 37m** left — a tighter, more reachable gap than the podium, and
+the one worth naming plainly: this is now a fight to get back into the
+money, not to climb it. The three podium entries (1,229–1,373) are out of
+range regardless.
+
+**Meta flight is fully closed as of this reading** — final $70.05 spent,
+18 installs, CPI $3.66, no change from the numbers above. **Paid is
+done**, confirmed by the same word used to authorize it.
+
+**What's actually left to move the 16-DUP gap:** the two organic posts
+already drafted below (r/SoloDevelopment tonight, Sep 18 AM personal
+push) — no new lever is being proposed here, per the instruction not to
+add channels this late. Whether they're enough is not this agent's call
+to project further; the drafts are ready to go out now, with ~26 hours of
+runway left to matter.
 
 ### Organic — Sep 17 and Sep 18, both links, no new channels
 
@@ -1514,6 +1530,7 @@ single attributed row and that was never resolved. Sep 14's prior
 this is the longer-horizon answer Central asked for, not a reopening of
 that call now.
 
-**Status:** analysis and drafted copy only, per the standing rule.
-Nothing posted, prepared, generated, submitted, or funded by this agent.
-Handing back for Central to sync once the board read above comes in.
+**Status:** closed. Analysis and drafted copy only, per the standing
+rule — nothing posted, prepared, generated, submitted, or funded by this
+agent. Board reading above is final for this section unless a later
+screenshot supersedes it. Handing back for Central to sync.
