@@ -530,6 +530,33 @@ specified and wrong as a product. Removed.
 8. The Kitchen (meta upgrades) sub-section also needs changes — the user will annotate it
    separately.
 
+**Playtest of 1.81.0 (Sep 17) — decided, for Round 10:**
+1. **The orange pad pulse goes entirely** — both `applyPostWavePulse()` and the FTUE's
+   place2/place3 pulse. The green/red concentric cue is the pad signal now, in the FTUE too.
+   The FTUE keeps its auto-select of the target pad (the timer still fires; only the pulse
+   visuals and the `pulsePads` channel go). The Hud conditions that hid objective/milestone
+   text during a pulse simplify accordingly.
+2. **Settings look A · Order ticket** (over B kitchen pass, C stove dials): cream card,
+   chocolate outline 2, dashed rules; sliders = styled range inputs — track 8 chocolate 15 %,
+   orange fill, cream knob 16 with chocolate stroke 2.5, ≥ 44 px touch target; icon + label
+   rows with a value chip; **Name row** (`‹name› ✎`, opens the rename dialog; RUN accounts show
+   the name with no ✎); credit line; Back ghost. Mock units. Drawn in the private proposals
+   page (not the spec of record).
+3. **Rename**: tapping the greeting bubble or the Name row opens "Your name" in the same
+   card — field prefilled, Save (orange primary), Cancel (ghost); letters/spaces/`.`/`'`, max
+   16; empty or unchanged = Cancel; never during a run. Save writes `playerName`, redraws the
+   bubble, and **re-submits the current best to both modes with the new
+   `metadata.displayName`** (the board is keep-best; whether an equal-score resubmit refreshes
+   metadata is undocumented — tested once in Round 10 with the user's own 106; if the server
+   ignores it the public row updates on the next accepted score, the "you" row at once).
+   **RUN accounts**: the bubble is still a button; it shows a toast *"Your name comes from your
+   RUN profile."* The game never overrides a RUN username.
+4. **Pause ("Shift paused") uses the same card as Settings** (look A) — title, the two
+   sliders, credit line — but **no Name row**; instead **Continue** (green `#22c55e` fill,
+   chocolate text + outline, the larger button: padding 12 × 6, font 12) above **Main Menu**
+   (red: `#ef4444` outline + text on cream, padding 8 × 6, font 10). Scrim tap = Continue.
+   Main Menu still abandons the run without a confirm (as today) — flagged, not changed.
+
 **Round 3 — decided: horizontal fill under the wave chip**, not a bar in the gutter. Same
 maths (SAFE = units − (lives − 1)), amber → green, resets per wave. Top-left, directly under
 `WAVE n / RUSH: …`, width of that chip group.

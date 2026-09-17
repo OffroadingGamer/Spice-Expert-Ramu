@@ -2772,3 +2772,18 @@ name; Central put it on the button. Moves to the start of the scripted run in **
 43–80, σ 3.9 vs the floor grain's 14.5). The tile is procedural, so a bolder pass costs no
 credits — Central recommends asking the art agent for a second tile at roughly double the rib
 contrast and swapping the file, no code change.
+---
+
+### 2026-09-17 — Playtest of 1.81.0: pulse out, Settings A, rename, pause card; Round 10 issued
+
+Decisions in Ideas.md §6d *Playtest of 1.81.0*: the orange pad pulse is removed entirely (the
+cue carries the FTUE too); Settings takes look **A · Order ticket**; rename via the greeting
+bubble / Name row with a keep-best resubmit; the pause screen is the same card with green
+Continue over red Main Menu. Central checked first: the pulse has two sources
+(`applyPostWavePulse` after every wave; the FTUE's place2/place3 beats) sharing one
+`pulsePads` channel rendered by Hud.tsx; the pause card's Main Menu abandons the run with no
+confirm today (kept, flagged). Still open: the belt-tile contrast re-pass (user has not said).
+
+**Round 10 issued** (implementation agent, Private → **1.82.0**): heat gauge (§6d item 3 spec),
+four FTUE beats, name dialog moved to the start of the scripted run, pulse removal, Settings A
++ Name row, rename dialog + RUN toast, pause card.
