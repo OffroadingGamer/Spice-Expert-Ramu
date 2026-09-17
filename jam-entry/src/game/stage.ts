@@ -3,24 +3,31 @@
  * module maps them to real pixels — so anything sized at 1/4 of the design
  * width takes up 1/4 of the screen width on EVERY device and aspect ratio.
  *
- * How it works (contain-fit, round C onward — see FIT_HEIGHT below):
+ * How it works (contain-fit, round C onward; Round 12b: bands are now
+ * MEASURED CSS PIXELS, not design units — see the long comment on
+ * FALLBACK_TOP_PX/FALLBACK_BOTTOM_PX below for why the old design-unit
+ * bands were the actual bug):
  *   - The stage root container is scaled by
- *     min(screenWidth / DESIGN_WIDTH, screenHeight / FIT_HEIGHT), so the
- *     WHOLE playfield (path included) is always on screen, never cropped.
- *   - On a viewport relatively narrower than FIT_HEIGHT calls for, the
- *     height term binds: the content column is centered horizontally and
+ *     min(screenWidth / DESIGN_WIDTH, (screenHeight - topPx - bottomPx) /
+ *     PLAYFIELD_HEIGHT) * BOARD_SCALE, so the WHOLE playfield (path
+ *     included) is always on screen, never cropped, and never drawn
+ *     underneath the HUD's own top/bottom chrome.
+ *   - On a viewport relatively narrower than that calls for, the height
+ *     term binds: the content column is centered horizontally and
  *     letterboxes evenly left/right (root.x offset in layout() below).
  *   - Vertical space still varies with the device: designHeight() reports
- *     how many units tall the screen currently is. Anchor vertical layout
- *     to top / bottom / center via designHeight() — never hardcode a
- *     bottom edge.
+ *     how many units tall the FULL screen currently is (unrelated to the
+ *     bands — full-bleed backdrops use this). The playfield itself is
+ *     placed via boardOffsetY() (design units, added to boardRoot.y by
+ *     towerScene.ts's anchorBoard) — never hardcode a bottom edge.
  *
  * getFit()/designToScreen() below are the SAME math layout() uses — the one
- * source of truth for any DOM overlay (Hud.tsx) that needs to place
- * something over the canvas. Do not re-derive this by hand a second time.
+ * source of truth for any DOM overlay that needs to place something over
+ * the canvas. Do not re-derive this by hand a second time.
  */
 import { Container, type Application } from 'pixi.js';
 import { CONFIG } from './config.ts';
+import { store } from '../state/store.ts';
 
 /**
  * ADAPT: the game's design width, in units. 720 is a good default for
@@ -42,84 +49,31 @@ export const DESIGN_WIDTH = 720;
 export const PLAYFIELD_HEIGHT = Math.max(...CONFIG.path.map((p) => p.y));
 
 /**
- * Reserved vertical bands (design units), added above/below the playfield
- * so the contain-fit leaves room for the HUD without clipping gameplay.
+ * Round 12b Part 1 hotfix (Round 12 hotfix, "HUD bands in pixels"): every
+ * round through Round 12 reserved the HUD's clearance as DESIGN-UNIT bands
+ * (TOP_BAND/BOTTOM_BAND, folded into a design-unit FIT_HEIGHT) — but the HUD
+ * itself is DOM, not scaled with the board, so a taller bottom column
+ * needed a BIGGER design-unit band to represent the same real pixel height,
+ * which LOWERED the scale, which shrank that same band back down in actual
+ * pixels once re-multiplied by the new (smaller) scale. That feedback loop
+ * is exactly what forced Round 12's own BOTTOM_BAND to 2400 and roughly
+ * halved the board (measured: 123px wide at 360x780, was 247px at 1.83.0).
+ * Bumping the design-unit number could never converge cleanly because the
+ * number being tuned wasn't the thing that actually needed protecting (real
+ * screen pixels) — it was a proxy for it, filtered back through the very
+ * scale computation it was feeding.
  *
- * anchorBoard's centering formula (towerScene.ts) is symmetric, so what it
- * actually guarantees on each side is HALF of (TOP_BAND + BOTTOM_BAND) —
- * the split below is a documentation aid (row1+row2's real CSS height vs.
- * the Ready cluster's), not two independently-enforced minimums.
- *
- * Measured live (round C, on the actual rendered Hud.tsx, not guessed):
- * row1+row2 bottom sits at a fixed 98.4 CSS px from the top; the Ready
- * button's top sits a fixed 84 CSS px from the bottom (both independent of
- * canvas scale — plain CSS layout). At the tightest tested viewport
- * (390x844, a tall 19.5:9 phone) those fixed distances left only ~1px of
- * top clearance and the Ready button OVERLAPPING the goal by ~14px at the
- * first band sizes tried (110/150, FIT_HEIGHT 1560) — so they were sized
- * up from that measurement, not intuition, to clear both with margin at
- * 844 CSS px tall while keeping FIT_HEIGHT as small as the fix allows
- * (bigger bands shrink the whole game — see CONFIG.padTapRadius's report
- * in round C's acceptance notes for the resulting tradeoff on that phone).
- *
- * Round 7 item 4: BOTTOM_BAND 180 -> 340. The bottom band's DOM footprint
- * grew (the 104px chef portrait — ChefPortrait.tsx's IDLE_SIZE — now joins
- * Ready and the Kitchen Actions row in that same fixed-to-the-screen-bottom
- * column), and this lever is weak for a height-bound narrow phone (403x874:
- * scale and FIT_HEIGHT trade off almost 1:1, so even doubling this constant
- * barely moves the path's screen position) — screenshotted at 403x874 with
- * the old 180: the path's own exit corner visibly clipped under Ready.
- * 340 plus IDLE_SIZE's own trim together clear it with real margin at both
- * 403x874 and 768x1024 (measured, not assumed — see the round's own report).
- *
- * Round 8 fix 1 (docs/Ideas.md §6d, "Playtest of 1.78.0" item 1): 340 only
- * budgeted for a ZERO safe-area-inset-bottom — every prior round's own
- * measurement viewport. This reservation is pure design-unit/screen-px
- * math with no idea a real device's home-indicator inset even exists;
- * env(safe-area-inset-bottom) is consumed entirely on the DOM side
- * (app.css's pb-safe-bottom), which pushes the bottom band UP by that same
- * amount without this reservation growing to match — so a real ~34px inset
- * ate the round 7 margin whole and then some (measured: -19.8px, an actual
- * overlap, the path's exit hatch rendering behind Ready — screenshotted
- * with a simulated 34px inset). 340 -> 460 here, plus IDLE_SIZE 104 -> 88
- * (ChefPortrait.tsx) — BOTTOM_BAND alone is the weaker of the two levers
- * (see above: this height-bound regime trades scale against FIT_HEIGHT
- * almost 1:1, so growing it enough alone to close a 34px gap would cost
- * real board scale — a 460->650 jump was tried and rejected for exactly
- * that, ~15% smaller board for the same margin a smaller IDLE_SIZE bought
- * for free), so the fix splits the difference: enough BOTTOM_BAND to matter
- * without a heavy board-scale cost, enough IDLE_SIZE trim to close the rest
- * 1:1. Re-measured with the inset applied, not assumed — see the round's
- * own report for the resulting margin at both reference viewports.
- *
- * Round 12 Part 1.2/1.3 (docs/Ideas.md section 6d, "Playtest of 1.83.0"
- * items 3-4): 460 -> 2400, a much bigger jump than any prior round's, and
- * this time IDLE_SIZE is NOT the offsetting lever -- it grew too (88 ->
- * 132, ChefPortrait.tsx), on explicit instruction, so it isn't available
- * as the "cheap" half of the fix the way Round 8's was. Worse, Hud.tsx
- * Part 1.3 moved Ready from BESIDE the portrait to ABOVE it: the reserved
- * column's DOM height didn't just grow by the portrait's own +44px, it
- * grew by the portrait's full 132px PLUS Ready's own ~66-80px stacked on
- * top of it, replacing what used to be a single row sized by whichever of
- * the two was taller (previously ~88px total). Screenshotted at 360x780
- * (the tightest viewport) before this change: the belt's last vertical
- * segment ran visibly behind/through the Ready button -- not a coordinate-
- * math false positive, an actual rendered overlap. 900 and 1400 were tried
- * first and both still showed the same overlap on screen; 2400 is the
- * first value that clears it with a measured ~20px margin at 360x780 (the
- * binding case -- 403x874 and 744x1315 clear with much more room). The
- * cost is real and worth flagging for a future round: board scale at
- * 360x780 drops from 0.343 to 0.171, roughly half -- see this round's own
- * report. IDLE_SIZE can't be traded back down (that's the explicit 1.2
- * instruction) and Ready's own size wasn't touched (not asked for this
- * round), so unlike Round 8 this fix has no cheaper second lever available
- * within this round's scope.
+ * The fix: stop guessing a design-unit reservation at all. Hud.tsx's own
+ * top-row and bottom-column containers are measured directly via
+ * ResizeObserver (their real CSS-px height, from #app-frame's own top/
+ * bottom edges) and written to the store as `hudTopPx`/`hudBottomPx`; getFit
+ * below takes those as real pixel arguments and subtracts them from
+ * screenH BEFORE computing scale — so the reservation is exactly what the
+ * DOM occupies, in the units it actually occupies them in, with no
+ * scale-dependent round-trip left to loop on.
  */
-export const TOP_BAND = 170;
-export const BOTTOM_BAND = 2400;
-
-/** Total design-unit height the contain-fit guarantees is visible. */
-export const FIT_HEIGHT = PLAYFIELD_HEIGHT + TOP_BAND + BOTTOM_BAND;
+export const FALLBACK_TOP_PX = 96;
+export const FALLBACK_BOTTOM_PX = 240;
 
 /** What createStage returns — the surface scenes build against. */
 export interface Stage {
@@ -127,11 +81,19 @@ export interface Stage {
     root: Container;
     /** Constant: the design-space width (= DESIGN_WIDTH). */
     width: number;
-    /** Current screen height in design units — re-read after resizes. */
+    /** Current FULL screen height in design units (unrelated to the HUD
+     *  bands — for full-bleed content like backdrops). Re-read after resizes. */
     designHeight(): number;
     /** Current design-unit → pixel factor (rarely needed directly). */
     scale(): number;
-    /** Subscribe to resizes (re-anchor bottom/center content). Returns unsubscribe. */
+    /** The playfield's own vertical placement, in design units local to
+     *  `root` (root itself is never y-translated — only scaled + x-offset,
+     *  same contract as before). towerScene.ts's anchorBoard assigns this
+     *  straight to boardRoot.y; equals offsetY/scale from getFit() below. */
+    boardOffsetY(): number;
+    /** Subscribe to resizes (re-anchor bottom/center content) — fires on a
+     *  real window/host resize AND whenever the measured HUD bands change.
+     *  Returns unsubscribe. */
     onResize(cb: () => void): () => void;
     destroy(): void;
 }
@@ -144,7 +106,7 @@ export interface Stage {
  * and never sees a Pixi-container-only scale; a factor
  * applied only inside towerScene.ts would desync the two silently (the cues
  * would keep pointing at the OLD, unscaled pad positions). Deriving scale,
- * offsetX, designHeight and boardY all from the same reduced number, in one
+ * offsetX, offsetY and designHeight all from the same reduced number, in one
  * place both consumers call, is what keeps them from drifting apart.
  *
  * Final round Tier 2 tried dropping this to 0.80 with a left-aligned
@@ -166,26 +128,35 @@ export const RAIL_WIDTH_UNITS = 140;
 
 /**
  * Pure contain-fit math: given a screen size (CSS px, e.g. #app-frame's
- * getBoundingClientRect()), returns the design->screen scale, the
- * horizontal letterbox offset, the resulting design-unit screen height, and
- * the vertical board-centering offset (mirrors towerScene.ts's anchorBoard,
- * against PLAYFIELD_HEIGHT rather than CONFIG.boardHeight). Both layout()
- * below and any DOM overlay call this — never re-derive it by hand.
+ * getBoundingClientRect()) and the HUD's own measured top/bottom band
+ * heights (also CSS px — Hud.tsx's ResizeObservers, store.ts's hudTopPx/
+ * hudBottomPx), returns the design->screen scale, the horizontal letterbox
+ * offset, the resulting FULL-screen design-unit height, and the screen-px
+ * y-offset at which the playfield's own top edge sits (topPx plus whatever
+ * extra centering slack the available vertical space has left over). Both
+ * layout() below and any DOM overlay call this — never re-derive it by hand.
  */
-export function getFit(screenW: number, screenH: number) {
-    const scale = Math.min(screenW / DESIGN_WIDTH, screenH / FIT_HEIGHT) * BOARD_SCALE;
+export function getFit(screenW: number, screenH: number, topPx: number, bottomPx: number) {
+    const availH = Math.max(0, screenH - topPx - bottomPx);
+    const scale = Math.min(screenW / DESIGN_WIDTH, availH / PLAYFIELD_HEIGHT) * BOARD_SCALE;
     const offsetX = (screenW - DESIGN_WIDTH * scale) / 2;
+    const offsetY = topPx + (availH - PLAYFIELD_HEIGHT * scale) / 2;
     const designHeight = screenH / scale;
-    const boardY = Math.max(0, (designHeight - PLAYFIELD_HEIGHT) / 2);
-    return { scale, offsetX, designHeight, boardY };
+    return { scale, offsetX, offsetY, designHeight };
 }
 
 /** Map a design-space point (e.g. a pad center) to screen CSS px, given the
  *  current #app-frame size. For DOM overlays only — Pixi content inside the
- *  canvas positions itself in design units directly via stage.root. */
-export function designToScreen(x: number, y: number, screenW: number, screenH: number) {
-    const { scale, offsetX, boardY } = getFit(screenW, screenH);
-    return { x: offsetX + x * scale, y: (y + boardY) * scale };
+ *  canvas positions itself in design units directly via stage.root. topPx/
+ *  bottomPx default to the pre-measure fallback for a caller that doesn't
+ *  have the live store value handy; pass the real measured values when
+ *  available (the store's hudTopPx/hudBottomPx). */
+export function designToScreen(
+    x: number, y: number, screenW: number, screenH: number,
+    topPx: number = FALLBACK_TOP_PX, bottomPx: number = FALLBACK_BOTTOM_PX,
+) {
+    const { scale, offsetX, offsetY } = getFit(screenW, screenH, topPx, bottomPx);
+    return { x: offsetX + x * scale, y: offsetY + y * scale };
 }
 
 /**
@@ -198,9 +169,11 @@ export function createStage(app: Application): Stage {
 
     const resizeCbs = new Set<() => void>();
     let _designHeight = 0;
+    let _boardOffsetY = 0;
 
     const layout = () => {
-        const { scale, offsetX, designHeight } = getFit(app.screen.width, app.screen.height);
+        const { hudTopPx, hudBottomPx } = store.get();
+        const { scale, offsetX, offsetY, designHeight } = getFit(app.screen.width, app.screen.height, hudTopPx, hudBottomPx);
         // Cold-boot blocker: a host that hasn't been sized yet (an iframe in
         // the RUN host, or dvw/dvh still settling on mobile) can call this
         // with screen 0x0, producing scale 0 -- committing that would leave
@@ -216,12 +189,33 @@ export function createStage(app: Application): Stage {
         root.scale.set(scale);
         root.x = offsetX;
         _designHeight = designHeight;
+        _boardOffsetY = offsetY / scale;
         for (const cb of resizeCbs) cb();
     };
 
     // app.screen is in CSS pixels regardless of resolution/autoDensity, so
     // the design mapping is unaffected by devicePixelRatio.
     app.renderer.on('resize', layout);
+    // Round 12b Part 1: re-run layout whenever Hud.tsx's ResizeObservers
+    // patch a genuinely new hudTopPx/hudBottomPx into the store — debounced
+    // to one animation frame so two patches landing in the same tick (both
+    // bands measuring on mount, or a rotate firing both observers at once)
+    // collapse into a single layout() pass rather than laying out twice.
+    let lastTopPx = store.get().hudTopPx;
+    let lastBottomPx = store.get().hudBottomPx;
+    let pendingFrame: number | null = null;
+    const scheduleLayout = () => {
+        if (pendingFrame !== null) return;
+        pendingFrame = requestAnimationFrame(() => { pendingFrame = null; layout(); });
+    };
+    const offStoreSub = store.subscribe(() => {
+        const s = store.get();
+        if (s.hudTopPx !== lastTopPx || s.hudBottomPx !== lastBottomPx) {
+            lastTopPx = s.hudTopPx;
+            lastBottomPx = s.hudBottomPx;
+            scheduleLayout();
+        }
+    });
     layout();
 
     return {
@@ -229,12 +223,15 @@ export function createStage(app: Application): Stage {
         width: DESIGN_WIDTH,
         designHeight: () => _designHeight,
         scale: () => root.scale.x,
+        boardOffsetY: () => _boardOffsetY,
         onResize(cb) {
             resizeCbs.add(cb);
             return () => resizeCbs.delete(cb);
         },
         destroy() {
             app.renderer.off('resize', layout);
+            offStoreSub();
+            if (pendingFrame !== null) cancelAnimationFrame(pendingFrame);
             resizeCbs.clear();
             root.destroy({ children: true });
         },

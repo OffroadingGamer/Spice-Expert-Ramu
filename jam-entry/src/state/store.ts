@@ -211,6 +211,19 @@ export interface AppState {
      *  only exist on the menu). Mirrors settingsOpen/ranksOpen's own
      *  "overlay, not a phase" posture. */
     renameOpen: boolean;
+    /** Round 12b Part 1 (HUD bands in pixels): the HUD's own top-row and
+     *  bottom-column containers' measured CSS-px heights (Hud.tsx's
+     *  ResizeObservers patch these), distance taken from #app-frame's own
+     *  top/bottom edges — the same box stage.ts's screenW/screenH describe.
+     *  stage.ts reads these to reserve real DOM space in getFit() instead
+     *  of a design-unit guess (see that file's own doc for why the old
+     *  guess forced Round 12's runaway BOTTOM_BAND=2400). Defaults are the
+     *  spec's own pre-measure fallback — matched by stage.ts's own
+     *  FALLBACK_TOP_PX/FALLBACK_BOTTOM_PX constants (duplicated as plain
+     *  literals rather than imported, to avoid a store.ts <-> stage.ts
+     *  circular import). */
+    hudTopPx: number;
+    hudBottomPx: number;
 }
 
 const INITIAL: AppState = {
@@ -265,6 +278,8 @@ const INITIAL: AppState = {
     playerName: null,
     bootNameDialogOpen: false,
     renameOpen: false,
+    hudTopPx: 96,
+    hudBottomPx: 240,
 };
 
 /**

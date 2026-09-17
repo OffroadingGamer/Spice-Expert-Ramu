@@ -6,10 +6,14 @@
  * control opts back in with pointer-events-auto.
  *
  * LAYOUT CONTRACT (portrait, phone-first):
- *   row 1        lives chip + coins chip left, hamburger right — this is
- *                stage.ts's reserved TOP_BAND; keep row 1+2 within it
+ *   row 1        lives chip + coins chip left, hamburger right — this and
+ *                row 2 sit inside `topRowRef` below, whose real rendered
+ *                height stage.ts reserves as `hudTopPx` (Round 12b Part 1 —
+ *                see that file's own doc for why this replaced a design-unit
+ *                TOP_BAND guess)
  *   row 2        rush counter left, speed buttons right, both nowrap
- *   bottom       stage.ts's reserved BOTTOM_BAND. Round 7 item 4: one
+ *   bottom       `bottomColRef` below, whose real rendered height stage.ts
+ *                reserves as `hudBottomPx`. Round 7 item 4: one
  *                always-mounted column — row 1 is the chef idle portrait
  *                (bottom-centre, 120px — ChefPortrait.tsx) with "Ready!"
  *                immediately to its right, vertically centred on it, shown
@@ -67,7 +71,7 @@
  * one empty-pad signal now, everywhere, so this file no longer tracks or
  * renders anything pulse-related.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { setMusicVolume, setSfxVolume, sfx, switchCue } from '../audio/audio.ts';
 import { buyKitchenAction, getEngine, kitchenActionPrice, startWave } from '../game/actions.ts';
 import { blockForLevel } from '../game/data/blocks.ts';
@@ -122,6 +126,9 @@ export default function Hud() {
     const [showObjective, setShowObjective] = useState(true);
     const [showMilestone, setShowMilestone] = useState(false);
     const [showGrant, setShowGrant] = useState(false);
+    // Round 12b Part 1: measured by the ResizeObserver effect below.
+    const topRowRef = useRef<HTMLDivElement>(null);
+    const bottomColRef = useRef<HTMLDivElement>(null);
 
     // Coin top-up toast (round D, task 3): re-show on every grant, even a
     // repeat amount — nonce, not the amount, is what keys the effect.
@@ -161,6 +168,53 @@ export default function Hud() {
         return () => clearTimeout(t);
     }, [isMilestoneWave]);
 
+    // Round 12b Part 1 (HUD bands in pixels): the two containers stage.ts
+    // now reserves clearance for, measured directly rather than guessed as
+    // a design-unit constant — see stage.ts's own doc for why the old guess
+    // was the actual bug. Distance is taken from #app-frame's own top/
+    // bottom edges (not the raw viewport), since that's the exact box
+    // stage.ts's screenW/screenH already describe: GameCanvas's own host and
+    // this HUD's root are both `inset-0` siblings inside the same
+    // app-frame-filling wrapper (App.tsx), so #app-frame IS the canvas's
+    // frame of reference. Both containers are ALWAYS mounted (only their
+    // INNER content — Ready, the actions row — comes and goes), so one
+    // ResizeObserver on each, set up once, sees every real change; a
+    // requestAnimationFrame coalesces the (up to two) callbacks that can
+    // fire in the same tick into one store write, so stage.ts's own
+    // rAF-debounced layout() (see that file) never re-lays-out twice for
+    // one visual change.
+    useEffect(() => {
+        const frame = document.getElementById('app-frame');
+        const topEl = topRowRef.current;
+        const bottomEl = bottomColRef.current;
+        if (!frame || !topEl || !bottomEl) return;
+        let raf: number | null = null;
+        const measure = () => {
+            raf = null;
+            const frameRect = frame.getBoundingClientRect();
+            const topRect = topEl.getBoundingClientRect();
+            const bottomRect = bottomEl.getBoundingClientRect();
+            const hudTopPx = Math.max(0, topRect.bottom - frameRect.top);
+            const hudBottomPx = Math.max(0, frameRect.bottom - bottomRect.top);
+            const cur = store.get();
+            if (cur.hudTopPx !== hudTopPx || cur.hudBottomPx !== hudBottomPx) {
+                store.patch({ hudTopPx, hudBottomPx });
+            }
+        };
+        const schedule = () => {
+            if (raf !== null) return;
+            raf = requestAnimationFrame(measure);
+        };
+        const ro = new ResizeObserver(schedule);
+        ro.observe(topEl);
+        ro.observe(bottomEl);
+        schedule();
+        return () => {
+            ro.disconnect();
+            if (raf !== null) cancelAnimationFrame(raf);
+        };
+    }, []);
+
     const applyVolumes = (music: number, sound: number) => {
         setMusicVolume(music);
         setSfxVolume(sound);
@@ -181,6 +235,24 @@ export default function Hud() {
     return (
         <div className="pointer-events-none absolute inset-0 pt-safe-top">
             <div className="flex flex-col gap-2 px-3">
+                {/* Round 12b Part 1: topRowRef wraps ONLY the persistent
+                    chrome (row 1, row 2, the wave-bubble submenu) — NOT the
+                    coin-toast or the objective/milestone banners just below,
+                    which are moved to after this wrapper's close. Those are
+                    transient (2.6s / 4-4.5s) and the objective banner in
+                    particular defaults to SHOWING on every run's first
+                    render — measuring straight through them inflated
+                    hudTopPx by ~200px in testing (a banner's own real
+                    height), which fed stage.ts's getFit() and visibly
+                    shrank the board for that whole opening window. Keeping
+                    them outside the measured subtree means they still
+                    render in the same visual column (just after row 1/2/
+                    submenu instead of interleaved before row 2) and simply
+                    draw over whatever's beneath them while visible, exactly
+                    as they effectively did before this round (band
+                    reservation was a fixed design-unit guess before,
+                    unaware of ANY HUD content's real height either). */}
+                <div ref={topRowRef} className="flex flex-col gap-2">
                 {/* row 1: status + hamburger */}
                 <div className="flex items-center justify-between gap-2">
                     <div id="hud-chip-row" className="flex min-w-0 gap-2">
@@ -225,24 +297,6 @@ export default function Hud() {
                         </svg>
                     </button>
                 </div>
-
-                {/* Coin top-up toast (round D, task 3; round 5 playtest fix:
-                    was `absolute left-3 top-24`, a magic offset that landed
-                    squarely on row 2 at 403x874 — half-covering the 1x speed
-                    button and reading as "an FTUE Shift float overlapping
-                    the WAVE chip" (playtest screenshot 1). Same structural
-                    fix as the Ready/Kitchen-Actions column below: a normal
-                    flow row in this same flex-col column, so it can't
-                    overlap row 2 at any viewport/safe-area — it just pushes
-                    row 2 down for the ~2.6s it's visible, same trade the
-                    objective/milestone banners already make lower down. */}
-                {showGrant && (
-                    <div className="pointer-events-none flex justify-start">
-                        <span className="rounded-lg bg-primary px-3 py-1 text-[1.05rem] font-bold text-black">
-                            +{ftueGrantAmount} 🪙 shift float
-                        </span>
-                    </div>
-                )}
 
                 {/* row 2: wave/rush + speed, both shrink-proof. Round 3 HUD
                     relabel (docs/LevelBlocks.md §11): WAVE and RUSH stop
@@ -348,6 +402,31 @@ export default function Hud() {
                     row 2 itself is what guarantees it can never overlap
                     either. */}
                 <WaveBubbleSubmenu state={waveBubble} />
+                </div>
+
+                {/* Coin top-up toast (round D, task 3; round 5 playtest fix:
+                    was `absolute left-3 top-24`, a magic offset that landed
+                    squarely on row 2 at 403x874 — half-covering the 1x speed
+                    button and reading as "an FTUE Shift float overlapping
+                    the WAVE chip" (playtest screenshot 1). Same structural
+                    fix as the Ready/Kitchen-Actions column below: a normal
+                    flow row in this same flex-col column, so it can't
+                    overlap row 1/2/submenu at any viewport/safe-area — it
+                    just pushes whatever comes after it down for the ~2.6s
+                    it's visible, same trade the objective/milestone banners
+                    make. Round 12b Part 1: moved from BETWEEN row 1 and row
+                    2 to AFTER the topRowRef-measured block (see that ref's
+                    own comment) — visually it now appears below the speed
+                    row instead of above it, a deliberate placement change to
+                    keep this transient toast out of the persistent HUD-band
+                    measurement, not an accident. */}
+                {showGrant && (
+                    <div className="pointer-events-none flex justify-start">
+                        <span className="rounded-lg bg-primary px-3 py-1 text-[1.05rem] font-bold text-black">
+                            +{ftueGrantAmount} 🪙 shift float
+                        </span>
+                    </div>
+                )}
 
                 {/* Mobile layout round, task 2: the objective/milestone
                     banners used to be separate `absolute top-20` overlays —
@@ -360,7 +439,12 @@ export default function Hud() {
                     at any height instead of a guessed pixel value — the
                     shared `gap-2` is the only spacing rule, and it already
                     applies correctly whether 0, 1, or 2 of the rows above
-                    grow. Objective and milestone are mutually exclusive
+                    grow. Round 12b Part 1: this column's ITSELF is now
+                    outside topRowRef (see that ref's own comment) — still
+                    the same shared flex-col, still "below the top rows" by
+                    the same construction, just no longer part of what
+                    stage.ts reserves board-scale clearance for. Objective
+                    and milestone are mutually exclusive
                     (each guards on !showMilestone / the FTUE state so only
                     one ever speaks at once — round 19's belt mistake was
                     two cues teaching the same moment), so at most one of
@@ -410,9 +494,10 @@ export default function Hud() {
                 conditional — see bottomBandActive/showInlineReady above. */}
             {/* Round 7 item 4: gap-1 (was gap-2) between row 1 and row 2 —
                 shaved 4px off the column's total height, part of clearing
-                the path's exit corner alongside stage.ts's BOTTOM_BAND bump
-                (see that constant's own doc for the measured numbers). */}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-1 px-3 pb-safe-bottom">
+                the path's exit corner alongside stage.ts's then-BOTTOM_BAND
+                bump (that constant is gone — Round 12b Part 1 replaced it
+                with a measured hudBottomPx; see stage.ts's own doc). */}
+            <div ref={bottomColRef} className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-1 px-3 pb-safe-bottom">
                 {/* Round 2c (docs/Ideas.md §6d amendment) removed the
                     upgrade-reminder toast that used to live here at
                     wave 4 — replaced by the Lv↑ markers towerScene.ts

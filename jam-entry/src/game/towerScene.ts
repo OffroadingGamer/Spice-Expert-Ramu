@@ -53,7 +53,7 @@ import { store } from '../state/store.ts';
 import { getSave, recordRunEnd } from '../state/save.ts';
 import { submitRunScores } from '../sdk/leaderboard.ts';
 import { duckMusicForSting, playSample, resetMusicDuck, sfx } from '../audio/audio.ts';
-import { PLAYFIELD_HEIGHT, type Stage } from './stage.ts';
+import type { Stage } from './stage.ts';
 
 /** The scene contract: every createXxxScene(app, stage) returns one of these. */
 export interface Scene {
@@ -351,9 +351,17 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     }
 
     // boardRoot carries EVERYTHING gameplay-positioned. stage.ts's contain-fit
-    // (FIT_HEIGHT) guarantees at least PLAYFIELD_HEIGHT units of vertical
-    // room; on taller/wider-fit aspects boardRoot is offset so the extra
-    // height splits evenly above and below — the path itself never
+    // guarantees at least PLAYFIELD_HEIGHT units of vertical room outside its
+    // measured HUD bands; boardRoot.y (anchorBoard, below) is stage's own
+    // boardOffsetY() — Round 12b Part 1: this used to be reimplemented here
+    // as `max(0, (designHeight-PLAYFIELD_HEIGHT)/2)`, a SYMMETRIC split that
+    // silently assumed the top and bottom reservations were equal. They
+    // never were (top/bottom HUD chrome differ), so that formula only ever
+    // delivered HALF of whichever band mattered as real clearance — the
+    // actual reason Round 12's own BOTTOM_BAND fix needed such an oversized
+    // number to close a bottom-only gap. Reading stage.boardOffsetY()
+    // instead keeps this in the one place (stage.ts) that now knows the
+    // real, asymmetric, pixel-measured answer — the path itself never
     // stretches, keeping path length (and therefore balance) identical on
     // every device and in the headless simulator.
     const boardRoot = new Container();
@@ -920,7 +928,6 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     }
 
     const anchorBoard = () => {
-        const dh = stage.designHeight();
         // Re-fit every live backdrop sprite (usually one, briefly two mid-
         // crossfade) against the current screen box — cover-fit, so this
         // also handles contain-fit's horizontal letterboxing (stage.ts,
@@ -928,12 +935,11 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         // screen width, and fitBackdropSprite re-derives the true visible
         // design-unit box from the live screen/scale on every call.
         for (const sprite of backdropSprites) fitBackdropSprite(sprite);
-        // Centre against the playfield's real extent (PLAYFIELD_HEIGHT,
-        // derived from CONFIG.path — see stage.ts), not the nominal
-        // CONFIG.boardHeight: boardHeight undercounts the path's actual
-        // last point (y:1300 vs boardHeight's 1280), which is what let the
-        // goal clip off the bottom pre-round-C.
-        boardRoot.y = Math.max(0, (dh - PLAYFIELD_HEIGHT) / 2);
+        // Round 12b Part 1: stage.boardOffsetY() is the real, asymmetric
+        // (pixel-band-aware) placement — see this function's own doc above
+        // for why the old symmetric `(dh-PLAYFIELD_HEIGHT)/2` reimplementation
+        // here was itself the bug this round fixes, not just a duplicate.
+        boardRoot.y = stage.boardOffsetY();
     };
     anchorBoard();
     const offResize = stage.onResize(anchorBoard);

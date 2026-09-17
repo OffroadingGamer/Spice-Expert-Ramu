@@ -46,6 +46,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { sfx } from '../audio/audio.ts';
 import { scriptedRunStart } from '../game/actions.ts';
+import { MANIFEST } from '../assets/manifest.ts';
 import { diffAndRecordRank } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import {
@@ -62,6 +63,12 @@ import {
 import { getBlurredBackdrop } from './blurredBackdrop.ts';
 import NameDialog from './NameDialog.tsx';
 import { useMenuUnit } from './useMenuUnit.ts';
+
+// Same ASSET_SRC-from-manifest lookup ChefPortrait.tsx/blurredBackdrop.ts
+// already use, not a second alias->path map.
+const ASSET_SRC = new Map(
+    MANIFEST.bundles.flatMap((b) => b.assets).map((a) => [a.alias as string, a.src as string])
+);
 
 // Round 12 Part 2: the restyle's own palette (docs/Ideas.md §6d, "Playtest
 // of 1.83.0" item 5, look B). CHOCOLATE/CREAM match this project's existing
@@ -203,6 +210,50 @@ function MessageTicket({ children, mu }: { children: ReactNode; mu: number }) {
 const STEP_HEIGHT_MU: Record<1 | 2 | 3, number> = { 1: 30, 2: 20, 3: 13 };
 const DISC_SIZE_MU: Record<1 | 2 | 3, number> = { 1: 40, 2: 30, 3: 30 };
 
+/**
+ * Round 12b Part 2: the real laurel art (Art/_gen/ranks-kitchen-final/
+ * laurel.png, shipped at 256^2 — see assets/manifest.ts's own doc)
+ * replaces the Round 12 emoji placeholder. Sized "by its opaque bbox" the
+ * same way towerScene.ts's placeHatch sizes hatch decals off
+ * alphaContentBBox — measured once, offline (this file has no runtime
+ * pixel-reading path the way a Pixi Sprite does), against the shipped
+ * 256x256 PNG: opaque content spans x:[25,230], y:[33,224] — width 206,
+ * height 192, horizontally centred in the canvas (25px padding both
+ * sides), NOT vertically centred (33px top pad, 31px bottom pad).
+ *
+ * The spec's own "34 mu wide" targets the OPAQUE width, not the raw <img>
+ * element's — so the element itself must be wider than 34mu to compensate
+ * for the transparent margin baked into the source file:
+ *   fullWidthMu = 34 / (206/256) = 34 * 256/206 ≈ 42.25mu (the canvas is
+ *   square, so the <img> renders at fullWidthMu x fullWidthMu).
+ * "Sized by the image's opaque bbox height" describes the RESULT, not a
+ * second independent target: opaque height = fullWidthMu * (192/256) ≈
+ * 31.68mu, derived from the same uniform scale, never set separately.
+ *
+ * "Its bottom edge overlapping the disc's top by 4mu" means the OPAQUE
+ * wreath's bottom, not the padded image element's own bottom — the 31px
+ * (of 256) transparent margin below the opaque content is
+ * 31/256 * fullWidthMu ≈ 5.12mu of invisible space UNDER the wreath.  A
+ * negative margin-bottom on the <img> pulls the disc up to close both
+ * that invisible gap AND the requested 4mu overlap in one number:
+ *   marginBottomMu = -(4 + 5.12) ≈ -9.12mu.
+ * Horizontal centring needs no such correction — the opaque content's
+ * left/right padding is symmetric (25px each side of 256), so centring the
+ * full (padded) image already centres the opaque wreath too.
+ */
+const LAUREL_OPAQUE_W = 206;
+const LAUREL_OPAQUE_H = 192;
+const LAUREL_CANVAS = 256;
+const LAUREL_BOTTOM_PAD = LAUREL_CANVAS - 225; // 256 - (maxY=224 + 1)
+const LAUREL_TARGET_OPAQUE_W_MU = 34;
+const LAUREL_OVERLAP_MU = 4;
+const LAUREL_FULL_W_MU = LAUREL_TARGET_OPAQUE_W_MU * (LAUREL_CANVAS / LAUREL_OPAQUE_W);
+const LAUREL_MARGIN_BOTTOM_MU = -(LAUREL_OVERLAP_MU + (LAUREL_BOTTOM_PAD / LAUREL_CANVAS) * LAUREL_FULL_W_MU);
+/** Exported for this round's own verification script (see the report) —
+ *  the resulting opaque height once the width target above is applied;
+ *  nothing in this file reads it directly. */
+export const LAUREL_RESULT_OPAQUE_H_MU = LAUREL_FULL_W_MU * (LAUREL_OPAQUE_H / LAUREL_CANVAS);
+
 /** Round 12 Part 2.4: one brass step — avatar-on-a-disc, name, score above
  *  a physical step rectangle whose height is the spec's own per-rank number
  *  (30/20/13mu); the step's face carries the rank number in chocolate. The
@@ -216,15 +267,22 @@ function PodiumStep({ entry, rank, highlight, mu }: { entry: BoardEntry; rank: 1
     const discSize = DISC_SIZE_MU[rank] * mu;
     return (
         <div className="flex flex-col items-center" style={{ width: 62 * mu }}>
-            {/* Round 12 Part 2.4: "a small laurel glyph" — Unicode has no
-                dedicated laurel-wreath character; the rosette emoji is the
-                closest available glyph to a wreath/medal shape, used here
-                rather than shipping new art (this round's own "no new art"
-                constraint). */}
-            {rank === 1 && (
-                <span aria-hidden="true" style={{ fontSize: Math.max(11, 14 * mu), lineHeight: 1, marginBottom: 2 * mu }}>
-                    🏵️
-                </span>
+            {/* Round 12b Part 2: the real laurel.png (Round 12's own emoji
+                placeholder retired) — sizing/positioning derived from the
+                shipped PNG's own opaque bbox, see the constants' own doc
+                above. */}
+            {rank === 1 && ASSET_SRC.get('ui-laurel') && (
+                <img
+                    src={ASSET_SRC.get('ui-laurel')}
+                    alt=""
+                    draggable={false}
+                    style={{
+                        width: LAUREL_FULL_W_MU * mu,
+                        height: LAUREL_FULL_W_MU * mu,
+                        marginBottom: LAUREL_MARGIN_BOTTOM_MU * mu,
+                        pointerEvents: 'none',
+                    }}
+                />
             )}
             <div
                 className="flex shrink-0 items-center justify-center rounded-full"

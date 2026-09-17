@@ -107,15 +107,27 @@ function useRailFit(): { railPx: number; scale: number } {
     useEffect(() => {
         const frame = document.getElementById('app-frame');
         if (!frame) return;
+        // Round 12b Part 1: getFit() now takes the HUD's own measured band
+        // heights (store.ts's hudTopPx/hudBottomPx) instead of a design-unit
+        // guess — read live here so this rail's scale never drifts from
+        // stage.ts's own (same values feed both).
         const compute = () => {
             const rect = frame.getBoundingClientRect();
-            const { scale } = getFit(rect.width, rect.height);
-            setFit({ railPx: Math.max(scale * RAIL_WIDTH_UNITS, RAIL_MIN_PX), scale });
+            const { hudTopPx, hudBottomPx } = store.get();
+            const { scale } = getFit(rect.width, rect.height, hudTopPx, hudBottomPx);
+            const railPx = Math.max(scale * RAIL_WIDTH_UNITS, RAIL_MIN_PX);
+            setFit((prev) => (prev.railPx === railPx && prev.scale === scale ? prev : { railPx, scale }));
         };
         compute();
         const ro = new ResizeObserver(compute);
         ro.observe(frame);
-        return () => ro.disconnect();
+        // Store-wide subscribe (not just the two band fields) is cheap here:
+        // compute() bails out via the functional setFit above whenever
+        // neither value actually moved, so the frequent per-frame patches
+        // this store also carries (gauge, coins, ...) cost one comparison,
+        // not a re-render.
+        const offStoreSub = store.subscribe(compute);
+        return () => { ro.disconnect(); offStoreSub(); };
     }, []);
     return fit;
 }

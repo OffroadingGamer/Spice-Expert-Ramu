@@ -292,6 +292,13 @@ export const MANIFEST: Manifest = {
                 // 144,106 bytes. Deferred: the submenu can't open before wave
                 // 1 clears at the earliest, well after boot.
                 { alias: 'ui-scroll', src: 'images/ui/scroll.png' },
+                // Round 12b Part 2 (HUD bands hotfix): the ranks podium's
+                // real laurel art (Art/_gen/ranks-kitchen-final/laurel.png,
+                // 1024^2, transparent) — resized to 256^2 (Lanczos, alpha
+                // kept) since the podium only ever shows it at ~34mu wide.
+                // Deferred: Ranks can't open before the menu/HUD boot path
+                // finishes either.
+                { alias: 'ui-laurel', src: 'images/ui/laurel.png' },
             ],
         },
     ],
