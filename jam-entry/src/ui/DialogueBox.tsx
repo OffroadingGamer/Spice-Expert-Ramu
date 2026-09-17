@@ -63,6 +63,22 @@
  * Round 4 drops the 100px compact-strip case Round 3 added for beat 3's old
  * rail-clearance window — every beat renders the full 160px now.
  *
+ * Round 7 item 2 (docs/Ideas.md §6d, playtest of 1.77.0): beats 5-12 only
+ * (the district/overtime beats — DISTRICT_BLOCK_ID below is exactly that
+ * set) get a header line above the dialogue text, "RUSH: <BLOCK LABEL>" in
+ * the WAVE chip's own sub-label wording (Hud.tsx: "RUSH: {block.label}") —
+ * blocks.ts's labels are already upper-case, so no text-transform is doing
+ * real work, just insurance. Looked up by the beat's own id rather than the
+ * live store.wave, so there's no dependency on exactly when syncStore's
+ * patch lands relative to this render (see towerScene.ts's tick() — the
+ * block-boundary detection that queues these beats runs before syncStore in
+ * the same tick, but reading the beat id directly needs no reasoning about
+ * that ordering at all). Beats 1-4 (no header) keep the original
+ * items-center/self-center centering; a header beat switches the row to
+ * items-start so the portrait's top edge lines up with the header's own
+ * top line ("portrait nudged up") instead of the whole block being
+ * centered lower against just one line of text.
+ *
  * The one FTUE-specific wire this whole dialogue pass needs: closing the
  * OPENING beat is what releases the placeFirst picker cue (StationRail's
  * station list + arrow) — scriptedRunStart (actions.ts) held selectedPad at
@@ -73,9 +89,31 @@
  */
 import { advanceDialogue, muteDialogue, skipDialogue } from '../game/dialogueController.ts';
 import { FTUE_FIRST_PAD, openUpgrade0Beat, startWave } from '../game/actions.ts';
+import { BLOCKS } from '../game/data/blocks.ts';
 import { sfx } from '../audio/audio.ts';
 import { store, useStore } from '../state/store.ts';
 import ChefPortrait from './ChefPortrait.tsx';
+
+/** Round 7 item 2: beat id -> block id, for exactly the district/overtime
+ *  beats (data/dialogue.ts's own ids) — enumerated explicitly rather than
+ *  parsed out of the id string, so "beats 5-12 only" is a literal, visible
+ *  set here rather than a regex some future beat id could accidentally
+ *  match or miss. */
+const DISTRICT_BLOCK_ID: Record<string, number> = {
+    'district-2': 2,
+    'district-3': 3,
+    'district-4': 4,
+    'district-5': 5,
+    'district-6': 6,
+    'district-7': 7,
+    'district-8': 8,
+    overtime: 9,
+};
+
+/** Round 7 item 2: "box ~15% taller" for a header beat — 184 is the box's
+ *  natural (no-header) height (160px portrait + p-3's 12px top/bottom
+ *  padding), measured live rather than assumed. */
+const HEADER_BOX_MIN_PX = Math.round(184 * 1.15);
 
 /** After closing the opening beat specifically, release the placeFirst
  *  picker cue — a no-op for every other beat, and a no-op if the player
@@ -106,6 +144,8 @@ export default function DialogueBox() {
 
     const isLastLine = dialogue.index === dialogue.lines.length - 1;
     const readyTap = dialogue.id === 'stove-lit' || dialogue.id === 'wave4-ready';
+    const districtBlockId = DISTRICT_BLOCK_ID[dialogue.id];
+    const header = districtBlockId ? `RUSH: ${BLOCKS[districtBlockId - 1].label}` : null;
 
     const onClosed = (closedId: string) => {
         releasePlaceFirstIfOpeningClosed(closedId);
@@ -146,12 +186,24 @@ export default function DialogueBox() {
                 and a <button> can't contain another <button> (invalid HTML;
                 browsers hoist the nested one out, breaking both the layout
                 and the tap target). Continue fills the box edge-to-edge. */}
-            <div className="pointer-events-auto relative w-full max-w-md overflow-hidden rounded-2xl bg-black/80">
+            <div
+                className="pointer-events-auto relative w-full max-w-md overflow-hidden rounded-2xl bg-black/80"
+                // Round 7 item 2: "box ~15% taller" for the header beats.
+                // The box's natural height (no header) is bounded by the
+                // 160px portrait plus its p-3 padding (~184px) — the header
+                // line alone doesn't grow it (the text column is shorter
+                // than the portrait either way), so a header beat needs an
+                // explicit floor: HEADER_BOX_MIN_PX is exactly 184 * 1.15,
+                // rounded.
+                style={header ? { minHeight: HEADER_BOX_MIN_PX } : undefined}
+            >
                 <button
                     type="button"
                     aria-label="Continue"
                     onClick={handleAdvance}
-                    className="flex w-full items-center gap-3 p-3 text-left"
+                    className={
+                        'flex w-full gap-3 p-3 text-left ' + (header ? 'h-full items-start' : 'items-center')
+                    }
                 >
                     <ChefPortrait size={160} variant="dialogue" />
                     {/* Round 2c: centred against the portrait (was
@@ -159,10 +211,28 @@ export default function DialogueBox() {
                         items-center on the row above plus self-center here is
                         what actually centres it, since a flex-1 child
                         otherwise stretches to the row's own cross-size and
-                        top-aligns its own text by default). */}
-                    <p className="flex-1 self-center text-[1.05rem] leading-snug font-semibold text-white">
-                        {dialogue.lines[dialogue.index]}
-                    </p>
+                        top-aligns its own text by default). Round 7 item 2:
+                        a header beat instead uses items-start on the row
+                        (above) so the header's own top line sits level with
+                        the portrait's top edge — self-center here still
+                        centres the (header+text) column as a group inside
+                        whatever height the row gives it, unchanged. Round 7
+                        item 2: self-center would override items-start above
+                        for header beats (a per-child align-self always wins
+                        over the parent's align-items), so it switches to
+                        self-start there instead — the div's own top (the
+                        header line) then sits at the row's top same as the
+                        portrait, rather than being re-centred past it. */}
+                    <div className={'flex flex-1 flex-col gap-1 ' + (header ? 'self-start' : 'self-center')}>
+                        {header && (
+                            <span className="text-[0.7rem] font-bold tracking-wide text-primary uppercase">
+                                {header}
+                            </span>
+                        )}
+                        <p className="text-[1.05rem] leading-snug font-semibold text-white">
+                            {dialogue.lines[dialogue.index]}
+                        </p>
+                    </div>
                 </button>
                 {/* Round 2c: moved inside the box (was rendering outside its
                     right edge at white/70 on transparent — illegible at arm's

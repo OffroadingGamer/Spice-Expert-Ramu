@@ -85,7 +85,12 @@ const DEFAULTS: SaveData = {
     bestWave: 0,
     gems: 0,
     meta: emptyMeta(),
-    audio: { music: 0.6, sfx: 0.8 },
+    // Round 7 item 5 (docs/Ideas.md §6d): default BGM 60% -> 50%. This is
+    // the one that actually matters for "fresh installs boot at 50%" — a
+    // save with no stored `audio.music` value falls back to this via
+    // parse()'s `vol(rawAudio.music, DEFAULTS.audio.music)` below. A stored
+    // value (any prior save, any volume) is read as-is and never touched.
+    audio: { music: 0.5, sfx: 0.8 },
     ads: { watchedToday: 0, lastResetDay: null },
     ftue: { challengeDone: false, firstTowerId: null },
     kitchen: { bestLevel: 0, propsOwned: [], shiftsCompleted: 0, hats: 0, clears: {} },

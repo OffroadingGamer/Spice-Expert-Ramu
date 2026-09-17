@@ -3,10 +3,16 @@
  * separate 320x320 PNG composited at inset-0 (no offsets — the source art is
  * aligned by construction, see manifest.ts's Rounds 0+1 comment). Two mount
  * points, one component:
- *   - 'dialogue' — 160px, inside DialogueBox.tsx's reserved slot.
- *   - 'idle'     — ~72-100px (device-dependent — see useLeftGutterPx below
- *     and the round's report), bottom-left, only ever warm/worried, hidden
- *     whenever the dialogue portrait is already showing.
+ *   - 'dialogue' — 160px, inside DialogueBox.tsx's reserved slot (also
+ *     reused by EndScreen.tsx's Ramu line — Round 7 item 6 — with an
+ *     explicit `face` override, see ChefPortraitProps below).
+ *   - 'idle'     — Round 7 item 4 (docs/Ideas.md §6d): fixed 120px,
+ *     bottom-CENTRE now, a plain flex child of Hud.tsx's bottom band next
+ *     to Ready — retiring the old device-dependent left-gutter sizing
+ *     (useLeftGutterPx, deleted; see that round's own report for why the
+ *     bottom band existing on every phone made it unnecessary). Still only
+ *     ever warm/worried, still hidden whenever the dialogue portrait is
+ *     already showing.
  *
  * Costume = blockForLevel(wave) via data/blocks.ts's chefBodyAliasForBlock
  * (shared with towerScene.ts's own prefetch — one slug function, not two).
@@ -37,7 +43,6 @@ import { CONFIG } from '../game/config.ts';
 import { blockForLevel, chefBodyAliasForBlock } from '../game/data/blocks.ts';
 import { BACKDROP_FADE_S } from '../game/towerScene.ts';
 import { unmuteDialogue } from '../game/dialogueController.ts';
-import { getFit } from '../game/stage.ts';
 import { sfx } from '../audio/audio.ts';
 import { useStore } from '../state/store.ts';
 
@@ -55,15 +60,17 @@ const BODY_BACKDROP_FADE_MS = BACKDROP_FADE_S * 1000;
  *  ensureBlockAssets already warms every costume a block early). */
 const SLOW_LOAD_WARN_MS = 3000;
 
-/** Task 1 (this round's report has the measured numbers): the idle sprite
- *  lives in the horizontal letterbox slack stage.ts's contain-fit leaves
- *  outside the board — never inside it — so it structurally cannot reach
- *  pad D1 (design x:225), which sits well inside the board's own left edge.
- *  IDLE_MARGIN_PX is pure cosmetic clearance from the screen edge and the
- *  board edge, not a D1-safety margin. */
-const IDLE_MARGIN_PX = 8;
-const IDLE_SIZE_MAX = 100;
-const IDLE_SIZE_FLOOR = 72;
+/** Round 7 item 4: fixed now — the bottom band is DOM flow on every phone
+ *  (Hud.tsx), so there's no device-dependent gutter left to size against
+ *  (the old IDLE_MARGIN_PX/IDLE_SIZE_MAX/IDLE_SIZE_FLOOR/useLeftGutterPx
+ *  machinery this replaced is gone). 104, not the handover's literal
+ *  "~120" — measured live against stage.ts's own contain-fit at 403x874
+ *  (the tightest tested viewport, same one that round C's BOTTOM_BAND was
+ *  originally calibrated against): 120 pushed the row high enough to clip
+ *  the path's own exit corner under Ready (screenshotted, not guessed).
+ *  104 (still ~2x the old idle sprite's 72-100px range) clears it with
+ *  real margin alongside BOTTOM_BAND's own bump — see that constant's doc. */
+const IDLE_SIZE = 104;
 
 function usePrefersReducedMotion(): boolean {
     const [reduced, setReduced] = useState(() => {
@@ -218,9 +225,16 @@ function useResolvedAlias(targetAlias: string, computeDurationMs: () => number, 
 export interface ChefPortraitProps {
     size: number;
     variant: 'dialogue' | 'idle';
+    /** Round 7 item 6 (EndScreen.tsx's Ramu line): overrides the normal
+     *  dialogue/lives-driven face priority below outright — the end screen
+     *  picks a face from its own outcome table (new best/near best/held/
+     *  early), which has nothing to do with whatever store.dialogue or
+     *  store.lives happen to hold at that instant. Omitted everywhere else,
+     *  leaving the existing priority untouched. */
+    face?: 'a' | 'b' | 'c' | 'w';
 }
 
-export default function ChefPortrait({ size, variant }: ChefPortraitProps) {
+export default function ChefPortrait({ size, variant, face }: ChefPortraitProps) {
     const wave = useStore((s) => s.wave);
     const dialogue = useStore((s) => s.dialogue);
     const lives = useStore((s) => s.lives);
@@ -245,11 +259,12 @@ export default function ChefPortrait({ size, variant }: ChefPortraitProps) {
 
     const block = blockForLevel(wave);
     const bodyAlias = chefBodyAliasForBlock(block);
-    const faceLetter = cueing
-        ? 'b'
-        : dialogue
-            ? dialogue.voice === 'A' ? 'a' : dialogue.voice === 'B' ? 'b' : 'c'
-            : lives < CONFIG.economy.startLives * 0.3 ? 'w' : 'a';
+    const faceLetter = face
+        ?? (cueing
+            ? 'b'
+            : dialogue
+                ? dialogue.voice === 'A' ? 'a' : dialogue.voice === 'B' ? 'b' : 'c'
+                : lives < CONFIG.economy.startLives * 0.3 ? 'w' : 'a');
     const faceAlias = `chef-face-${faceLetter}`;
 
     // Hooks run unconditionally, before the idle/dialogue-open early return
@@ -331,48 +346,21 @@ export function ChefHeadIcon() {
     );
 }
 
-/** Task 1: the live left-letterbox width (CSS px) — stage.ts's getFit() is
- *  the one source of truth (same formula layout() and Hud.tsx's
- *  usePadsScreenPos already use), read here, never re-derived by hand.
- *  Tracks #app-frame's size via ResizeObserver, same pattern as
- *  usePadsScreenPos. */
-function useLeftGutterPx(): number {
-    const [gutter, setGutter] = useState(0);
-    useEffect(() => {
-        const frame = document.getElementById('app-frame');
-        if (!frame) return;
-        const compute = () => setGutter(getFit(frame.getBoundingClientRect().width, frame.getBoundingClientRect().height).offsetX);
-        compute();
-        const ro = new ResizeObserver(compute);
-        ro.observe(frame);
-        return () => ro.disconnect();
-    }, []);
-    return gutter;
-}
-
 /**
- * The idle mount point: bottom-left, sized off the live gutter (Task 1).
- * ~100px when the gutter is generous (>= ~116px after clearance), scaling
- * down as it shrinks, hidden outright once even a 72px sprite wouldn't fit
- * clear of both screen edges — never overlapping pad D1 by construction
- * (the gutter is OUTSIDE the board; D1 is well inside it — see the
- * component doc above). z-index intentionally omitted (mounted before the
- * Ready column / rail / DialogueBox in Hud.tsx's DOM order) so Round 3's
- * service gauge — sharing this same bottom-left region — can sit BEHIND it
- * at an even lower z-index without a fight; this leaves the full gutter
- * width and a z:auto slot for that.
+ * The idle mount point. Round 7 item 4: a plain, fixed-size (IDLE_SIZE)
+ * flex child now — no absolute positioning, no gutter measurement, no
+ * ResizeObserver. Hud.tsx mounts this as the first element of its bottom
+ * band's row 1, immediately left of Ready during the build phase and alone
+ * during the wave phase; being ordinary DOM flow inside that row is what
+ * makes "never overlapping D1 or the path" true by construction (the row
+ * lives entirely within stage.ts's reserved BOTTOM_BAND), the same
+ * argument the rest of Hud.tsx's bottom band already relies on. z-index
+ * intentionally omitted, matching every other plain-flow HUD element.
  */
 export function ChefPortraitIdle() {
-    const gutter = useLeftGutterPx();
-    const size = Math.min(gutter - IDLE_MARGIN_PX * 2, IDLE_SIZE_MAX);
-    if (size < IDLE_SIZE_FLOOR) return null;
     return (
-        <div
-            id="chef-portrait-idle"
-            className="pointer-events-none absolute left-2"
-            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}
-        >
-            <ChefPortrait size={size} variant="idle" />
+        <div id="chef-portrait-idle" className="pointer-events-none shrink-0">
+            <ChefPortrait size={IDLE_SIZE} variant="idle" />
         </div>
     );
 }

@@ -1744,12 +1744,18 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         const phase = engine.state.phase;
         if (phase === 'lost') {
             ended = true;
+            // Round 7 item 6: capture the OLD best before recordRunEnd
+            // overwrites it below — EndScreen.tsx's "new best" vs "near
+            // best" outcome needs both numbers, and reading store.bestWave
+            // after the patch would only ever see the already-updated one.
+            const previousBestWave = store.get().bestWave;
             // waveIndex counts fully CLEARED waves at this point
             const { gemsEarned, save } = recordRunEnd(engine.state.waveIndex);
             // fire-and-forget: both boards, server keeps each player's best
             submitRunScores(engine.state.kills, engine.state.waveIndex, engine.state.elapsed);
             store.patch({
                 bestWave: save.bestWave,
+                previousBestWave,
                 gems: save.gems,
                 gemsEarned,
                 adBonusClaimed: false,

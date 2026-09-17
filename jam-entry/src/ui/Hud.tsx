@@ -9,9 +9,22 @@
  *   row 1        lives chip + coins chip left, hamburger right — this is
  *                stage.ts's reserved TOP_BAND; keep row 1+2 within it
  *   row 2        rush counter left, speed buttons right, both nowrap
- *   bottom       "Ready!" centred, hidden while a pad is selected (the rail
- *                shows its build/manage panel instead) and hidden while the
- *                shift menu is open — this is stage.ts's reserved BOTTOM_BAND
+ *   bottom       stage.ts's reserved BOTTOM_BAND. Round 7 item 4: one
+ *                always-mounted column — row 1 is the chef idle portrait
+ *                (bottom-centre, 120px — ChefPortrait.tsx) with "Ready!"
+ *                immediately to its right, vertically centred on it, shown
+ *                only during the build phase (hidden with the rail while a
+ *                pad is selected, with the shift menu, or under the post-
+ *                boss panel below); row 2 is the Kitchen Actions row,
+ *                centred under the pair, same build-phase gating. This
+ *                retires the old bottom-left idle mount and its device-
+ *                dependent gutter sizing (ChefPortrait.tsx's own doc has
+ *                the detail) — the bottom band exists on every phone now,
+ *                so there's no gutter left to measure.
+ *   post-boss    PostBossPanel.tsx: a centred overlay for the one build
+ *                phase right after a boss level clears — its own READY
+ *                replaces the inline one for that wave; the Kitchen
+ *                Actions row stays usable underneath it.
  * Every edge uses px-3 plus safe-area padding: nothing touches a screen
  * edge, and the speed row shrinks rather than overflowing.
  *
@@ -63,6 +76,7 @@ import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import { ChefHeadIcon, ChefPortraitIdle } from './ChefPortrait.tsx';
 import DialogueBox from './DialogueBox.tsx';
+import PostBossPanel, { usePostBossPanel } from './PostBossPanel.tsx';
 import ServiceRing from './ServiceRing.tsx';
 import Slider from './Slider.tsx';
 import { useWaveBubble, WaveBubbleSubmenu, WaveBubbleTrigger } from './WaveBubble.tsx';
@@ -122,6 +136,7 @@ export default function Hud() {
     const ftueGrantNonce = useStore((s) => s.ftueGrantNonce);
     const dialogue = useStore((s) => s.dialogue);
     const waveBubble = useWaveBubble();
+    const bossPanel = usePostBossPanel();
     // Blocker round audit: the Kitchen Actions row below reads getEngine()
     // during render, same non-reactive-read shape StationRail.tsx's own doc
     // comment describes in full. Not the reported repro path (this row only
@@ -185,6 +200,13 @@ export default function Hud() {
 
     const openMenu = () => { sfx.click(); store.patch({ paused: true }); setMenuOpen(true); };
     const closeMenu = () => { sfx.click(); store.patch({ paused: false }); setMenuOpen(false); };
+
+    // Round 7 item 4: the bottom band's build-phase gate — same conditions
+    // Ready has always used, shared here so the actions row (which stays
+    // usable under the post-boss panel) and Ready (which does not) can gate
+    // independently off one source instead of repeating the clause twice.
+    const bottomBandActive = tdPhase === 'build' && selectedPad === null && ftueBeat === null && dialogue === null && !menuOpen;
+    const showInlineReady = bottomBandActive && !bossPanel.visible;
 
     return (
         <div className="pointer-events-none absolute inset-0 pt-safe-top">
@@ -270,17 +292,17 @@ export default function Hud() {
                         </div>
                         {/* Round 3 (docs/Ideas.md §6d amendment, "Skip = mute"):
                             always-present un-mute tap target — the idle chef
-                            portrait (ChefPortraitIdle) is the other one, but
-                            it hides itself below IDLE_SIZE_FLOOR on narrow-
-                            gutter phones (the 403x874 reference included),
-                            so this is the one guaranteed to exist everywhere.
-                            Placed next to the WAVE chip (not under it) so it
-                            can never collide with the row below. Stable id —
-                            Round 4's chat bubble anchors here unconditionally
-                            now (see WaveBubble.tsx — this button is always
-                            present, unlike the idle chef sprite, so it needs
-                            no gutter-width fallback). unmuteDialogue() no-ops
-                            while not muted, so this is always safe to tap.
+                            portrait (ChefPortraitIdle, now bottom-centre in
+                            the bottom band — Round 7 item 4) is the other
+                            one; both are always mounted today (the bottom
+                            band exists on every phone, retiring the gutter
+                            case this comment used to describe), so this one
+                            mainly exists as the top-left ring/bubble anchor
+                            below. Placed next to the WAVE chip (not under
+                            it) so it can never collide with the row below.
+                            Stable id — Round 4's chat bubble anchors here.
+                            unmuteDialogue() no-ops while not muted, so this
+                            is always safe to tap.
                             Round 4 Part D: wrapped in a 52px box so
                             ServiceRing (the service gauge, now a ring
                             instead of Round 3's bar) can sit behind the 44px
@@ -383,81 +405,107 @@ export default function Hud() {
                 scale, because normal flex flow (not two independently
                 positioned siblings) is what's placing them. This also
                 retires the wave-4 toast's old bottom-48 fixed clearance
-                (see its own comment below) in favour of the same flow. */}
-            {tdPhase === 'build' && selectedPad === null && ftueBeat === null && dialogue === null && !menuOpen && (
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-2 px-3 pb-safe-bottom">
-                    {/* Round 2c (docs/Ideas.md §6d amendment) removed the
-                        upgrade-reminder toast that used to live here at
-                        wave 4 — replaced by the Lv↑ markers towerScene.ts
-                        now draws over any placed, upgrade-affordable prop,
-                        every wave, not just wave 4. */}
+                (see its own comment below) in favour of the same flow.
+                Round 7 item 4: this column is now ALWAYS mounted (the chef
+                portrait persists across the build and wave phases alike —
+                "wave phase: portrait stays"), with Ready/actions each
+                gating internally instead of the whole column being
+                conditional — see bottomBandActive/showInlineReady above. */}
+            {/* Round 7 item 4: gap-1 (was gap-2) between row 1 and row 2 —
+                shaved 4px off the column's total height, part of clearing
+                the path's exit corner alongside stage.ts's BOTTOM_BAND bump
+                (see that constant's own doc for the measured numbers). */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-1 px-3 pb-safe-bottom">
+                {/* Round 2c (docs/Ideas.md §6d amendment) removed the
+                    upgrade-reminder toast that used to live here at
+                    wave 4 — replaced by the Lv↑ markers towerScene.ts
+                    now draws over any placed, upgrade-affordable prop,
+                    every wave, not just wave 4. */}
 
-                    {/* Ready: enlarged for a bigger tap target, sized down at
-                        narrow (~400 CSS px) widths via the sm: breakpoint
-                        rather than a single fixed size — px-16/py-5/text-3xl
-                        read as oversized on a phone but are the right scale
-                        again once the viewport is wide enough (~740 px) not
-                        to look undersized. The looping pulse lives on a
-                        WRAPPING div, not the button itself — animating the
-                        button's own transform would fight active:scale-95's
-                        tap feedback (both target the same property; the
-                        keyframe would win every frame and the press would
-                        never visibly register). Locked (visibly, via
-                        disabled + dimmed styling, not just inert) for
-                        BACKDROP_LOCK_S while a real block transition
-                        crossfades — actions.ts's startWave() is the real
-                        gate, same one-gate posture as every other FTUE wall
-                        in this file; disabled also suspends the pulse, since
-                        animating "tap me" on a button that currently can't
-                        be tapped would be its own small lie. */}
-                    <div className={backdropTransitioning ? '' : 'motion-safe:animate-ready-pulse'}>
-                        <button
-                            type="button"
-                            disabled={backdropTransitioning}
-                            className={
-                                'pointer-events-auto rounded-2xl px-10 py-4 text-2xl font-bold shadow-lg transition-transform active:scale-95 sm:px-16 sm:py-5 sm:text-3xl ' +
-                                (backdropTransitioning ? 'bg-white/20 text-white/40' : 'bg-primary text-black')
-                            }
-                            onClick={() => { sfx.startWave(); startWave(); }}
-                        >
-                            Ready!
-                        </button>
-                    </div>
-
-                    {/* Round I Task 9: Kitchen Actions — the coin sink. One
-                        wave's effect, bought here, gone after. Deliberately
-                        minimal/provisional (round 3 restyles this area) — a
-                        plain row of three buttons, each showing its live
-                        price (sim/engine.ts's kitchenActionCost) and
-                        disabling once bought for this wave or unaffordable.
-                        Hidden for the same waves Ready still shows on
-                        (ftueBeat === null can be true mid-FTUE, between
-                        forced beats) — the scripted intro keeps the coin
-                        sink out of the player's hands until wave 4. */}
-                    {!ftueActive && (
-                        <div className="pointer-events-auto flex justify-center gap-2">
-                            {(['freeze', 'heat', 'slow'] as const).map((kind) => {
-                                const bought = getEngine()?.state.kitchenActions[kind] ?? false;
-                                const price = kitchenActionPrice(kind);
-                                const label = kind === 'freeze' ? 'Deep Freeze' : kind === 'heat' ? 'Turn Up The Heat' : 'Slow Service';
-                                const disabled = bought || coins < price;
-                                return (
-                                    <button
-                                        key={kind}
-                                        type="button"
-                                        disabled={disabled}
-                                        className="rounded-xl bg-black/55 px-2 py-1.5 text-center text-[0.7rem] font-bold leading-tight text-white disabled:opacity-45"
-                                        onClick={() => { sfx.click(); buyKitchenAction(kind); }}
-                                    >
-                                        <span className="block">{label}</span>
-                                        <span className="block">{bought ? '✓ bought' : `${price}c`}</span>
-                                    </button>
-                                );
-                            })}
+                {/* Row 1: the chef portrait, bottom-centre, with Ready
+                    immediately to its right — items-center vertically
+                    centres Ready on the 120px portrait by construction (the
+                    row's cross-axis alignment), matching the handover's
+                    "vertically centred on him" without a manual offset. */}
+                <div className="flex items-center gap-3">
+                    <ChefPortraitIdle />
+                    {showInlineReady && (
+                        /* Ready: enlarged for a bigger tap target, sized down at
+                            narrow (~400 CSS px) widths via the sm: breakpoint
+                            rather than a single fixed size — px-16/py-5/text-3xl
+                            read as oversized on a phone but are the right scale
+                            again once the viewport is wide enough (~740 px) not
+                            to look undersized. The looping pulse lives on a
+                            WRAPPING div, not the button itself — animating the
+                            button's own transform would fight active:scale-95's
+                            tap feedback (both target the same property; the
+                            keyframe would win every frame and the press would
+                            never visibly register). Locked (visibly, via
+                            disabled + dimmed styling, not just inert) for
+                            BACKDROP_LOCK_S while a real block transition
+                            crossfades — actions.ts's startWave() is the real
+                            gate, same one-gate posture as every other FTUE wall
+                            in this file; disabled also suspends the pulse, since
+                            animating "tap me" on a button that currently can't
+                            be tapped would be its own small lie. Round 7 item 4:
+                            hidden for the one build phase PostBossPanel owns
+                            instead (its own READY takes over); the panel's own
+                            visibility already implies backdropTransitioning is
+                            false for that wave (the dialogue-then-panel sequence
+                            runs well after the crossfade lock expires), so no
+                            extra check is needed here for that overlap. */
+                        <div className={backdropTransitioning ? '' : 'motion-safe:animate-ready-pulse'}>
+                            <button
+                                type="button"
+                                disabled={backdropTransitioning}
+                                className={
+                                    'pointer-events-auto rounded-2xl px-10 py-4 text-2xl font-bold shadow-lg transition-transform active:scale-95 sm:px-16 sm:py-5 sm:text-3xl ' +
+                                    (backdropTransitioning ? 'bg-white/20 text-white/40' : 'bg-primary text-black')
+                                }
+                                onClick={() => { sfx.startWave(); startWave(); }}
+                            >
+                                Ready!
+                            </button>
                         </div>
                     )}
                 </div>
-            )}
+
+                {/* Row 2: Kitchen Actions — the coin sink. One wave's effect,
+                    bought here, gone after. Deliberately minimal/provisional
+                    (round 3 restyles this area) — a plain row of three
+                    buttons, each showing its live price (sim/engine.ts's
+                    kitchenActionCost) and disabling once bought for this wave
+                    or unaffordable. Hidden for the same waves Ready would
+                    show on (ftueBeat === null can be true mid-FTUE, between
+                    forced beats) — the scripted intro keeps the coin sink out
+                    of the player's hands until wave 4. Round 7 item 4: stays
+                    usable even while PostBossPanel owns Ready (bottomBandActive
+                    doesn't check bossPanel.visible, unlike showInlineReady). */}
+                {bottomBandActive && !ftueActive && (
+                    <div className="pointer-events-auto flex justify-center gap-2">
+                        {(['freeze', 'heat', 'slow'] as const).map((kind) => {
+                            const bought = getEngine()?.state.kitchenActions[kind] ?? false;
+                            const price = kitchenActionPrice(kind);
+                            const label = kind === 'freeze' ? 'Deep Freeze' : kind === 'heat' ? 'Turn Up The Heat' : 'Slow Service';
+                            const disabled = bought || coins < price;
+                            return (
+                                <button
+                                    key={kind}
+                                    type="button"
+                                    disabled={disabled}
+                                    className="rounded-xl bg-black/55 px-2 py-1.5 text-center text-[0.7rem] font-bold leading-tight text-white disabled:opacity-45"
+                                    onClick={() => { sfx.click(); buyKitchenAction(kind); }}
+                                >
+                                    <span className="block">{label}</span>
+                                    <span className="block">{bought ? '✓ bought' : `${price}c`}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            <PostBossPanel state={bossPanel} />
 
             {/* Empty-pad pulse: during the FTUE, a beat over every empty pad
                 right after wave 2 clears, before it resolves to the target
@@ -475,15 +523,6 @@ export default function Hud() {
                     style={{ left: pos.x - 24, top: pos.y - 24, width: 48, height: 48 }}
                 />
             ))}
-
-            {/* Round 2 (docs/Ideas.md §6b/§6d): bottom-left, no z-index of
-                its own (z:auto) — mounted here, before Ready/the rail/
-                DialogueBox (all z-10+), so plain DOM order already keeps it
-                beneath every one of them without a fight. Round 3's service
-                gauge shares this same corner and goes behind THIS (an even
-                lower z-index, or mounted even earlier) — see
-                ChefPortrait.tsx's own doc on the z-index left open here. */}
-            <ChefPortraitIdle />
 
             {/* Round 1 (docs/Ideas.md §1/§6d): mounted here per the
                 handover, at the top of Hud's own render order so its z-20

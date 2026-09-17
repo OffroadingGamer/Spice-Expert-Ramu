@@ -35,6 +35,23 @@
  *     the engine-event diff that already exists for coin popups, reset the
  *     instant `wave` changes (see store.ts's own doc on that field).
  *
+ * Round 7 items 1 + 3 (playtest of 1.77.0), both in WaveBubbleTrigger only —
+ * the grid cells already had a per-dish remaining/total (Round 6):
+ *   1. The trigger's collective total is GONE — each icon now carries its
+ *      OWN `remaining`/`count` (same numbers the grid cell for that
+ *      archetype shows), so a double-dish archetype's two icons display the
+ *      identical live count (there is nothing finer-grained to attribute:
+ *      the engine only tracks archetype, not which of its two dish skins a
+ *      given kill was).
+ *   2. More than 3 distinct dishes: instead of the old static "+N" badge,
+ *      the trigger shows a sliding 3-wide window that advances by one dish
+ *      every PAN_STEP_MS, wrapping — over N steps every dish has been
+ *      shown, "panning across all of them" per the handover, rather than a
+ *      single jump-cut carousel. A short opacity fade (PAN_EASE_MS) softens
+ *      each step. `prefers-reduced-motion` disables the interval outright
+ *      (never starts panning) and falls back to a static first-3 plus a
+ *      literal "···" marker — no animation, no badge count.
+ *
  * Data path, exactly §7's: waveAt(index).entries[].enemy -> archetype ->
  * blockForLevel(level).dishes[archetype] slugs -> dish-<slug> aliases
  * already in the manifest, deduped by archetype for the grid / by slug for
@@ -64,12 +81,39 @@ const ASSET_SRC = new Map(
 );
 
 const MAX_BUBBLE_ICONS = 3;
+/** Round 7 item 3: how long each panned window holds before advancing, and
+ *  the opacity-fade duration of the step itself (handover: "~1.8s per step,
+ *  300ms ease"). */
+const PAN_STEP_MS = 1800;
+const PAN_EASE_MS = 300;
 
-/** One distinct dish, for the trigger's small icon strip. */
+/** One distinct dish, for the trigger's small icon strip. Round 7 item 1:
+ *  `remaining`/`count` are the SAME numbers as the grid cell for this
+ *  dish's archetype (see the loop below) — a double-dish archetype's two
+ *  TriggerDish entries share identical values, since the engine can't
+ *  attribute a kill to one specific dish skin over the other. */
 interface TriggerDish {
     slug: string;
     name: string;
     icon: string | undefined;
+    remaining: number;
+    count: number;
+}
+
+/** Local duplicate of ChefPortrait.tsx's own hook — same small-utility
+ *  duplication this file already does for ASSET_SRC (see its own comment). */
+function usePrefersReducedMotion(): boolean {
+    const [reduced, setReduced] = useState(() => {
+        try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; }
+    });
+    useEffect(() => {
+        let mql: MediaQueryList;
+        try { mql = window.matchMedia('(prefers-reduced-motion: reduce)'); } catch { return; }
+        const onChange = () => setReduced(mql.matches);
+        mql.addEventListener?.('change', onChange);
+        return () => mql.removeEventListener?.('change', onChange);
+    }, []);
+    return reduced;
 }
 
 /** One archetype's worth of the wave roster, for a submenu grid cell.
@@ -108,7 +152,6 @@ export interface WaveBubbleState {
     showSubmenu: boolean;
     triggerDishes: TriggerDish[];
     cells: DishCell[];
-    totalCount: number;
     /** Trigger tap: opens the submenu. */
     open: () => void;
     /** Submenu outside-tap: closes it AND dismisses the bubble for the rest
@@ -182,15 +225,20 @@ export function useWaveBubble(): WaveBubbleState {
     const cells: DishCell[] = [];
     for (const entry of waveData.entries) {
         const slugs = block.dishes[entry.enemy] ?? [];
+        const served = waveDishServed[entry.enemy] ?? 0;
+        const remaining = Math.max(0, entry.count - served);
+        // Round 7 item 1: each dish icon carries THIS archetype's own
+        // remaining/count — both dishes of a double-dish archetype share
+        // the same pair (see this file's header comment on why that's
+        // correct, not a shortcut).
         for (const slug of slugs) {
             if (seenSlugs.has(slug)) continue;
             seenSlugs.add(slug);
-            triggerDishes.push({ slug, name: titleCase(slug), icon: ASSET_SRC.get(`dish-${slug}`) });
+            triggerDishes.push({ slug, name: titleCase(slug), icon: ASSET_SRC.get(`dish-${slug}`), remaining, count: entry.count });
         }
         if (seenArchetypes.has(entry.enemy)) continue;
         seenArchetypes.add(entry.enemy);
         const pips = Math.min(5, Math.max(1, Math.ceil((5 * effectiveHp(entry)) / maxEffectiveHp)));
-        const served = waveDishServed[entry.enemy] ?? 0;
         cells.push({
             key: entry.enemy,
             icons: slugs.map((s) => ASSET_SRC.get(`dish-${s}`)).filter((s): s is string => !!s),
@@ -198,13 +246,9 @@ export function useWaveBubble(): WaveBubbleState {
             pips,
             bounty: Math.round(enemyDef(entry.enemy).bounty * bountyMult),
             count: entry.count,
-            remaining: Math.max(0, entry.count - served),
+            remaining,
         });
     }
-    // Round 6 Part B: the trigger's own total now ticks down with the grid
-    // (sum of each archetype's live remaining, not the wave's static
-    // total) — "shows what's left" is this section's own name.
-    const totalCount = cells.reduce((s, c) => s + c.remaining, 0);
 
     // Dialogue wins: waiting (not permanently dismissed) behind an open box
     // — "the bubble waits until the box closes." Round 6: the trigger no
@@ -227,7 +271,6 @@ export function useWaveBubble(): WaveBubbleState {
         showSubmenu: baseVisible && isOpenNow && tdPhase === 'build',
         triggerDishes,
         cells,
-        totalCount,
         open: () => setIsOpen(true),
         close: () => { setIsOpen(false); setDismissed(true); },
     };
@@ -247,9 +290,49 @@ export function useWaveBubble(): WaveBubbleState {
  *  speed row because both are ordinary flex children of the same row, not
  *  independently positioned. */
 export function WaveBubbleTrigger({ state }: { state: WaveBubbleState }) {
+    const reducedMotion = usePrefersReducedMotion();
+    const dishes = state.triggerDishes;
+    const overflow = dishes.length > MAX_BUBBLE_ICONS;
+    const [panIndex, setPanIndex] = useState(0);
+    const [panFading, setPanFading] = useState(false);
+
+    // A new wave's dish set can differ in length from the last one (or this
+    // trigger can simply remount) — start the window fresh each time rather
+    // than carrying over an index that might now be out of range.
+    useEffect(() => {
+        setPanIndex(0);
+        setPanFading(false);
+    }, [dishes.length]);
+
+    // Round 7 item 3: advance the window every PAN_STEP_MS, fading out for
+    // PAN_EASE_MS before the content actually swaps (see the render below —
+    // opacity, not the icons themselves, is what's mid-transition). Never
+    // starts at all when there's nothing to pan past (<=3 dishes) or under
+    // reduced motion — both render a static list instead (below).
+    useEffect(() => {
+        if (!overflow || reducedMotion) return;
+        let innerTimeout: ReturnType<typeof setTimeout> | null = null;
+        const id = setInterval(() => {
+            setPanFading(true);
+            innerTimeout = setTimeout(() => {
+                setPanIndex((i) => (i + 1) % dishes.length);
+                setPanFading(false);
+            }, PAN_EASE_MS);
+        }, PAN_STEP_MS);
+        return () => {
+            clearInterval(id);
+            if (innerTimeout) clearTimeout(innerTimeout);
+        };
+    }, [overflow, reducedMotion, dishes.length]);
+
     if (!state.showTrigger) return null;
-    const shown = state.triggerDishes.slice(0, MAX_BUBBLE_ICONS);
-    const extra = state.triggerDishes.length - shown.length;
+
+    const shown = !overflow
+        ? dishes
+        : reducedMotion
+            ? dishes.slice(0, MAX_BUBBLE_ICONS)
+            : Array.from({ length: MAX_BUBBLE_ICONS }, (_, i) => dishes[(panIndex + i) % dishes.length]);
+
     return (
         <button
             type="button"
@@ -262,18 +345,31 @@ export function WaveBubbleTrigger({ state }: { state: WaveBubbleState }) {
                 aria-hidden="true"
                 className="absolute top-1/2 -left-[5px] h-2.5 w-2.5 -translate-y-1/2 rotate-45 bg-black/80"
             />
-            {shown.map((d) => (
-                <span key={d.slug} className="flex flex-col items-center gap-0.5">
-                    <img
-                        src={d.icon}
-                        alt=""
-                        className="h-14 w-14 rounded-full border border-black/40 bg-surface object-contain"
-                    />
-                    <span className="max-w-[3.5rem] truncate text-[0.55rem] font-bold text-white/85">{d.name}</span>
-                </span>
-            ))}
-            {extra > 0 && <span className="pb-2.5 text-[0.68rem] font-bold text-white/80">+{extra}</span>}
-            <span className="pb-2.5 ml-0.5 text-[0.72rem] font-bold text-white">{state.totalCount}</span>
+            <span
+                className="flex items-end gap-1.5 transition-opacity ease-out motion-reduce:transition-none"
+                style={{ transitionDuration: `${PAN_EASE_MS}ms`, opacity: panFading ? 0 : 1 }}
+            >
+                {shown.map((d) => (
+                    <span key={d.slug} className="flex flex-col items-center gap-0.5">
+                        <img
+                            src={d.icon}
+                            alt=""
+                            className="h-14 w-14 rounded-full border border-black/40 bg-surface object-contain"
+                        />
+                        <span className="max-w-[3.5rem] truncate text-[0.55rem] font-bold text-white/85">{d.name}</span>
+                        {/* Round 7 item 1: this dish's own live remaining
+                            count, replacing the old collective total. */}
+                        <span className="text-[0.6rem] font-bold tabular-nums text-white/70">
+                            {d.remaining}/{d.count}
+                        </span>
+                    </span>
+                ))}
+                {/* Reduced motion + more than 3 dishes: no pan, no "+N" —
+                    a plain ellipsis says "more, not shown" without motion. */}
+                {overflow && reducedMotion && (
+                    <span aria-hidden="true" className="pb-2.5 text-[0.85rem] font-bold text-white/70">···</span>
+                )}
+            </span>
         </button>
     );
 }

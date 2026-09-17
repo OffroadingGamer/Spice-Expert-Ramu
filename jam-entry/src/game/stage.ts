@@ -61,9 +61,19 @@ export const PLAYFIELD_HEIGHT = Math.max(...CONFIG.path.map((p) => p.y));
  * 844 CSS px tall while keeping FIT_HEIGHT as small as the fix allows
  * (bigger bands shrink the whole game — see CONFIG.padTapRadius's report
  * in round C's acceptance notes for the resulting tradeoff on that phone).
+ *
+ * Round 7 item 4: BOTTOM_BAND 180 -> 340. The bottom band's DOM footprint
+ * grew (the 104px chef portrait — ChefPortrait.tsx's IDLE_SIZE — now joins
+ * Ready and the Kitchen Actions row in that same fixed-to-the-screen-bottom
+ * column), and this lever is weak for a height-bound narrow phone (403x874:
+ * scale and FIT_HEIGHT trade off almost 1:1, so even doubling this constant
+ * barely moves the path's screen position) — screenshotted at 403x874 with
+ * the old 180: the path's own exit corner visibly clipped under Ready.
+ * 340 plus IDLE_SIZE's own trim together clear it with real margin at both
+ * 403x874 and 768x1024 (measured, not assumed — see the round's own report).
  */
 export const TOP_BAND = 170;
-export const BOTTOM_BAND = 180;
+export const BOTTOM_BAND = 340;
 
 /** Total design-unit height the contain-fit guarantees is visible. */
 export const FIT_HEIGHT = PLAYFIELD_HEIGHT + TOP_BAND + BOTTOM_BAND;

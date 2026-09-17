@@ -178,6 +178,17 @@ export interface AppState {
      *  subtracts this from each dish's total to show a live "remaining"
      *  count. */
     waveDishServed: Record<string, number>;
+    /** Round 7 item 6 (docs/Ideas.md §6d, playtest of 1.77.0): `bestWave`
+     *  AS IT WAS the instant before THIS run's loss patched a new one in —
+     *  captured by towerScene.ts's checkEnd() before it calls recordRunEnd
+     *  (which overwrites the save's bestWave immediately). EndScreen.tsx
+     *  needs both numbers to tell "new best" (survived > previousBestWave)
+     *  from "near best" apart — reading `bestWave` alone at render time
+     *  would always see the ALREADY-UPDATED value, and "new best" could
+     *  never fire (the handover's own warning). Stale between runs is fine:
+     *  it's only ever read while tdPhase === 'lost', and re-captured fresh
+     *  at the start of every checkEnd(). */
+    previousBestWave: number;
 }
 
 const INITIAL: AppState = {
@@ -201,7 +212,13 @@ const INITIAL: AppState = {
     metaOpen: false,
     ranksOpen: false,
     settingsOpen: false,
-    musicVol: 0.6,
+    // Round 7 item 5 (docs/Ideas.md §6d, playtest of 1.77.0): default BGM
+    // 60% -> 50%. This is the pre-load placeholder only — main.tsx's boot
+    // step 2 overwrites it with the save's own value within the same tick,
+    // before first paint, so what actually determines "fresh install boots
+    // at 50%" is save.ts's DEFAULTS.audio.music (also updated). Kept in sync
+    // with that number anyway rather than left stale.
+    musicVol: 0.5,
     sfxVol: 0.8,
     runKills: 0,
     ftueActive: false,
@@ -221,6 +238,7 @@ const INITIAL: AppState = {
     unmuteCueNonce: 0,
     dialogueMuted: false,
     waveDishServed: {},
+    previousBestWave: 0,
 };
 
 /**
