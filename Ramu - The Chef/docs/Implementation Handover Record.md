@@ -2636,3 +2636,28 @@ input unless she is asked.
 
 **Retention fact recorded** in Ideas.md §5: RUN notifications are local; they cannot reach
 players who already left.
+---
+
+### 2026-09-17 — Board at ~14:10 IST; Round 8 and the hatch/belt art round dispatched
+
+**Board (user's screenshot, jam page, 1d 10h 22m to close — i.e. 00:30 IST Sep 19):**
+
+| # | Entry | Daily uniques | Prize |
+|---|---|---|---|
+| 1 | Back That Thing Up! | 1,324 | $1,000 |
+| 2 | The Grind | 1,254 | $600 |
+| 3 | 9 to Thrive | 1,208 | $300 |
+| 4 | GT Rush: Coastal Life (3D) | **868** (+356 in two days) | $200 |
+| **5** | **Spice Expert: Ramu** | **605** (888 total plays) | **$100** |
+| 6 | Pest Control Tycoon | 474 | — |
+
+Down from 4th to 5th: GT Rush pushed hard. 3rd is out of reach; 6th is 131 behind. The last
+two organic posts defend the $100 tier. ⚠️ Central had said the deadline was "tonight" twice
+on Sep 17 — it is tomorrow night IST. Forwarded to the marketing agent for §19.
+
+**Dispatched by the user:** the **Round 8** handover (menu + four fixes) and the **art round**
+(entry hatch, exit hatch, belt tile; cap 4,000). Independent — run in parallel; the hatch
+wiring is a later implementation round, started only after both have returned.
+
+**Licensing pointer:** Archita Sharma's consent will be a filled form saved at
+`Art - Main Menu\CONSENT - Archita Sharma.md` (gitignored `Art\`; not in the public repo).
