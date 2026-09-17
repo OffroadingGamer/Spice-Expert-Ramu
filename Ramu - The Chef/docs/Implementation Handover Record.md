@@ -2825,3 +2825,5 @@ In flight / Repo rows; GDD.md gained a post-jam addendum and corrected menu nami
 `jam-entry/CLAUDE.md` gained closure/divergence banners. Reference docs (KitchenMode, LevelBlocks,
 LevelEconomy, PropList, RecipeList, both sprite indexes, AudioGenPrompts) verified current for what
 they cover.
+
+**Proposal pages (private, not the spec of record):** heat gauge + Ranks `https://claude.ai/artifact/QSnf1MtvwnKG7xdcMwDHgh` · Settings + rename `https://claude.ai/artifact/N4NFRyujvZteqrYqCCnsqV` · six studies `https://claude.ai/artifact/Ccn4SSMfuFLJAVC7Lr3UKY` · (earlier) menu `…/6Hwx18NsmYEyhxDbhnskjn`, chef/prop `…/24TCNvib7mWLhmyWTFhfwh`.
