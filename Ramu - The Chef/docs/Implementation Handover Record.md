@@ -39,9 +39,9 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.84.0** (Rounds 0–12 — Round 12 verified Sep 18 ~04:15 IST; ⚠️ **do not playtest 1.84.0** — board at half scale, Round 12b in flight; 🔒 Private-only until human verification — Ideas.md §6d) |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.85.0** (Rounds 0–12b — Round 12b verified Sep 18 ~05:30 IST; ⚠️ board still small on phones (138 px wide at 360, 182 at 403; 403 at 744) — Round 12c in flight, playtest after it; 🔒 Private-only until human verification — Ideas.md §6d) |
 | **Jam (Sep 17, ~21:50 IST)** | **6th, 613 daily uniques** (901 total plays) at ~21:50 IST Sep 17 — out of the money by 16: 5th Pest Control Tycoon 629 ($100), 4th GT Rush 902 ($200), 7th The Good Life 479. Judging closes **Sep 18 12:00 PT = 00:30 IST Sep 19** (1d 02h 37m at the reading). Public is frozen at 1.69.0 through judging. |
-| **In flight** | **Round 12b** → Private 1.85.0: HUD bands reserved in **pixels** (fixes the half-scale board), laurel PNG wired. Then the user plays 1.85.0 → R13 belt chevrons + i18n table (four constraints from the inventory) → R14 shards (projection measured) → R15 continue → R16 Play/badge → R17 Hindi. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
+| **In flight** | **Round 12c** → Private 1.86.0: top reserve = row 1 + WAVE/ring block only (bubble and speed buttons may overhang the empty top-right of the board), wave-bubble trigger horizontal (≤ 72 px), Ready at base size, upgrade chips beside the portrait — computed board widths ≈ 223 / 266 / 464 px. Then the user plays 1.85.0 → R13 belt chevrons + i18n table (four constraints from the inventory) → R14 shards (projection measured) → R15 continue → R16 Play/badge → R17 Hindi. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
 | **Repo** | **Pushed Sep 18 ~02:15 IST** (`4858e3b..591031d`, 17 commits) on the user's word — `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is now in the public repo. Secret scan over the whole range: clean, control positive. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -3113,3 +3113,32 @@ Rules extracted for the rest of the file: system UI = **आप**, Ramu = **त�
 shift float = **बौनी का उपहार**; Max = **सर्वश्रेष्ठ**; targeting नज़दीक / भारी / हल्का; Cooktop =
 **अँगीठी**; dishes in headings = **पकवान**. Logged in the file's new "Review log" section. The bulk
 review waits for the R16 re-inventory (R14–R16 add strings), then R17.
+
+---
+
+### 2026-09-18 ~05:30 IST — Round 12b returned and verified: Private **1.85.0** — loop fixed, board still short
+
+**Verified:** tags 1.85.0 / 1.69.0 / 1.69.0 · balance 35/36/11/4/90 · tsc + build clean ·
+`public/images/ui/laurel.png` 256² RGBA, opaque bbox (23,31)–(233,227), no sidecar · sealed files
++ config untouched · `getFit(screenW, screenH, topPx, bottomPx)`, `FALLBACK_TOP_PX 96` /
+`FALLBACK_BOTTOM_PX 240`, `boardOffsetY()`, two ResizeObservers writing `hudTopPx` /
+`hudBottomPx` to the store · emoji gone, `ui-laurel` in the manifest. Committed `76b7e8c`.
+Return verbatim in `Agent Returns.md`.
+
+**Result vs acceptance:** 138 / 182 / 403 px against 215 / 255 / 417. The mechanism is now
+loop-free (the agent also found and fixed a real trap: the 4-second objective banner sat
+inside the measured top block and would have reserved ~300 px). The shortfall is the HUD's
+true height: `hudTopPx` 229 at phone widths because the **wave-bubble trigger is ~115 px tall**
+(64-px icon with name and count stacked beneath it — Round 11 item 5, my spec) and row 2 is
+161 px; `hudBottomPx` 257 with Ready enlarged at `sm:` plus the chips row under the portrait.
+
+**Round 12c (issued):** reserve only what can collide — row 1 plus the WAVE-chip/ring block
+(the entry hatch sits under them); the bubble and speed buttons may overhang the board's
+top-right, which holds only backdrop until the belt's first horizontal run at design y 330;
+wave-bubble trigger becomes a horizontal chip ≤ 72 px; Ready loses its `sm:` enlargement;
+upgrade chips move beside the portrait. Computed at the three viewports: bands ≈ 307 / 308 /
+330 px → scale 0.309 / 0.370 / 0.644 → board ≈ **223 / 266 / 464 px**; bubble bottom ≈ 28 px
+clear of the belt at 360×780 even before the horizontal chip.
+
+**Owned:** the tall bubble is my Round 11 spec (icon 64 + stacked text) meeting my Round 12b
+spec ("reserve what the DOM occupies") — two correct instructions whose sum was wrong.

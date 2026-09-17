@@ -218,7 +218,48 @@ Bug fixed on the way: the Ready/portrait stacking (Part 1.3) broke the bottom-ba
 
 ---
 
+## 2026-09-18 ~05:30 IST — Round 12b — implementation agent
+
+Outcome: verified, Private 1.85.0, committed `76b7e8c`; fit loop fixed, board still short of target (138/182/403 px) → Round 12c.
+
+Round 12b hotfix — deployed as v1.85.0 (Private). Review/Public unchanged at 1.69.0.
+Part 1 — HUD bands in real pixels
+The fix (stage.ts): getFit(screenW, screenH, topPx, bottomPx) now subtracts real measured pixel bands from screenH before computing scale, exactly per spec. TOP_BAND/BOTTOM_BAND/FIT_HEIGHT design-unit constants are gone, replaced by FALLBACK_TOP_PX=96/FALLBACK_BOTTOM_PX=240 (used only before the first real measurement lands, and as designToScreen's default params). createStage's layout() reads hudTopPx/hudBottomPx from the store, and a store subscription re-runs layout() (rAF-debounced) whenever those values genuinely change.
+
+Measurement (Hud.tsx): two ResizeObservers on topRowRef (row 1 + row 2 + the wave-bubble submenu) and bottomColRef (Ready/portrait + Kitchen Actions), distance taken from #app-frame's own top/bottom edges — the same box stage.ts's screenW/screenH describe. Both containers are always mounted, so this needs no phase-gating.
+
+Bug found while wiring this up: the transient objective banner (shown by default for the first 4s of every run) originally lived inside the same measured subtree as row 1/2, inflating hudTopPx to ~300px and making the board smaller than 1.84.0's already-broken 123px. Fixed by moving the coin-toast and the objective/milestone banners to render after the topRowRef-wrapped block instead of interleaved through it — same visual column, just no longer part of what stage.ts reserves clearance for. This is a deliberate, documented placement change (the coin toast now appears below the speed row instead of between row 1 and row 2), not an oversight.
+
+anchorBoard fix (towerScene.ts): replaced its own re-implementation of board-centering (max(0,(designHeight-PLAYFIELD_HEIGHT)/2) — a symmetric split that only ever delivered half of whichever band actually mattered) with stage.boardOffsetY(), a new Stage method that returns the real asymmetric offset. StationRail.tsx's getFit() call was also updated to pass live hudTopPx/hudBottomPx. stage.root.x/stage.scale() (Round 11's gauge-centering, hatch placement) are untouched — confirmed those only ever read scale/x, never the removed constants.
+
+Measurements (build phase, wave 1):
+
+Viewport	hudTopPx	hudBottomPx	scale	Board width	Target	Ready→hatch gap
+360×780	229.3	257.0	0.1920	138.3px	≥215	20.5px
+403×874	229.3	258.1	0.2528	182.0px	≥255	26.9px
+744×1315	182.9	275.2	0.5603	403.4px	≥417	61.8px
+Ready-to-hatch gap clears ≥8px at all three; entry hatch (170,90) clears the top band with margin at all three; the exit hatch is fully visible (never drawn under the bottom band) at all three; the n/10 gauge label is visible in every screenshot. Rotate 403×874→874×403→403×874: in the 874×403 landscape squeeze, #app-frame (a portrait-locked device frame) shrinks to ~227px wide with availH collapsing to 0 — stage.ts's existing cold-boot guard correctly skips committing that broken layout; rotating back reproduces the exact pre-rotation hudTopPx/hudBottomPx/scale/board-width, confirming no stale band.
+
+Board width falls short of the acceptance table, and I want to be honest about why rather than paper over it: I diagnosed it down to the exact element. row2's real height is 160.9px at 360×780 (114.5px even at 744×1315) — not from wrapping, but because the WaveBubbleTrigger itself (Round 11's 64px-icon redesign: icon + name + count stacked in one column) is genuinely ~114.5px tall on a single line. That's the dominant contributor to hudTopPx; at the wide viewport, Ready's own sm: breakpoint enlargement is the dominant contributor to hudBottomPx. Both are pre-existing, out-of-this-round's-scope elements (Part 1's spec is entirely about the measurement mechanism, not about resizing WaveBubble.tsx or Ready) — I did not touch either, per "do not shrink Ready or the portrait" and no instruction to touch WaveBubble.tsx. The mechanism itself is now correct and loop-free; closing the remaining gap would need a follow-up round scoped to those two elements specifically.
+
+Part 2 — Real laurel
+Resized Art/_gen/ranks-kitchen-final/laurel.png (1024², confirmed via metadata) to 256² with sharp's Lanczos3 kernel, alpha preserved (50,171 bytes) → public/images/ui/laurel.png, no sidecar. Added ui-laurel to the deferred bundle in manifest.ts, alongside ui-scroll.
+
+Leaderboard.tsx replaces the Round 12 emoji with the real <img>. Since there's no runtime opaque-bbox reader in a DOM/React context (unlike towerScene.ts's Pixi-side alphaContentBBox), I measured the shipped 256² PNG's opaque bounds once offline (opaque region: x:[25,230], y:[33,224] → 206×192, horizontally centered, 33px top / 31px bottom padding) and derived the sizing from that:
+
+Target: opaque width = 34mu → full <img> element = 42.25mu square (compensating for the 25px transparent margin per side)
+Resulting opaque height ("sized by the bbox height," per spec) = 31.68mu, derived, not set independently
+margin-bottom: -9.12mu on the image — 4mu of requested overlap plus 5.12mu to cancel the image's own bottom transparent padding, so the visible wreath (not the padded box) overlaps the disc by exactly 4mu
+Rendered width at 360×780 (mu=1.5): 63.38px (42.25mu × 1.5), confirmed both by the formula and by a pixel-accurate static mock reproducing the exact CSS (screenshot showed the wreath sitting correctly above and overlapping the disc, both branches meeting near its top-center).
+
+Not verified live: I could not get the shipped Leaderboard.tsx to render with real (non-empty) podium data in this environment — same root cause Round 10/11 already documented (this sandbox's SDK always resolves an empty board) plus a new wrinkle this round: reassigning fetchBoard on a dynamically-import()-ed module namespace did succeed as a property write, but the live React tree's own import of that module resolved to a different module instance (matching state/store.ts's own documented "Vite serves this under two URLs on Windows" caveat), so the reassignment never reached the mounted component. I did not add a temporary test-only export to work around it, consistent with Round 11's own restraint on this exact class of problem. The static-mock verification above is geometry-only, not a render of the real component with real data.
+
+Build & safety
+tsc --noEmit / npm run build: clean. npm run balance: 35/36/11/4/90, byte-identical. find public -name '*.json': empty. git diff --stat against sealed files/kitchenScene.ts/package*.json/rundot/leaderboard.config.json: empty (all untouched) — confirmed independently by the deploy's own "No server config changes detected." rundot whoami → offroadinggamedev@gmail.com before deploying. Diff: 7 modified files (manifest.ts, stage.ts, towerScene.ts, store.ts, Hud.tsx, Leaderboard.tsx, StationRail.tsx) + 1 new file (public/images/ui/laurel.png, no sidecar).
+
+---
+
 ## Pending
 
-- **Round 12b** (implementation agent, → 1.85.0) — issued Sep 18 ~04:20 IST, not returned.
+- **Round 12c** (implementation agent, → 1.86.0) — issued Sep 18 ~05:45 IST, not returned.
 - **Marketing agent** — post-close results entry, after judging closes 00:30 IST Sep 19 (writes its own docs; Central syncs).
