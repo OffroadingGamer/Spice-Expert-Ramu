@@ -2611,3 +2611,28 @@ clean; no sidecars.
 Minor: end-screen copy lives in `EndScreen.tsx`, not `data/dialogue.ts` as asked. Not bounced.
 
 **Rounds 0–7 complete. The user plays 1.78.0 end-to-end; the public decision follows.**
+---
+
+### 2026-09-17 — Pre-compact sweep: 1.78.0 playtest, main-menu design approved, art request, open items
+
+**Playtest of 1.78.0** (six screenshots) → Round 8 fixes and an art round, listed in
+[Ideas.md](Ideas.md) §6d *Playtest of 1.78.0*. **Main menu design approved** — layout A on
+Archita Sharma's dawn backdrop with a measured per-element palette — fully specified in
+**Ideas.md §9** (the spec of record; the drawn proposals live in a private page and are not
+the source of truth).
+
+🔒 **Licensing — Archita Sharma.** Five backdrops in `Art\03 - Main Menu\Backgrounds\`;
+**consent recorded by the user; pointer to be added**. Credit mandatory on the menu (link to
+`instagram.com/arc_inmotion`) and on the credits screen. Ship-in-build only; **not** generator
+input unless she is asked.
+
+**Open, carried into the compaction:**
+- Round 8 handover (menu + four fixes) and the entry/exit/belt art handover — to be issued.
+- The marketing agent needs a **current board screenshot** to finish §19; neither agent can
+  read the jam page. Judging closes **Sep 18 12:00 PT = 00:30 IST Sep 19**.
+- Public promotion is **post-jam** and waits on the user's end-to-end play of the build that
+  contains Round 8.
+- The ~$12 unspent Meta budget: refund not yet visible in the balance (93,273).
+
+**Retention fact recorded** in Ideas.md §5: RUN notifications are local; they cannot reach
+players who already left.

@@ -216,6 +216,12 @@ from the launch build for exactly that reason.
 
 ---
 
+➕ **Retention note (Sep 17):** RUN notifications are **local** — `scheduleAsync()` runs on the
+player's device while they play; there is no server push and no way to reach players who
+have already left. A reminder shipped now reaches only players who open the new build, and
+only in the RUN app (web no-ops). Worth building post-jam for the campaign's installs; it
+cannot recover the jam's departed players.
+
 ## 5. Small hardening debts — carried from the launch rounds
 
 - 🔴 **`registerEngine(null)` sits late inside `towerScene.ts`'s `destroy()`** — after
@@ -460,6 +466,22 @@ specified and wrong as a product. Removed.
    Alternatives not taken: A (report card, no Ramu) and C (B + a "next affordable upgrade"
    strip — parked as a follow-up).
 
+**Playtest of 1.78.0 (Sep 17) — Round 8 (fixes) + an art round:**
+1. **Bottom band out of bounds** (wave 66): the chef and Ready overflow the bottom edge and
+   the kitchen-actions row overlaps Ready. Must sit inside the safe area; measure at 403×874
+   with a real inset.
+2. **End screen, tie case:** `rushes == previousBest` fired the near-best branch → *"0 short
+   of the record"*. Add a **matched-record line** (*"Matched the record. Next time it falls."*,
+   face B). **"Held" threshold 10 → 20** (*"10 rushes held. Nobody at the tapri would believe
+   it"* oversells 10).
+3. **Two Ramus:** the bottom-band idle portrait stays visible under the end screen. Hide it
+   while `tdPhase === 'lost'`.
+4. **Entry hatch, exit hatch and the belt read as placeholders** against the Overtime kitchen
+   (wave 106). **Art round** (art agent, `Art\` only): entry = the pass window, exit = the
+   walkout door, belt = a rail with a subtle conveyor pattern. One neutral set first; per-block
+   variants only if the neutral set earns it. Implementation follows in a later round.
+5. **Main menu rework** → §9 below.
+
 **Round 3 — decided: horizontal fill under the wave chip**, not a bar in the gutter. Same
 maths (SAFE = units − (lives − 1)), amber → green, resets per wave. Top-left, directly under
 `WAVE n / RUSH: …`, width of that chip group.
@@ -499,6 +521,50 @@ the right (rail). Auto-dismiss ~3 s or on tap. **Never blocks placement.**
 that could fit inside the jam window — and only by a Sep 15 ship with a device playtest.
 Central agent's recommendation (Sep 13) was to freeze 1.69.0 and not take even this before
 judging.
+
+---
+
+## 9. Main menu — approved design, Sep 17 2026
+
+**Backdrops:** five gouache landscapes by **Archita Sharma**, received Sep 12 (files in
+`Art\03 - Main Menu\Backgrounds\`, WhatsApp exports). 🔒 **Consent to use them is recorded by
+the user** (pointer to the record: *to be added by the user*). **Credit is mandatory**: on the
+menu itself and on the credits screen (with KayKit and the SFX credits, Specs.md §…).
+Pick: **#1 — dawn field with a path** (the walk to work; the path leads the eye into the
+button column). Alternate with no layout change: **#4 — golden grass** (lowest detail behind
+UI). Not used: lighthouse (off-theme), barn (green fights the wordmark), swan (competes with
+the title).
+
+**Layout — "A · Dawn shift"** (chosen over B "order ticket" and C "kitchen pass"; drawn Sep 17):
+full-bleed backdrop; wordmark kept in the top third; **Ramu bottom-left at his in-game size**,
+costume = the block of the player's best run; a **single right-hand stack** in the thumb zone:
+`BEST · RUSH n` → **Start shift** (the only filled button; renamed from "Challenge Mode") →
+The Kitchen → Ranks → `Backdrop: @ArchitaSharma` (link to
+`https://www.instagram.com/arc_inmotion`, opened through the SDK's external-link path, never a
+bare anchor) → **♥ Like · 💬 Comments**. The stack is 130 px wide and right-anchored; Ramu is
+120 px and left-anchored, so they cannot meet even at 360 px. **Gems and settings chips at
+44 px tap height.** The two tutorial hint lines are removed (the FTUE teaches). Bottom gradient
+transparent → chocolate 88 % from **55 % to 100 %** of the height — the sky and path stay
+untouched.
+
+**Palette by element — measured against backdrop 1** (contrast = element vs the painting's
+average in its zone; large bold text ≥ 3:1, small text ≥ 4.5:1):
+
+| Element | Colour | Ratio | Why |
+|---|---|---|---|
+| SPICE EXPERT | **chocolate `#2a1d10`** | 5.4 | orange was **1.1** — the same hue as the dawn sky |
+| RAMU | **cream `#fdfae7`** + 2.5 px chocolate stroke | stroke carries it | the chef-hat idiom: cream body, dark outline |
+| BEST · RUSH n | cream + **1.5 px chocolate stroke**, `paint-order: stroke fill` | stroke carries it | reads even where the gradient is thin |
+| Start shift | **orange `#f97316`** fill, chocolate text, 2 px chocolate outline | 5.0 | keeps the in-game Ready identity |
+| The Kitchen · Ranks | cream outline + text, 35 % chocolate fill | > 6 | ghosts don't compete |
+| Gems · settings | chocolate 85 % surface, cream text, **44 px** | self-contained | tap targets, not labels |
+| Credit link | cream 75 %, underlined | > 5 | reads, doesn't compete |
+| Like · Comments | chocolate 70 % chips, cream text | self-contained | foot of the stack |
+
+⚠️ **The rule underneath:** orange is reserved for the action; never for type on the sky.
+
+**Asset prep:** backdrop 1 to 720 wide (≈150 KB JPEG), `deferred` bundle is wrong here — it's the
+first screen; put it in `critical` and measure the cost.
 
 ---
 
