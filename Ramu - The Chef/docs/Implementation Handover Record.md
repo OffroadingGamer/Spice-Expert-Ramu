@@ -39,7 +39,7 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.77.0** (progression rounds + the Round 6 fix — awaiting the user's end-to-end play; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.78.0** (Rounds 0–7 — awaiting the user's end-to-end play; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
 | **Endgame criterion** | `maxed-meta` must lose between levels **85–110** (currently 90) |
@@ -2583,3 +2583,31 @@ user's pick (B) — Ramu's outcome line, order-ticket stats with count-up and de
 primary with a 600 ms input lock, ghost secondaries, the ad offer demoted to an opt-in card
 with unchanged economics; two new analytics events (`end_screen_shown`, `end_retry_tapped`).
 Decision and analysis in [Ideas.md](Ideas.md) §6d amendment item 6. 🔒 Private only.
+---
+
+### 2026-09-17 — Round 7 returned → Private v1.78.0
+
+**Status:** ✅ **RETURNED, VERIFIED, COMMITTED.** Private **1.78.0**; Review/Public **1.69.0**.
+Ten files (`PostBossPanel.tsx` new). Sealed untouched; balance **35 / 36 / 11 / 4 / 90**; `tsc`
+clean; no sidecars.
+
+| Item | Verified |
+|---|---|
+| Per-dish counts + pan | independent per-archetype ticking (`{wasp:3, hornet:1, beetle:3}`), reset on wave change; 3-wide window steps through 5 dishes; reduced motion static + `···` |
+| District headers | `RUSH: NORTH INDIAN` / `RUSH: OVERTIME`; box 184 → 212 px (+15.2 %); portrait top on the header; beat 1 no header |
+| Bottom band | chef 104 px bottom-centre, Ready centred beside, actions below; wave phase keeps the chef only; un-mute via `#chef-portrait-idle`. **First pass clipped the path exit under Ready — fixed by `BOTTOM_BAND` 180 → 340 and portrait 120 → 104**, ~14 px clearance at 403 wide |
+| Post-boss panel | after level 10: district beat → *Congratulations! CAFE shift complete. NORTH INDIAN awaits.* + 5 dishes + its own READY (exactly one Ready in the DOM); outside-tap restores inline Ready; after level 9: none. A `BLOCKS[-1]` boot crash at wave 1 in the first draft was caught by the agent's own harness before deploy |
+| BGM | fresh 0.5; stored 0.8 stays 0.8 |
+| End screen | four outcomes screenshotted with the right face and line; Retry the only filled button; ad card demoted, hidden when `bonus = 0`; lock: 215 ms ignored, 884 ms accepted; count-up resting state equals store values; **gem formula surfaced: `rushes × CONFIG.meta.gemsPerWave (4)`** from `save.ts`'s `recordRunEnd` |
+
+#### ⚠️ Two things the return under-stated
+1. **`BOTTOM_BAND` 180 → 340 shrinks the whole board**, not just the bottom row: `FIT_HEIGHT`
+   grows, so at 403×874 the board is **324 → 296 px wide (−9 %)**, pads and props with it. The
+   honest fix for the clip, but a global size change — **the user judges it on device.**
+2. The 3-slice `ui-scroll` parchment fails on a three-row card (`border-image` fill cuts off)
+   — the ticket is a solid cream card instead. `WaveBubble`'s boxes never got tall enough to
+   show it; a limit of that technique, now known.
+
+Minor: end-screen copy lives in `EndScreen.tsx`, not `data/dialogue.ts` as asked. Not bounced.
+
+**Rounds 0–7 complete. The user plays 1.78.0 end-to-end; the public decision follows.**
