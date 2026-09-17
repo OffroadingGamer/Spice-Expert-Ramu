@@ -2715,3 +2715,12 @@ after **00:30 IST Sep 19**.
      as a named unit (`mu = min(vw / frameW, vh / frameH)`) with the frame stated, and put the
      mock-vs-screen ratio check in the acceptance list. A number without its frame is not a
      spec.
+
+112. 🟠 **An estimate is only an estimate of the call you will actually make.** Sep 18 2026.
+     The audio handover said SFX cost "90 credits, fixed" because Central ran
+     `rundot generate estimate sfx` with no `--duration`, and the CLI defaults that to the
+     30-second maximum. Real cost is ≈ 3 credits per second; the two stings cost 5 and 3. Harmless
+     here (the budget was 540), but the same habit on an image or video estimate could send an
+     agent into a round with the wrong stop-line. ✅ **Rule:** estimate with the exact parameters
+     of the call — duration, model, size, background removal — and write those parameters next to
+     the number in the handover, so the agent's own gate can catch a mismatch.
