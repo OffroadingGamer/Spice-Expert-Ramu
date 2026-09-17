@@ -39,9 +39,9 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.83.0** (Rounds 0–11 — Round 11 verified Sep 18 ~00:10 IST; awaiting the user's playtest; 🔒 Private-only until human verification — Ideas.md §6d) |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.84.0** (Rounds 0–12 — Round 12 verified Sep 18 ~04:15 IST; ⚠️ **do not playtest 1.84.0** — board at half scale, Round 12b in flight; 🔒 Private-only until human verification — Ideas.md §6d) |
 | **Jam (Sep 17, ~21:50 IST)** | **6th, 613 daily uniques** (901 total plays) at ~21:50 IST Sep 17 — out of the money by 16: 5th Pest Control Tycoon 629 ($100), 4th GT Rush 902 ($200), 7th The Good Life 479. Judging closes **Sep 18 12:00 PT = 00:30 IST Sep 19** (1d 02h 37m at the reading). Public is frozen at 1.69.0 through judging. |
-| **In flight** | **Round 12** → Private 1.84.0: Ranks restyle **B (pass counter)** + Dishes served / Waves held + podium on a base + portrait ×1.5 with Ready above + near-you slice / delta arrow. R13 belt chevrons + i18n table; queue per Ideas.md §10 shifted by one. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
+| **In flight** | **Round 12b** → Private 1.85.0: HUD bands reserved in **pixels** (fixes the half-scale board), laurel PNG wired. Then the user plays 1.85.0 → R13 belt chevrons + i18n table (four constraints from the inventory) → R14 shards (projection measured) → R15 continue → R16 Play/badge → R17 Hindi. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
 | **Repo** | **Pushed Sep 18 ~02:15 IST** (`4858e3b..591031d`, 17 commits) on the user's word — `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is now in the public repo. Secret scan over the whole range: clean, control positive. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
@@ -3062,3 +3062,32 @@ jeera/palak 4, naan 3); the +2 boss sweetener pads rajma/beans to 6 without movi
 first-unlock level. **R14 consequence:** shards persist across runs (already the design), and
 the lull after level 10 is where the "+1 ✦" pip and the Kitchen card's progress fraction have
 to carry the feeling of progress. Committed as-is.
+
+---
+
+### 2026-09-18 ~04:15 IST — Round 12 returned and verified: Private **1.84.0** — with one blocker
+
+**Verified:** tags 1.84.0 / 1.69.0 / 1.69.0 · balance 35/36/11/4/90 · tsc + build clean · no
+sidecars · sealed files + leaderboard config untouched · labels Dishes served / Waves held with
+no "pests"/"rushes" left · `IDLE_SIZE 132` · Ready stacked above the portrait (`flex-col`) ·
+`contextAhead/Behind 3` · `rankMemory` + `diffAndRecordRank` in save · `blurredBackdrop.ts`
+memoised data-URL (no new public file) · podium/rows use GOLD/BRASS/TOMATO/TURMERIC only, bar the
+only orange. Committed `f88e0fc`.
+
+🔴 **Blocker, flagged by the agent, confirmed by me:** stacking Ready above the 132-px portrait
+made the bottom DOM column ~225 px; the agent cleared the belt overlap by raising `BOTTOM_BAND`
+460 → 2400, which **halves the board** — 123 px wide at 360×780 (was 247), 208 px at 744×1315
+(was 417). Structural cause, not a judgment error: `getFit` reserves the HUD bands in *design
+units*, but the HUD is DOM and doesn't scale, so a bigger band shrinks the board, which shrinks
+the band in pixels, which needs a bigger band. **Fix (Round 12b): reserve the bands in CSS
+pixels** — `scale = min(W/720, (H − topPx − bottomPx)/1300) × BOARD_SCALE`, bands measured
+from the DOM. Computed: 0.304 at 360×780 (1.83.0 had 0.344), **0.654 at 744×1315 (1.83.0 had
+0.579 — better, the band no longer grows with the board)**.
+
+**Handover errors owned:** (1) the own-row colour was named "turmeric" but given gold's hex
+`#f4d68a` — the agent used turmeric `#d9a520` and said so; (2) "the game's display face" — the
+project declares no custom font; the agent used the existing bold system stack.
+
+**Not verifiable headlessly (as R10/R11):** podium and rows with real scores; the daily
+rank-memory rollover branch (code-reviewed only). The laurel is a 🏵️ glyph — art round 3's
+`laurel.png` arrived after this handover was issued; wired in 12b.
