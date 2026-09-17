@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.83.0** (Rounds 0–11 — Round 11 verified Sep 18 ~00:10 IST; awaiting the user's playtest; 🔒 Private-only until human verification — Ideas.md §6d) |
 | **Jam (Sep 17, ~21:50 IST)** | **6th, 613 daily uniques** (901 total plays) at ~21:50 IST Sep 17 — out of the money by 16: 5th Pest Control Tycoon 629 ($100), 4th GT Rush 902 ($200), 7th The Good Life 479. Judging closes **Sep 18 12:00 PT = 00:30 IST Sep 19** (1d 02h 37m at the reading). Public is frozen at 1.69.0 through judging. |
-| **In flight** | Nothing dispatched. Next: **Round 12** (belt chevrons 10.1 C + i18n string table) after the user plays 1.83.0 — first Ranks with real rows and a first daily entry. Queued R12–R16 per Ideas.md §10. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
+| **In flight** | Nothing dispatched. Next: **Round 12** = Ranks restyle (pick pending, Ideas.md §6d Playtest of 1.83.0) + rename + podium + portrait/Ready; belt chevrons + i18n table move to R13. Queue per Ideas.md §10 shifts by one. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
 | **Repo** | Commits since `4858e3b` (14, through the Round 11 record) are **local, unpushed** — `backdrop-dawn.jpg` (Archita's painting) would enter the public repo; the user decides. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
@@ -2941,3 +2941,16 @@ guest session. **Quirk:** `rundot leaderboard config` still echoes the alltime-o
 the deploy though both daily instances answer — treat that command's output as possibly stale.
 
 **Next:** user plays 1.83.0 → annotated screenshots → Round 12 (belt chevrons + i18n table).
+---
+
+### 2026-09-18 ~00:40 IST — Playtest of 1.83.0: four decisions + Ranks restyle proposals
+
+Three screenshots. Decided (Ideas.md §6d "Playtest of 1.83.0"): Dishes served / Waves held;
+podium rebuilt on a base line; idle portrait ×1.5 with Ready moving above it. The user called
+the Ranks look "boring and bland" and asked for research + a beautified proposal with the
+architecture kept. Web search done (UX Collective, Yu-kai Chou, UI Patterns, IxDF, Game UI
+Database, Dribbble, Mobbin — article bodies 403'd, summaries used); the principles confirm the
+shipped architecture (podium block, own row, Today first, delta to the rank above). Three looks
+drawn on the private page `https://claude.ai/artifact/X1yHH4RhqEuBnnBH5kuXcX` (A chalkboard ·
+**B pass counter, recommended** · C ticket rail); spec summary in Ideas. Round 12 waits on the
+pick; belt chevrons + i18n table shift to Round 13.

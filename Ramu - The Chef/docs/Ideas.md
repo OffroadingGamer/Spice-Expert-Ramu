@@ -608,6 +608,31 @@ anchors to the **wave chip** instead. §7's data path is unchanged.
    row), and RUN accounts cannot rename — the resubmit path only runs for guests. It gets tested
    the first time a guest renames on 1.82.0+; I read the boards after.
 
+**Playtest of 1.83.0 (Sep 18, ~00:40 IST) — decided, for Round 12:**
+
+1. **Board nouns:** "Pests cleared" → **Dishes served**; "Rushes held" → **Waves held**. Bar:
+   *"#1 all time · 6,231 dishes served"* / *"… · 106 waves held"*; Today: *"#n today · …"*.
+   Mode keys `kills` / `waves` unchanged.
+2. **Podium placement is broken** (cards float at three heights with no base; #1 barely taller).
+   Replaced, not patched: the three stand on **one base line, bottoms aligned, stepped heights**
+   — the exact treatment comes with the restyle pick below.
+3. **Idle chef portrait bigger:** `IDLE_SIZE` 88 → **132** (×1.5); the narrow-gutter floor rule
+   and hidden-on-lost stay.
+4. **Inline Ready button moves above the portrait** (centred on it) once the portrait is
+   rescaled — not beside it; the three upgrade chips stay below the portrait.
+5. **Ranks restyle — the user finds the orange-on-chocolate look bland; architecture stays.**
+   Three drawn looks with a recommendation (private page, not spec of record): **A** specials
+   chalkboard (slate + walnut frame, chalk hand for header/pills, chalk-outlined podium steps
+   on a shelf line) · **B — recommended: the pass counter** (the shipped `menu-backdrop`
+   blurred 3 px and darkened ~85 % as ground; a walnut board with a 1.5-mu brass rim; brass
+   podium steps 30 / 20 / 13 mu on a brass shelf, avatars on brass discs 40 / 30 mu, laurel on
+   #1; rows as cream **order tickets** with a dotted tear edge, tomato scores, own row on
+   turmeric paper with a red outline; the bar stays orange and becomes the only orange on the
+   screen) · **C** ticket rail (steel rail, top three as clipped tickets, receipt monospace).
+   Research adds two cheap items for the pick: a **"near you" slice** (three rows above/below
+   when off the first page) and a **rank-delta arrow** on the own row since the last visit.
+   ⏳ Awaiting the pick.
+
 ## 7. Wave-intro scroll — proposed Sep 13 2026 — ✅ shipped as the wave bubble's scroll grid, 1.76.0
 
 **Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll
