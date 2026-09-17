@@ -40,7 +40,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Assets } from 'pixi.js';
 import { MANIFEST } from '../assets/manifest.ts';
 import { CONFIG } from '../game/config.ts';
-import { blockForLevel, chefBodyAliasForBlock } from '../game/data/blocks.ts';
+import { blockForLevel, chefBodyAliasForBlock, type Block } from '../game/data/blocks.ts';
 import { BACKDROP_FADE_S } from '../game/towerScene.ts';
 import { unmuteDialogue } from '../game/dialogueController.ts';
 import { sfx } from '../audio/audio.ts';
@@ -63,14 +63,31 @@ const SLOW_LOAD_WARN_MS = 3000;
 /** Round 7 item 4: fixed now — the bottom band is DOM flow on every phone
  *  (Hud.tsx), so there's no device-dependent gutter left to size against
  *  (the old IDLE_MARGIN_PX/IDLE_SIZE_MAX/IDLE_SIZE_FLOOR/useLeftGutterPx
- *  machinery this replaced is gone). 104, not the handover's literal
- *  "~120" — measured live against stage.ts's own contain-fit at 403x874
- *  (the tightest tested viewport, same one that round C's BOTTOM_BAND was
+ *  machinery this replaced is gone). Not the handover's literal "~120" —
+ *  measured live against stage.ts's own contain-fit at 403x874 (the
+ *  tightest tested viewport, same one that round C's BOTTOM_BAND was
  *  originally calibrated against): 120 pushed the row high enough to clip
  *  the path's own exit corner under Ready (screenshotted, not guessed).
- *  104 (still ~2x the old idle sprite's 72-100px range) clears it with
- *  real margin alongside BOTTOM_BAND's own bump — see that constant's doc. */
-const IDLE_SIZE = 104;
+ *
+ *  Round 8 fix 1 (docs/Ideas.md §6d, "Playtest of 1.78.0" item 1): Round 7's
+ *  104px + BOTTOM_BAND 340 left only ~14px of margin at a ZERO safe-area
+ *  inset — the desktop-emulation viewport every prior round measured
+ *  against. A real device's env(safe-area-inset-bottom) (~34px on a
+ *  home-indicator phone) pushes pb-safe-bottom's padding up by that same
+ *  amount, which the canvas's own contain-fit (stage.ts's getFit — it only
+ *  ever sees screenW/screenH, never the inset) has no way to react to: the
+ *  path's screen position doesn't move, but the DOM band above it does,
+ *  eating the whole 14px margin and then some (measured: -19.8px, i.e. a
+ *  real overlap — the exit hatch rendered BEHIND the Ready button,
+ *  screenshotted with a simulated 34px inset). Two independent-but-additive
+ *  levers closed it (BOTTOM_BAND alone would need a much bigger jump — see
+ *  that constant's own doc for why growing it is comparatively inefficient
+ *  here): this constant 104 -> 88 (buys clearance 1:1, at zero board-scale
+ *  cost, unlike BOTTOM_BAND) alongside BOTTOM_BAND 340 -> 460. Re-measured
+ *  (Node-side reimpl of stage.ts's own getFit math, same technique round 7
+ *  used) with the 34px inset applied: +12.8px margin (was -19.8px) at
+ *  403x874, and 768x1024 (never the tight case) stayed comfortably positive. */
+const IDLE_SIZE = 88;
 
 function usePrefersReducedMotion(): boolean {
     const [reduced, setReduced] = useState(() => {
@@ -232,12 +249,18 @@ export interface ChefPortraitProps {
      *  store.lives happen to hold at that instant. Omitted everywhere else,
      *  leaving the existing priority untouched. */
     face?: 'a' | 'b' | 'c' | 'w';
+    /** Round 8 (MainMenu.tsx's Ramu, docs/Ideas.md §9): overrides the normal
+     *  blockForLevel(wave)-driven costume — the menu has no live `wave` (it
+     *  reads 1 or a stale in-run value), and the spec wants the block of the
+     *  player's BEST run instead. Omitted everywhere else. */
+    block?: Block;
 }
 
-export default function ChefPortrait({ size, variant, face }: ChefPortraitProps) {
+export default function ChefPortrait({ size, variant, face, block: blockOverride }: ChefPortraitProps) {
     const wave = useStore((s) => s.wave);
     const dialogue = useStore((s) => s.dialogue);
     const lives = useStore((s) => s.lives);
+    const tdPhase = useStore((s) => s.tdPhase);
     const backdropTransitioning = useStore((s) => s.backdropTransitioning);
     const unmuteCueNonce = useStore((s) => s.unmuteCueNonce);
     const reducedMotion = usePrefersReducedMotion();
@@ -257,7 +280,7 @@ export default function ChefPortrait({ size, variant, face }: ChefPortraitProps)
         return () => clearTimeout(t);
     }, [unmuteCueNonce]);
 
-    const block = blockForLevel(wave);
+    const block = blockOverride ?? blockForLevel(wave);
     const bodyAlias = chefBodyAliasForBlock(block);
     const faceLetter = face
         ?? (cueing
@@ -282,8 +305,12 @@ export default function ChefPortrait({ size, variant, face }: ChefPortraitProps)
     );
 
     // Idle never shows b/c (illegible at this size — §6b's sizing finding)
-    // and hides outright while the dialogue portrait owns the screen.
-    if (variant === 'idle' && dialogue !== null) return null;
+    // and hides outright while the dialogue portrait owns the screen, or
+    // while the end screen owns it (Round 8 fix 3, docs/Ideas.md §6d
+    // amendment: EndScreen.tsx mounts its OWN 'dialogue'-variant portrait —
+    // without this, both were visible at once, "two Ramus" on the same
+    // screen).
+    if (variant === 'idle' && (dialogue !== null || tdPhase === 'lost')) return null;
     if (!bodyResolved || !faceResolved) return null; // nothing has ever loaded yet (boot race guard)
 
     // Round 3: the idle mount is one of the two un-mute tap targets (Hud.tsx's

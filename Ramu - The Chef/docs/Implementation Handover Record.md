@@ -39,7 +39,7 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.78.0** (Rounds 0–7 — awaiting the user's end-to-end play; 🔒 Private-only until Round 4, then human verification — Ideas.md §6d) |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.80.0** (Rounds 0–8b — main menu accepted Sep 17; awaiting the user's end-to-end play; 🔒 Private-only until human verification — Ideas.md §6d) |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
 | **Endgame criterion** | `maxed-meta` must lose between levels **85–110** (currently 90) |
@@ -49,8 +49,9 @@ of the present.**
 | **FTUE opening pad** | **`FTUE_FIRST_PAD = 4`** (B3, `damage ×1.5`), then pads 3 and 2 |
 | **Sealed files** | `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` |
 | **`data/waves.ts`** | ⚠️ **RE-SEALED.** Unsealed for the v1.69.0 block-1 retune only |
-| **Credits (Sep 15, 17:45 IST)** | **93,273** = 50,000 grant (Dec 13) + 15,000 grant (Dec 8) + 25,000 starter + 3,173 quests + 100 daily. **BACK-TO-WORK is gone: its last ~91,000 funded the Meta flight** on its final day. Durable pool untouched |
+| **Credits (Sep 17, ~15:30 IST)** | **98,805** (`rundot credits`). Was 93,273 on Sep 15; **+6,093 arrived before the art round** (not the Meta remainder at the flight's rate — ledger to be read), then **−561** for the hatch/belt round. Durable pool: 50,000 grant (Dec 13) + 15,000 grant (Dec 8) + 25,000 starter + quests/daily |
 | **Paid campaign** | ✅ **`kitchen-rush-meta` COMPLETE** (ended Sep 16). **$70.05 of $82 spent · 4,228 impr · 171 clicks · 4.04 % CTR · 18 installs · CPI $3.66.** Unspent remainder refunds on completion per RUN's rule — verify on the studio page. Paid is done for this jam (marketing agent's prior, Sep 14) |
+| **Art round 2 (Sep 17)** | ✅ **DONE** — `Art/_gen/pass-final/`: `pass-entry.png`, `pass-exit.png` (1024², take 1 each), `belt-tile.png` (128², procedural, `#3a3a44`, seamless both axes). **561 credits.** Awaiting the hatch-wiring implementation round |
 | **Art leg (Sep 14)** | ✅ **DONE** — `Art/_gen/chef-final/`: 9 bodies + 4 faces + scroll, **7,003 credits**, verified. Faces are aligned eyebrow-to-jaw bands. ⚠️ Expressions read at **≥ 160 px, not 96** — spec amended in Ideas.md §6b. Nothing ships before judging |
 | **Video leg (Sep 14)** | ✅ **PUBLISHED** — *Twelve Glasses*, 45 s portrait, Video Studio, live ~00:08 IST Sep 15, ~20 min before the close. Share `https://w.run/s/UvNAAno`. Agent-reported ≈43k credits; ⚠️ **not visible in `rundot credits`** (balance 184,274 reconciles without it) — Studio may bill a separate pool. Docs tracked in `VideoGen Leg/`; media gitignored. ✅ **RUN support confirmed Sep 15: automatically in consideration** — no form, no listing; Editor's Picks $300/$100/$100. Share link handed to the marketing agent for the organic calendar |
 
@@ -2660,3 +2661,61 @@ on Sep 17 — it is tomorrow night IST. Forwarded to the marketing agent for §1
 wiring is a later implementation round, started only after both have returned.
 
 **Licensing closed:** Archita Sharma's consent (verbal, 17 Sep 2026; ship + promote, credit required, never generator input) is filed at `Art - Main Menu\CONSENT - Archita Sharma.md` — gitignored, not in the public repo.
+---
+
+### 2026-09-17 — Round 8 returned → Private v1.79.0; menu built to a spec in the wrong unit
+
+**Status:** ✅ returned and verified (balance 35/36/11/4/90, tsc clean, sealed files untouched,
+no sidecars, Private 1.79.0 with Review/Public 1.69.0) — **but the menu was visibly wrong** on
+the user's screen: stack 18 % of the width, Start shift 3 % of the height, Ramu 16 %, against
+54 / 7.3 / 50 % in the approved mock. Root cause: **Ideas.md §9 carried the mock's frame pixels
+(240-wide frame: "130 px stack, 120 px Ramu") as device pixels** — Central's error, built
+faithfully by the agent. Retro **111**. The four fixes landed as asked: `BOTTOM_BAND 340 → 460`
+with `IDLE_SIZE 104 → 88` (a real −19.8 px overlap under a 34 px safe inset, now +12.8);
+end-screen `matched` outcome and held threshold 20; idle portrait hidden on `lost`; credit line
+in Settings (no credits screen existed). Two agent findings kept: no SDK external-link surface
+exists (`window.open` from a click handler, the SDK's own fallback pattern); RUN's release-notes
+filter rejects a changelog containing the artist's surname (substring false-positive) — omit
+the surname in changelogs.
+
+### 2026-09-17 — Round 8b issued and returned → Private v1.80.0; main menu accepted
+
+Handover: **mock units** (`mu = clamp(1, min(vw/240, vh/520), 3)`), every dimension `value × mu`,
+centre crop, no `textLength`, ratio acceptance against the mock. Return verified from source:
+`useMenuUnit()` in MainMenu.tsx with resize/orientation listeners; measured 54.16 % / 50.00 % /
+8.30 % / 19.00 % / 97.31 % at 403×874 and 360×780 (height-clamped at 739×1315 and 768×1024,
+reported not forced); SPICE EXPERT at 21.8 × mu (system sans narrower than the mock face);
+44 px floor on the chips; Ramu-to-stack gap +7 px at both phone sizes by per-row isolation (the
+agent's first two bounding-box measurements were wrong and it said so). Balance/tsc/sealed/
+sidecars/tags all confirmed. **User: "Main Menu is acceptable."** Ideas.md §9 rewritten in
+mock units. Rounds 8 and 8b committed together (they share files).
+
+### 2026-09-17 — Art round returned: entry hatch, exit hatch, belt tile — 561 credits
+
+Stop 1: entry take 1 (pass window, ticket rail, warm-lit opening) and exit take 1 (walkout door,
+porthole, kick plate) approved at 72 px as-is. Belt: Central checked the code — the belt is a
+**two-pass stroked polyline** (`pathEdge` orange at 86 units, `pathDirt` charcoal at 72; seven
+alternating segments, round joins), so a 1-D cross-section tile would need rotated
+`TilingSprite`s per segment plus six corner patches. Redirected to a **2D-tileable tread with no
+rims** — the rim stays the code's own edge stroke; the tile replaces only the inner fill (Pixi 8
+`stroke({ texture, textureSpace: 'global' })`). Stop 2: the agent built the tile
+**procedurally** (`(x − y) mod period`) rather than cropping a diffusion take, so the numbers are
+exact — verified by Central: 128², dominant `#3a3a44`, luminance 56–59 (inside ±10 %, at the
+faint end — the wiring round screenshots it at 52 px; if invisible, one more pass at the band
+edge), wrap-seam difference 0.25 on both axes vs 0.19 between interior neighbours. Files in
+`Art/_gen/pass-final/`, no sidecars there. `rundot credits` → **98,805**. Noted for the wiring
+round: the burrow decal slot is landscape 110:64 at both path ends; size the new hatches by
+height and keep aspect. Cost fact: a generate without `--remove-background` is 120, with it 147.
+
+### 2026-09-17 — Playtest of 1.80.0: six notes → Ideas.md §6d; two proposals owed
+
+Two screenshots (Settings as a full screen → "just a dialogue box"; a greeting bubble over Ramu
+on the menu) and six notes: boss meter (vertical, left of the playfield — **proposal owed**),
+FTUE to teach the recipe widget / boss meter / upgrades / prop placement, empty-pad cue
+(green/red concentric arrow, red pads inert), leaderboard revamp with a **Daily tab first**
+(**three styles owed**), sub-section changes (leaderboard, settings, kitchen), and **name entry
+at the start of the FTUE** with Skip → auto `FirstName LastName`. Research recorded in §6d:
+SDK `daily` period is additive to the config; `profile.isAnonymous` separates guests from RUN
+accounts; `metadata.displayName` carries a guest's name onto the board. Proposed split:
+**Round 9** hatch wiring + settings dialog + pad cues + name entry/greeting; **Round 10** boss
+meter + FTUE beats; **Round 11** leaderboard tabs + daily period.

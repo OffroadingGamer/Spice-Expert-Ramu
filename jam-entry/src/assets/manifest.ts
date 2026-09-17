@@ -95,6 +95,16 @@ export const MANIFEST: Manifest = {
                 // the same way the dish/backdrop assets already are.
                 { alias: 'chef-body-cafe', src: 'images/chef/body-cafe.png' },
                 { alias: 'chef-face-a', src: 'images/chef/face-warm.png' },
+                // Round 8 (docs/Ideas.md §9): the main menu's backdrop — the
+                // FIRST screen the player sees, so 'critical' (not
+                // 'deferred', where every other bg-block-*.jpg lives below —
+                // those are mid-run block backdrops, warmed a block early,
+                // never needed at boot). Source: a 2130x3214 gouache
+                // landscape by Archita Sharma, scaled to 720 wide (uniform,
+                // no crop) at JPEG q80 -> 119,485 bytes (~117 KB), under the
+                // spec's ~150 KB / 160 KB budget. See MainMenu.tsx for the
+                // mandatory on-screen + credits-sheet attribution.
+                { alias: 'menu-backdrop', src: 'images/menu/backdrop-dawn.jpg' },
             ],
         },
         {

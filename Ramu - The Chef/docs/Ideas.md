@@ -482,6 +482,37 @@ specified and wrong as a product. Removed.
    variants only if the neutral set earns it. Implementation follows in a later round.
 5. **Main menu rework** → §9 below.
 
+**Playtest of 1.80.0 (Sep 17) — main menu accepted; six notes for Rounds 9–11:**
+1. **Settings is a dialog, not a screen.** Same three rows (Music, Sound, credit line) in a
+   centred box over the dimmed menu; Back closes it. Applies to every sub-section that is a
+   short form.
+2. **Ramu greets the player on the menu:** a speech bubble over the bottom-left portrait,
+   *"Welcome, ‹name›"* — the name from item 6.
+3. **Boss meter:** a **vertical bar on the left of the playfield** that rises level by level to
+   the block's boss (every 10th level, `isBossLevel`). The board's left 67 design units are
+   free (path edge at 67, first pad at 205). **Proposal pending** — three drawings + a
+   recommendation, then the pick.
+4. **FTUE teaches four things it does not teach today:** the recipe widget (wave bubble), the
+   boss meter, upgrades, and prop placement. One beat each, in the existing dialogue system.
+5. **Empty pads need a cue.** Today a ghost slot is near-invisible. Decided: a **concentric
+   circle with an inward arrow** on every empty pad — **green** when the cheapest prop is
+   affordable, **red** when it is beyond the current coins, and a red pad **does not respond to
+   taps** until the coins reach the cheapest price (no picker opens; a coin-shortfall toast is
+   fine).
+6. **Name entry at the start of the FTUE:** *"What do they call you?"* with a text field and a
+   **Skip** that auto-assigns a `FirstName LastName` name (no digits, no symbols). The name
+   shows in the menu bubble and goes on the leaderboard. **RUN account players keep their RUN
+   username** (`profile.isAnonymous !== true`); guests get the chosen/assigned name, carried
+   in the score's `metadata.displayName` and rendered by the board in place of the host's
+   anonymous username.
+7. **Leaderboard revamp with a Daily tab that opens first**, All-time second. The SDK's
+   `daily` period (UTC rollover) is added to `rundot/leaderboard.config.json` — additive; the
+   two all-time boards must be read back before and after the deploy to prove they did not
+   reset. Each run submits to both periods. **Proposal pending** — three styles + a
+   recommendation, then the pick.
+8. The Kitchen (meta upgrades) sub-section also needs changes — the user will annotate it
+   separately.
+
 **Round 3 — decided: horizontal fill under the wave chip**, not a bar in the gutter. Same
 maths (SAFE = units − (lives − 1)), amber → green, resets per wave. Top-left, directly under
 `WAVE n / RUSH: …`, width of that chip group.
@@ -541,8 +572,20 @@ costume = the block of the player's best run; a **single right-hand stack** in t
 `BEST · RUSH n` → **Start shift** (the only filled button; renamed from "Challenge Mode") →
 The Kitchen → Ranks → `Backdrop: @ArchitaSharma` (link to
 `https://www.instagram.com/arc_inmotion`, opened through the SDK's external-link path, never a
-bare anchor) → **♥ Like · 💬 Comments**. The stack is 130 px wide and right-anchored; Ramu is
-120 px and left-anchored, so they cannot meet even at 360 px. **Gems and settings chips at
+bare anchor) → **♥ Like · 💬 Comments**.
+
+⚠️ **Units — corrected in Round 8b (1.80.0).** The first issue of this section said "the stack
+is 130 px wide, Ramu 120 px": those were pixels of the **240 × 520 mock frame**, not device
+pixels, and Round 8 built them literally (stack 18 % of the width on the user's screen; the
+mock has 54 %). The menu is now laid out in **mock units**: `mu = clamp(1, min(vw / 240,
+vh / 520), 3)`, recomputed on resize/orientation, and every dimension is `mock value × mu`
+— stack width 130, Ramu 120, stack right 12 / bottom 14, gap 7, Start shift padding 12 × 6
+font 12, ghosts 9 × 6 font 11, credit 7, chips 8, top chips 7 × 11 font 12 (44 px floor),
+wordmark top 19 % of height with SPICE EXPERT 21.8 (system sans is narrower than the mock's
+face; measured to 62 % of vw) and RAMU 40 with a 2.5 stroke; crop `center`. Height-clamped,
+so the composition can never be wider than the mock: Ramu's visible shoulder clears the
+ghosts by 7 px at 403 and 360 wide, as in the mock. **Accepted by the user Sep 17** ("Main
+Menu is acceptable"). **Gems and settings chips at
 44 px tap height.** The two tutorial hint lines are removed (the FTUE teaches). Bottom gradient
 transparent → chocolate 88 % from **55 % to 100 %** of the height — the sky and path stay
 untouched.

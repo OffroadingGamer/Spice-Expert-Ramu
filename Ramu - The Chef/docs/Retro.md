@@ -2695,3 +2695,14 @@ uniques are the score; the trend matters more than any single day.
      one that makes the bug impossible rather than merely fixed; Retro 105's lesson again —
      the artefact under test is the running system, and "restores to 1" is precisely the
      kind of line a grep cannot judge.
+
+111. 🔴 **A mock's pixels are frame pixels. Spec proportions or a unit — never the mock's
+     numbers as device pixels.** Sep 17 2026. The main-menu mock was drawn in a 240 × 520
+     phone frame with `width:130px` on the button stack and `width:120px` on Ramu. Central
+     copied "130 px" and "120 px" into Ideas.md §9 as the spec; the implementation agent built
+     exactly that, and on the user's 739 px-wide screen the stack was 18 % of the width where
+     the approved mock had 54 %. Nothing in the return was false; the spec was in the wrong
+     unit. ✅ **Rule:** when a drawing is approved, write the spec as fractions of the frame or
+     as a named unit (`mu = min(vw / frameW, vh / frameH)`) with the frame stated, and put the
+     mock-vs-screen ratio check in the acceptance list. A number without its frame is not a
+     spec.

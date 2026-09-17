@@ -71,9 +71,29 @@ export const PLAYFIELD_HEIGHT = Math.max(...CONFIG.path.map((p) => p.y));
  * the old 180: the path's own exit corner visibly clipped under Ready.
  * 340 plus IDLE_SIZE's own trim together clear it with real margin at both
  * 403x874 and 768x1024 (measured, not assumed — see the round's own report).
+ *
+ * Round 8 fix 1 (docs/Ideas.md §6d, "Playtest of 1.78.0" item 1): 340 only
+ * budgeted for a ZERO safe-area-inset-bottom — every prior round's own
+ * measurement viewport. This reservation is pure design-unit/screen-px
+ * math with no idea a real device's home-indicator inset even exists;
+ * env(safe-area-inset-bottom) is consumed entirely on the DOM side
+ * (app.css's pb-safe-bottom), which pushes the bottom band UP by that same
+ * amount without this reservation growing to match — so a real ~34px inset
+ * ate the round 7 margin whole and then some (measured: -19.8px, an actual
+ * overlap, the path's exit hatch rendering behind Ready — screenshotted
+ * with a simulated 34px inset). 340 -> 460 here, plus IDLE_SIZE 104 -> 88
+ * (ChefPortrait.tsx) — BOTTOM_BAND alone is the weaker of the two levers
+ * (see above: this height-bound regime trades scale against FIT_HEIGHT
+ * almost 1:1, so growing it enough alone to close a 34px gap would cost
+ * real board scale — a 460->650 jump was tried and rejected for exactly
+ * that, ~15% smaller board for the same margin a smaller IDLE_SIZE bought
+ * for free), so the fix splits the difference: enough BOTTOM_BAND to matter
+ * without a heavy board-scale cost, enough IDLE_SIZE trim to close the rest
+ * 1:1. Re-measured with the inset applied, not assumed — see the round's
+ * own report for the resulting margin at both reference viewports.
  */
 export const TOP_BAND = 170;
-export const BOTTOM_BAND = 340;
+export const BOTTOM_BAND = 460;
 
 /** Total design-unit height the contain-fit guarantees is visible. */
 export const FIT_HEIGHT = PLAYFIELD_HEIGHT + TOP_BAND + BOTTOM_BAND;

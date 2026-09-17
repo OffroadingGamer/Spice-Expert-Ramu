@@ -31,27 +31,38 @@ import ChefPortrait from './ChefPortrait.tsx';
 const INPUT_LOCK_MS = 600;
 const COUNT_UP_MS = 600;
 
-type OutcomeId = 'new_best' | 'near_best' | 'held' | 'early';
+type OutcomeId = 'new_best' | 'matched' | 'near_best' | 'held' | 'early';
 interface Outcome {
     id: OutcomeId;
     face: 'a' | 'b' | 'c';
     line: string;
 }
 
-/** The four outcome rows, in the handover's own priority order — checked
+/** The five outcome rows, in the handover's own priority order — checked
  *  top to bottom, first match wins. `previousBest` is store.previousBestWave
  *  (captured by towerScene.ts's checkEnd BEFORE it overwrote bestWave with
  *  this run's result — see that field's own doc comment for why reading
- *  the live bestWave here would make "new best" unreachable). */
+ *  the live bestWave here would make "new best" unreachable).
+ *
+ * Round 8 fix 2 (docs/Ideas.md §6d, "Playtest of 1.78.0" item 2): a tie
+ * (`survived === previousBest`) used to fall through into near_best's
+ * `gap <= ...` check (0 always satisfies it) and render "0 short of the
+ * record" — a real record equalled, described as a miss. `matched` is
+ * checked here, between new_best and near_best, so a tie can never reach
+ * that branch. "Held" 10 -> 20: 10 rushes "nobody would believe" oversold a
+ * routine result; early is now anything short of 20, not 10. */
 function computeOutcome(survived: number, previousBest: number): Outcome {
     if (survived > previousBest) {
         return { id: 'new_best', face: 'c', line: 'Best shift this kitchen has ever seen. Write it on the wall.' };
+    }
+    if (survived === previousBest) {
+        return { id: 'matched', face: 'b', line: 'Matched the record. Next time it falls.' };
     }
     const gap = previousBest - survived;
     if (gap <= Math.max(3, previousBest * 0.1)) {
         return { id: 'near_best', face: 'b', line: `${gap} short of the record. The record's getting nervous.` };
     }
-    if (survived >= 10) {
+    if (survived >= 20) {
         return { id: 'held', face: 'a', line: `${survived} rushes held. Nobody at the tapri would believe it.` };
     }
     return { id: 'early', face: 'a', line: 'Rough start. The stove still lights tomorrow.' };
@@ -253,7 +264,9 @@ export default function EndScreen() {
                         sub={
                             outcome.id === 'new_best'
                                 ? <span className="font-bold text-primary">NEW BEST</span>
-                                : `best ${previousBestWave} · −${deltaVsBest}`
+                                : outcome.id === 'matched'
+                                    ? `best ${previousBestWave} · =`
+                                    : `best ${previousBestWave} · −${deltaVsBest}`
                         }
                     />
                     <TicketRow label="Dishes served" value={killsDisplay.toLocaleString()} />

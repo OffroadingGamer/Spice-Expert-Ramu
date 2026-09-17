@@ -33,6 +33,15 @@ export default function Settings() {
                     }}
                 />
             </div>
+            {/* Round 8 (docs/Ideas.md §9): mandatory backdrop-art credit.
+                There was no credits screen and no existing credit text
+                anywhere in this codebase to append to (KayKit/SFX credits
+                the handover assumed existed were not found — see this
+                round's own report) — this IS the credits screen, minimal,
+                until a real one exists. */}
+            <p className="max-w-sm text-center text-[0.85rem] text-white/50">
+                Backdrop art — Archita Sharma (@arc_inmotion)
+            </p>
             <button
                 type="button"
                 className="w-64 rounded-2xl bg-white/15 px-12 py-4 text-xl font-bold text-white shadow-lg transition-transform active:scale-95"

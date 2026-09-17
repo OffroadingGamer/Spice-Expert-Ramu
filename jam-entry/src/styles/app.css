@@ -6,6 +6,14 @@
     --color-primary: #ff6b1a;   /* hot pass light */
     --color-surface: #14141a;   /* kitchen dark */
 
+    /* Round 8 (docs/Ideas.md §9, main menu palette table): the two colours
+       that recur across nearly every menu element (wordmark, stat chip,
+       ghost buttons, gems/settings chips, the credit link) — named tokens
+       so every call site draws from the same two hexes rather than typing
+       them out per element. Menu-only; not used elsewhere in the game. */
+    --color-chocolate: #2a1d10;
+    --color-cream: #fdfae7;
+
     /* Final round, task 2: a looping scale pulse for the Ready button —
        Tailwind v4's --animate-* theme keys generate an animate-* utility
        (here, animate-ready-pulse), the same mechanism as the built-in
