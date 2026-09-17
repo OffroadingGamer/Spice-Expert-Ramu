@@ -655,6 +655,73 @@ first screen; put it in `critical` and measure the cost.
 
 ---
 
+## 10. Six post-jam studies — proposed Sep 17 2026, for speculation (no picks yet)
+
+Three proposals each, one recommended. Facts read from the SDK docs and `config.ts` on Sep 17:
+rewarded ads exist (`ads.showRewardedAdAsync()`, this game already runs a game-over gem
+placement, `maxPerDay 15`); `environment.browserInfo.language` gives `hi-IN` / `ta-IN`; RUN IAP is
+**RunBucks** (platform hard currency, SKUs on the dashboard, `iap.spendCurrency`, `openStore`;
+subscriptions exist; no direct fiat); meta economy = 4 gems/wave, 130 gems to max one stat,
+390 for all three, and meta is raw power (+50 % damage at max); the Access Gate blocks TextGen
+for anonymous players. The readable version with the option cards is a private page; this
+section is the spec of record.
+
+**10.1 Animated belt.** A *scrolling tread* (animate the texture matrix; one direction for the
+whole belt — motion, not conveyance). B *per-segment conveyor* (7 masked TilingSprites + 6
+corner patches; a round of its own, corners are the risk). **C — recommended: chevrons riding
+the belt** — a Graphics layer redrawing ~40 cream 25 % chevrons (18 × 12 units, every 60 units)
+at distances along the polyline via the bugs' own path function, moving toward the exit at the
+base bug speed, **paused in build phase**, fading 300 ms at the boss level's last leak. Corners
+free; direction always right; the belt shows the wave state. Belt-tile re-pass becomes optional.
+
+**10.2 Localisation (Hindi, Tamil).** **A — recommended: full i18n, curated** —
+`i18n/{en,hi,ta}.ts`, `t(key)` in React *and* Pixi text (~250 strings incl. 39 dish names,
+enemy/prop/upgrade names, HUD, beats, end-screen lines); Settings language row (English ·
+हिन्दी · தமிழ்); first launch with `hi`/`ta`/`-IN` → the name step asks *"Which language for
+the kitchen?"*; persisted; instant switch. Agent drafts, **native reviewer signs off** (the user
+for Hindi; Tamil needs a reader). OS fonts on Android/iOS; Noto Sans Devanagari/Tamil as deferred
+web fallback (~150 KB each). Two rounds: table + English first (no visible change), then Hindi;
+Tamil when reviewed. Test RUN's moderation on non-Latin text in Private. B *UI only* (dialogue
+stays English — the wrong half). C *runtime machine translation* (credits per player, gated off
+for guests — non-starter).
+
+**10.3 Continue after losing.** **A — recommended: one rewarded continue per run**: loss →
+*"Continue the shift? ▶ Watch"* → +10 walkouts, −15 % prop damage for 5 waves, once; the run
+submits normally with `metadata.continues: 1` and Ranks shows ⟳ (a continued run's score is
+that player's best forever — the marker is not optional). The nerf needs one engine hook
+(`handicap {damageMult, untilLevel}`, three lines, sim unaffected) → 🔒 **unseal decision for
+`engine.ts`**; the non-engine alternative is +6 walkouts and no nerf. B *ladder* (ad, then 50
+gems, no third). C *unlimited escalating* (keep-best boards become "who continued most"; one
+player burns the 15/day budget).
+
+**10.4 Recipe shards → recipe scrolls (Kitchen content, board untouched).** **B — recommended:
+full service** — at wave clear, if every dish on the order was served (no leak), **+1 shard for
+each recipe on that order**; **8 shards per scroll**; **or 150 gems** (≈ one good run's whole gem
+yield = one meta level foregone). Levels 1–12 are full serves by design (block-1 criterion) →
+~10 chai shards in run 1 → **first scroll during run 1**, then one new recipe every 1–2 runs;
+39 dishes at ~1.5 runs/day ≈ 2 months. Shown on the wave bubble after a full-service clear
+(*"+1 ✦"*), redeemed in the Kitchen on a scroll card that also offers the gem price. A *drip* (1
+shard per dish served, 100/scroll; rare dishes never come). C *boss drops* (3 shards of the
+block dish per boss kill, 6/scroll, 200 gems; first unlock run 2–3, top players only) — keep as a
+later sweetener (+2 on a boss kill).
+
+**10.5 "Start shift" → Play; unlock notice.** **Play** (over Start): one syllable, localises
+cleanly (खेलें / விளையாடு), no object needed. **B — recommended: badge + Ramu says it** — a 16-mu
+orange "+n" chip top-right of The Kitchen (count = unlockable scrolls + claimable rewards,
+cleared when the Kitchen opens) and the greeting bubble carries the notice: *"Welcome back,
+‹name› — the ‹dish› scroll is ready in the kitchen."*; more than two: *"Rewards are waiting in
+the kitchen."* A *badge + host toast* (`popups.showToast`; competes with RUN's own toasts). C
+*badge + door glow* (reintroduces a pulse).
+
+**10.6 IAP.** **B — recommended: content, not power** — recipe scroll SKU, shard packs, Ramu
+costumes (the nine block bodies as menu/portrait skins), an ad-free continue token. A *gem packs*
+(390 gems maxes meta → paid runs outrank free on both boards — pay-to-rank; only if purchased gems
+are capped below meta level 5 or boards split). C *Chef's Pass* subscription (daily shard bonus,
+one free continue/day, a costume) — after the daily loop exists. Sequence: shards → continue →
+Play/badge → IAP; all post-jam, Private first.
+
+---
+
 ## 8. Previously held, still parked
 
 - **Wave roster panel** (GDD §8) — held.

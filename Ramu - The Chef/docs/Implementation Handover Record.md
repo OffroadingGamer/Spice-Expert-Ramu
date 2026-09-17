@@ -2787,3 +2787,14 @@ confirm today (kept, flagged). Still open: the belt-tile contrast re-pass (user 
 **Round 10 issued** (implementation agent, Private → **1.82.0**): heat gauge (§6d item 3 spec),
 four FTUE beats, name dialog moved to the start of the scripted run, pulse removal, Settings A
 + Name row, rename dialog + RUN toast, pause card.
+---
+
+### 2026-09-17 — Six post-jam studies written (Ideas.md §10): belt motion, languages, continues, shards, Play/badge, IAP
+
+Facts read first (rewarded ads + existing 15/day budget; `browserInfo.language`; RunBucks IAP;
+gem economy 4/wave, 130/stat, 390/all; meta = raw power; Access Gate blocks TextGen for
+guests). Recommendations: chevrons riding the belt; full curated i18n, Hindi first; one rewarded
+continue per run with a board marker (🔒 engine unseal needed for the damage nerf); full-service
+shards, 8 per scroll or 150 gems, first unlock in run 1; "Play" with a +n badge and the greeting
+bubble as the notice; content-not-power IAP. No picks yet; nothing scheduled. Round 10 is in
+flight.
