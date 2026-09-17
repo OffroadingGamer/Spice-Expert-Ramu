@@ -3102,3 +3102,14 @@ standing rule: each return is pasted verbatim into the ledger before verificatio
 keeps Central's verification and decisions and links to the ledger. Backfilled: R10, R11, art
 round 3, audio round 5, localisation inventory, shard projection, R12. Pending returns at this
 moment: **Round 12b** only (plus the marketing agent's post-close entry after 00:30 IST Sep 19).
+
+---
+
+### 2026-09-18 ~05:10 IST — Hindi review, first pass (15 rows) applied to `docs/i18n/strings.md`
+
+User reviewed ahead of R17: rows 12, 20, 24, 35, 38, 64, 78, 81, 82, 92, 124, 162, 166, 186, 253
+replaced with their wording (given in Roman, set in Devanagari by me, interpolations kept).
+Rules extracted for the rest of the file: system UI = **आप**, Ramu = **तुम**; Escapes = **ग्राहक**;
+shift float = **बौनी का उपहार**; Max = **सर्वश्रेष्ठ**; targeting नज़दीक / भारी / हल्का; Cooktop =
+**अँगीठी**; dishes in headings = **पकवान**. Logged in the file's new "Review log" section. The bulk
+review waits for the R16 re-inventory (R14–R16 add strings), then R17.

@@ -39,7 +39,7 @@ Pluralisation: English source has **no** plural branching anywhere. Every count 
 | 9 | `menu.greeting.fallback` | chef | `ui/MainMenu.tsx:141`, `ui/Settings.tsx:50` | {name} fallback when no name is saved | | शेफ | |
 | 10 | `menu.runNameToast` | Your name comes from your RUN profile. | `ui/MainMenu.tsx:337` | toast under the bubble, `whitespace-nowrap`, 8·mu font, 2.6 s | | तुम्हारा नाम RUN प्रोफ़ाइल से आता है। | |
 | 11 | `menu.testMode` | Play Game | `ui/MainMenu.tsx:389` | ghost button, only with `?test=1` | `dev` | गेम खेलो | |
-| 12 | `menu.best` | Best · Rush {n} | `ui/MainMenu.tsx:404` | above Start shift, CSS uppercase, 8·mu | `{}` | बेस्ट · रश {n} | |
+| 12 | `menu.best` | Best · Rush {n} | `ui/MainMenu.tsx:404` | above Start shift, CSS uppercase, 8·mu | `{}` | सर्वश्रेष्ठ प्रयास · रश {n} | |
 | 13 | `menu.startShift` | Start shift | `ui/MainMenu.tsx:420` | the only filled button, 130·mu wide, 12·mu font | | शिफ्ट शुरू करो | |
 | 14 | `menu.kitchen` | The Kitchen | `ui/MainMenu.tsx:424` | ghost button → upgrades | | रसोई | |
 | 15 | `menu.ranks` | Ranks | `ui/MainMenu.tsx:428` | ghost button → leaderboard | | रैंक | |
@@ -52,11 +52,11 @@ Pluralisation: English source has **no** plural branching anywhere. Every count 
 
 | # | key | English | file:line | context | flags | Hindi draft | Tamil |
 |---|---|---|---|---|---|---|---|
-| 20 | `name.title` | What do they call you? | `ui/NameDialog.tsx:219` | first-run card title, 200·mu card, 15·mu | | लोग तुम्हें क्या बुलाते हैं? | |
+| 20 | `name.title` | What do they call you? | `ui/NameDialog.tsx:219` | first-run card title, 200·mu card, 15·mu | | लोग आपको क्या बुलाते हैं? | |
 | 21 | `name.placeholder` | Type your name | `ui/NameDialog.tsx:225` | input placeholder. ⚠ `NAME_PATTERN` (`:182`, `RenameDialog.tsx:308`) is `A-Za-z .'` only: a Devanagari name is rejected keystroke by keystroke | | अपना नाम लिखो | |
 | 22 | `name.skip` | Skip | `ui/NameDialog.tsx:254` | ghost button; skip = random name | | छोड़ो | |
 | 23 | `name.confirm` | That's me | `ui/NameDialog.tsx:269` | filled button | | हाँ, मैं ही हूँ | |
-| 24 | `name.rename.title` | Your name | `ui/RenameDialog.tsx:334` | card title, CSS uppercase | | तुम्हारा नाम | |
+| 24 | `name.rename.title` | Your name | `ui/RenameDialog.tsx:334` | card title, CSS uppercase | | आपका नाम | |
 | 25 | `name.rename.cancel` | Cancel | `ui/RenameDialog.tsx:355` | ghost button | | रहने दो | |
 | 26 | `name.rename.save` | Save | `ui/RenameDialog.tsx:370` | filled button, 11·mu | | सेव करो | |
 
@@ -77,10 +77,10 @@ Pluralisation: English source has **no** plural branching anywhere. Every count 
 
 | # | key | English | file:line | context | flags | Hindi draft | Tamil |
 |---|---|---|---|---|---|---|---|
-| 35 | `hud.escapesLeft` | ❤️🏃 Escapes left | `ui/Hud.tsx:205` | lives chip label, 0.62 rem uppercase, **must stay one line at 360 px** | | ❤️🏃 वॉकआउट बाकी | |
+| 35 | `hud.escapesLeft` | ❤️🏃 Escapes left | `ui/Hud.tsx:205` | lives chip label, 0.62 rem uppercase, **must stay one line at 360 px** | | ❤️🏃 ग्राहक बाकी | |
 | 36 | `hud.cash` | 💰 Cash | `ui/Hud.tsx:210` | coins chip label | | 💰 कैश | |
 | 37 | `hud.shiftMenu.aria` | Shift menu | `ui/Hud.tsx:216` | aria-label on the hamburger | `a11y` | शिफ्ट मेन्यू | |
-| 38 | `hud.shiftFloat` | +{n} 🪙 shift float | `ui/Hud.tsx:242` | coin top-up toast, 2.6 s | `{}` | +{n} 🪙 शिफ्ट का गल्ला | |
+| 38 | `hud.shiftFloat` | +{n} 🪙 shift float | `ui/Hud.tsx:242` | coin top-up toast, 2.6 s | `{}` | +{n} 🪙 बौनी का उपहार | |
 | 39 | `hud.wave` | WAVE {n} | `ui/Hud.tsx:286` | wave chip, lg bold | `{}` | वेव {n} | |
 | 40 | `hud.rush` | RUSH: {label} | `ui/Hud.tsx:288`, `ui/DialogueBox.tsx:158` | chip sub-label and district-beat header; {label} = §10 block label | `{}` | रश: {label} | |
 | 41 | `hud.chefHead.aria` | Ramu — tap to un-mute his dialogue | `ui/Hud.tsx:313` | aria-label on the chef head | `a11y` | रामू, उसकी बातें फिर सुनने के लिए टैप करो | |
@@ -111,7 +111,7 @@ Pluralisation: English source has **no** plural branching anywhere. Every count 
 | 61 | `rail.dmg` | {n} dmg | `ui/StationRail.tsx:323` | stat line, 0.6 rem | `{}` | {n} डैमेज | |
 | 62 | `rail.rate` | {n}/s | `ui/StationRail.tsx:325` | stat line | `fmt` `{}` | {n}/से | |
 | 63 | `rail.upgrade` | Upgrade | `ui/StationRail.tsx:346` | button, `whitespace-nowrap`, rail min 88 px, font 11–18 px: **~68 px of text** | | अपग्रेड | |
-| 64 | `rail.max` | Max | `ui/StationRail.tsx:357` | replaces Upgrade at max level | | मैक्स | |
+| 64 | `rail.max` | Max | `ui/StationRail.tsx:357` | replaces Upgrade at max level | | सर्वश्रेष्ठ | |
 | 65 | `rail.sell` | Sell | `ui/StationRail.tsx:373` | red button, nowrap | | बेचो | |
 | 66 | `rail.target` | Target | `ui/StationRail.tsx:377` | row label, 0.6 rem | | निशाना | |
 | 67 | `rail.targetHelp.aria` | What do the targeting options mean? | `ui/StationRail.tsx:380` | aria-label on the `?` | `a11y` | निशाने के विकल्पों का क्या मतलब है? | |
@@ -132,11 +132,11 @@ Labels must fit one rail button at 11 px (≈68 px of text). Descriptions show o
 |---|---|---|---|---|---|---|---|
 | 76 | `targeting.first` | First | `:37` | rail button | | पहला | |
 | 77 | `targeting.last` | Last | `:38` | rail button | | आख़िरी | |
-| 78 | `targeting.closest` | Close | `:39` | rail button | | पास वाला | |
+| 78 | `targeting.closest` | Close | `:39` | rail button | | नज़दीक | |
 | 79 | `targeting.strongest` | Strong | `:40` | rail button | | मज़बूत | |
 | 80 | `targeting.weakest` | Weak | `:41` | rail button | | कमज़ोर | |
-| 81 | `targeting.highestHp` | Hi HP | `:42` | rail button | | ज़्यादा HP | |
-| 82 | `targeting.lowestHp` | Lo HP | `:43` | rail button | | कम HP | |
+| 81 | `targeting.highestHp` | Hi HP | `:42` | rail button | | भारी | |
+| 82 | `targeting.lowestHp` | Lo HP | `:43` | rail button | | हल्का | |
 | 83 | `targeting.first.desc` | enemy furthest along the path | `:48` | help popup | | जो रास्ते में सबसे आगे हो | |
 | 84 | `targeting.last.desc` | enemy closest to the start | `:49` | help popup | | जो शुरुआत के सबसे पास हो | |
 | 85 | `targeting.closest.desc` | enemy closest to this tower | `:50` | help popup | | जो इस स्टेशन के सबसे पास हो | |
@@ -153,7 +153,7 @@ Names render in the rail (11–18 px, two-word names wrap at the space), the sel
 |---|---|---|---|---|---|---|---|
 | 90 | `station.fox` | Stock Pot | `:71` | rail card / upgrades header | | पतीला | |
 | 91 | `station.owl` | Pressure Cooker | `:92` | rail card (wraps to two lines) | | प्रेशर कुकर | |
-| 92 | `station.bear` | Cooktop | `:117` | rail card | | चूल्हा | |
+| 92 | `station.bear` | Cooktop | `:117` | rail card | | अँगीठी | |
 | 93 | `station.squirrel` | Sauce Pot | `:139` | rail card | | सॉस पॉट | |
 | 94 | `station.fox.unique` | Sharp Knife | `:86` | signature track name, Upgrades | | तेज़ छुरी | |
 | 95 | `station.fox.unique.desc` | Perfect sear chance (does 2x the work) | `:87` | Upgrades sub-line | | परफ़ेक्ट सियर का मौका (दुगना काम) | |
@@ -200,7 +200,7 @@ Names render in the rail (11–18 px, two-word names wrap at the space), the sel
 |---|---|---|---|---|---|---|---|
 | 122 | `boss.title` | Congratulations! | `:128` | 23 px title | | बधाई हो! | |
 | 123 | `boss.body` | {finished} shift complete. {upcoming} awaits. | `:130` | 17.5 px; both values are block labels (§11) | `{}` | {finished} शिफ्ट पूरी। अब {upcoming} की बारी। | |
-| 124 | `boss.upcoming` | Upcoming dishes | `:132` | 12.5 px uppercase | | अगली डिशें | |
+| 124 | `boss.upcoming` | Upcoming dishes | `:132` | 12.5 px uppercase | | अगले पकवान | |
 | 125 | `boss.dishName` | {name} | `:141` | `max-w-[4.6rem]` truncate, 11.4 px; dish names §12 | `derived` `{}` | {name} | |
 
 ## 11. Block labels (`game/data/blocks.ts`)
@@ -272,11 +272,11 @@ All shown in the centred box (`max-w-md`, 1.05 rem, next to a 160 px portrait, s
 
 | # | key | English | file:line | context | flags | Hindi draft | Tamil |
 |---|---|---|---|---|---|---|---|
-| 162 | `beat.opening` | Some days the tin is empty. Today's one of them. | `:49` | run start, voice A | | कुछ दिन डिब्बा खाली रहता है। आज वही दिन है। | |
+| 162 | `beat.opening` | Some days the tin is empty. Today's one of them. | `:49` | run start, voice A | | कुछ दिन बटुआ खाली रहता है। आज वही दिन है। | |
 | 163 | `beat.propPlacement` | Green ring means you can afford it. Tap one and pick a prop. Red means save up. | `:55` | once ever, when the first pad cue arms | | हरा घेरा मतलब पैसे पूरे हैं। एक पर टैप करो और सामान चुनो। लाल मतलब अभी बचत करो। | |
 | 164 | `beat.stoveLit` | But the stove still lights. That's enough to start. | `:61` | after first placement; the box IS Ready here | | पर चूल्हा अब भी जलता है। शुरुआत के लिए इतना काफ़ी है। | |
 | 165 | `beat.recipeWidget` | That scroll up top is the order. Every dish on it walks in this rush. Count them off as you serve. | `:67` | once ever, wave 1 build | | ऊपर वाला कागज़ ऑर्डर है। उस पर लिखी हर डिश इस रश में आएगी। परोसते जाओ, गिनते जाओ। | |
-| 166 | `beat.heatGaugeIntro` | See the heat on the left? Every rush you survive turns it up a notch. When it hits the flame, the big one walks in. Be ready. | `:73` | once ever, before wave1-cleared; longest beat | | बाईं तरफ़ आँच दिख रही है? हर रश जो तुम निकालोगे, एक निशान ऊपर चढ़ेगी। लपट तक पहुँची, तो बड़ा वाला अंदर आएगा। तैयार रहना। | |
+| 166 | `beat.heatGaugeIntro` | See the heat on the left? Every rush you survive turns it up a notch. When it hits the flame, the big one walks in. Be ready. | `:73` | once ever, before wave1-cleared; longest beat | | बाईं तरफ़ आँच दिख रही है? हर रश जो तुम निकालोगे, एक निशान ऊपर चढ़ेगा। लपट तक पहुँचा, तो परीक्षा के लिए तैयार रहना। | |
 | 167 | `beat.wave1Cleared` | They came back for seconds. Did you see that? It's time to upgrade. | `:79` | wave 1 cleared; closing opens the upgrade dock | | दोबारा माँगने आए। देखा तुमने? अब अपग्रेड का वक़्त है। | |
 | 168 | `beat.wave4Ready` | New gear, same nerves. Let's find out. | `:85` | wave 4 build, voice B; the box IS Ready | | नया सामान, वही घबराहट। चलो देखते हैं। | |
 | 169 | `beat.district2` | A real dhaba. Tandoor and all. I'm not dreaming? | `:91` | level 11, header RUSH: NORTH INDIAN | | असली ढाबा। तंदूर भी। मैं सपना तो नहीं देख रहा? | |
@@ -306,7 +306,7 @@ All shown in the centred box (`max-w-md`, 1.05 rem, next to a 160 px portrait, s
 | 183 | `end.outcome.held` | {n} rushes held. Nobody at the tapri would believe it. | `:66` | Ramu's line, face a, n ≥ 20 | `{}` `pl` | {n} रश निकाल दिए। टपरी पर कोई यक़ीन नहीं करेगा। | |
 | 184 | `end.outcome.early` | Rough start. The stove still lights tomorrow. | `:68` | Ramu's line, face a | | शुरुआत कड़वी रही। कल चूल्हा फिर जलेगा। | |
 | 185 | `end.header.overtime` | Full shift held. Overtime rush {n} got you. | `:189` | ticket header, 0.65 rem | `{}` | पूरी शिफ्ट निकाल ली। ओवरटाइम रश {n} ने पकड़ लिया। | |
-| 186 | `end.header.lost` | No escapes left — every dish that slipped past was a customer out the door. | `:190` | ticket header | | वॉकआउट ख़त्म — जो भी डिश निकल गई, वो एक ग्राहक था जो दरवाज़े से बाहर चला गया। | |
+| 186 | `end.header.lost` | No escapes left — every dish that slipped past was a customer out the door. | `:190` | ticket header | | ग्राहक ख़त्म। जो भी डिश निकल गई, वो एक ग्राहक था जो दरवाज़े से बाहर चला गया। | |
 | 187 | `end.rushesHeld` | Rushes held | `:262` | ticket row label, 0.68 rem uppercase | | रश निकाले | |
 | 188 | `end.newBest` | NEW BEST | `:266` | row sub-line, bold orange | | नया रिकॉर्ड | |
 | 189 | `end.bestEq` | best {n} · = | `:268` | row sub-line on a tie | `fmt` `{}` | बेस्ट {n} · = | |
@@ -398,7 +398,7 @@ Inventoried for completeness; R13 can skip these without visible effect. Same co
 | 250 | `test.end.lost` | Too many walkouts | `ui/TestBelt.tsx:635` | end card title | `dev` | बहुत ग्राहक चले गए | |
 | 251 | `test.end.completed` | {n} {recipe} completed | `ui/TestBelt.tsx:659` | one per recipe | `dev` `{}` `pl` | {n} {recipe} बने | |
 | 252 | `test.end.collected` | {n} ingredients collected | `ui/TestBelt.tsx:661` | | `dev` `{}` `pl` | {n} सामग्री जमा | |
-| 253 | `test.end.walkedOut` | {n} walked out | `ui/TestBelt.tsx:662` | | `dev` `{}` `pl` | {n} चले गए | |
+| 253 | `test.end.walkedOut` | {n} walked out | `ui/TestBelt.tsx:662` | | `dev` `{}` `pl` | {n} ग्राहक चले गए | |
 | 254 | `test.end.discarded` | {n} ingredients discarded | `ui/TestBelt.tsx:663` | | `dev` `{}` `pl` | {n} सामग्री फेंकी | |
 | 255 | `test.end.short` | {n} short of target | `ui/TestBelt.tsx:672` | loss only | `dev` `{}` | लक्ष्य से {n} कम | |
 | 256 | `test.end.earned` | earned = {n} | `ui/TestBelt.tsx:686` | coins line | `dev` `{}` | कमाए = {n} | |
@@ -464,6 +464,15 @@ Inventoried for completeness; R13 can skip these without visible effect. Same co
 Counts above were re-derived from the written rows with grep, not carried from the sweep. Translatable rows in the live game (245 minus 30 `fmt`, minus the 5 unrendered enemy names, minus row 11): **209**; about **200** once the repeated literals below collapse to one key each. Ideas.md §10.2 estimated ~250 including 39 dish names; the real figure is 22 rendered dish names (31 in the manifest, 8 never shown), and the total lands near the estimate only once Test Mode is included.
 
 Repeated literals worth one key each, not several (sites, across all sections): *Cancel* ×5 (rows 25, 74, 203, 266, 273), *Main Menu* ×3 sites (rows 53, 261), *Loading…* ×3 sites (rows 204, 216), *Back* ×2, *Ready!* ×2 sites (row 45), *Shift paused* ×2, *Shift menu* ×2, *Max* ×2, *Dishes served* ×2 (rows 191, 212). Keys above are per-site so file:line stays exact; R13 can collapse them.
+
+## Review log
+
+**Sep 18 2026 — user (Hindi reviewer), first pass, 15 rows:** 12, 20, 24, 35, 38, 64, 78, 81, 82,
+92, 124, 162, 166, 186, 253 replaced with the user's wording (given in Roman, set in Devanagari by
+Central). Rules the pass establishes for the remaining rows: **system UI addresses the player as
+आप** (name dialogs), **Ramu's lines stay तुम**; "Escapes" = **ग्राहक** (customers), not walkouts;
+"shift float" = **बौनी का उपहार**; Max = **सर्वश्रेष्ठ**; targeting = नज़दीक / भारी / हल्का;
+Cooktop = **अँगीठी**; "dishes" in headings = **पकवान**. Rows not yet reviewed keep the agent's draft.
 
 ## Ten strings I was least sure about
 
