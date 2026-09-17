@@ -527,8 +527,8 @@ judging.
 ## 9. Main menu — approved design, Sep 17 2026
 
 **Backdrops:** five gouache landscapes by **Archita Sharma**, received Sep 12 (files in
-`Art\03 - Main Menu\Backgrounds\`, WhatsApp exports). 🔒 **Consent to use them is recorded by
-the user** (pointer to the record: *to be added by the user*). **Credit is mandatory**: on the
+`Art\03 - Main Menu\Backgrounds\`, WhatsApp exports). 🔒 **Consent recorded 17 Sep 2026** — verbal, on her own suggestion and by mutual
+understanding; terms filed at `Art - Main Menu\CONSENT - Archita Sharma.md` (gitignored). **Credit is mandatory**: on the
 menu itself and on the credits screen (with KayKit and the SFX credits, Specs.md §…).
 Pick: **#1 — dawn field with a path** (the walk to work; the path leads the eye into the
 button column). Alternate with no layout change: **#4 — golden grass** (lowest detail behind

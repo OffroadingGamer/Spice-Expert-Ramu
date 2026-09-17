@@ -2622,7 +2622,7 @@ Archita Sharma's dawn backdrop with a measured per-element palette — fully spe
 the source of truth).
 
 🔒 **Licensing — Archita Sharma.** Five backdrops in `Art\03 - Main Menu\Backgrounds\`;
-**consent recorded by the user; pointer to be added**. Credit mandatory on the menu (link to
+**consent recorded 17 Sep 2026, filed at `Art - Main Menu\CONSENT - Archita Sharma.md`** (gitignored). Credit mandatory on the menu (link to
 `instagram.com/arc_inmotion`) and on the credits screen. Ship-in-build only; **not** generator
 input unless she is asked.
 
@@ -2659,5 +2659,4 @@ on Sep 17 — it is tomorrow night IST. Forwarded to the marketing agent for §1
 (entry hatch, exit hatch, belt tile; cap 4,000). Independent — run in parallel; the hatch
 wiring is a later implementation round, started only after both have returned.
 
-**Licensing pointer:** Archita Sharma's consent will be a filled form saved at
-`Art - Main Menu\CONSENT - Archita Sharma.md` (gitignored `Art\`; not in the public repo).
+**Licensing closed:** Archita Sharma's consent (verbal, 17 Sep 2026; ship + promote, credit required, never generator input) is filed at `Art - Main Menu\CONSENT - Archita Sharma.md` — gitignored, not in the public repo.
