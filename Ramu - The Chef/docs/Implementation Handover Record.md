@@ -2798,3 +2798,10 @@ continue per run with a board marker (🔒 engine unseal needed for the damage n
 shards, 8 per scroll or 150 gems, first unlock in run 1; "Play" with a +n badge and the greeting
 bubble as the notice; content-not-power IAP. No picks yet; nothing scheduled. Round 10 is in
 flight.
+---
+
+### 2026-09-17 — All six studies picked as recommended; round order R11–R16 set
+
+Ideas.md §10 marked picked. Open: the 10.3 damage nerf needs an explicit **unseal** of
+`engine.ts` from the user; default is +6 walkouts / no nerf, engine sealed. Round 10 in flight;
+nothing new dispatched until it returns. Eight local commits unpushed (backdrop JPEG question).

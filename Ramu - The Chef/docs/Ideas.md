@@ -655,7 +655,21 @@ first screen; put it in `critical` and measure the cost.
 
 ---
 
-## 10. Six post-jam studies — proposed Sep 17 2026, for speculation (no picks yet)
+## 10. Six post-jam studies — proposed and **picked** Sep 17 2026
+
+✅ **Picked Sep 17 (all six recommendations, verbatim):** 10.1 **C** chevrons · 10.2 **A** full
+i18n, Hindi first · 10.3 **A** one rewarded continue with the ⟳ board marker · 10.4 **B** full-service
+shards (8 / scroll, 150 gems; boss drop +2 later) · 10.5 **Play** + **B** badge and bubble notice ·
+10.6 **B** content-not-power IAP, no gem pack unless capped below meta level 5 or boards split.
+Sequence as recommended: shards → continue → Play/badge → IAP; chevrons and the i18n table are
+independent. All post-jam, all Private first.
+⚠️ **10.3 nerf — undecided:** the pick quoted both variants. Until the user says **"unseal
+engine.ts"** explicitly, the continue ships as **+6 walkouts, no nerf** (engine stays sealed).
+
+**Round order (after Round 10 returns):** R11 Ranks + daily period (already planned) · R12 belt
+chevrons + i18n string table (English only, no visible change) · R13 recipe shards + Kitchen
+scroll card · R14 continue (rewarded ad, board marker) · R15 Play + unlock badge/bubble · R16 Hindi
+(user reviews) · IAP after R13–R15 exist · Tamil when a reader exists.
 
 Three proposals each, one recommended. Facts read from the SDK docs and `config.ts` on Sep 17:
 rewarded ads exist (`ads.showRewardedAdAsync()`, this game already runs a game-over gem
