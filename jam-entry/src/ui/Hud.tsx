@@ -252,49 +252,76 @@ export default function Hud() {
                     the absolute level (this chip's old ternary only existed
                     to spell "Overtime" by hand — block 9's own label already
                     says OVERTIME, so blockForLevel needs no special case). */}
-                <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                        <div className="flex flex-col items-start rounded-xl bg-black/55 px-3 py-1 leading-tight whitespace-nowrap">
-                            <span className="text-lg font-bold tabular-nums">WAVE {wave}</span>
-                            <span className="text-[0.68rem] font-semibold text-white/70">
-                                RUSH: {blockForLevel(wave).label}
-                            </span>
-                        </div>
-                        {/* Round 3 (docs/Ideas.md §6d amendment, "Skip = mute"):
-                            always-present un-mute tap target — the idle chef
-                            portrait (ChefPortraitIdle, now bottom-centre in
-                            the bottom band — Round 7 item 4) is the other
-                            one; both are always mounted today (the bottom
-                            band exists on every phone, retiring the gutter
-                            case this comment used to describe), so this one
-                            mainly exists as the top-left ring/bubble anchor
-                            below. Placed next to the WAVE chip (not under
-                            it) so it can never collide with the row below.
-                            Stable id — Round 4's chat bubble anchors here.
-                            unmuteDialogue() no-ops while not muted, so this
-                            is always safe to tap.
-                            Round 4 Part D: wrapped in a 52px box so
-                            ServiceRing (the service gauge, now a ring
-                            instead of Round 3's bar) can sit behind the 44px
-                            button itself without resizing it. */}
-                        <div className="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center">
-                            <ServiceRing />
-                            <button
-                                type="button"
-                                id="chef-head-button"
-                                aria-label="Ramu — tap to un-mute his dialogue"
-                                onClick={() => { sfx.click(); unmuteDialogue(); }}
-                                className="pointer-events-auto relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-black/55"
-                            >
-                                <ChefHeadIcon />
-                            </button>
-                        </div>
-                        {/* Round 4 Part E: the wave bubble trigger — plain DOM
-                            flow next to #chef-head-button is "anchored to its
-                            right" by construction (see WaveBubble.tsx). */}
-                        <WaveBubbleTrigger state={waveBubble} />
+                {/* Round 11 Part 1.5 fix (docs/Ideas.md §6d, "Playtest of
+                    1.82.0"): the icon growth below (56->64px) made a full
+                    3-dish bubble (level 81: Naan/Idli/Jeera Rice, the spec's
+                    own worst case) wider than the leftover space next to the
+                    speed buttons at 360px — measured a real -23.8px overlap
+                    before this fix, and the WAVE-chip+ring pair ALONE
+                    already consumes essentially this row's entire width at
+                    that viewport, so a two-tier `justify-between` split (one
+                    fixed-width "left" box, one fixed-width "right" box)
+                    can't make room for the bubble no matter how it's
+                    apportioned — any positive-width bubble box overlaps the
+                    speed box's own reported position, because that position
+                    is computed from the SAME two boxes' widths, not from
+                    where content visually ends up once one of them wraps
+                    internally (this file's own earlier attempt: making just
+                    the left box `flex-wrap` left it still overlapping,
+                    since the box's reported width stayed pinned to its
+                    widest single line).
+                    The fix: ONE flat flex-wrap row for every element (WAVE
+                    chip, ring/head box, bubble, speed buttons) instead of
+                    two nested boxes — normal flex flow wraps whichever
+                    trailing item doesn't fit onto a new line, so nothing
+                    can ever overlap by construction; `ml-auto` on the speed
+                    row keeps it right-aligned exactly like `justify-between`
+                    did whenever everything DOES fit on one line (every wider
+                    viewport this file's own history was measured against),
+                    and lets it drop to its own line otherwise. Per Round 6
+                    Part B's own already-documented allowance, "row 2 may
+                    grow taller as a result." */}
+                <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex shrink-0 flex-col items-start rounded-xl bg-black/55 px-3 py-1 leading-tight whitespace-nowrap">
+                        <span className="text-lg font-bold tabular-nums">WAVE {wave}</span>
+                        <span className="text-[0.68rem] font-semibold text-white/70">
+                            RUSH: {blockForLevel(wave).label}
+                        </span>
                     </div>
-                    <div className="pointer-events-auto flex shrink-0 overflow-hidden rounded-xl bg-black/55">
+                    {/* Round 3 (docs/Ideas.md §6d amendment, "Skip = mute"):
+                        always-present un-mute tap target — the idle chef
+                        portrait (ChefPortraitIdle, now bottom-centre in
+                        the bottom band — Round 7 item 4) is the other
+                        one; both are always mounted today (the bottom
+                        band exists on every phone, retiring the gutter
+                        case this comment used to describe), so this one
+                        mainly exists as the top-left ring/bubble anchor
+                        below. Placed next to the WAVE chip (not under
+                        it) so it can never collide with the row below.
+                        Stable id — Round 4's chat bubble anchors here.
+                        unmuteDialogue() no-ops while not muted, so this
+                        is always safe to tap.
+                        Round 4 Part D: wrapped in a 52px box so
+                        ServiceRing (the service gauge, now a ring
+                        instead of Round 3's bar) can sit behind the 44px
+                        button itself without resizing it. */}
+                    <div className="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center">
+                        <ServiceRing />
+                        <button
+                            type="button"
+                            id="chef-head-button"
+                            aria-label="Ramu — tap to un-mute his dialogue"
+                            onClick={() => { sfx.click(); unmuteDialogue(); }}
+                            className="pointer-events-auto relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-black/55"
+                        >
+                            <ChefHeadIcon />
+                        </button>
+                    </div>
+                    {/* Round 4 Part E: the wave bubble trigger — plain DOM
+                        flow next to #chef-head-button is "anchored to its
+                        right" by construction (see WaveBubble.tsx). */}
+                    <WaveBubbleTrigger state={waveBubble} />
+                    <div className="pointer-events-auto ml-auto flex shrink-0 overflow-hidden rounded-xl bg-black/55">
                         {([1, 2, 3, 4] as const).map((s) => (
                             <button
                                 key={s}

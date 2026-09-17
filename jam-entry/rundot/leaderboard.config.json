@@ -10,7 +10,8 @@
         "waves": { "displayName": "Waves Cleared" }
     },
     "periods": {
-        "alltime": { "displayName": "All Time", "type": "alltime" }
+        "alltime": { "displayName": "All Time", "type": "alltime" },
+        "daily": { "displayName": "Today", "type": "daily" }
     },
     "antiCheat": {
         "enableZScoreDetection": true,

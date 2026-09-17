@@ -12,8 +12,15 @@
 import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
 import { sdkReady } from './runSdk.ts';
 
-/** The all-time period key from rundot/leaderboard.config.json. */
-const PERIOD = 'alltime';
+/**
+ * Round 11 Part 2 (docs/Ideas.md §6d, "Playtest of 1.82.0" item 7): a second
+ * period, 'daily', added to rundot/leaderboard.config.json alongside the
+ * existing 'alltime' — the service board (Leaderboard.tsx) now has a Today
+ * tab. Both period keys are real board instances RUN creates on deploy
+ * (`<gameId>_<mode>_<period>`), not a client-side filter over one dataset.
+ */
+export type BoardPeriod = 'alltime' | 'daily';
+export const BOARD_PERIODS: BoardPeriod[] = ['alltime', 'daily'];
 
 /** `SdkLeaderboardEntry`/`SdkSubmitScoreResult` aren't re-exported from the `/api`
  *  entry point (only from a deeper, unstable chunk path) — derived here by
@@ -28,9 +35,11 @@ export type BoardMode = 'kills' | 'waves';
 
 export const BOARD_MODES: BoardMode[] = ['kills', 'waves'];
 
+/** Round 11 Part 2.3: display copy only — the mode KEYS (kills/waves) are
+ *  unchanged everywhere else (board instance ids, submitRunScores, etc). */
 export const BOARD_LABELS: Record<BoardMode, string> = {
-    kills: 'Enemies Defeated',
-    waves: 'Waves Cleared',
+    kills: 'Pests cleared',
+    waves: 'Rushes held',
 };
 
 /** True when the RUN host is present (boards can exist at all). */
@@ -77,6 +86,23 @@ async function spacedSubmitScore(params: Parameters<typeof RundotGameAPI.leaderb
  * `metadata: { displayName }` on BOTH board submissions, so a guest's host
  * `anonymous_<id>` username can be overridden on the board (Leaderboard.tsx
  * reads it back via toEntry's displayName below).
+ *
+ * Round 11 Part 2.2: now fans out over BOTH periods too (2 modes x 2
+ * periods = up to 4 calls). `SubmitScoreResult` carries a single
+ * `periodInstance` (see the SDK's own .d.ts — LeaderboardApi-*.d.ts's
+ * PlayerRankResult/SubmitScoreResult shapes), never a list, and nothing in
+ * the SDK's types or docs describes one submission fanning out to every
+ * configured period on its own — the safe reading is "one call resolves to
+ * exactly one period instance," so a period-omitted submit would land on
+ * whichever period the server treats as default (undocumented) and leave
+ * the OTHER instance's board silently empty forever. This round's own live
+ * production leaderboard is not reachable from this dev/headless
+ * environment to confirm empirically (same limitation Round 10 hit testing
+ * resubmitBestWithName — see that round's report), so this ships the
+ * verifiably-correct explicit path rather than gambling on the undocumented
+ * one. All four calls still share the one spaced queue below (5s apart,
+ * module scope, so navigating off the end screen mid-queue can't drop the
+ * tail).
  */
 export function submitRunScores(kills: number, wavesCleared: number, seconds: number, guestDisplayName?: string): void {
     if (!sdkReady()) return;
@@ -84,7 +110,9 @@ export function submitRunScores(kills: number, wavesCleared: number, seconds: nu
     const metadata = guestDisplayName ? { displayName: guestDisplayName } : undefined;
     const submit = (mode: BoardMode, score: number) => {
         if (score <= 0) return;
-        void spacedSubmitScore({ score, duration, mode, period: PERIOD, metadata });
+        for (const period of BOARD_PERIODS) {
+            void spacedSubmitScore({ score, duration, mode, period, metadata });
+        }
     };
     submit('kills', Math.floor(kills));
     submit('waves', Math.floor(wavesCleared));
@@ -94,6 +122,8 @@ export function submitRunScores(kills: number, wavesCleared: number, seconds: nu
  *  before/after read. */
 export interface RenameResubmitResult {
     mode: BoardMode;
+    /** Round 11 Part 2.2: covers the daily instance too now, not just alltime. */
+    period: BoardPeriod;
     /** The player's entry on this board before resubmitting, or null if
      *  they have no ranked score on it yet (nothing to rename — skipped). */
     before: SdkLeaderboardEntry | null;
@@ -115,35 +145,42 @@ export interface RenameResubmitResult {
  * about what's about to get relabelled. Resubmits the SAME score and
  * duration the server already has, changing only metadata — whether the
  * server refreshes metadata on an equal-score resubmit is undocumented,
- * which is exactly what this round's own live test (see the report)
- * checks. A board the player has no entry on yet is skipped outright
+ * which is exactly what Round 10's own live test (see that round's report)
+ * checked. A board the player has no entry on yet is skipped outright
  * (nothing to rename).
+ *
+ * Round 11 Part 2.2: now covers all (mode, period) pairs — the daily
+ * instances need the same metadata refresh the alltime ones do, read and
+ * resubmitted independently (a player can have a score on alltime but none
+ * yet today, or vice versa right after midnight UTC resets the daily board).
  */
 export async function resubmitBestWithName(displayName: string): Promise<RenameResubmitResult[]> {
     if (!sdkReady()) return [];
     const results: RenameResubmitResult[] = [];
     for (const mode of BOARD_MODES) {
-        let before: SdkLeaderboardEntry | null = null;
-        try {
-            const r = await RundotGameAPI.leaderboard.getPodiumScores({
-                mode, period: PERIOD, topCount: 0, contextAhead: 0, contextBehind: 0,
+        for (const period of BOARD_PERIODS) {
+            let before: SdkLeaderboardEntry | null = null;
+            try {
+                const r = await RundotGameAPI.leaderboard.getPodiumScores({
+                    mode, period, topCount: 0, contextAhead: 0, contextBehind: 0,
+                });
+                before = r.context.playerEntry ?? null;
+            } catch (err) {
+                console.warn(`[leaderboard] ${mode}/${period} rename read failed`, err);
+            }
+            if (!before || before.score <= 0) {
+                results.push({ mode, period, before: null, after: null });
+                continue;
+            }
+            const after = await spacedSubmitScore({
+                score: before.score,
+                duration: before.duration,
+                mode,
+                period,
+                metadata: { displayName },
             });
-            before = r.context.playerEntry ?? null;
-        } catch (err) {
-            console.warn(`[leaderboard] ${mode} rename read failed`, err);
+            results.push({ mode, period, before, after });
         }
-        if (!before || before.score <= 0) {
-            results.push({ mode, before: null, after: null });
-            continue;
-        }
-        const after = await spacedSubmitScore({
-            score: before.score,
-            duration: before.duration,
-            mode,
-            period: PERIOD,
-            metadata: { displayName },
-        });
-        results.push({ mode, before, after });
     }
     return results;
 }
@@ -213,13 +250,18 @@ function toEntry(e: {
 /**
  * Fetch one board: top 10 plus the player's surroundings, in one host
  * call. Null on failure or outside the host (UI shows offline/error).
+ * Round 11 Part 2.4: `period` defaults to 'alltime' (every pre-Round-11
+ * caller keeps working unchanged); Leaderboard.tsx's own Today tab passes
+ * 'daily' explicitly and must never fall back to this default on failure
+ * (see that file's own doc on why a failed daily read shows its own empty
+ * state rather than silently reusing an alltime fetch).
  */
-export async function fetchBoard(mode: BoardMode): Promise<BoardView | null> {
+export async function fetchBoard(mode: BoardMode, period: BoardPeriod = 'alltime'): Promise<BoardView | null> {
     if (!sdkReady()) return null;
     try {
         const r = await RundotGameAPI.leaderboard.getPodiumScores({
             mode,
-            period: PERIOD,
+            period,
             topCount: 10,
             contextAhead: 2,
             contextBehind: 2,

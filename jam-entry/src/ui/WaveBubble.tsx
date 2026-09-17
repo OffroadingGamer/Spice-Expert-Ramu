@@ -275,7 +275,18 @@ export function useWaveBubble(): WaveBubbleState {
     // just the submenu at wave start. baseVisible gates BOTH halves;
     // dismissedNow/isOpenNow then split which of the two (if either) is
     // showing.
-    const baseVisible = (tdPhase === 'build' || tdPhase === 'wave') && dialogue === null;
+    //
+    // Round 11 Part 1.1 (docs/Ideas.md §6d, "Playtest of 1.82.0" item 1): the
+    // 'recipe-widget' beat (this file's own useEffect above) is ABOUT the
+    // trigger bubble — hiding the very thing Ramu's line points at made the
+    // beat unreadable. Every OTHER beat keeps the old "dialogue wins"
+    // behaviour; only recipe-widget's own id is exempted from blocking the
+    // trigger. The submenu is exempted from the exemption: `dialogue ===
+    // null` still gates showSubmenu outright, so a beat that happens to
+    // leave isOpenNow stale can never surface the scroll grid on top of the
+    // dialogue box.
+    const dialogueBlocksBubble = dialogue !== null && dialogue.id !== 'recipe-widget';
+    const baseVisible = (tdPhase === 'build' || tdPhase === 'wave') && !dialogueBlocksBubble;
 
     return {
         showTrigger: baseVisible && !dismissedNow && !isOpenNow,
@@ -284,7 +295,9 @@ export function useWaveBubble(): WaveBubbleState {
         // somehow still true (e.g. a render this same tick that hasn't
         // committed the reset's setState yet — isOpenNow the LOCAL override
         // is already correct in that case, but this costs nothing extra).
-        showSubmenu: baseVisible && isOpenNow && tdPhase === 'build',
+        // `dialogue === null` (not baseVisible's own relaxed check) so the
+        // recipe-widget exemption above never lets the submenu itself open.
+        showSubmenu: baseVisible && isOpenNow && tdPhase === 'build' && dialogue === null,
         triggerDishes,
         cells,
         open: () => setIsOpen(true),
@@ -366,16 +379,22 @@ export function WaveBubbleTrigger({ state }: { state: WaveBubbleState }) {
                 style={{ transitionDuration: `${PAN_EASE_MS}ms`, opacity: panFading ? 0 : 1 }}
             >
                 {shown.map((d) => (
-                    <span key={d.slug} className="flex flex-col items-center gap-0.5">
+                    <span key={d.slug} className="flex shrink-0 flex-col items-center gap-0.5">
                         <img
                             src={d.icon}
                             alt=""
-                            className="h-14 w-14 rounded-full border border-black/40 bg-surface object-contain"
+                            className="h-16 w-16 rounded-full border border-black/40 bg-surface object-contain"
                         />
-                        <span className="max-w-[3.5rem] truncate text-[0.55rem] font-bold text-white/85">{d.name}</span>
+                        {/* Round 11 Part 1.5 (docs/Ideas.md §6d, "Playtest of
+                            1.82.0" item 5): icon 56->64px, name/count off the
+                            rem scale and onto explicit px so both clear the
+                            11/12px floors exactly rather than just landing
+                            near them (0.55rem/0.6rem measured out at
+                            8.8/9.6px — under the floor on every device). */}
+                        <span className="max-w-[4rem] truncate text-[11px] font-bold text-white/85">{d.name}</span>
                         {/* Round 7 item 1: this dish's own live remaining
                             count, replacing the old collective total. */}
-                        <span className="text-[0.6rem] font-bold tabular-nums text-white/70">
+                        <span className="text-[12px] font-bold tabular-nums text-white/70">
                             {d.remaining}/{d.count}
                         </span>
                     </span>
@@ -468,14 +487,16 @@ export function WaveBubbleSubmenu({ state }: { state: WaveBubbleState }) {
                                     key={i}
                                     src={src}
                                     alt=""
-                                    className="h-14 w-14 rounded-full border border-black/30 bg-white/70 object-contain"
+                                    className="h-16 w-16 rounded-full border border-black/30 bg-white/70 object-contain"
                                 />
                             ))}
                         </span>
-                        <span className="max-w-[7rem] truncate text-center text-[0.68rem] font-bold">
+                        {/* Round 11 Part 1.5: 0.68rem/0.65rem (10.9/10.4px)
+                            were both under the 11px floor — explicit px. */}
+                        <span className="max-w-[7.5rem] truncate text-center text-[11px] font-bold">
                             {cell.names.join(' / ')}
                         </span>
-                        <span className="flex items-center gap-1 text-[0.65rem] font-bold tabular-nums tracking-tighter">
+                        <span className="flex items-center gap-1 text-[11px] font-bold tabular-nums tracking-tighter">
                             <span aria-label={`toughness ${cell.pips} of 5`}>
                                 {'●'.repeat(cell.pips)}{'○'.repeat(5 - cell.pips)}
                             </span>

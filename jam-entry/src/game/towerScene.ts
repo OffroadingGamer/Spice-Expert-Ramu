@@ -610,26 +610,71 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     const GAUGE_ORANGE = 0xf97316;
     const GAUGE_RED = 0xef4444;
 
-    const GAUGE_TUBE_X = 12;
     const GAUGE_TUBE_Y0 = 470;
     const GAUGE_TUBE_Y1 = 1270;
-    const GAUGE_TUBE_W = 40; // x 12-52
+    const GAUGE_TUBE_W = 40;
     const GAUGE_TUBE_RADIUS = 20;
     const GAUGE_SEG_W = 28;
     const GAUGE_SEG_H = 70;
     const GAUGE_SEG_GAP = 10;
     const GAUGE_SEG_COUNT = 10;
-    const GAUGE_SEG_X = GAUGE_TUBE_X + (GAUGE_TUBE_W - GAUGE_SEG_W) / 2;
     // The ten segments (+ nine gaps) don't exactly fill the tube's own
     // 800-unit span (790) — split the 10-unit remainder evenly top/bottom
     // rather than pin the stack to one edge.
     const GAUGE_SEG_MARGIN = ((GAUGE_TUBE_Y1 - GAUGE_TUBE_Y0) - (GAUGE_SEG_COUNT * GAUGE_SEG_H + (GAUGE_SEG_COUNT - 1) * GAUGE_SEG_GAP)) / 2;
-    const GAUGE_CAP_X = 32;
     const GAUGE_CAP_Y = 440;
     const GAUGE_CAP_R = 40;
     const GAUGE_FILL_S = 0.2;
     const GAUGE_DRAIN_S = 0.3;
     const GAUGE_BREATH_S = 1.2;
+
+    /**
+     * Round 11 Part 1.3 (docs/Ideas.md §6d, "Playtest of 1.82.0"): the gauge
+     * used to sit at a fixed x12-52 — fine at the reference 403-wide phone,
+     * but on a wider/shorter fit (e.g. 768x1024) the contain-fit scale is
+     * bound by height, so the board renders far narrower than the screen and
+     * a fixed x12 sits deep in dead canvas space, nowhere near the belt.
+     * Instead centre the gauge in the ACTUAL visible gap between the belt's
+     * own drawn edge and the screen's left border, recomputed on every
+     * layout/resize (stage.ts's contain-fit can change scale AND offsetX
+     * together).
+     *
+     * `stage.root.x`/`stage.scale()` ARE offsetX/scale (stage.ts's own
+     * layout() sets root.x = offsetX, root.scale = scale) — reading them
+     * directly off the live Stage is the one-source-of-truth getFit() itself
+     * documents, not a second hand-rolled copy of that math. `board` sits at
+     * boardRoot's local origin with boardRoot.x always 0 (only .y moves, see
+     * anchorBoard), so board-space x=0 maps 1:1 to stage.root's own local
+     * x=0 — no extra offset between this scene's coordinate space and
+     * stage.root's.
+     *
+     * visibleLeft (design units, ≤ 0) is the screen's left edge expressed in
+     * that same board space: screenX = stage.root.x + designX * scale, so
+     * designX at screenX=0 is -stage.root.x/scale.
+     *
+     * The belt's own drawn outer edge sits at 170 − (SZ.pathWidth+14)/2 — the
+     * SAME (pathWidth+14)/2 = capRadius this file already derives at
+     * drawRoad's own call site above (the edge-color stroke, not just the
+     * belt-texture stroke, is what's visually "the belt") — 170−43 = 127,
+     * matching the round's own worked example (centre 63.5, tube 43-84 at
+     * zero letterbox). The handover's own text wrote this as "170 −
+     * SZ.pathWidth/2" (which would give 134, not 127) — 127 is what every
+     * number in its own worked example was actually built from, so this
+     * follows the formula that reproduces 127, not the literal one written
+     * (flagged in this round's report).
+     */
+    const GAUGE_BELT_LEFT_EDGE = 170 - (SZ.pathWidth + 14) / 2;
+    const GAUGE_MARGIN = 16;
+
+    function gaugeCenterX(): number {
+        const scale = stage.scale();
+        if (!Number.isFinite(scale) || scale <= 0) return GAUGE_BELT_LEFT_EDGE / 2;
+        const visibleLeft = -stage.root.x / scale;
+        const minCx = visibleLeft + GAUGE_MARGIN + GAUGE_TUBE_W / 2;
+        return Math.max(minCx, (visibleLeft + GAUGE_BELT_LEFT_EDGE) / 2);
+    }
+
+    let gaugeCx = gaugeCenterX();
 
     /** Bottom edge (design y) of segment i, 0 = the bottom-most segment. */
     function gaugeSegBottomY(i: number): number {
@@ -647,10 +692,6 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     }
 
     const gaugeTube = new Graphics();
-    gaugeTube
-        .roundRect(GAUGE_TUBE_X, GAUGE_TUBE_Y0, GAUGE_TUBE_W, GAUGE_TUBE_Y1 - GAUGE_TUBE_Y0, GAUGE_TUBE_RADIUS)
-        .fill({ color: GAUGE_CREAM, alpha: 0.12 })
-        .stroke({ width: 4, color: GAUGE_CREAM, alpha: 0.35 });
     board.addChild(gaugeTube);
 
     const gaugeSegments: Graphics[] = [];
@@ -663,22 +704,40 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     /** The cap's own circle backing — chocolate fill, orange stroke —
      *  persists regardless of what's drawn inside it (the flame glyph or
      *  the boss sprite): "the cap SHOWS the boss enemy's sprite" (spec) reads
-     *  as the cap's own CONTENT swapping, not the cap disappearing. Drawn
-     *  once; static. */
+     *  as the cap's own CONTENT swapping, not the cap disappearing. */
     const gaugeCapBase = new Graphics();
-    gaugeCapBase.circle(GAUGE_CAP_X, GAUGE_CAP_Y, GAUGE_CAP_R).fill(GAUGE_CHOCOLATE).stroke({ width: 6, color: GAUGE_ORANGE });
     board.addChild(gaugeCapBase);
 
     /** The flame glyph — two overlapping teardrops (procedural, like every
      *  other placeholder shape in this file; no new art was authorized this
-     *  round) — toggled off while the boss sprite is showing instead.
-     *  Drawn once; static, so it's not redrawn per frame like the
-     *  segments/boss cap are. */
+     *  round) — toggled off while the boss sprite is showing instead. */
     const gaugeCapFlame = new Graphics();
-    {
-        const cx = GAUGE_CAP_X;
+    board.addChild(gaugeCapFlame);
+
+    /**
+     * Round 11 Part 1.3: the tube/cap-base/flame are all static shapes that
+     * used to be drawn exactly once at fixed x — now redrawn (cheap, one-off
+     * Graphics rebuilds, not per-frame) whenever gaugeCx moves. Called once
+     * up front and again from stage.onResize below.
+     */
+    function drawGaugeStatic(): void {
+        const tubeX = gaugeCx - GAUGE_TUBE_W / 2;
+        gaugeTube
+            .clear()
+            .roundRect(tubeX, GAUGE_TUBE_Y0, GAUGE_TUBE_W, GAUGE_TUBE_Y1 - GAUGE_TUBE_Y0, GAUGE_TUBE_RADIUS)
+            .fill({ color: GAUGE_CREAM, alpha: 0.12 })
+            .stroke({ width: 4, color: GAUGE_CREAM, alpha: 0.35 });
+
+        gaugeCapBase
+            .clear()
+            .circle(gaugeCx, GAUGE_CAP_Y, GAUGE_CAP_R)
+            .fill(GAUGE_CHOCOLATE)
+            .stroke({ width: 6, color: GAUGE_ORANGE });
+
+        const cx = gaugeCx;
         const cy = GAUGE_CAP_Y;
         gaugeCapFlame
+            .clear()
             .moveTo(cx, cy + 20)
             .bezierCurveTo(cx - 18, cy + 12, cx - 13, cy - 8, cx, cy - 22)
             .bezierCurveTo(cx + 3, cy - 12, cx + 8, cy - 5, cx + 3, cy + 3)
@@ -689,8 +748,10 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             .bezierCurveTo(cx - 9, cy + 8, cx - 6, cy - 4, cx, cy - 12)
             .bezierCurveTo(cx + 6, cy - 4, cx + 9, cy + 8, cx, cy + 13)
             .fill(CONFIG.colors.arrow); // warm inner tongue, reusing the existing projectile-arrow hex
+
+        gaugeCapBoss.position.set(gaugeCx, GAUGE_CAP_Y);
+        gaugeLabel.position.set(gaugeCx, GAUGE_TUBE_Y1 + 26);
     }
-    board.addChild(gaugeCapFlame);
 
     /** While the boss is on the belt, the cap shows its sprite instead of
      *  the flame — the block's own stag dish (data/blocks.ts), the same
@@ -713,7 +774,6 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
 
     const gaugeCapBoss = new Sprite();
     gaugeCapBoss.anchor.set(0.5);
-    gaugeCapBoss.position.set(GAUGE_CAP_X, GAUGE_CAP_Y);
     gaugeCapBoss.visible = false;
     board.addChild(gaugeCapBoss);
 
@@ -725,8 +785,13 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     const gaugeLabel = new Text({ text: '0/10', style: new TextStyle({ fontSize: 32, fontWeight: 'bold', fill: GAUGE_CREAM }) });
     gaugeLabel.anchor.set(0.5, 0);
     gaugeLabel.alpha = 0.7;
-    gaugeLabel.position.set(GAUGE_CAP_X, GAUGE_TUBE_Y1 + 26);
     board.addChild(gaugeLabel);
+
+    drawGaugeStatic();
+    const offGaugeResize = stage.onResize(() => {
+        gaugeCx = gaugeCenterX();
+        drawGaugeStatic();
+    });
 
     /** 0-10, the settled target the display animates toward — (level-1)%10
      *  normally, forced to 10 while the boss is on the belt or during
@@ -783,11 +848,12 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             gaugeAnimT = Infinity;
         }
 
+        const segX = gaugeCx - GAUGE_TUBE_W / 2 + (GAUGE_TUBE_W - GAUGE_SEG_W) / 2;
         for (let i = 0; i < GAUGE_SEG_COUNT; i++) {
             const g = gaugeSegments[i];
             g.clear();
             const bottomY = gaugeSegBottomY(i);
-            g.roundRect(GAUGE_SEG_X, bottomY - GAUGE_SEG_H, GAUGE_SEG_W, GAUGE_SEG_H, 4).fill({ color: GAUGE_CREAM, alpha: 0.08 });
+            g.roundRect(segX, bottomY - GAUGE_SEG_H, GAUGE_SEG_W, GAUGE_SEG_H, 4).fill({ color: GAUGE_CREAM, alpha: 0.08 });
             const fraction = Math.max(0, Math.min(1, gaugeDisplayLevel - i));
             if (fraction > 0) {
                 const fillH = GAUGE_SEG_H * fraction;
@@ -801,7 +867,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 if (i === 8 && gaugeTargetFilled === 9 && gaugeAnimT >= gaugeAnimDuration) {
                     alpha = 0.85 + 0.15 * Math.sin((fxClock / GAUGE_BREATH_S) * Math.PI * 2);
                 }
-                g.roundRect(GAUGE_SEG_X, bottomY - fillH, GAUGE_SEG_W, fillH, 4).fill({ color, alpha });
+                g.roundRect(segX, bottomY - fillH, GAUGE_SEG_W, fillH, 4).fill({ color, alpha });
             }
         }
 
@@ -2256,6 +2322,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             app.ticker.remove(tick);
             app.stage.off('pointertap', onTap);
             offResize();
+            offGaugeResize();
             registerEngine(null);
             // Sprite.destroy() (default options) never touches the texture
             // itself — safe for both the Assets-cache-owned backdrop

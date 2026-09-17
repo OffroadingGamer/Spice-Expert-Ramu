@@ -46,7 +46,13 @@ export function Card({ mu, children }: { mu: number; children: ReactNode }) {
             className="flex flex-col items-stretch"
             style={{
                 width: 200 * mu,
-                backgroundColor: 'var(--color-cream)',
+                // Round 11 Part 1.6 (docs/Ideas.md §6d, "Playtest of 1.82.0"):
+                // opaque cream read as a flat sticker against the paused/
+                // dialog-darkened board behind it — 90% lets a hint of the
+                // scrim through while staying easily readable. rgba literal,
+                // not the --color-cream token, since that token has no alpha
+                // channel of its own to override here.
+                backgroundColor: 'rgba(253, 250, 231, 0.90)',
                 color: 'var(--color-chocolate)',
                 borderRadius: 12 * mu,
                 padding: 14 * mu,

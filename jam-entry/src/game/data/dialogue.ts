@@ -64,13 +64,13 @@ export const DIALOGUE_BEATS: DialogueBeat[] = [
         id: 'recipe-widget',
         trigger: 'wave-bubble-first-shown',
         voice: 'A',
-        lines: ['That scroll up top is the order. Every dish on it walks in this rush — count them off as you serve.'],
+        lines: ['That scroll up top is the order. Every dish on it walks in this rush. Count them off as you serve.'],
     },
     {
         id: 'heat-gauge-intro',
         trigger: 'rush-1-cleared-pre-upgrade',
         voice: 'A',
-        lines: ['See the heat on the left? Every rush you survive turns it up a notch. When it hits the flame — the big one walks in. Be ready.'],
+        lines: ['See the heat on the left? Every rush you survive turns it up a notch. When it hits the flame, the big one walks in. Be ready.'],
     },
     {
         id: 'wave1-cleared',
