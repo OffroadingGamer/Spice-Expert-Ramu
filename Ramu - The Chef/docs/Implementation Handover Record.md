@@ -39,9 +39,9 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.85.0** (Rounds 0–12b — Round 12b verified Sep 18 ~05:30 IST; ⚠️ board still small on phones (138 px wide at 360, 182 at 403; 403 at 744) — Round 12c in flight, playtest after it; 🔒 Private-only until human verification — Ideas.md §6d) |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.86.0** (Rounds 0–12c — Round 12c verified Sep 18 ~06:20 IST; **playtest-ready** — board 215 / 257 / 456 px at 360 / 403 / 744; 🔒 Private-only until human verification — Ideas.md §6d) |
 | **Jam (Sep 17, ~21:50 IST)** | **6th, 613 daily uniques** (901 total plays) at ~21:50 IST Sep 17 — out of the money by 16: 5th Pest Control Tycoon 629 ($100), 4th GT Rush 902 ($200), 7th The Good Life 479. Judging closes **Sep 18 12:00 PT = 00:30 IST Sep 19** (1d 02h 37m at the reading). Public is frozen at 1.69.0 through judging. |
-| **In flight** | **Round 12c** → Private 1.86.0: top reserve = row 1 + WAVE/ring block only (bubble and speed buttons may overhang the empty top-right of the board), wave-bubble trigger horizontal (≤ 72 px), Ready at base size, upgrade chips beside the portrait — computed board widths ≈ 223 / 266 / 464 px. Then the user plays 1.85.0 → R13 belt chevrons + i18n table (four constraints from the inventory) → R14 shards (projection measured) → R15 continue → R16 Play/badge → R17 Hindi. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
+| **In flight** | **Round 13** → Private 1.87.0: belt chevrons (10.1 C) + i18n string table (English only; dish keys by slug, costume alias by block id, name pattern `\p{L}`, plural forms) + two 12c leftovers (trigger wrap at 360 with three dishes; submenu as a scrimmed popover). The user's 1.86.0 playtest notes fold into R14. Then the user plays 1.85.0 → R13 belt chevrons + i18n table (four constraints from the inventory) → R14 shards (projection measured) → R15 continue → R16 Play/badge → R17 Hindi. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
 | **Repo** | **Pushed Sep 18 ~02:15 IST** (`4858e3b..591031d`, 17 commits) on the user's word — `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is now in the public repo. Secret scan over the whole range: clean, control positive. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -3142,3 +3142,34 @@ clear of the belt at 360×780 even before the horizontal chip.
 
 **Owned:** the tall bubble is my Round 11 spec (icon 64 + stacked text) meeting my Round 12b
 spec ("reserve what the DOM occupies") — two correct instructions whose sum was wrong.
+
+---
+
+### 2026-09-18 ~06:20 IST — Round 12c returned and verified: Private **1.86.0** — playtest-ready
+
+**Verified:** tags 1.86.0 / 1.69.0 / 1.69.0 · balance 35/36/11/4/90 · tsc + build clean · no
+sidecars · sealed files + config untouched · diff is exactly `Hud.tsx` + `WaveBubble.tsx` ·
+`waveRingGroupRef` measured, trigger and speed buttons not · Ready one size (`minHeight 44`,
+8×mu / 12×mu, `min(14×mu, 20)`) · `IDLE_SIZE 132` intact. Committed `ca71b1b`. Return verbatim
+in `Agent Returns.md`.
+
+**Board width: 215.0 / 257.4 / 456.2 px** against 215 / 255 / 417 — every row met; on the user's
+phone the board is now larger than in 1.83.0 (417). `hudTopPx` 120.4 (was 229), `hudBottomPx`
+203–226 (was 257–275). The agent's `items-start` change (10 px back) is in scope and accepted.
+Rotation clean.
+
+**Two named shortfalls, both to Round 13 (not blockers for the playtest):**
+1. 360×780 with three dishes on the order: the trigger wraps to a second line and sits 4.7 px
+   above the first pad row (bar 8). Fix: at widths where three 64-px cells + speed buttons
+   don't fit, the third cell folds into the existing "···" carousel.
+2. The open wave-bubble submenu (2-column grid, up to 363 px tall at five archetypes) overlays
+   the board at every width. Pre-existing since 1.83.0 — the design-unit band never covered it
+   either; 12b's whole-block measurement absorbed it by accident. Fix: the submenu becomes a
+   scrimmed popover (tap outside closes, pads under it are not tappable while open), which is
+   what it already behaves like, made explicit.
+
+**Handover facts corrected by the agent:** level 81 is a post-boss build phase (PostBossPanel,
+not the inline Ready), so it is the wrong level for a Ready-gap test — use level 82.
+
+**Next:** the user plays 1.86.0 (first real look at Ranks B with rows, the daily tab, the
+laurel, the bigger portrait). Round 13 issued in parallel; playtest notes fold into R14.

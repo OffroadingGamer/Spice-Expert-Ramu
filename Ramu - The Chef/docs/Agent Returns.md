@@ -259,7 +259,52 @@ tsc --noEmit / npm run build: clean. npm run balance: 35/36/11/4/90, byte-identi
 
 ---
 
+## 2026-09-18 ~06:20 IST — Round 12c — implementation agent
+
+Outcome: verified, Private 1.86.0, committed `ca71b1b`; board 215 / 257 / 456 px — targets met; two named shortfalls to R13.
+
+Confirmed: Private 1.86.0, Review and Public both unchanged at 1.69.0, exactly as required. Now the final report.
+
+Round 12c hotfix — deployed as v1.86.0 (Private). Review/Public unchanged at 1.69.0.
+Part 1 — Reserve only what collides
+Top band (Hud.tsx): the WAVE chip + ring/head box are now wrapped in their own waveRingGroupRef div, a sibling of the (now-unmeasured) wave-bubble trigger and speed buttons inside the same flex-wrap row — the DOM/visual order is unchanged, only what feeds hudTopPx changed. hudTopPx = max(row1's bottom, that group's bottom). While implementing this I found the row was still items-center, which centered the 52px-tall group against the 72px-tall trigger (still the row's tallest sibling) — that centering pushed the measured group 10px lower than it needed to be, for zero visual benefit once the trigger stopped being measured. Switching to items-start recovered that 10px directly as board height (hudTopPx 130.4→120.4px). This wasn't asked for explicitly but is squarely in Part 1's own scope (this row's layout is exactly what the reservation is computed from), so I made the change and documented it inline.
+
+Measurements (clean build-phase state, before the entry hatch/belt/pad-row checks below):
+
+Viewport	hudTopPx	hudBottomPx	scale	Board width	Target
+360×780	120.4	203.0	0.2986	215.0px	≥215 ✅
+403×874	120.4	206.9	0.3575	257.4px	≥255 ✅
+744×1315	120.4	225.6	0.6336	456.2px	≥417 ✅
+All three board-width targets are met (360×780 lands exactly on the line). Entry hatch (170,90) clears the measured band with margin at all three (screen y 181.5/193.6/250.1, well below hudTopPx's 120.4px boundary). Gauge "0/10" label stays visible in every screenshot.
+
+Rotation test (403×874→874×403→403×874): hudTopPx/hudBottomPx were bit-for-bit identical before, during, and after (120.390625/140 in this pass) — no stale band. In landscape here, #app-frame narrows to ~227px wide but the reserved bands (120+140=260px) don't exceed the 403px landscape height, so getFit actually computes a small valid scale (~0.093) rather than hitting the scale≤0 guard — different from 12b's own landscape case, reported accurately rather than assumed.
+
+New acceptance check — bubble/submenu vs. belt and pad row at level 81 (3 dishes): forcing the store to wave 81 to test this is non-trivial — the real engine re-syncs wave from its own internal state every animation frame (actions.ts's syncStore), so a direct patch gets silently reverted within ~16ms unless read back inside the same microtask window. I built a Playwright harness that patches the store and reads geometry before the next frame, confirmed against a diagnostic pass showing the exact revert timing. Level 81 also turned out to be a post-boss build phase (isBossLevel(80) is true), which legitimately shows PostBossPanel instead of the inline Ready in real play — that's correct behavior, not a bug I introduced, but it also perturbs hudBottomPx/scale for that specific test, so I isolated the pieces that don't depend on it (the trigger/submenu's DOM position is pure CSS flow, independent of canvas scale) and recombined them with the clean scale from the table above:
+
+Viewport	Trigger→belt	Trigger→pad row	Submenu→belt	Submenu→pad row
+360×780	+39.9px ✅	+4.7px (below the 8px bar)	−297.5px ❌	−332.7px ❌
+403×874	+63.6px ✅	+21.4px ✅	−227.4px ❌	−269.6px ❌
+744×1315	+234.5px ✅	+159.7px ✅	−116.5px ❌	−191.3px ❌
+Two honest findings here:
+
+At 360×780 with 3 dishes, the trigger itself wraps onto row 2's own second line (3 full-size 64px icons plus the speed buttons don't fit alongside the WAVE/ring group at that width), landing only 4.7px above the first pad row — under the 8px bar by a small but real margin. This doesn't regress the formal board-width row (which is about the reserved band, not this row's own overflow), but it's a genuine, named shortfall at the narrowest viewport.
+The open submenu overlaps board content at all three viewports, by a wide margin. Its height scales with the wave's distinct-archetype count — level 81 has 5 cells (2-column grid → 3 rows, 363px tall) — and per the handover's own Part 2 scope, the submenu's internal "stacked" layout is explicitly not something this round touches ("it's not measured and it closes on tap"). Its real height was always this large; 12b's whole-block measurement used to coincidentally absorb it into hudTopPx whenever it was open, which is exactly the behavior Part 1 was asked to stop doing. I did not attempt an in-scope fix for this since it would mean redesigning the submenu grid, which is explicitly out of this round's Part 2 scope.
+Part 2 — Wave-bubble trigger as a horizontal chip
+WaveBubble.tsx: each trigger cell is now icon-left (64px, unchanged) + name-over-count stacked to its right (was: stacked vertically below the icon). Button padding dropped py-1.5→py-1. Measured height: exactly 72px at every dish count (1–3), since the icon dominates and cell width — not height — is what grows with more dishes. The submenu grid (WaveBubbleSubmenu) is untouched, per the handover's own instruction.
+
+Part 3 — Ready at base size
+Hud.tsx: removed the sm:px-16 sm:py-5 sm:text-3xl wide-viewport enlargement; now one size everywhere via inline style: minHeight: 44, padding: 8mu 12mu, fontSize: min(14mu, 20). Pulse animation wrapper unchanged. Ready-to-exit-hatch gap: 34.2 / 41.0 / 72.6px at the three viewports — all comfortably ≥8px.
+
+Part 4 — Upgrade chips beside the portrait
+Hud.tsx: chips moved from a row under the portrait to a column on its right. The row uses w-full justify-center (with a definite width chain up through bottomColRef's own inset-x-0) so the chip column can shrink and wrap its own text instead of overflowing, rather than a hand-typed max-width. The chip column is exactly the portrait's own height (132px) split into two equal 66px flex regions — an empty top half and a justify-centerd bottom half — so the chips sit vertically centered on the portrait's lower half by construction. IDLE_SIZE (132) and Ready-above-portrait are untouched, per this round's own explicit instruction. Chips-to-exit-hatch gap: 97.2 / 107.9 / 158.3px — well clear. Visually confirmed via screenshot: chip text ("Deep Freeze", "Turn Up The Heat", "Slow Service") fits on one line at all three widths without touching the frame edge; row 2's WAVE chip/ring/speed buttons still read correctly top-aligned after the Part 1 items-start change.
+
+Build & safety
+tsc --noEmit / npm run build: clean. npm run balance: 35/36/11/4/90, byte-identical to every prior round. find public -name '*.json': empty (no new public files this round). git diff --stat against sealed files/kitchenScene.ts/package*.json/rundot/leaderboard.config.json: empty — confirmed independently by the deploy's own "No server config changes detected." rundot whoami → offroadinggamedev@gmail.com before deploying. Diff: 2 files changed (src/ui/Hud.tsx, src/ui/WaveBubble.tsx), no new files. rundot game list-tags → Private 1.86.0, Review 1.69.0, Public 1.69.0.
+
+---
+
 ## Pending
 
-- **Round 12c** (implementation agent, → 1.86.0) — issued Sep 18 ~05:45 IST, not returned.
+- **Round 13** (implementation agent, → 1.87.0) — issued Sep 18 ~06:30 IST, not returned.
+- **Marketing agent** — post-close results entry, after judging closes 00:30 IST Sep 19.
 - **Marketing agent** — post-close results entry, after judging closes 00:30 IST Sep 19 (writes its own docs; Central syncs).
