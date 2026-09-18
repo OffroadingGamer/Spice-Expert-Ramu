@@ -649,7 +649,7 @@ anchors to the **wave chip** instead. §7's data path is unchanged.
    recommended:** icon chips (❄ / 🔥 / 🐌, 44 × 44, cost beneath, label on tap-and-hold) beside the
    portrait inside its 132-px height; B: a fourth cluster on HUD row 2 (row is full at 360);
    C: behind Ramu — tap the portrait for a scrimmed popover (retarget the upgrade cue).
-   ⏳ Awaiting the pick.
+   ✅ **Picked Sep 18: A** — icon chips inside the portrait's height.
 3. Screenshot 1 (wave 3, chevrons, horizontal bubble, Ready above portrait): no annotation —
    accepted as rendered.
 

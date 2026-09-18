@@ -345,6 +345,7 @@ The live Devanagari-name leaderboard moderation test is not done — I don't hav
 
 ## Pending
 
-- **Round 14** (implementation agent, → 1.88.0) — awaiting the user's chips pick (A/B/C), not yet issued.
+- **Round 14** (implementation agent, → 1.88.0) — issued Sep 18, not returned.
+- **Marketing agent** — post-close results entry, after judging closes 00:30 IST Sep 19.
 - **Marketing agent** — post-close results entry, after judging closes 00:30 IST Sep 19.
 - **Marketing agent** — post-close results entry, after judging closes 00:30 IST Sep 19 (writes its own docs; Central syncs).

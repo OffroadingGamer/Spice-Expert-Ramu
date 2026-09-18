@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.87.0** (Rounds 0–13 — Round 13 verified Sep 18; chevrons + i18n table, no visible text change; ⚠️ board re-scales on pad selection — fix in R14; 🔒 Private-only until human verification — Ideas.md §6d) |
 | **Jam (Sep 17, ~21:50 IST)** | **6th, 613 daily uniques** (901 total plays) at ~21:50 IST Sep 17 — out of the money by 16: 5th Pest Control Tycoon 629 ($100), 4th GT Rush 902 ($200), 7th The Good Life 479. Judging closes **Sep 18 12:00 PT = 00:30 IST Sep 19** (1d 02h 37m at the reading). Public is frozen at 1.69.0 through judging. |
-| **In flight** | Nothing dispatched. **Round 14** → 1.88.0 waits on the chips pick (Ideas §6d Playtest of 1.86.0 item 2): static scale rule + chips + recipe shards / Kitchen scroll card + `sfx-scroll-unlock` + scroll/shard art. Then R15 continue · R16 Play/badge · R17 Hindi. Then the user plays 1.85.0 → R13 belt chevrons + i18n table (four constraints from the inventory) → R14 shards (projection measured) → R15 continue → R16 Play/badge → R17 Hindi. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
+| **In flight** | **Round 14** → Private 1.88.0: static board scale (placeholders) + Kitchen-Actions icon chips (A) + recipe shards / scroll cards in the Kitchen + `sfx-scroll-unlock` + scroll/shard art wired. Then R15 continue · R16 Play/badge · R17 Hindi. Then the user plays 1.85.0 → R13 belt chevrons + i18n table (four constraints from the inventory) → R14 shards (projection measured) → R15 continue → R16 Play/badge → R17 Hindi. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
 | **Repo** | **Pushed Sep 18 ~02:15 IST** (`4858e3b..591031d`, 17 commits) on the user's word — `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is now in the public repo. Secret scan over the whole range: clean, control positive. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -3197,3 +3197,12 @@ measured bottom band shrinks, the fit re-runs. Decision: scale depends on viewpo
 reserved at maximum layout via hidden placeholders. The chips column is the user's "unwanted
 UI structure"; three options offered, **A (icon chips inside the portrait's height)
 recommended**; R14 issues on the pick. Decisions in Ideas §6d "Playtest of 1.86.0".
+
+---
+
+### 2026-09-18 — Chips pick: **A**; Round 14 issued (→ 1.88.0)
+
+Handover in chat: Part 1 static scale (bands from always-mounted hidden placeholders); Part 2
+icon chips; Part 3 recipe shards + Kitchen scroll cards per Ideas §10.4 B with the measured
+cadence (8 chai + 8 coffee at level 10); Part 4 `sfx-scroll-unlock` + `recipe-scroll.png` /
+`shard.png` wired (opaque-bbox sizing). No config change, no sealed edits, boards untouched.
