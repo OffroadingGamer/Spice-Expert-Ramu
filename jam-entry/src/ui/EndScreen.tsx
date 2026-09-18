@@ -22,6 +22,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { sfx, switchCue } from '../audio/audio.ts';
 import { scriptedRunStart } from '../game/actions.ts';
 import { CONFIG } from '../game/config.ts';
+import { t, tn } from '../i18n/index.ts';
 import { adsSystem } from '../sdk/ads.ts';
 import { track } from '../sdk/analytics.ts';
 import { addGems } from '../state/save.ts';
@@ -53,19 +54,19 @@ interface Outcome {
  * routine result; early is now anything short of 20, not 10. */
 function computeOutcome(survived: number, previousBest: number): Outcome {
     if (survived > previousBest) {
-        return { id: 'new_best', face: 'c', line: 'Best shift this kitchen has ever seen. Write it on the wall.' };
+        return { id: 'new_best', face: 'c', line: t('end.outcome.newBest') };
     }
     if (survived === previousBest) {
-        return { id: 'matched', face: 'b', line: 'Matched the record. Next time it falls.' };
+        return { id: 'matched', face: 'b', line: t('end.outcome.matched') };
     }
     const gap = previousBest - survived;
     if (gap <= Math.max(3, previousBest * 0.1)) {
-        return { id: 'near_best', face: 'b', line: `${gap} short of the record. The record's getting nervous.` };
+        return { id: 'near_best', face: 'b', line: tn('end.outcome.nearBest', gap, { gap }) };
     }
     if (survived >= 20) {
-        return { id: 'held', face: 'a', line: `${survived} rushes held. Nobody at the tapri would believe it.` };
+        return { id: 'held', face: 'a', line: tn('end.outcome.held', survived, { n: survived }) };
     }
-    return { id: 'early', face: 'a', line: 'Rough start. The stove still lights tomorrow.' };
+    return { id: 'early', face: 'a', line: t('end.outcome.early') };
 }
 
 function usePrefersReducedMotion(): boolean {
@@ -186,8 +187,8 @@ export default function EndScreen() {
     const ads = adsSystem();
     const offerBonus = bonus > 0 && !adBonusClaimed && !ads.capReached();
     const headerLine = beatCampaign
-        ? `Full shift held. Overtime rush ${survived - waveCount + 1} got you.`
-        : 'No escapes left — every dish that slipped past was a customer out the door.';
+        ? t('end.header.overtime', { n: survived - waveCount + 1 })
+        : t('end.header.lost');
     const deltaVsBest = Math.max(0, previousBestWave - survived);
 
     const handleRetryTap = () => {
@@ -212,9 +213,9 @@ export default function EndScreen() {
         void ads
             .grantReward({
                 productId: 'bonus_gameover_gems',
-                description: `${bonus} bonus gems`,
+                description: tn('ad.description', bonus, { n: bonus }),
                 trigger: 'gameover_gems',
-                name: 'Game over gem bonus',
+                name: t('ad.name'),
                 onReward: () => {
                     const save = addGems(bonus);
                     // Captured here (not recomputed from the post-claim
@@ -259,21 +260,24 @@ export default function EndScreen() {
                 <p className="text-center text-[0.65rem] font-semibold text-black/55">{headerLine}</p>
                 <div className="mt-2 flex flex-col gap-2">
                     <TicketRow
-                        label="Rushes held"
+                        label={t('end.rushesHeld')}
                         value={survivedDisplay}
                         sub={
                             outcome.id === 'new_best'
-                                ? <span className="font-bold text-primary">NEW BEST</span>
+                                ? <span className="font-bold text-primary">{t('end.newBest')}</span>
                                 : outcome.id === 'matched'
-                                    ? `best ${previousBestWave} · =`
-                                    : `best ${previousBestWave} · −${deltaVsBest}`
+                                    ? t('end.bestEq', { n: previousBestWave })
+                                    : t('end.bestDelta', { n: previousBestWave, d: deltaVsBest })
                         }
                     />
-                    <TicketRow label="Dishes served" value={killsDisplay.toLocaleString()} />
+                    <TicketRow label={t('end.dishesServed')} value={killsDisplay.toLocaleString()} />
                     <TicketRow
-                        label="Gems earned"
-                        value={`+${gemsDisplay} 💎`}
-                        sub={`${survived} rushes × ${CONFIG.meta.gemsPerWave} 💎 each${claimedBonus !== null ? ` + ${claimedBonus} bonus` : ''}`}
+                        label={t('end.gemsEarned')}
+                        value={t('end.gemsValue', { n: gemsDisplay })}
+                        sub={
+                            tn('end.gemsBreakdown', survived, { n: survived, g: CONFIG.meta.gemsPerWave }) +
+                            (claimedBonus !== null ? t('end.gemsBonus', { n: claimedBonus }) : '')
+                        }
                     />
                 </div>
             </div>
@@ -284,7 +288,7 @@ export default function EndScreen() {
                 className="w-full max-w-md rounded-2xl bg-primary px-10 py-4 text-2xl font-bold text-black shadow-lg transition-transform active:scale-95"
                 onClick={handleRetryTap}
             >
-                Retry
+                {t('end.retry')}
             </button>
 
             {/* Secondary ghosts — outlined, no fill, same size. */}
@@ -298,7 +302,7 @@ export default function EndScreen() {
                         store.patch({ metaOpen: true });
                     }}
                 >
-                    Upgrade kitchen
+                    {t('end.upgradeKitchen')}
                 </button>
                 <button
                     type="button"
@@ -310,14 +314,14 @@ export default function EndScreen() {
                         store.patch({ phase: 'menu', selectedPad: null });
                     }}
                 >
-                    Menu
+                    {t('end.menu')}
                 </button>
             </div>
 
             {/* Ad offer — demoted to its own opt-in card, no colour of its
                 own; same gate/reward/claim path as before. */}
             {claimedBonus !== null ? (
-                <p className="text-[0.9rem] font-semibold text-primary">Bonus claimed · +{claimedBonus} 💎</p>
+                <p className="text-[0.9rem] font-semibold text-primary">{t('end.bonusClaimed', { n: claimedBonus })}</p>
             ) : offerBonus ? (
                 <button
                     type="button"
@@ -328,7 +332,7 @@ export default function EndScreen() {
                         setConfirmAd(true);
                     }}
                 >
-                    Double it: +{bonus} 💎 · Watch an ad
+                    {t('end.doubleIt', { n: bonus })}
                 </button>
             ) : null}
 
@@ -336,10 +340,10 @@ export default function EndScreen() {
                 <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/70 px-10">
                     <div className="flex w-full max-w-sm flex-col gap-4 rounded-2xl bg-black/90 p-6">
                         <p className="text-center text-xl font-bold">
-                            Watch an ad to earn {bonus} bonus gems?
+                            {tn('end.adConfirm', bonus, { n: bonus })}
                         </p>
                         <p className="text-center text-[1.1rem] text-white/60 tabular-nums">
-                            {ads.remainingToday()}/{ads.maxPerDay} ads left today
+                            {tn('end.adsLeft', ads.remainingToday(), { r: ads.remainingToday(), max: ads.maxPerDay })}
                         </p>
                         <div className="flex gap-3">
                             <button
@@ -350,7 +354,7 @@ export default function EndScreen() {
                                     setConfirmAd(false);
                                 }}
                             >
-                                Cancel
+                                {t('end.adCancel')}
                             </button>
                             <button
                                 type="button"
@@ -361,7 +365,7 @@ export default function EndScreen() {
                                 }
                                 onClick={() => { if (!locked) claimBonus(); }}
                             >
-                                {busy ? 'Loading…' : 'Watch'}
+                                {busy ? t('end.adLoading') : t('end.adWatch')}
                             </button>
                         </div>
                     </div>

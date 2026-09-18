@@ -93,6 +93,14 @@ export interface SaveData {
      *  save with no such field just starts with none recorded (every board
      *  reads as "first visit", not an error). */
     rankMemory: RankMemory;
+    /** Round 13 Part 2 (docs/Ideas.md §10.2): the player's chosen language
+     *  code ('en' | 'hi' | 'ta', though only 'en' has a real table this
+     *  round — i18n/index.ts's own Locale type is the narrower source of
+     *  truth for what's actually selectable today). Additive, migration-safe
+     *  like seenBeats/rankMemory above: an old save with no such field just
+     *  starts at 'en'. i18n/index.ts owns reading/writing this via
+     *  setSaveLocale/getSave().locale — never patched directly by UI code. */
+    locale: string;
 }
 
 /** One remembered rank plus the UTC day it was recorded on. `utcDay` is only
@@ -128,6 +136,7 @@ const DEFAULTS: SaveData = {
     playerName: null,
     seenBeats: [],
     rankMemory: {},
+    locale: 'en',
 };
 
 let data: SaveData = structuredClone(DEFAULTS);
@@ -214,6 +223,7 @@ function parse(raw: string | null): SaveData | null {
                 }
                 return out;
             })(),
+            locale: typeof parsed.locale === 'string' && parsed.locale.length > 0 ? parsed.locale : 'en',
         };
     } catch {
         return null;
@@ -345,6 +355,16 @@ export function renamePlayer(name: string): boolean {
     data = { ...data, playerName: trimmed };
     flushSave();
     return true;
+}
+
+/** Round 13 Part 2: persists the player's chosen locale — idempotent write,
+ *  same posture as setDialogueMuted above. i18n/index.ts's setLocale() is
+ *  the only caller; this file never imports i18n (that would be a cycle),
+ *  it just owns the storage half. */
+export function setSaveLocale(locale: string): void {
+    if (data.locale === locale) return;
+    data = { ...data, locale };
+    flushSave();
 }
 
 function utcDayKey(): string {

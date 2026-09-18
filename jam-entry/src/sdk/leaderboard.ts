@@ -10,6 +10,7 @@
  * state. Nothing here ever throws.
  */
 import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
+import { t } from '../i18n/index.ts';
 import { sdkReady } from './runSdk.ts';
 
 /**
@@ -39,8 +40,8 @@ export const BOARD_MODES: BoardMode[] = ['kills', 'waves'];
  *  1.83.0" item 1): display copy only — the mode KEYS (kills/waves) are
  *  unchanged everywhere else (board instance ids, submitRunScores, etc). */
 export const BOARD_LABELS: Record<BoardMode, string> = {
-    kills: 'Dishes served',
-    waves: 'Waves held',
+    kills: t('board.dishesServed'),
+    waves: t('board.wavesHeld'),
 };
 
 /** True when the RUN host is present (boards can exist at all). */

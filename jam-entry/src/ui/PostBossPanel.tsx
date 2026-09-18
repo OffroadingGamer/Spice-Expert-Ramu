@@ -22,6 +22,7 @@ import { sfx } from '../audio/audio.ts';
 import { startWave } from '../game/actions.ts';
 import { blockForLevel } from '../game/data/blocks.ts';
 import { isBossLevel } from '../game/data/waves.ts';
+import { t } from '../i18n/index.ts';
 import { useStore } from '../state/store.ts';
 
 // Reuses the manifest's own alias->src entries — WaveBubble.tsx's own
@@ -30,16 +31,16 @@ const ASSET_SRC = new Map(
     MANIFEST.bundles.flatMap((b) => b.assets).map((a) => [a.alias as string, a.src as string])
 );
 
-function titleCase(slug: string): string {
-    return slug.split('-').map((w) => w[0].toUpperCase() + w.slice(1)).join(' ');
-}
-
 export interface PostBossPanelState {
     visible: boolean;
-    /** The block just finished — the one the boss just cleared belonged to. */
-    finishedLabel: string;
+    /** The block just finished — the one the boss just cleared belonged to.
+     *  Round 13 Part 2: block ID, not the English label — the render side
+     *  looks up t('block.' + id) (docs/i18n/strings.md's own R13 constraint
+     *  #2: blocks.ts's `label` field must stay untranslated, since
+     *  chefBodyAliasForBlock derives the costume asset alias from it). */
+    finishedBlockId: number;
     /** The block just entered — whose dishes are previewed below. */
-    upcomingLabel: string;
+    upcomingBlockId: number;
     dishes: Array<{ slug: string; name: string; icon: string | undefined }>;
     /** READY inside the panel: closes it AND starts the wave. */
     ready: () => void;
@@ -81,14 +82,14 @@ export function usePostBossPanel(): PostBossPanelState {
         for (const slug of slugs) {
             if (seen.has(slug)) continue;
             seen.add(slug);
-            dishes.push({ slug, name: titleCase(slug), icon: ASSET_SRC.get(`dish-${slug}`) });
+            dishes.push({ slug, name: t(`dish.${slug}`), icon: ASSET_SRC.get(`dish-${slug}`) });
         }
     }
 
     return {
         visible,
-        finishedLabel: finished.label,
-        upcomingLabel: upcoming.label,
+        finishedBlockId: finished.id,
+        upcomingBlockId: upcoming.id,
         dishes,
         ready: () => { sfx.startWave(); startWave(); setDismissed(true); },
         dismiss: () => setDismissed(true),
@@ -125,11 +126,11 @@ export default function PostBossPanel({ state }: { state: PostBossPanelState }) 
                 is exactly the spec's own number, not whatever the closest
                 scale step happens to land on. */}
             <div ref={panelRef} className="pointer-events-auto w-full max-w-[32.2rem] rounded-2xl bg-black/80 p-[23px] text-center">
-                <h3 className="text-[23px] font-bold text-primary">Congratulations!</h3>
+                <h3 className="text-[23px] font-bold text-primary">{t('boss.title')}</h3>
                 <p className="mt-1 text-[17.5px] text-white/80">
-                    {state.finishedLabel} shift complete. {state.upcomingLabel} awaits.
+                    {t('boss.body', { finished: t(`block.${state.finishedBlockId}`), upcoming: t(`block.${state.upcomingBlockId}`) })}
                 </p>
-                <p className="mt-4 text-[12.5px] font-bold tracking-wide text-white/55 uppercase">Upcoming dishes</p>
+                <p className="mt-4 text-[12.5px] font-bold tracking-wide text-white/55 uppercase">{t('boss.upcoming')}</p>
                 <div className="mt-2 flex flex-wrap justify-center gap-[14px]">
                     {state.dishes.map((d) => (
                         <span key={d.slug} className="flex flex-col items-center gap-1">
@@ -138,6 +139,9 @@ export default function PostBossPanel({ state }: { state: PostBossPanelState }) 
                                 alt=""
                                 className="h-[55px] w-[55px] rounded-full border border-black/40 bg-surface object-contain"
                             />
+                            {/* boss.dishName ("{name}") is a pure passthrough
+                                — d.name is already localized (t('dish.'+slug)
+                                above), so wrapping it again would be a no-op. */}
                             <span className="max-w-[4.6rem] truncate text-[11.4px] font-semibold text-white/85">{d.name}</span>
                         </span>
                     ))}
@@ -147,7 +151,7 @@ export default function PostBossPanel({ state }: { state: PostBossPanelState }) 
                     className="mt-5 w-full rounded-2xl bg-primary px-10 py-[18px] text-[23px] font-bold text-black shadow-lg transition-transform active:scale-95"
                     onClick={state.ready}
                 >
-                    Ready!
+                    {t('hud.ready')}
                 </button>
             </div>
         </div>

@@ -4,6 +4,7 @@ import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
 import App from './ui/App.tsx';
 import { store } from './state/store.ts';
 import { loadSave, flushSave } from './state/save.ts';
+import { initLocaleFromSave } from './i18n/index.ts';
 import { initSdk, registerLifecycles, sdkReady } from './sdk/runSdk.ts';
 import { readIdentity } from './sdk/profile.ts';
 import { track } from './sdk/analytics.ts';
@@ -37,6 +38,9 @@ async function boot() {
     // 2. Load persisted progress before first render, so the first screen
     //    reflects real progress instead of popping it in after a beat.
     const save = await loadSave();
+    // Round 13 Part 2: restore the persisted locale before anything renders
+    // — every t()/tn() call from the very first paint already reflects it.
+    initLocaleFromSave();
     // Round 9 Part 4: identity is read here (after initSdk, before first
     // render) rather than lazily in MainMenu.tsx — same "reflects real
     // progress instead of popping it in" reasoning as the save fields above.

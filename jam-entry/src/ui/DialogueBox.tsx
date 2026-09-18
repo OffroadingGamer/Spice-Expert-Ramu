@@ -89,8 +89,8 @@
  */
 import { advanceDialogue, muteDialogue, queueDialogueOnce, skipDialogue } from '../game/dialogueController.ts';
 import { FTUE_FIRST_PAD, openUpgrade0Beat, startWave } from '../game/actions.ts';
-import { BLOCKS } from '../game/data/blocks.ts';
 import { sfx } from '../audio/audio.ts';
+import { t } from '../i18n/index.ts';
 import { store, useStore } from '../state/store.ts';
 import ChefPortrait from './ChefPortrait.tsx';
 
@@ -108,6 +108,30 @@ const DISTRICT_BLOCK_ID: Record<string, number> = {
     'district-7': 7,
     'district-8': 8,
     overtime: 9,
+};
+
+/** Round 13 Part 2: beat id -> i18n key (dialogue.ts's kebab-case ids don't
+ *  map mechanically onto en.ts's camelCase `beat.*` keys, so this is an
+ *  explicit table, same posture as DISTRICT_BLOCK_ID above). dialogue.ts's
+ *  own `lines` arrays stay English/unwired — every beat has exactly one
+ *  line today, so they're only read for `lines.length` (the isLastLine
+ *  check), never rendered directly any more. */
+const BEAT_KEY: Record<string, string> = {
+    opening: 'beat.opening',
+    'prop-placement': 'beat.propPlacement',
+    'stove-lit': 'beat.stoveLit',
+    'recipe-widget': 'beat.recipeWidget',
+    'heat-gauge-intro': 'beat.heatGaugeIntro',
+    'wave1-cleared': 'beat.wave1Cleared',
+    'wave4-ready': 'beat.wave4Ready',
+    'district-2': 'beat.district2',
+    'district-3': 'beat.district3',
+    'district-4': 'beat.district4',
+    'district-5': 'beat.district5',
+    'district-6': 'beat.district6',
+    'district-7': 'beat.district7',
+    'district-8': 'beat.district8',
+    overtime: 'beat.overtime',
 };
 
 /** Round 7 item 2: "box ~15% taller" for a header beat — 184 is the box's
@@ -155,7 +179,7 @@ export default function DialogueBox() {
     const isLastLine = dialogue.index === dialogue.lines.length - 1;
     const readyTap = dialogue.id === 'stove-lit' || dialogue.id === 'wave4-ready';
     const districtBlockId = DISTRICT_BLOCK_ID[dialogue.id];
-    const header = districtBlockId ? `RUSH: ${BLOCKS[districtBlockId - 1].label}` : null;
+    const header = districtBlockId ? t('hud.rush', { label: t(`block.${districtBlockId}`) }) : null;
 
     const onClosed = (closedId: string) => {
         releasePlaceFirstIfOpeningClosed(closedId);
@@ -209,7 +233,7 @@ export default function DialogueBox() {
             >
                 <button
                     type="button"
-                    aria-label="Continue"
+                    aria-label={t('dialogue.continue.aria')}
                     onClick={handleAdvance}
                     className={
                         'flex w-full gap-3 p-3 text-left ' + (header ? 'h-full items-start' : 'items-center')
@@ -240,7 +264,7 @@ export default function DialogueBox() {
                             </span>
                         )}
                         <p className="text-[1.05rem] leading-snug font-semibold text-white">
-                            {dialogue.lines[dialogue.index]}
+                            {t(BEAT_KEY[dialogue.id] ?? dialogue.id)}
                         </p>
                     </div>
                 </button>
@@ -259,10 +283,10 @@ export default function DialogueBox() {
                     onClick={(e) => { e.stopPropagation(); handleSkip(); }}
                     className="absolute top-2 right-2 rounded-full bg-black/70 px-3 py-1 text-[0.7rem] font-bold text-white/85"
                 >
-                    Skip
+                    {t('dialogue.skip')}
                 </button>
                 <span className="pointer-events-none absolute right-2 bottom-1 text-[0.6rem] font-semibold text-white/40">
-                    tap to continue ▸
+                    {t('dialogue.hint')}
                 </span>
             </div>
         </div>

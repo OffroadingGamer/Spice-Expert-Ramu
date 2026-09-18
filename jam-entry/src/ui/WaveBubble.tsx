@@ -78,6 +78,7 @@ import { blockForLevel } from '../game/data/blocks.ts';
 import { enemyDef } from '../game/data/enemies.ts';
 import { waveAt, type WaveEntry } from '../game/data/waves.ts';
 import { queueDialogueOnce } from '../game/dialogueController.ts';
+import { t, tn } from '../i18n/index.ts';
 import { useStore } from '../state/store.ts';
 
 // Reuses the manifest's own alias->src entries (ChefPortrait.tsx/
@@ -125,6 +126,36 @@ function usePrefersReducedMotion(): boolean {
     return reduced;
 }
 
+/** Round 13 Part 3.1: at some viewport widths, MAX_BUBBLE_ICONS (3) full
+ *  64px cells plus the speed buttons don't fit on row 2's own line beside
+ *  the WAVE/ring group, and the trigger used to just wrap to a second flex
+ *  line instead (still legal CSS, but it grows hudTopPx's own reserved band
+ *  — Round 12c's own report measured a 4.7px pad-row-clearance miss from
+ *  exactly this at 360x780 with 3 dishes). Fix: a media query, same
+ *  no-runtime-measurement posture as usePrefersReducedMotion right above
+ *  (this file's own header comment already argues against
+ *  ResizeObserver-based cue positioning) — below the breakpoint, the trigger
+ *  shows only 2 cells and folds the third (and any further) dish into the
+ *  SAME panning "···" carousel MAX_BUBBLE_ICONS-overflow already uses, so a
+ *  3-dish wave never needs a second line to render legibly. 620px sits
+ *  comfortably between the round's own 403 (needs folding) and 744 (fits
+ *  fine unfolded) reference widths. */
+function useNarrowBubbleViewport(): boolean {
+    const QUERY = '(max-width: 620px)';
+    const [narrow, setNarrow] = useState(() => {
+        try { return window.matchMedia(QUERY).matches; } catch { return false; }
+    });
+    useEffect(() => {
+        let mql: MediaQueryList;
+        try { mql = window.matchMedia(QUERY); } catch { return; }
+        const onChange = () => setNarrow(mql.matches);
+        mql.addEventListener?.('change', onChange);
+        return () => mql.removeEventListener?.('change', onChange);
+    }, []);
+    return narrow;
+}
+const MAX_BUBBLE_ICONS_NARROW = 2;
+
 /** One archetype's worth of the wave roster, for a submenu grid cell.
  *  `icons`/`names` carry ONE entry for blocks 1-5 (one dish per archetype)
  *  and TWO for blocks 6-9 (double-dish) — pips/bounty/count are per-
@@ -141,10 +172,6 @@ interface DishCell {
     bounty: number;
     count: number;
     remaining: number;
-}
-
-function titleCase(slug: string): string {
-    return slug.split('-').map((w) => w[0].toUpperCase() + w.slice(1)).join(' ');
 }
 
 /** Mirrors sim/engine.ts:628's bountyMult rule — sealed, never imported
@@ -243,7 +270,7 @@ export function useWaveBubble(): WaveBubbleState {
         for (const slug of slugs) {
             if (seenSlugs.has(slug)) continue;
             seenSlugs.add(slug);
-            triggerDishes.push({ slug, name: titleCase(slug), icon: ASSET_SRC.get(`dish-${slug}`), remaining, count: entry.count });
+            triggerDishes.push({ slug, name: t(`dish.${slug}`), icon: ASSET_SRC.get(`dish-${slug}`), remaining, count: entry.count });
         }
         if (seenArchetypes.has(entry.enemy)) continue;
         seenArchetypes.add(entry.enemy);
@@ -251,7 +278,7 @@ export function useWaveBubble(): WaveBubbleState {
         cells.push({
             key: entry.enemy,
             icons: slugs.map((s) => ASSET_SRC.get(`dish-${s}`)).filter((s): s is string => !!s),
-            names: slugs.map(titleCase),
+            names: slugs.map((s) => t(`dish.${s}`)),
             pips,
             bounty: Math.round(enemyDef(entry.enemy).bounty * bountyMult),
             count: entry.count,
@@ -333,24 +360,28 @@ export function useWaveBubble(): WaveBubbleState {
  *  belt turn), not fit inside a fixed budget. */
 export function WaveBubbleTrigger({ state }: { state: WaveBubbleState }) {
     const reducedMotion = usePrefersReducedMotion();
+    const narrow = useNarrowBubbleViewport();
+    const maxIcons = narrow ? MAX_BUBBLE_ICONS_NARROW : MAX_BUBBLE_ICONS;
     const dishes = state.triggerDishes;
-    const overflow = dishes.length > MAX_BUBBLE_ICONS;
+    const overflow = dishes.length > maxIcons;
     const [panIndex, setPanIndex] = useState(0);
     const [panFading, setPanFading] = useState(false);
 
     // A new wave's dish set can differ in length from the last one (or this
     // trigger can simply remount) — start the window fresh each time rather
-    // than carrying over an index that might now be out of range.
+    // than carrying over an index that might now be out of range. A width
+    // crossing (narrow<->wide, e.g. device rotation) changes maxIcons too,
+    // so it resets the window the same way.
     useEffect(() => {
         setPanIndex(0);
         setPanFading(false);
-    }, [dishes.length]);
+    }, [dishes.length, maxIcons]);
 
     // Round 7 item 3: advance the window every PAN_STEP_MS, fading out for
     // PAN_EASE_MS before the content actually swaps (see the render below —
     // opacity, not the icons themselves, is what's mid-transition). Never
-    // starts at all when there's nothing to pan past (<=3 dishes) or under
-    // reduced motion — both render a static list instead (below).
+    // starts at all when there's nothing to pan past (<=maxIcons dishes) or
+    // under reduced motion — both render a static list instead (below).
     useEffect(() => {
         if (!overflow || reducedMotion) return;
         let innerTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -372,13 +403,13 @@ export function WaveBubbleTrigger({ state }: { state: WaveBubbleState }) {
     const shown = !overflow
         ? dishes
         : reducedMotion
-            ? dishes.slice(0, MAX_BUBBLE_ICONS)
-            : Array.from({ length: MAX_BUBBLE_ICONS }, (_, i) => dishes[(panIndex + i) % dishes.length]);
+            ? dishes.slice(0, maxIcons)
+            : Array.from({ length: maxIcons }, (_, i) => dishes[(panIndex + i) % dishes.length]);
 
     return (
         <button
             type="button"
-            aria-label="Upcoming wave"
+            aria-label={t('bubble.aria')}
             onClick={state.open}
             className="pointer-events-auto relative flex shrink-0 items-center gap-1.5 rounded-2xl bg-black/80 py-1 pr-2.5 pl-3 active:scale-95"
         >
@@ -414,7 +445,7 @@ export function WaveBubbleTrigger({ state }: { state: WaveBubbleState }) {
                             {/* Round 7 item 1: this dish's own live remaining
                                 count, replacing the old collective total. */}
                             <span className="text-[12px] font-bold tabular-nums text-white/70">
-                                {d.remaining}/{d.count}
+                                {t('bubble.count', { remaining: d.remaining, count: d.count })}
                             </span>
                         </span>
                     </span>
@@ -422,7 +453,7 @@ export function WaveBubbleTrigger({ state }: { state: WaveBubbleState }) {
                 {/* Reduced motion + more than 3 dishes: no pan, no "+N" —
                     a plain ellipsis says "more, not shown" without motion. */}
                 {overflow && reducedMotion && (
-                    <span aria-hidden="true" className="pb-2.5 text-[0.85rem] font-bold text-white/70">···</span>
+                    <span aria-hidden="true" className="pb-2.5 text-[0.85rem] font-bold text-white/70">{t('bubble.more')}</span>
                 )}
             </span>
         </button>
@@ -441,17 +472,20 @@ export function WaveBubbleTrigger({ state }: { state: WaveBubbleState }) {
  *  row directly under the WAVE/RUSH + speed row (Round 4 Part D vacates the
  *  ServiceGauge bar's old slot there).
  *
- *  Round 5: dropped `pointer-events-auto` — this panel has nothing
- *  interactive inside it (no buttons, just text/images), so leaving it
- *  `pointer-events-none` (inherited from Hud's root wrapper) means a tap
- *  physically landing on the panel's own screen area passes straight
- *  through to whatever's underneath (the canvas, for pad selection) instead
- *  of being captured by this DOM element first — "never blocks pad
- *  placement," now true for a pad that happens to render BEHIND the panel
- *  too, not just one tapped outside its bounds. The outside-tap close below
- *  is unaffected: the document-level listener still receives the bubbled
- *  event and reads its real target regardless of this element's own
- *  pointer-events value. */
+ *  Round 13 Part 3.2: the panel is now a scrimmed popover — a fixed,
+ *  full-frame 40% chocolate scrim (`#app-frame` is `position: fixed; top:
+ *  0; bottom: 0` in app.css, so it's always exactly viewport height; a plain
+ *  `60dvh`/`inset-0` below IS "60% of the frame" / "the whole frame" with no
+ *  extra measurement) sits behind the panel and in front of the canvas, so
+ *  "pads under it are not tappable while open" — reversing Round 5's own
+ *  `pointer-events-none` choice (that round explicitly dropped it so taps
+ *  passed through to the canvas; that's no longer the spec). The panel
+ *  regains `pointer-events-auto` and a higher z-index than the scrim, so a
+ *  tap ON the panel is consumed there (nothing happens — still "no buttons,
+ *  just text/images") while a tap anywhere else lands on the scrim, which
+ *  closes the submenu. Sibling elements never bubble into each other, so
+ *  this needs no stopPropagation/contains() bookkeeping — the old
+ *  document-level pointerdown listener is retired in favour of it. */
 export function WaveBubbleSubmenu({ state }: { state: WaveBubbleState }) {
     const panelRef = useRef<HTMLDivElement>(null);
     const [unrolled, setUnrolled] = useState(false);
@@ -462,39 +496,36 @@ export function WaveBubbleSubmenu({ state }: { state: WaveBubbleState }) {
         return () => cancelAnimationFrame(raf);
     }, [state.showSubmenu]);
 
-    useEffect(() => {
-        if (!state.showSubmenu) return;
-        const onPointerDown = (e: PointerEvent) => {
-            if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-                state.close();
-            }
-        };
-        document.addEventListener('pointerdown', onPointerDown);
-        return () => document.removeEventListener('pointerdown', onPointerDown);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [state.showSubmenu]);
-
     if (!state.showSubmenu) return null;
 
     return (
-        <div
-            ref={panelRef}
-            className="relative min-h-[132px] transition-[clip-path] duration-[350ms] ease-out motion-reduce:duration-[0ms]"
-            style={{
-                borderStyle: 'solid',
-                borderColor: 'transparent',
-                borderWidth: '0 30px',
-                borderImageSource: `url(${ASSET_SRC.get('ui-scroll')})`,
-                borderImageSlice: '0 11% fill',
-                borderImageRepeat: 'stretch',
-                // Round 5: 10px felt tight against the scroll art's own
-                // baked-in border lines at a single row (icon/pips nearly
-                // touching them) -- 16px gives real breathing room without
-                // meaningfully growing the panel for the common multi-row case.
-                padding: '16px 14px',
-                clipPath: unrolled ? 'inset(0)' : 'inset(0 100% 0 0)',
-            }}
-        >
+        <>
+            <div
+                className="pointer-events-auto fixed inset-0"
+                style={{ backgroundColor: 'rgba(42, 29, 16, 0.4)', zIndex: 30 }}
+                onClick={() => state.close()}
+                aria-hidden="true"
+            />
+            <div
+                ref={panelRef}
+                className="pointer-events-auto relative min-h-[132px] overflow-y-auto transition-[clip-path] duration-[350ms] ease-out motion-reduce:duration-[0ms]"
+                style={{
+                    zIndex: 31,
+                    maxHeight: '60dvh',
+                    borderStyle: 'solid',
+                    borderColor: 'transparent',
+                    borderWidth: '0 30px',
+                    borderImageSource: `url(${ASSET_SRC.get('ui-scroll')})`,
+                    borderImageSlice: '0 11% fill',
+                    borderImageRepeat: 'stretch',
+                    // Round 5: 10px felt tight against the scroll art's own
+                    // baked-in border lines at a single row (icon/pips nearly
+                    // touching them) -- 16px gives real breathing room without
+                    // meaningfully growing the panel for the common multi-row case.
+                    padding: '16px 14px',
+                    clipPath: unrolled ? 'inset(0)' : 'inset(0 100% 0 0)',
+                }}
+            >
             <div
                 className="grid gap-x-3 gap-y-2"
                 style={{ gridTemplateColumns: 'repeat(2, max-content)', justifyContent: 'start' }}
@@ -514,23 +545,24 @@ export function WaveBubbleSubmenu({ state }: { state: WaveBubbleState }) {
                         {/* Round 11 Part 1.5: 0.68rem/0.65rem (10.9/10.4px)
                             were both under the 11px floor — explicit px. */}
                         <span className="max-w-[7.5rem] truncate text-center text-[11px] font-bold">
-                            {cell.names.join(' / ')}
+                            {cell.names.length === 2 ? t('bubble.names', { a: cell.names[0], b: cell.names[1] }) : cell.names.join(' / ')}
                         </span>
                         <span className="flex items-center gap-1 text-[11px] font-bold tabular-nums tracking-tighter">
-                            <span aria-label={`toughness ${cell.pips} of 5`}>
+                            <span aria-label={t('bubble.toughness.aria', { n: cell.pips })}>
                                 {'●'.repeat(cell.pips)}{'○'.repeat(5 - cell.pips)}
                             </span>
-                            <span>· 🪙{cell.bounty}</span>
+                            <span>{t('bubble.bounty', { n: cell.bounty })}</span>
                             {/* Round 6 Part B: live remaining/total (e.g.
                                 "4/9"), ticking down as this archetype is
                                 served — replaces the old static "×count". */}
-                            <span aria-label={`${cell.remaining} of ${cell.count} remaining`}>
-                                · {cell.remaining}/{cell.count}
+                            <span aria-label={tn('bubble.remaining.aria', cell.remaining, { remaining: cell.remaining, count: cell.count })}>
+                                · {t('bubble.count', { remaining: cell.remaining, count: cell.count })}
                             </span>
                         </span>
                     </div>
                 ))}
             </div>
-        </div>
+            </div>
+        </>
     );
 }

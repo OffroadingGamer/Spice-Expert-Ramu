@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { t } from '../i18n/index.ts';
 
 /**
  * Round A2, task 3: shared by Settings.tsx, Hud.tsx and TestBelt.tsx's pause
@@ -70,10 +71,10 @@ export default function Slider({ label, value, onChange, compact, theme = 'dark'
                             color: 'var(--color-chocolate)',
                         }}
                     >
-                        {pct}%
+                        {t('settings.pct', { pct })}
                     </span>
                 ) : (
-                    <span className="text-[1.1rem] tabular-nums text-white/60">{pct}%</span>
+                    <span className="text-[1.1rem] tabular-nums text-white/60">{t('settings.pct', { pct })}</span>
                 )}
             </div>
             <input

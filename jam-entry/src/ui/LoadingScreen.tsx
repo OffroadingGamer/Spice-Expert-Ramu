@@ -2,6 +2,7 @@
  * Loading screen shown while warmAssets() runs. Rendered by React, revealed
  * when the boot cover lifts, driven by store.loadProgress.
  */
+import { t } from '../i18n/index.ts';
 import { useStore } from '../state/store.ts';
 
 export default function LoadingScreen() {
@@ -10,7 +11,7 @@ export default function LoadingScreen() {
     return (
         <div className="flex h-full flex-col items-center justify-center gap-6 px-10">
             {/* ADAPT: game title / logo image */}
-            <h1 className="text-3xl font-bold tracking-wide text-primary">SPICE EXPERT: RAMU</h1>
+            <h1 className="text-3xl font-bold tracking-wide text-primary">{t('boot.loadingTitle')}</h1>
             <div
                 className="h-3 w-full max-w-xs overflow-hidden rounded-full bg-white/10"
                 role="progressbar"
@@ -23,7 +24,7 @@ export default function LoadingScreen() {
                     style={{ width: `${pct}%` }}
                 />
             </div>
-            <p className="text-[1.1rem] text-white/50">Firing up the line… {pct}%</p>
+            <p className="text-[1.1rem] text-white/50">{t('boot.progress', { pct })}</p>
         </div>
     );
 }

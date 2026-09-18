@@ -17,6 +17,7 @@
  * only ever opened from the menu, unchanged this round.
  */
 import { setMusicVolume, setSfxVolume, sfx } from '../audio/audio.ts';
+import { t } from '../i18n/index.ts';
 import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import { Card, CardCredit, CardDivider, CardGhostButton, CardScrim, CardTitle } from './SettingsCard.tsx';
@@ -47,18 +48,18 @@ export default function Settings() {
      *  looking, unclickable row communicates that on its own without a
      *  second toast implementation). */
     const openRename = () => { sfx.click(); store.patch({ renameOpen: true }); };
-    const displayName = isGuest ? (playerName ?? 'chef') : (runUsername ?? 'chef');
+    const displayName = isGuest ? (playerName ?? t('menu.greeting.fallback')) : (runUsername ?? t('menu.greeting.fallback'));
 
     return (
         <CardScrim onTap={close} zIndex={10}>
             <Card mu={mu}>
-                <CardTitle mu={mu}>Settings</CardTitle>
+                <CardTitle mu={mu}>{t('settings.title')}</CardTitle>
                 <div className="flex flex-col" style={{ gap: 10 * mu }}>
-                    <Slider theme="cream" mu={mu} label="🎵 Music" value={musicVol} onChange={(v) => apply(v, sfxVol)} />
+                    <Slider theme="cream" mu={mu} label={t('settings.music')} value={musicVol} onChange={(v) => apply(v, sfxVol)} />
                     <Slider
                         theme="cream"
                         mu={mu}
-                        label="🔊 Sound"
+                        label={t('settings.sound')}
                         value={sfxVol}
                         onChange={(v) => {
                             apply(musicVol, v);
@@ -77,7 +78,7 @@ export default function Settings() {
                         onClick={openRename}
                         className="flex items-center justify-between transition-transform active:scale-95"
                     >
-                        <span style={{ fontSize: 12 * mu, fontWeight: 700 }}>Name</span>
+                        <span style={{ fontSize: 12 * mu, fontWeight: 700 }}>{t('settings.name')}</span>
                         <span
                             className="flex items-center"
                             style={{
@@ -89,12 +90,12 @@ export default function Settings() {
                                 fontWeight: 700,
                             }}
                         >
-                            {displayName} ✎
+                            {t('settings.nameEdit', { name: displayName })}
                         </span>
                     </button>
                 ) : (
                     <div className="flex items-center justify-between">
-                        <span style={{ fontSize: 12 * mu, fontWeight: 700 }}>Name</span>
+                        <span style={{ fontSize: 12 * mu, fontWeight: 700 }}>{t('settings.name')}</span>
                         <span
                             style={{
                                 border: '2px dashed rgba(42,29,16,0.4)',
@@ -116,7 +117,7 @@ export default function Settings() {
                     applies the Math.max(11, 8*mu) floor Round 9 measured. */}
                 <CardCredit mu={mu} />
                 <CardGhostButton mu={mu} onClick={close} style={{ textAlign: 'center' }}>
-                    Back
+                    {t('settings.back')}
                 </CardGhostButton>
             </Card>
         </CardScrim>

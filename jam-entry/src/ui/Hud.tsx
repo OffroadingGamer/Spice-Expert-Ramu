@@ -81,6 +81,7 @@ import { buyKitchenAction, getEngine, kitchenActionPrice, startWave } from '../g
 import { blockForLevel } from '../game/data/blocks.ts';
 import { CONFIG } from '../game/config.ts';
 import { unmuteDialogue } from '../game/dialogueController.ts';
+import { t, tn } from '../i18n/index.ts';
 import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import { ChefHeadIcon, ChefPortraitIdle } from './ChefPortrait.tsx';
@@ -281,18 +282,18 @@ export default function Hud() {
                             }
                         >
                             <span className="text-[0.62rem] font-bold uppercase tracking-wide opacity-80">
-                                ❤️🏃 Escapes left
+                                {t('hud.escapesLeft')}
                             </span>
                             <span className="text-xl font-bold tabular-nums">{lives}</span>
                         </div>
                         <div className="flex flex-col items-start rounded-xl bg-surface px-3 py-1.5 leading-tight text-white whitespace-nowrap">
-                            <span className="text-[0.62rem] font-bold uppercase tracking-wide opacity-80">💰 Cash</span>
+                            <span className="text-[0.62rem] font-bold uppercase tracking-wide opacity-80">{t('hud.cash')}</span>
                             <span className="text-xl font-bold tabular-nums">{coins.toLocaleString()}</span>
                         </div>
                     </div>
                     <button
                         type="button"
-                        aria-label="Shift menu"
+                        aria-label={t('hud.shiftMenu.aria')}
                         className="pointer-events-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-black/55 transition-transform active:scale-95"
                         onClick={openMenu}
                     >
@@ -362,9 +363,9 @@ export default function Hud() {
                         ResizeObserver effect's own doc). */}
                     <div ref={waveRingGroupRef} className="flex items-center gap-2">
                     <div className="flex shrink-0 flex-col items-start rounded-xl bg-black/55 px-3 py-1 leading-tight whitespace-nowrap">
-                        <span className="text-lg font-bold tabular-nums">WAVE {wave}</span>
+                        <span className="text-lg font-bold tabular-nums">{t('hud.wave', { n: wave })}</span>
                         <span className="text-[0.68rem] font-semibold text-white/70">
-                            RUSH: {blockForLevel(wave).label}
+                            {t('hud.rush', { label: t(`block.${blockForLevel(wave).id}`) })}
                         </span>
                     </div>
                     {/* Round 3 (docs/Ideas.md §6d amendment, "Skip = mute"):
@@ -389,7 +390,7 @@ export default function Hud() {
                         <button
                             type="button"
                             id="chef-head-button"
-                            aria-label="Ramu — tap to un-mute his dialogue"
+                            aria-label={t('hud.chefHead.aria')}
                             onClick={() => { sfx.click(); unmuteDialogue(); }}
                             className="pointer-events-auto relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-black/55"
                         >
@@ -415,7 +416,7 @@ export default function Hud() {
                                 }
                                 onClick={() => { sfx.click(); store.patch({ speed: s }); }}
                             >
-                                {s}x
+                                {t('hud.speed', { n: s })}
                             </button>
                         ))}
                     </div>
@@ -455,7 +456,7 @@ export default function Hud() {
                 {showGrant && (
                     <div className="pointer-events-none flex justify-start">
                         <span className="rounded-lg bg-primary px-3 py-1 text-[1.05rem] font-bold text-black">
-                            +{ftueGrantAmount} 🪙 shift float
+                            {t('hud.shiftFloat', { n: ftueGrantAmount })}
                         </span>
                     </div>
                 )}
@@ -488,14 +489,14 @@ export default function Hud() {
                 {showObjective && ftueBeat === null && !showMilestone && (
                     <div className="pointer-events-auto flex justify-center" onClick={() => setShowObjective(false)}>
                         <p className="max-w-xs rounded-xl bg-black/70 px-4 py-2 text-center text-[1.05rem] font-semibold leading-snug">
-                            Don't miss an order — you only have {lives} ❤️🏃 before you lose.
+                            {tn('hud.objective', lives, { lives })}
                         </p>
                     </div>
                 )}
                 {showMilestone && ftueBeat === null && (
                     <div className="pointer-events-auto flex justify-center" onClick={() => setShowMilestone(false)}>
                         <p className="max-w-xs rounded-xl bg-primary px-4 py-2 text-center text-[1.05rem] font-semibold leading-snug text-black">
-                            Full shift held. Everything from here is overtime — how far can you push it?
+                            {t('hud.milestone')}
                         </p>
                     </div>
                 )}
@@ -590,7 +591,7 @@ export default function Hud() {
                                 style={{ minHeight: 44, padding: `${8 * mu}px ${12 * mu}px`, fontSize: Math.min(14 * mu, 20) }}
                                 onClick={() => { sfx.startWave(); startWave(); }}
                             >
-                                Ready!
+                                {t('hud.ready')}
                             </button>
                         </div>
                     )}
@@ -637,7 +638,7 @@ export default function Hud() {
                                     {(['freeze', 'heat', 'slow'] as const).map((kind) => {
                                         const bought = getEngine()?.state.kitchenActions[kind] ?? false;
                                         const price = kitchenActionPrice(kind);
-                                        const label = kind === 'freeze' ? 'Deep Freeze' : kind === 'heat' ? 'Turn Up The Heat' : 'Slow Service';
+                                        const label = t(kind === 'freeze' ? 'hud.action.freeze' : kind === 'heat' ? 'hud.action.heat' : 'hud.action.slow');
                                         const disabled = bought || coins < price;
                                         return (
                                             <button
@@ -648,7 +649,7 @@ export default function Hud() {
                                                 onClick={() => { sfx.click(); buyKitchenAction(kind); }}
                                             >
                                                 <span className="block">{label}</span>
-                                                <span className="block">{bought ? '✓ bought' : `${price}c`}</span>
+                                                <span className="block">{bought ? t('hud.action.bought') : t('hud.action.price', { n: price })}</span>
                                             </button>
                                         );
                                     })}
@@ -673,13 +674,13 @@ export default function Hud() {
             {menuOpen && (
                 <CardScrim onTap={closeMenu} zIndex={20}>
                     <Card mu={mu}>
-                        <CardTitle mu={mu}>Shift paused</CardTitle>
+                        <CardTitle mu={mu}>{t('hud.pause.title')}</CardTitle>
                         <div className="flex flex-col" style={{ gap: 10 * mu }}>
-                            <Slider theme="cream" mu={mu} label="🎵 Music" value={musicVol} onChange={(v) => applyVolumes(v, sfxVol)} />
+                            <Slider theme="cream" mu={mu} label={t('settings.music')} value={musicVol} onChange={(v) => applyVolumes(v, sfxVol)} />
                             <Slider
                                 theme="cream"
                                 mu={mu}
-                                label="🔊 Sound"
+                                label={t('settings.sound')}
                                 value={sfxVol}
                                 onChange={(v) => { applyVolumes(musicVol, v); sfx.click(); }}
                             />
@@ -700,7 +701,7 @@ export default function Hud() {
                                 }}
                                 onClick={closeMenu}
                             >
-                                Continue
+                                {t('hud.pause.continue')}
                             </button>
                             <button
                                 type="button"
@@ -720,7 +721,7 @@ export default function Hud() {
                                     store.patch({ paused: false, phase: 'menu', selectedPad: null });
                                 }}
                             >
-                                Main Menu
+                                {t('hud.pause.mainMenu')}
                             </button>
                         </div>
                     </Card>
@@ -730,7 +731,7 @@ export default function Hud() {
             {/* The kit's plain paused card, suppressed while the shift menu owns the screen */}
             {paused && !menuOpen && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-                    <p className="text-2xl font-bold">Paused</p>
+                    <p className="text-2xl font-bold">{t('hud.paused')}</p>
                 </div>
             )}
         </div>

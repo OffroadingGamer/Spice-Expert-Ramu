@@ -41,6 +41,7 @@ import { blockForLevel } from '../game/data/blocks.ts';
 import { openComments, promptLike } from '../sdk/engagement.ts';
 import { trackFunnelStep } from '../sdk/analytics.ts';
 import { devModeEnabled } from '../state/devMode.ts';
+import { t } from '../i18n/index.ts';
 import { store, useStore } from '../state/store.ts';
 import ChefPortrait from './ChefPortrait.tsx';
 import GemCounter from './GemCounter.tsx';
@@ -138,7 +139,7 @@ export default function MainMenu() {
     // ephemeral, same shape as Hud.tsx's own ftueGrant toast (a plain
     // useState timeout, not a shared toast system this codebase doesn't have).
     const [showRunNameToast, setShowRunNameToast] = useState(false);
-    const greetingName = isGuest ? (playerName ?? 'chef') : (runUsername ?? 'chef');
+    const greetingName = isGuest ? (playerName ?? t('menu.greeting.fallback')) : (runUsername ?? t('menu.greeting.fallback'));
 
     const beginShift = () => {
         // GDD §10.11 (round D): the scripted three-wave FTUE is persistent —
@@ -209,7 +210,7 @@ export default function MainMenu() {
             </div>
             <button
                 type="button"
-                aria-label="Settings"
+                aria-label={t('menu.settings.aria')}
                 className="absolute flex items-center justify-center text-cream transition-transform active:scale-95"
                 style={{
                     top: `calc(${10 * mu}px + var(--safe-top))`,
@@ -243,7 +244,7 @@ export default function MainMenu() {
                 not assumed. */}
             <div className="absolute inset-x-0 text-center" style={{ top: '19%', lineHeight: 0.9 }}>
                 <div style={{ display: 'inline-block', fontSize: 21.8 * mu, fontWeight: 900, color: 'var(--color-chocolate)' }}>
-                    SPICE EXPERT
+                    {t('menu.wordmark.top')}
                 </div>
                 <br />
                 <div
@@ -256,7 +257,7 @@ export default function MainMenu() {
                         paintOrder: 'stroke fill',
                     } as CSSProperties}
                 >
-                    RAMU
+                    {t('menu.wordmark.name')}
                 </div>
             </div>
 
@@ -318,7 +319,7 @@ export default function MainMenu() {
                             fontWeight: 700,
                         }}
                     >
-                        Welcome, {greetingName}
+                        {t('menu.greeting', { name: greetingName })}
                     </button>
                     {showRunNameToast && (
                         <div
@@ -334,7 +335,7 @@ export default function MainMenu() {
                                 fontWeight: 700,
                             }}
                         >
-                            Your name comes from your RUN profile.
+                            {t('menu.runNameToast')}
                         </div>
                     )}
                     {/* tail, pointing down toward the portrait: a slightly
@@ -386,7 +387,7 @@ export default function MainMenu() {
             >
                 {showTestMode && (
                     <GhostButton mu={mu} onClick={() => { sfx.click(); store.patch({ phase: 'testbelt' }); }}>
-                        Play Game
+                        {t('menu.testMode')}
                     </GhostButton>
                 )}
 
@@ -401,7 +402,7 @@ export default function MainMenu() {
                         paintOrder: 'stroke fill',
                     } as CSSProperties}
                 >
-                    Best · Rush {bestWave}
+                    {t('menu.best', { n: bestWave })}
                 </p>
 
                 <button
@@ -417,15 +418,15 @@ export default function MainMenu() {
                     }}
                     onClick={handleStartShift}
                 >
-                    Start shift
+                    {t('menu.startShift')}
                 </button>
 
                 <GhostButton mu={mu} onClick={() => { sfx.click(); store.patch({ metaOpen: true }); }}>
-                    The Kitchen
+                    {t('menu.kitchen')}
                 </GhostButton>
 
                 <GhostButton mu={mu} onClick={() => { sfx.click(); store.patch({ ranksOpen: true }); }}>
-                    Ranks
+                    {t('menu.ranks')}
                 </GhostButton>
 
                 <button
@@ -434,7 +435,7 @@ export default function MainMenu() {
                     style={{ fontSize: 7 * mu, marginTop: 2 * mu, color: 'rgba(253,250,231,0.75)' }}
                     onClick={() => { sfx.click(); openArtistCredit(); }}
                 >
-                    Backdrop: @ArchitaSharma
+                    {t('menu.backdropCredit')}
                 </button>
 
                 {(likeAvailable || commentsAvailable) && (
@@ -445,7 +446,7 @@ export default function MainMenu() {
                                     className="font-semibold text-primary"
                                     style={{ padding: `${3 * mu}px ${7 * mu}px`, fontSize: 8 * mu, borderRadius: 8 * mu, backgroundColor: 'rgba(42,29,16,0.7)' }}
                                 >
-                                    ♥ Liked
+                                    {t('menu.liked')}
                                 </span>
                             ) : (
                                 <button
@@ -454,7 +455,7 @@ export default function MainMenu() {
                                     style={{ padding: `${3 * mu}px ${7 * mu}px`, fontSize: 8 * mu, borderRadius: 8 * mu, backgroundColor: 'rgba(42,29,16,0.7)', color: 'var(--color-cream)' }}
                                     onClick={() => { sfx.click(); promptLike(); }}
                                 >
-                                    ♥ Like
+                                    {t('menu.like')}
                                 </button>
                             )
                         )}
@@ -465,7 +466,7 @@ export default function MainMenu() {
                                 style={{ padding: `${3 * mu}px ${7 * mu}px`, fontSize: 8 * mu, borderRadius: 8 * mu, backgroundColor: 'rgba(42,29,16,0.7)', color: 'var(--color-cream)' }}
                                 onClick={() => { sfx.click(); openComments(); }}
                             >
-                                💬 Comments
+                                {t('menu.comments')}
                             </button>
                         )}
                     </div>

@@ -18,6 +18,7 @@
  */
 import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
 import { sdkReady } from './runSdk.ts';
+import { t } from '../i18n/index.ts';
 import { store } from '../state/store.ts';
 
 let inFlight: 'like' | 'comments' | null = null;
@@ -70,18 +71,18 @@ export function promptLike(): void {
             .then((res) => {
                 if (res.shown && res.liked) {
                     store.patch({ isLiked: true });
-                    toast('Thanks for the like!');
+                    toast(t('engage.likeThanks'));
                     log('like: liked');
                 } else if (res.shown) {
                     log('like: dismissed');
                 } else {
                     log(`like: not shown (${res.reason})`);
-                    toast('Not available right now, try again in a moment.');
+                    toast(t('engage.likeUnavailable'));
                 }
             })
             .catch((err) => {
                 log(`like: rpc failed (${String(err).slice(0, 120)})`);
-                toast('Not available right now, try again in a moment.');
+                toast(t('engage.likeUnavailable'));
             })
             .finally(() => { inFlight = null; });
     } catch (err) {
@@ -100,7 +101,7 @@ export function openComments(): void {
             .then((can) => {
                 if (!can?.available) {
                     log('comments: host says unavailable at click time');
-                    toast('Comments are not available right now.');
+                    toast(t('engage.commentsUnavailable'));
                     return null;
                 }
                 return RundotGameAPI.popups.showCommentsPanel();
@@ -110,12 +111,12 @@ export function openComments(): void {
                 if (res.shown) log('comments: panel shown, then dismissed');
                 else {
                     log(`comments: not shown (${res.reason})`);
-                    toast('Comments are not available right now, try again in a moment.');
+                    toast(t('engage.commentsRetry'));
                 }
             })
             .catch((err) => {
                 log(`comments: rpc failed (${String(err).slice(0, 120)})`);
-                toast('Comments are not available right now, try again in a moment.');
+                toast(t('engage.commentsRetry'));
             })
             .finally(() => { inFlight = null; });
     } catch (err) {

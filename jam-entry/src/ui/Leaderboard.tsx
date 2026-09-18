@@ -47,6 +47,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { sfx } from '../audio/audio.ts';
 import { scriptedRunStart } from '../game/actions.ts';
 import { MANIFEST } from '../assets/manifest.ts';
+import { t, tn } from '../i18n/index.ts';
 import { diffAndRecordRank } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import {
@@ -101,11 +102,6 @@ const ORANGE_DARK = '#d95a0a';
 const TURMERIC = '#d9a520';
 const DELTA_UP = '#16a34a';
 const DELTA_DOWN = '#dc2626';
-
-/** Unit phrase for the sticky bar's score readout, matching the handover's
- *  own worked example verbatim ("... 6,231 dishes served" / "... 106 waves
- *  held") — the mode's own renamed board-pair label, lowercased. */
-const BAR_UNIT: Record<BoardMode, string> = { waves: 'waves held', kills: 'dishes served' };
 
 function Avatar({ entry, size, bg, color }: { entry: BoardEntry; size: number; bg: string; color: string }) {
     const style = { width: size, height: size };
@@ -162,14 +158,14 @@ function Row({ entry, highlight, mu, delta }: { entry: BoardEntry; highlight: bo
                 className="shrink-0 text-right font-black tabular-nums"
                 style={{ width: 24 * mu, fontSize: Math.max(11, 13 * mu), color: 'rgba(42,29,16,0.7)' }}
             >
-                {entry.rank ?? '–'}
+                {entry.rank ?? t('ranks.rankMissing')}
             </span>
             {highlight && delta !== undefined && delta !== null && (
                 <span
                     className="shrink-0 font-black"
                     style={{ fontSize: Math.max(11, 11 * mu), color: delta > 0 ? DELTA_UP : DELTA_DOWN }}
                 >
-                    {delta > 0 ? `▲${delta}` : `▼${Math.abs(delta)}`}
+                    {delta > 0 ? t('ranks.rankDelta.up', { n: delta }) : t('ranks.rankDelta.down', { n: Math.abs(delta) })}
                 </span>
             )}
             <Avatar entry={entry} size={16 * mu} bg={CHOCOLATE} color={CREAM} />
@@ -177,7 +173,7 @@ function Row({ entry, highlight, mu, delta }: { entry: BoardEntry; highlight: bo
                 {entry.displayName}
                 {highlight && (
                     <span className="ml-2 font-semibold" style={{ fontSize: Math.max(11, 12 * mu), color: TOMATO }}>
-                        you
+                        {t('ranks.you')}
                     </span>
                 )}
             </span>
@@ -314,7 +310,7 @@ function PodiumStep({ entry, rank, highlight, mu }: { entry: BoardEntry; rank: 1
                 }}
             >
                 <span className="mt-1 font-black" style={{ fontSize: Math.max(11, 12 * mu), color: CHOCOLATE }}>
-                    #{rank}
+                    {t('ranks.podiumRank', { n: rank })}
                 </span>
             </div>
         </div>
@@ -355,7 +351,7 @@ function formatResetCountdown(nowMs: number): string {
     const now = new Date(nowMs);
     const nextUtcMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0);
     const totalMin = Math.max(0, Math.floor((nextUtcMidnight - nowMs) / 60000));
-    return `${Math.floor(totalMin / 60)}h ${totalMin % 60}m`;
+    return t('ranks.resetFormat', { h: Math.floor(totalMin / 60), m: totalMin % 60 });
 }
 
 type LoadState = 'loading' | 'ready' | 'offline' | 'error';
@@ -450,17 +446,19 @@ export default function Leaderboard() {
     let barLeft: string;
     let barRight: string;
     let barTappable = false;
-    if (state === 'loading') { barLeft = 'Loading…'; barRight = ''; }
-    else if (state === 'offline') { barLeft = 'Ranks need the RUN app'; barRight = ''; }
-    else if (state === 'error') { barLeft = 'Could not load your rank'; barRight = ''; }
-    else if (noRunToday) { barLeft = 'No shift yet today — start one'; barRight = ''; barTappable = true; }
-    else if (unranked) { barLeft = 'Unranked · play a shift'; barRight = ''; }
+    if (state === 'loading') { barLeft = t('ranks.bar.loading'); barRight = ''; }
+    else if (state === 'offline') { barLeft = t('ranks.bar.offline'); barRight = ''; }
+    else if (state === 'error') { barLeft = t('ranks.bar.error'); barRight = ''; }
+    else if (noRunToday) { barLeft = t('ranks.bar.noRunToday'); barRight = ''; barTappable = true; }
+    else if (unranked) { barLeft = t('ranks.bar.unranked'); barRight = ''; }
     else {
-        const unit = BAR_UNIT[mode];
-        barLeft = period === 'daily' ? `#${rank} today · ${score.toLocaleString()} ${unit}` : `#${rank} all time · ${score.toLocaleString()} ${unit}`;
+        const unit = mode === 'waves' ? tn('ranks.unit.waves', score) : tn('ranks.unit.kills', score);
+        barLeft = period === 'daily'
+            ? t('ranks.bar.today', { rank, score: score.toLocaleString(), unit })
+            : t('ranks.bar.alltime', { rank, score: score.toLocaleString(), unit });
         const parts: string[] = [];
-        if (gap !== null) parts.push(`${gap.toLocaleString()} to #${(rank ?? 1) - 1}`);
-        if (period === 'daily') parts.push(`resets ${formatResetCountdown(nowTick)}`);
+        if (gap !== null) parts.push(t('ranks.bar.gap', { gap: gap.toLocaleString(), rank: (rank ?? 1) - 1 }));
+        if (period === 'daily') parts.push(t('ranks.bar.resets', { t: formatResetCountdown(nowTick) }));
         barRight = parts.join(' · ');
     }
 
@@ -498,7 +496,7 @@ export default function Leaderboard() {
                         }}
                         onClick={() => { sfx.click(); store.patch({ ranksOpen: false }); }}
                     >
-                        ←
+                        {t('ranks.back')}
                     </button>
                     {/* Round 12 Part 2.2: gold, 1px chocolate drop, 0.08em
                         tracking — "the game's display face" is this
@@ -514,7 +512,7 @@ export default function Leaderboard() {
                             textShadow: `1px 1px 0 ${CHOCOLATE}`,
                         }}
                     >
-                        Ranks
+                        {t('ranks.title')}
                     </h2>
                     <div style={{ width: 44 * mu }} />
                 </div>
@@ -538,7 +536,7 @@ export default function Leaderboard() {
                             }}
                             onClick={() => { sfx.click(); setPeriod(p); }}
                         >
-                            {p === 'daily' ? 'Today' : 'All time'}
+                            {p === 'daily' ? t('ranks.period.today') : t('ranks.period.alltime')}
                         </button>
                     ))}
                 </div>
@@ -592,27 +590,27 @@ export default function Leaderboard() {
                         {state === 'offline' && (
                             <MessageTicket mu={mu}>
                                 <p style={{ fontSize: Math.max(11, 14 * mu), color: CHOCOLATE, fontWeight: 700 }}>
-                                    Leaderboards are available in the RUN app.
+                                    {t('ranks.offline')}
                                 </p>
                             </MessageTicket>
                         )}
                         {state === 'loading' && (
                             <p className="text-center" style={{ padding: '40px 0', fontSize: Math.max(11, 13 * mu), color: 'rgba(253,250,231,0.7)' }}>
-                                Loading…
+                                {t('ranks.bar.loading')}
                             </p>
                         )}
                         {state === 'error' && (
                             <MessageTicket mu={mu}>
-                                <p style={{ fontSize: Math.max(11, 14 * mu), color: CHOCOLATE, fontWeight: 700 }}>Could not load this board.</p>
+                                <p style={{ fontSize: Math.max(11, 14 * mu), color: CHOCOLATE, fontWeight: 700 }}>{t('ranks.error')}</p>
                                 <p className="mt-2" style={{ fontSize: Math.max(11, 12 * mu), color: 'rgba(42,29,16,0.7)' }}>
-                                    Check your connection and try again.
+                                    {t('ranks.errorHint')}
                                 </p>
                             </MessageTicket>
                         )}
                         {boardEmpty && (
                             <MessageTicket mu={mu}>
                                 <p style={{ fontSize: Math.max(11, 14 * mu), color: CHOCOLATE, fontWeight: 700 }}>
-                                    {period === 'daily' ? 'Nobody has clocked in today.' : 'No runs on the board yet. Be the first!'}
+                                    {period === 'daily' ? t('ranks.emptyToday') : t('ranks.emptyAll')}
                                 </p>
                             </MessageTicket>
                         )}

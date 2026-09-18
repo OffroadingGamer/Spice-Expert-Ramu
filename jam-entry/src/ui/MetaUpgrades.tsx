@@ -7,25 +7,27 @@
 import { sfx } from '../audio/audio.ts';
 import { CONFIG } from '../game/config.ts';
 import { TOWERS, type MetaUniqueDef } from '../game/data/towers.ts';
+import { t } from '../i18n/index.ts';
+import { stationUniqueDescKey, stationUniqueNameKey } from '../i18n/towerKeys.ts';
 import { buyMetaUpgrade, metaUpgradeCost, type MetaStat } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import GemCounter from './GemCounter.tsx';
 
 const STATS: { key: MetaStat; name: string; perLevel: number }[] = [
-    { key: 'damage', name: 'Heat', perLevel: CONFIG.meta.damagePerLevel },
-    { key: 'speed', name: 'Fast Hands', perLevel: CONFIG.meta.speedPerLevel },
-    { key: 'range', name: 'Reach', perLevel: CONFIG.meta.rangePerLevel },
+    { key: 'damage', name: 'meta.stat.damage', perLevel: CONFIG.meta.damagePerLevel },
+    { key: 'speed', name: 'meta.stat.speed', perLevel: CONFIG.meta.speedPerLevel },
+    { key: 'range', name: 'meta.stat.range', perLevel: CONFIG.meta.rangePerLevel },
 ];
 
 /** Player-facing value of a unique track at a given level. */
 function uniqueValue(u: MetaUniqueDef, level: number): string {
     switch (u.kind) {
-        case 'crit': return `+${Math.round(level * u.perLevel * 1000) / 10}%`;
-        case 'chains': return `+${level * u.perLevel}`;
-        case 'splash': return `+${level * u.perLevel}`;
-        case 'status-duration': return `+${(level * u.perLevel).toFixed(1)}s`;
-        case 'status-damage': return `+${level * u.perLevel}`;
-        case 'knockback': return `+${level * u.perLevel}`;
+        case 'crit': return t('meta.unique.pct', { n: Math.round(level * u.perLevel * 1000) / 10 });
+        case 'chains': return t('meta.unique.plain', { n: level * u.perLevel });
+        case 'splash': return t('meta.unique.plain', { n: level * u.perLevel });
+        case 'status-duration': return t('meta.unique.seconds', { n: (level * u.perLevel).toFixed(1) });
+        case 'status-damage': return t('meta.unique.plain', { n: level * u.perLevel });
+        case 'knockback': return t('meta.unique.plain', { n: level * u.perLevel });
     }
 }
 
@@ -36,7 +38,7 @@ export default function MetaUpgrades() {
     return (
         <div className="absolute inset-0 z-10 flex flex-col bg-surface px-5 pt-safe-top">
             <div className="flex items-center justify-between py-4">
-                <h2 className="text-3xl font-bold text-primary">Upgrades</h2>
+                <h2 className="text-3xl font-bold text-primary">{t('meta.title')}</h2>
                 <GemCounter />
             </div>
             <div className="flex-1 touch-pan-y overflow-y-auto pt-1">
@@ -69,11 +71,11 @@ export default function MetaUpgrades() {
                                             <div key={stat.key} className="flex items-center justify-between gap-3">
                                                 <div>
                                                     <p className="text-[1.1rem] font-semibold">
-                                                        {stat.name}
-                                                        <span className="text-white/50"> +{Math.round(level * stat.perLevel * 100)}%</span>
+                                                        {t(stat.name)}
+                                                        <span className="text-white/50"> {t('meta.statValue', { n: Math.round(level * stat.perLevel * 100) })}</span>
                                                     </p>
                                                     <p className="text-[1.1rem] tabular-nums text-white/50">
-                                                        Level {level}/{CONFIG.meta.maxLevel}
+                                                        {t('meta.level', { n: level, max: CONFIG.meta.maxLevel })}
                                                     </p>
                                                 </div>
                                                 <button
@@ -95,7 +97,7 @@ export default function MetaUpgrades() {
                                                         }
                                                     }}
                                                 >
-                                                    {maxed ? 'Max' : `💎 ${cost}`}
+                                                    {maxed ? t('meta.max') : t('meta.cost', { n: cost })}
                                                 </button>
                                             </div>
                                         );
@@ -104,11 +106,11 @@ export default function MetaUpgrades() {
                                     <div className="flex items-center justify-between gap-3">
                                         <div>
                                             <p className="text-[1.1rem] font-semibold text-primary">
-                                                {u.name}
+                                                {t(stationUniqueNameKey(tower.id))}
                                                 <span className="text-white/50"> {uniqueValue(u, levels.unique)}</span>
                                             </p>
                                             <p className="text-[1.1rem] tabular-nums text-white/50">
-                                                {u.desc} · Level {levels.unique}/{u.maxLevel}
+                                                {t('meta.uniqueRow', { desc: t(stationUniqueDescKey(tower.id)), n: levels.unique, max: u.maxLevel })}
                                             </p>
                                         </div>
                                         <button
@@ -130,7 +132,7 @@ export default function MetaUpgrades() {
                                                 }
                                             }}
                                         >
-                                            {uniqueMaxed ? 'Max' : `💎 ${uniqueCost}`}
+                                            {uniqueMaxed ? t('meta.max') : t('meta.cost', { n: uniqueCost })}
                                         </button>
                                     </div>
                                 </div>
@@ -145,7 +147,7 @@ export default function MetaUpgrades() {
                     className="w-full rounded-2xl bg-white/15 py-4 text-xl font-bold text-white shadow-lg transition-transform active:scale-95"
                     onClick={() => { sfx.click(); store.patch({ metaOpen: false }); }}
                 >
-                    Back
+                    {t('meta.back')}
                 </button>
             </div>
         </div>

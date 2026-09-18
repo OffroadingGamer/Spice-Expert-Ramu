@@ -15,6 +15,7 @@
  */
 import { useState } from 'react';
 import { sfx } from '../audio/audio.ts';
+import { t } from '../i18n/index.ts';
 import { setPlayerName } from '../state/save.ts';
 import { store } from '../state/store.ts';
 import { useMenuUnit } from './useMenuUnit.ts';
@@ -33,8 +34,14 @@ const LAST_NAMES = [
     'Oberoi', 'Pandey', 'Qureshi', 'Sane', 'Thakur', 'Ubale', 'Varma', 'Wagh',
 ];
 
-/** letters, spaces, '.', "'" only — the handover's own allowed charset. */
-const NAME_PATTERN = /^[A-Za-z .']*$/;
+/** Round 13 Part 2 (docs/i18n/strings.md's own R13 constraint #3): widened
+ *  from `/^[A-Za-z .']*$/` to `\p{L}\p{M}` (any Unicode letter plus
+ *  combining marks) so Devanagari/Tamil names don't get rejected keystroke
+ *  by keystroke — the ASCII-only pattern was a hard blocker for anyone who
+ *  wants to type their name in their own script, independent of which UI
+ *  language they're playing in. Length limit (16, at the trim/slice call
+ *  sites) is unchanged. */
+const NAME_PATTERN = /^[\p{L}\p{M} .']*$/u;
 
 function assignName(): string {
     const first = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
@@ -71,13 +78,13 @@ export default function NameDialog({ onDone }: { onDone: (name: string) => void 
                 }}
             >
                 <h2 className="text-center font-black" style={{ fontSize: 15 * mu }}>
-                    What do they call you?
+                    {t('name.title')}
                 </h2>
                 <input
                     type="text"
                     value={value}
                     maxLength={16}
-                    placeholder="Type your name"
+                    placeholder={t('name.placeholder')}
                     autoFocus
                     onChange={(e) => {
                         const v = e.target.value;
@@ -106,7 +113,7 @@ export default function NameDialog({ onDone }: { onDone: (name: string) => void 
                         }}
                         onClick={() => { sfx.click(); commit(''); }}
                     >
-                        Skip
+                        {t('name.skip')}
                     </button>
                     <button
                         type="button"
@@ -121,7 +128,7 @@ export default function NameDialog({ onDone }: { onDone: (name: string) => void 
                         }}
                         onClick={() => { sfx.click(); commit(value); }}
                     >
-                        That's me
+                        {t('name.confirm')}
                     </button>
                 </div>
             </div>

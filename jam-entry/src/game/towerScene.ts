@@ -29,6 +29,10 @@ import { TOWERS } from './data/towers.ts';
 import { dialogueForBlock } from './data/dialogue.ts';
 import { queueDialogue, queueDialogueOnce } from './dialogueController.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
+// Round 13 Part 2: aliased — this file uses the bare identifier `t` pervasively
+// as a local tower-instance variable/parameter name (engine.state.towers'
+// element type), which would silently shadow the i18n lookup function.
+import { t as translate } from '../i18n/index.ts';
 import {
     alphaContentBBox,
     dishContentExtent,
@@ -410,7 +414,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         if (!slot) return;
         slot.active = true;
         slot.life = COIN_POPUP_LIFETIME_S;
-        slot.text.text = `+${amount}`;
+        slot.text.text = translate('pixi.coinPopup', { n: amount });
         slot.text.position.set(x, y);
         slot.text.alpha = 1;
         slot.text.visible = true;
@@ -458,6 +462,104 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         drawRoad(road, SZ.pathWidth, CONFIG.colors.pathDirt);
     }
     board.addChild(road);
+
+    /**
+     * Round 13 Part 1 (docs/Ideas.md §10.1 pick C): chevrons riding the belt
+     * — a Graphics layer redrawn every frame, added to `board` right after
+     * `road` and before every hatch/pad/gauge addChild below, so draw order
+     * alone keeps it "between the belt's inner stroke and the bugs": it sits
+     * above the belt stroke but everything else `board` gets from here down
+     * (hatches, pads, the gauge) paints over it, and `world` (bugs, props),
+     * added to `boardRoot` AFTER `board` entirely, always paints above the
+     * whole thing. No separate z-index bookkeeping needed.
+     *
+     * Spacing/count: one chevron every 60 design units of arc length along
+     * the 7-segment polyline (CONFIG.path, via the sim's own posAt/
+     * PATH_LENGTH — the same path-distance function the bugs use, so corners
+     * are free). floor(2440 / 60) = 40, matching the spec's "~40" exactly.
+     *
+     * Speed: the SLOWEST archetype's base speed (data/enemies.ts, sealed,
+     * read via the already-imported enemyDef — not a second hardcoded
+     * number) — stag at 50 units/s (beetle 90, wasp 150, snail 55, hornet
+     * 160, stag 50). Distance advances at gameSpeed x that base speed, real
+     * dt, only while a wave is running — the same relationship the engine's
+     * own substep loop already has between store.speed and how far an
+     * enemy moves per real second, so the chevrons read as part of the same
+     * belt physics instead of a separately-clocked overlay.
+     */
+    const CHEVRON_SPACING = 60;
+    const CHEVRON_COUNT = Math.floor(PATH_LENGTH / CHEVRON_SPACING);
+    const CHEVRON_LEN = 18;
+    const CHEVRON_HALF_W = 6; // 12 units wide, apex-to-base
+    const CHEVRON_COLOR = 0xfdfae7;
+    const CHEVRON_ALPHA = 0.25;
+    const CHEVRON_FADE_S = 0.3;
+    const BASE_CHEVRON_SPEED = enemyDef('stag').speed;
+
+    const chevronLayer = new Graphics();
+    board.addChild(chevronLayer);
+
+    let chevronDist = 0; // arc-length offset, wraps at PATH_LENGTH
+    // Visibility tween, independent of the belt's own 25% fill alpha above —
+    // 1 = fully shown, 0 = fully hidden. reducedMotion pins this at 1 and
+    // never starts a tween ("no motion, no fade" — the spec's own words).
+    let chevronAlpha = 1;
+    let chevronFadeFrom = 1;
+    let chevronFadeTo = 1;
+    let chevronFadeT = Infinity; // >= CHEVRON_FADE_S = settled, no tween running
+
+    /** Kicks off a 300ms tween toward `target` — 0 at the moment a boss
+     *  level's last leak/kill ends the wave (a block boundary; every block
+     *  change in this game follows a boss clear, so the block-boundary
+     *  check IS the boss-level check), 1 at the next wave start. Reentrant:
+     *  calling it mid-tween just retargets from the current live alpha, no
+     *  snap. */
+    function startChevronFade(target: number): void {
+        if (reducedMotion) return;
+        chevronFadeFrom = chevronAlpha;
+        chevronFadeTo = target;
+        chevronFadeT = 0;
+    }
+
+    /** Redrawn every frame: advances the belt-relative offset (paused
+     *  outside 'wave'), advances the fade tween, then rebuilds the whole
+     *  layer. Chevrons within one hatch capRadius of either path end are
+     *  skipped — "clipped under the hatch caps at both ends." */
+    function syncChevrons(dt: number): void {
+        if (!reducedMotion) {
+            if (engine.state.phase === 'wave') {
+                chevronDist = (chevronDist + dt * store.get().speed * BASE_CHEVRON_SPEED) % PATH_LENGTH;
+            }
+            if (chevronFadeT < CHEVRON_FADE_S) {
+                chevronFadeT += dt;
+                const u = Math.min(1, chevronFadeT / CHEVRON_FADE_S);
+                chevronAlpha = chevronFadeFrom + (chevronFadeTo - chevronFadeFrom) * u;
+            }
+        }
+        chevronLayer.clear();
+        if (chevronAlpha <= 0) return;
+        const alpha = CHEVRON_ALPHA * chevronAlpha;
+        const tangentEps = 2;
+        for (let i = 0; i < CHEVRON_COUNT; i++) {
+            const d = (chevronDist + i * CHEVRON_SPACING) % PATH_LENGTH;
+            if (d < capRadius || d > PATH_LENGTH - capRadius) continue;
+            const p = posAt(d);
+            const ahead = posAt(Math.min(PATH_LENGTH, d + tangentEps));
+            const angle = Math.atan2(ahead.y - p.y, ahead.x - p.x);
+            const cos = Math.cos(angle);
+            const sin = Math.sin(angle);
+            const tipX = p.x + cos * (CHEVRON_LEN / 2);
+            const tipY = p.y + sin * (CHEVRON_LEN / 2);
+            const backX = p.x - cos * (CHEVRON_LEN / 2);
+            const backY = p.y - sin * (CHEVRON_LEN / 2);
+            chevronLayer
+                .moveTo(tipX, tipY)
+                .lineTo(backX - sin * CHEVRON_HALF_W, backY + cos * CHEVRON_HALF_W)
+                .lineTo(backX + sin * CHEVRON_HALF_W, backY - cos * CHEVRON_HALF_W)
+                .closePath()
+                .fill({ color: CHEVRON_COLOR, alpha });
+        }
+    }
 
     // Entry/exit hatches at both ends of the road, so bugs appear and vanish
     // INTO something no matter where the board sits vertically.
@@ -790,7 +892,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     // floor clears with margin rather than landing right on it — 32 design
     // units -> ~12.3px at 403 wide (measured, not assumed; see this round's
     // own report).
-    const gaugeLabel = new Text({ text: '0/10', style: new TextStyle({ fontSize: 32, fontWeight: 'bold', fill: GAUGE_CREAM }) });
+    const gaugeLabel = new Text({ text: translate('pixi.gauge', { n: 0 }), style: new TextStyle({ fontSize: 32, fontWeight: 'bold', fill: GAUGE_CREAM }) });
     gaugeLabel.anchor.set(0.5, 0);
     gaugeLabel.alpha = 0.7;
     board.addChild(gaugeLabel);
@@ -894,7 +996,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             gaugeCapBoss.height = size;
         }
 
-        gaugeLabel.text = `${inOvertime || bossOnBelt ? GAUGE_SEG_COUNT : rushesCleared}/10`;
+        gaugeLabel.text = translate('pixi.gauge', { n: inOvertime || bossOnBelt ? GAUGE_SEG_COUNT : rushesCleared });
     }
 
     // selection highlight + range preview for the selected pad
@@ -1959,7 +2061,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
 
     function buildUpgradeMarker(t: (typeof engine.state.towers)[number]): Container {
         const size = towerDisplaySize[t.def.id][t.level - 1];
-        const label = new Text({ text: 'Lv↑', style: upgradeMarkerStyle });
+        const label = new Text({ text: translate('pixi.lvUp'), style: upgradeMarkerStyle });
         label.anchor.set(0.5);
         // ~60% of the tower's own current sprite width is the handover's own
         // spec and the common case; a floor against the LABEL'S OWN measured
@@ -2084,10 +2186,10 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         const node = towerViews.get(t.padIndex);
         if (!node) { upgradePreview.visible = false; return; }
         const step = t.def.upgrades[t.level - 1];
-        upgradePreviewLine1White.text = `${Math.round(t.damage)} → `;
-        upgradePreviewLine1Green.text = `${Math.round(t.damage * step.damageMult)} dmg`;
-        upgradePreviewLine2White.text = `${t.fireRate.toFixed(1)} → `;
-        upgradePreviewLine2Green.text = `${(t.fireRate * step.fireRateMult).toFixed(1)}/s`;
+        upgradePreviewLine1White.text = translate('pixi.preview.dmgFrom', { a: Math.round(t.damage) });
+        upgradePreviewLine1Green.text = translate('pixi.preview.dmgTo', { b: Math.round(t.damage * step.damageMult) });
+        upgradePreviewLine2White.text = translate('pixi.preview.rateFrom', { a: t.fireRate.toFixed(1) });
+        upgradePreviewLine2Green.text = translate('pixi.preview.rateTo', { b: (t.fireRate * step.fireRateMult).toFixed(1) });
         const size = towerDisplaySize[t.def.id][t.level - 1];
         const anchorY = node.y - size.h - UPGRADE_MARKER_GAP;
         // Line 1 (damage) sits at the marker's own anchor point, bottom-most;
@@ -2216,6 +2318,14 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             trackedBlockId = block.id;
             ensureBlockAssets(block.id);
             ensureBlockAssets(block.id + 1);
+            // Round 13 Part 1: every block boundary in this game follows a
+            // boss-level clear (blockForLevel only advances past a boss
+            // level), so this IS "the boss level's last leak/kill ends the
+            // wave" — start the chevrons' 300ms fade-out right here, not
+            // gated on the backdrop art being cached below (that gate is
+            // about WHEN the crossfade can start, not whether this tick is
+            // a real block boundary).
+            if (priorBlockId > 0) startChevronFade(0);
             // Final round, task 4: the sting+lock fires for exactly one of
             // updateBackdrop's three situations — a REAL block change whose
             // art is ALREADY cached at this exact boundary tick, the common
@@ -2283,6 +2393,11 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                     waveStartedAt = performance.now();
                     killsAtWaveStart = engine.state.kills;
                     livesAtWaveStart = engine.state.lives;
+                    // Round 13 Part 1: fade the chevrons back in at every
+                    // wave start — a no-op tween when they're already at 1
+                    // (every non-boss wave), the visible fade-in only when
+                    // the prior block boundary just faded them out.
+                    startChevronFade(1);
                 }
                 prevPhase = engine.state.phase;
                 const stepEvents = engine.drainEvents();
@@ -2309,6 +2424,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         syncPads();
         syncPadCues();
         syncHeatGauge(dt);
+        syncChevrons(dt);
         drawBeams(dt);
         drawSelection();
         checkEnd();

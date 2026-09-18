@@ -23,14 +23,17 @@
  */
 import { useState } from 'react';
 import { sfx } from '../audio/audio.ts';
+import { t } from '../i18n/index.ts';
 import { resubmitBestWithName } from '../sdk/leaderboard.ts';
 import { renamePlayer } from '../state/save.ts';
 import { store } from '../state/store.ts';
 import { Card, CardGhostButton, CardScrim, CardTitle } from './SettingsCard.tsx';
 import { useMenuUnit } from './useMenuUnit.ts';
 
-/** letters, spaces, '.', "'" only — same charset as the boot dialog. */
-const NAME_PATTERN = /^[A-Za-z .']*$/;
+/** Round 13 Part 2: same widened charset as NameDialog.tsx's own — see that
+ *  file's comment. Kept as a separate literal (not imported from there) the
+ *  same way this file already duplicated the pattern before this round. */
+const NAME_PATTERN = /^[\p{L}\p{M} .']*$/u;
 
 export default function RenameDialog() {
     const mu = useMenuUnit();
@@ -56,7 +59,7 @@ export default function RenameDialog() {
     return (
         <CardScrim onTap={cancel} zIndex={20}>
             <Card mu={mu}>
-                <CardTitle mu={mu}>Your name</CardTitle>
+                <CardTitle mu={mu}>{t('name.rename.title')}</CardTitle>
                 <input
                     type="text"
                     value={value}
@@ -77,7 +80,7 @@ export default function RenameDialog() {
                 />
                 <div className="flex" style={{ gap: 8 * mu }}>
                     <CardGhostButton mu={mu} onClick={cancel} style={{ flex: 1, textAlign: 'center' }}>
-                        Cancel
+                        {t('name.rename.cancel')}
                     </CardGhostButton>
                     <button
                         type="button"
@@ -92,7 +95,7 @@ export default function RenameDialog() {
                         }}
                         onClick={save}
                     >
-                        Save
+                        {t('name.rename.save')}
                     </button>
                 </div>
             </Card>

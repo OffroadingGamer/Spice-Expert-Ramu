@@ -71,9 +71,26 @@ import { sfx } from '../audio/audio.ts';
 import { FTUE_FIRST_PAD, getEngine, placeTower, sellTower, setTargeting, upgradeTower } from '../game/actions.ts';
 import { CONFIG } from '../game/config.ts';
 import { getFit, RAIL_WIDTH_UNITS } from '../game/stage.ts';
-import { TARGETING_DESCRIPTIONS, TARGETING_LABELS, TARGETING_MODES } from '../game/data/targeting.ts';
+import { TARGETING_MODES, type TargetingMode } from '../game/data/targeting.ts';
 import { TOWERS } from '../game/data/towers.ts';
 import { store, useStore } from '../state/store.ts';
+import { t } from '../i18n/index.ts';
+import { stationNameKey } from '../i18n/towerKeys.ts';
+
+/** Round 13 Part 2: local mode -> i18n-key mapping for the Target row and its
+ *  help popup — targeting.ts's own TARGETING_LABELS/TARGETING_DESCRIPTIONS
+ *  stay English/untouched (mirrors data/blocks.ts's own `label` field, left
+ *  English while Hud.tsx translates at the render site via t('block.'+id)).
+ *  `.desc` suffix keys the matching *.desc row in en.ts. */
+const TARGETING_KEY: Record<TargetingMode, string> = {
+    first: 'targeting.first',
+    last: 'targeting.last',
+    closest: 'targeting.closest',
+    strongest: 'targeting.strongest',
+    weakest: 'targeting.weakest',
+    'highest-hp': 'targeting.highestHp',
+    'lowest-hp': 'targeting.lowestHp',
+};
 
 /** Rail-width round: on a narrow phone (~403 CSS px wide), scale × 140
  *  design units bottoms out around 53px — not a font-size problem, a
@@ -179,8 +196,8 @@ const UPGRADE_ARROW_LIFT_PX = 70;
 /** Player-facing label for a gold pad's bonus. */
 function bonusLabel(bonus: NonNullable<(typeof CONFIG.pads)[number]['bonus']>): string {
     const pct = Math.round((bonus.mult - 1) * 100);
-    const stat = bonus.stat === 'damage' ? 'damage' : bonus.stat === 'fireRate' ? 'fire rate' : 'radius';
-    return `${pct}% ${stat}!`;
+    const statKey = bonus.stat === 'damage' ? 'rail.stat.damage' : bonus.stat === 'fireRate' ? 'rail.stat.fireRate' : 'rail.stat.radius';
+    return t('rail.bonus', { pct, stat: t(statKey) });
 }
 
 function BonusBadge({ padIndex }: { padIndex: number }) {
@@ -315,8 +332,8 @@ export default function StationRail() {
                                             explicit width sizes to fit, not to the container), so
                                             without a definite width the browser never has a reason
                                             to break the line at all. */}
-                                        <span className="w-full text-center text-[0.62rem] leading-tight font-bold" style={{ fontSize: railLabelFontSize }}>{def.name}</span>
-                                        <span className="text-[0.6rem] text-white/70 tabular-nums">🪙{def.cost}</span>
+                                        <span className="w-full text-center text-[0.62rem] leading-tight font-bold" style={{ fontSize: railLabelFontSize }}>{t(stationNameKey(def.id))}</span>
+                                        <span className="text-[0.6rem] text-white/70 tabular-nums">{t('rail.cost', { n: def.cost })}</span>
                                     </button>
                                 );
                             })}
@@ -327,14 +344,14 @@ export default function StationRail() {
                     {selectedPad !== null && tower && (
                         <div className="flex flex-col gap-1.5 pt-1">
                             <p className="text-center text-[0.68rem] leading-tight font-bold">
-                                {tower.def.name}
+                                {t(stationNameKey(tower.def.id))}
                                 <br />
-                                Lv {tower.level}
+                                {t('rail.level', { n: tower.level })}
                             </p>
                             <p className="text-center text-[0.6rem] leading-tight text-white/60 tabular-nums">
-                                {Math.round(tower.damage)} dmg
+                                {t('rail.dmg', { n: Math.round(tower.damage) })}
                                 <br />
-                                {tower.fireRate.toFixed(1)}/s
+                                {t('rail.rate', { n: tower.fireRate.toFixed(1) })}
                             </p>
 
                             {tower.level <= tower.def.upgrades.length ? (
@@ -355,9 +372,9 @@ export default function StationRail() {
                                                 upgradeTower(selectedPad);
                                             }}
                                         >
-                                            Upgrade
+                                            {t('rail.upgrade')}
                                             <br />
-                                            🪙{cost}
+                                            {t('rail.cost', { n: cost })}
                                         </button>
                                     );
                                 })()
@@ -366,7 +383,7 @@ export default function StationRail() {
                                     className="w-full rounded-lg bg-white/10 px-1 py-2 text-center text-[0.62rem] font-bold whitespace-nowrap text-white/50"
                                     style={{ fontSize: railLabelFontSize }}
                                 >
-                                    Max
+                                    {t('rail.max')}
                                 </span>
                             )}
 
@@ -382,14 +399,14 @@ export default function StationRail() {
                                 style={{ fontSize: railLabelFontSize }}
                                 onClick={() => { sfx.click(); setConfirmSell(true); }}
                             >
-                                Sell
+                                {t('rail.sell')}
                             </button>
 
                             <div className="flex items-center justify-center gap-1">
-                                <p className="text-[0.6rem] font-semibold text-white/60">Target</p>
+                                <p className="text-[0.6rem] font-semibold text-white/60">{t('rail.target')}</p>
                                 <button
                                     type="button"
-                                    aria-label="What do the targeting options mean?"
+                                    aria-label={t('rail.targetHelp.aria')}
                                     className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[0.6rem] font-bold text-white/70 transition-transform active:scale-95"
                                     onClick={() => { sfx.click(); setShowTargetHelp(true); }}
                                 >
@@ -421,7 +438,7 @@ export default function StationRail() {
                                             setTargeting(selectedPad, mode);
                                         }}
                                     >
-                                        {TARGETING_LABELS[mode]}
+                                        {t(TARGETING_KEY[mode])}
                                     </button>
                                 ))}
                             </div>
@@ -444,7 +461,7 @@ export default function StationRail() {
                             className="w-full rounded-lg bg-white/10 py-2 text-[0.62rem] font-semibold text-white/70 transition-transform active:scale-95"
                             onClick={() => { sfx.click(); store.patch({ selectedPad: null }); }}
                         >
-                            Close
+                            {t('rail.close')}
                         </button>
                     )}
                 </div>
@@ -452,24 +469,32 @@ export default function StationRail() {
             {showTargetHelp && tower && (
                 <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/70 px-8">
                     <div className="flex w-full max-w-sm flex-col gap-3 rounded-2xl bg-black/90 p-6">
-                        <p className="text-center text-xl font-bold">Targeting</p>
+                        <p className="text-center text-xl font-bold">{t('rail.targeting.title')}</p>
                         <p className="text-[1.1rem] text-white/60">
-                            Who this tower attacks when several bugs are in range:
+                            {t('rail.targeting.intro')}
                         </p>
                         <div className="flex flex-col gap-2">
-                            {TARGETING_MODES.map((mode) => (
-                                <p key={mode} className="text-[1.1rem] leading-6">
-                                    <span className="font-bold text-primary">{TARGETING_LABELS[mode]}:</span>
-                                    <span className="text-white/80"> {TARGETING_DESCRIPTIONS[mode]}</span>
-                                </p>
-                            ))}
+                            {TARGETING_MODES.map((mode) => {
+                                const label = t(TARGETING_KEY[mode]);
+                                const desc = t(TARGETING_KEY[mode] + '.desc');
+                                return (
+                                    <p
+                                        key={mode}
+                                        className="text-[1.1rem] leading-6"
+                                        aria-label={t('rail.targeting.row', { label, desc })}
+                                    >
+                                        <span className="font-bold text-primary">{label}:</span>
+                                        <span className="text-white/80"> {desc}</span>
+                                    </p>
+                                );
+                            })}
                         </div>
                         <button
                             type="button"
                             className="mt-2 w-full rounded-xl bg-primary py-3 text-[1.1rem] font-bold text-black transition-transform active:scale-95"
                             onClick={() => { sfx.click(); setShowTargetHelp(false); }}
                         >
-                            Got it
+                            {t('rail.gotIt')}
                         </button>
                     </div>
                 </div>
@@ -478,7 +503,7 @@ export default function StationRail() {
                 <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/70 px-10">
                     <div className="flex w-full max-w-sm flex-col gap-4 rounded-2xl bg-black/90 p-6">
                         <p className="text-center text-xl font-bold">
-                            Sell {tower.def.name} for 🪙 {refund}?
+                            {t('rail.sellConfirm', { name: t(stationNameKey(tower.def.id)), n: refund })}
                         </p>
                         <div className="flex gap-3">
                             <button
@@ -486,7 +511,7 @@ export default function StationRail() {
                                 className="flex-1 rounded-xl bg-white/10 py-3 text-[1.1rem] font-bold text-white/80 transition-transform active:scale-95"
                                 onClick={() => { sfx.click(); setConfirmSell(false); }}
                             >
-                                Cancel
+                                {t('rail.sellCancel')}
                             </button>
                             <button
                                 type="button"
@@ -497,7 +522,7 @@ export default function StationRail() {
                                     sellTower(selectedPad);
                                 }}
                             >
-                                Sell +{refund}c
+                                {t('rail.sellConfirmBtn', { n: refund })}
                             </button>
                         </div>
                     </div>

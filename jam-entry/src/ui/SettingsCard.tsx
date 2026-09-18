@@ -16,6 +16,7 @@
  * one, so `onTap` is the only thing that varies.
  */
 import type { CSSProperties, ReactNode } from 'react';
+import { t } from '../i18n/index.ts';
 
 export function CardScrim({ onTap, zIndex = 10, children }: { onTap?: () => void; zIndex?: number; children: ReactNode }) {
     return (
@@ -84,7 +85,7 @@ export function CardDivider() {
 export function CardCredit({ mu }: { mu: number }) {
     return (
         <p className="text-center" style={{ fontSize: Math.max(11, 8 * mu), color: 'rgba(42,29,16,0.7)' }}>
-            Backdrop art — Archita Sharma (@arc_inmotion)
+            {t('settings.credit')}
         </p>
     );
 }

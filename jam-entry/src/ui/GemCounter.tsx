@@ -2,6 +2,7 @@
  * The gem balance chip, shared by the main menu (top-left) and the upgrades
  * screen header.
  */
+import { t } from '../i18n/index.ts';
 import { useStore } from '../state/store.ts';
 
 export interface GemCounterProps {
@@ -35,13 +36,13 @@ export default function GemCounter({ chocolate, mu = 1 }: GemCounterProps = {}) 
                     backgroundColor: 'rgba(42, 29, 16, 0.85)',
                 }}
             >
-                💎 {gems.toLocaleString()}
+                {t('menu.gems', { n: gems.toLocaleString() })}
             </div>
         );
     }
     return (
         <div className="flex h-12 items-center rounded-xl bg-black/40 px-4 text-[1.1rem] font-semibold tabular-nums text-white/90">
-            💎 {gems.toLocaleString()}
+            {t('menu.gems', { n: gems.toLocaleString() })}
         </div>
     );
 }
