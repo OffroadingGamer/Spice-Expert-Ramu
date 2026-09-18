@@ -343,9 +343,48 @@ The live Devanagari-name leaderboard moderation test is not done — I don't hav
 
 ---
 
+## 2026-09-18 ~21:40 IST — Round 14 — implementation agent
+
+Outcome: verified, Private 1.88.0, committed `7db5735`.
+
+Confirmed: Private 1.88.0, Review 1.69.0, Public 1.69.0 — exactly as required. Here's the Round 14 report.
+
+Round 14 — deployed as v1.88.0 (Private). Review/Public unchanged at 1.69.0.
+Part 1 — Board scale as a pure function of viewport
+Root cause confirmed exactly as diagnosed: Ready and the Kitchen Actions column were conditionally unmounted ({cond && (...)}), dropping their height (and the flex gap) from bottomColRef's measured box on every pad-select / wave-phase / dialogue / pause / post-boss transition, which fed straight into stage.ts's getFit() and visibly resized the belt.
+
+Fix: both are now always mounted, toggled with visibility: hidden (CSS visibility preserves the layout box; unlike display:none it also drops out of hit-testing on its own, so no separate pointer-events flag was needed). Row 1 and the WAVE/ring group were already unconditionally mounted, so the top band needed no change.
+
+Measured at 403×874, 360×780, 744×1315 across all 7 states (build/no-pad, pad-selected, wave-phase, dialogue-open, pause-card, post-boss-panel, ranks-open→closed): hudTopPx, hudBottomPx, and computed scale are byte-identical across every state at every viewport (full JSON captured, not just spot-checked). A genuine resize (403→500 wide) then changed the bands exactly once (confirmed by subscribing to the store and counting distinct hudTopPx/hudBottomPx values seen).
+
+Board width vs. the floor: 360×780 → 214.96px (floor 215 — 0.04px under by float rounding, effectively unchanged from 12c's own 215), 403×874 → 257.37px (floor 255, pass), 744×1315 → 456.18px (floor 417, pass). All three land within noise of 12c's own reference numbers (215/257/456), confirming the fix didn't change the scale formula itself — only made it state-invariant.
+
+Part 2 — Icon chips
+Three 44×44px buttons (❄️/🔥/🐌, 20px glyph, ≥11px cost line), same affordability dimming, in a row to the portrait's right, vertically centred on its lower half (kept the original top-empty/bottom-centred flex split so it lands on the lower half, not the seam). Tap-and-hold (300ms) shows the action's full name as a small chocolate toast for 1.2s via hud.actions.aria; a normal tap still buys, unaffected by the hold timer. Also folded into Part 1's always-mounted/hidden treatment.
+
+Measured row width at 360px: portrait 132 + chips 150 (3×44 + 2×9 gaps) + 9 gap = 291px, comfortably under the 336px budget (360 − 24px padding).
+
+Part 3 — Recipe shards and scrolls
+Wired off the sealed engine's own {type:'leak'}/{type:'wave-clear'} events (never touched sim/engine.ts): a per-wave leak counter resets at wave start, and on a wave-clear with zero leaks, towerScene.ts awards +1 shard per distinct recipe on that wave's order (same dedup-by-slug set WaveBubble.tsx already computes for the trigger). Save additive: shards, scrolls, scrollsBought.
+
+Cadence run (fresh save, FTUE bypassed via store, real engine driven through 10 real levels via placeTower/upgradeTower/startWave, zero leaks): chai and coffee both reached exactly 8 shards at the level-10 clear, both scrolls unlocked — matches docs/shard-projection.md's own projection precisely.
+
+One-leak-on-level-3 run (sold every tower before level 3, let it leak, rebuilt): chai and coffee both ended at 7/7 after level 10, no scroll unlocked — matches the acceptance exactly.
+
+The wave-bubble toast is deliberately built from the award payload's own slugs/icons, not the live trigger — the trigger's own dish set resets to the next wave immediately on a wave-clear (same tick), so reading off the live cells would show the wrong recipe at a block boundary (e.g. level 10→11 swaps the whole dish set). I could not get a spy on sfx.scrollUnlock() to register a call in headless Playwright — traced to audio.ts having no globalThis-anchored singleton guard (unlike store.ts/actions.ts, which this codebase's own comments already flag as a Windows-Vite dev-only duplicate-module hazard), so my dynamically-imported module instance likely wasn't the same object towerScene.ts holds. I verified the call site and SAMPLES registration by reading the source instead of by spying; the real unlock behavior (scrolls populating, shard counts correct) is independently proven via direct store reads, which don't depend on this.
+
+Part 4 — Art and audio
+recipe-scroll.png/shard.png (1024² sources) → Lanczos → 256²/128², alias ui-recipe-scroll/ui-shard, no sidecars. Measured opaque bboxes on the shipped PNGs (same method 12b used for the laurel): shard — x:[41,88] y:[21,106], 37.5% of canvas width / 67.2% of height, matching the handover's own "~37%" almost exactly. Rendered sizes: shard image height = 128×(14/86) ≈ 20.8px in the bubble (opaque glyph = 14px), 128×(12/86) ≈ 17.9px in the progress bar (opaque glyph = 12px). sfx-scroll-unlock.mp3 copied as the unedited master, registered in audio.ts at gain 1.0 next to wave-clear, with a synth fallback jingle.
+
+Build, verify, deploy
+tsc --noEmit and npm run build: clean. npm run balance: 35/36/11/4/90, byte-identical. find public -name '*.json': empty. Sealed files, kitchenScene.ts, package*.json, rundot/leaderboard.config.json: untouched (confirmed via git diff --stat). No leaderboard submissions made. New i18n keys: 34 (hud.actions.aria, bubble.shard/bubble.scroll, kitchen.scrolls.title/.count/.progress/.buy, 22 recipe.*.note entries, plus the shortened hud.action.bought). Tags: Private 1.88.0, Review 1.69.0, Public 1.69.0.
+
+What I couldn't fully verify
+The sfx.scrollUnlock() call-count spy (explained above — code-verified, not empirically spy-confirmed). A live screenshot of the shard-award toast showed it positioned slightly higher than intended on first pass (double transform stacking the CSS rise keyframe on top of a manual offset) — fixed and re-verified visually, though its exact pixel gap above the trigger wasn't measured to sub-pixel precision, only eyeballed against a screenshot.
+
+---
+
 ## Pending
 
-- **Round 14** (implementation agent, → 1.88.0) — issued Sep 18, not returned.
+- **Round 15** (implementation agent, → 1.89.0) — issued Sep 18 ~21:50 IST, not returned.
 - **Marketing agent** — post-close results entry, after judging closes 00:30 IST Sep 19.
-- **Marketing agent** — post-close results entry, after judging closes 00:30 IST Sep 19.
-- **Marketing agent** — post-close results entry, after judging closes 00:30 IST Sep 19 (writes its own docs; Central syncs).
