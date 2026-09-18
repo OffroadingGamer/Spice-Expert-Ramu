@@ -1141,7 +1141,9 @@ the design of record is [Ideas.md](Ideas.md) §6d (every playtest decision, date
 | 9 | 1.81.0 | Pass hatches + belt tread; Settings dialog; empty-pad green/red cue; guest name + greeting; anonymous rows shortened |
 | 10 | 1.82.0 | Heat gauge (boss meter), four FTUE beats, name at boot, pulse removed, Settings look A, rename, pause card |
 | 11 | 1.83.0 | Ranks service board with a Daily tab (daily period added); heat gauge centred in the visible gap; block-clear card ×1.15; scroll chips readable; card alpha 0.9 |
-| 12–16 (queued) | — | belt chevrons + i18n table · recipe shards · rewarded continue · Play + unlock badge · Hindi · IAP (content, not power) |
+| 12–12c | 1.84–1.86 | Ranks look B (pass counter), Dishes served / Waves held, portrait ×1.5 with Ready above; HUD bands reserved in measured pixels |
+| 13 | 1.87.0 | Chevrons riding the belt; i18n string table (English only, 244 keys); wave-bubble submenu as a scrimmed popover |
+| 14–17 (queued) | — | static board scale + Kitchen-Actions chips · recipe shards + scroll card · rewarded continue · Play + unlock badge · Hindi · IAP (content, not power) |
 
 **Naming today:** the menu's primary is *Start shift* (→ *Play*), the meta screen is *The Kitchen*, the boards are *Ranks*; the
 tower game is the only public mode (the belt/Kitchen Mode of §10.3a stays behind `?test=1`).

@@ -39,9 +39,9 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.86.0** (Rounds 0–12c — Round 12c verified Sep 18 ~06:20 IST; **playtest-ready** — board 215 / 257 / 456 px at 360 / 403 / 744; 🔒 Private-only until human verification — Ideas.md §6d) |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.87.0** (Rounds 0–13 — Round 13 verified Sep 18; chevrons + i18n table, no visible text change; ⚠️ board re-scales on pad selection — fix in R14; 🔒 Private-only until human verification — Ideas.md §6d) |
 | **Jam (Sep 17, ~21:50 IST)** | **6th, 613 daily uniques** (901 total plays) at ~21:50 IST Sep 17 — out of the money by 16: 5th Pest Control Tycoon 629 ($100), 4th GT Rush 902 ($200), 7th The Good Life 479. Judging closes **Sep 18 12:00 PT = 00:30 IST Sep 19** (1d 02h 37m at the reading). Public is frozen at 1.69.0 through judging. |
-| **In flight** | **Round 13** → Private 1.87.0: belt chevrons (10.1 C) + i18n string table (English only; dish keys by slug, costume alias by block id, name pattern `\p{L}`, plural forms) + two 12c leftovers (trigger wrap at 360 with three dishes; submenu as a scrimmed popover). The user's 1.86.0 playtest notes fold into R14. Then the user plays 1.85.0 → R13 belt chevrons + i18n table (four constraints from the inventory) → R14 shards (projection measured) → R15 continue → R16 Play/badge → R17 Hindi. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
+| **In flight** | Nothing dispatched. **Round 14** → 1.88.0 waits on the chips pick (Ideas §6d Playtest of 1.86.0 item 2): static scale rule + chips + recipe shards / Kitchen scroll card + `sfx-scroll-unlock` + scroll/shard art. Then R15 continue · R16 Play/badge · R17 Hindi. Then the user plays 1.85.0 → R13 belt chevrons + i18n table (four constraints from the inventory) → R14 shards (projection measured) → R15 continue → R16 Play/badge → R17 Hindi. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
 | **Repo** | **Pushed Sep 18 ~02:15 IST** (`4858e3b..591031d`, 17 commits) on the user's word — `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is now in the public repo. Secret scan over the whole range: clean, control positive. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -3173,3 +3173,27 @@ not the inline Ready), so it is the wrong level for a Ready-gap test — use lev
 
 **Next:** the user plays 1.86.0 (first real look at Ranks B with rows, the daily tab, the
 laurel, the bigger portrait). Round 13 issued in parallel; playtest notes fold into R14.
+
+---
+
+### 2026-09-18 — Round 13 returned and verified: Private **1.87.0**; playtest of 1.86.0 diagnosed
+
+**R13 verified:** tags 1.87.0 / 1.69.0 / 1.69.0 · balance 35/36/11/4/90 · tsc + build clean · no
+sidecars · sealed files + config untouched · 22 files + `src/i18n/{en,index,towerKeys}.ts` ·
+chevrons every 60 units at `enemyDef('stag').speed` (50 u/s) · `\p{L}\p{M}` in both name
+dialogs · both dish sites on `t('dish.'+slug)` · block labels via `t('block.'+id)` at render
+sites (alias untouched — a cleaner cut than my "static map") · trigger capped at two cells under
+620 px · submenu scrim `rgba(42,29,16,.4)` + `60dvh` · "Escapes left" / "Upcoming dishes" /
+"What do they call you?" each exactly once in the built bundle. Committed `4e44c01`. Return
+verbatim in `Agent Returns.md`. Agent's interpretation of "stays on one line" (the trigger's own
+row, not the WAVE chip's) accepted — clearance 25 / 44 / 194 px. **Handover fact corrected by
+the agent:** level 82 has ten distinct dishes, not three.
+**Still open:** the Devanagari `displayName` moderation test needs a real guest session (user).
+Chevron fade tween not captured live (code-reviewed).
+
+**Playtest of 1.86.0 (three screenshots):** root cause of "belt glitches out in size" found at
+`Hud.tsx:245` — `bottomBandActive` unmounts Ready/chips on pad selection and in wave phase, the
+measured bottom band shrinks, the fit re-runs. Decision: scale depends on viewport only; bands
+reserved at maximum layout via hidden placeholders. The chips column is the user's "unwanted
+UI structure"; three options offered, **A (icon chips inside the portrait's height)
+recommended**; R14 issues on the pick. Decisions in Ideas §6d "Playtest of 1.86.0".

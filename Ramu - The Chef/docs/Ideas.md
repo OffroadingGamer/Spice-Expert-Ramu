@@ -634,6 +634,25 @@ anchors to the **wave chip** instead. §7's data path is unchanged.
    ✅ **Picked Sep 18 ~01:00 IST: B, the pass counter.** Near-you slice and delta arrow folded in as
    Round 12 Part 3 (Central's recommendation; strike if unwanted).
 
+**Playtest of 1.86.0 (Sep 18) — decided, for Round 14:**
+
+1. **Board scale is a function of viewport size only.** Selecting a pad (or any build→wave
+   transition) unmounts Ready and the chips (`Hud.tsx` `bottomBandActive`), the measured bottom
+   column shrinks, the pixel-band fit (12b) re-fits and the belt visibly changes size — "belt
+   glitches out in size". Fix: the top and bottom bands are reserved at their **maximum
+   build-phase layout** (row 1 + WAVE/ring group; Ready + gap + portrait + safe-area) via
+   always-mounted, visibility-hidden placeholders, measured once per resize; no HUD state may
+   change `hudTopPx` / `hudBottomPx`. Acceptance: scale identical across build, pad selected,
+   wave, dialogue, pause, post-boss at a fixed viewport.
+2. **The Kitchen-Actions chip column beside the portrait is unwanted** — it is taller than the
+   portrait's lower half and becomes the bottom band's height. Three options offered: **A —
+   recommended:** icon chips (❄ / 🔥 / 🐌, 44 × 44, cost beneath, label on tap-and-hold) beside the
+   portrait inside its 132-px height; B: a fourth cluster on HUD row 2 (row is full at 360);
+   C: behind Ramu — tap the portrait for a scrimmed popover (retarget the upgrade cue).
+   ⏳ Awaiting the pick.
+3. Screenshot 1 (wave 3, chevrons, horizontal bubble, Ready above portrait): no annotation —
+   accepted as rendered.
+
 ## 7. Wave-intro scroll — proposed Sep 13 2026 — ✅ shipped as the wave bubble's scroll grid, 1.76.0
 
 **Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll

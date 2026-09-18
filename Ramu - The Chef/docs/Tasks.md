@@ -17,7 +17,7 @@ is post-jam via the implementation agent's `update-tag review`.
 
 **Round 10 returned Sep 17 ~22:40 IST → Private 1.82.0** (heat gauge, four FTUE beats, name at
 boot, pulse removed, Settings look A, rename, pause card) — verified and committed; the live
-rename resubmit is untested until the user plays. **Round 11 returned Sep 18 ~00:10 IST → Private 1.83.0** (six playtest fixes + Ranks service board + daily period; both all-time boards unchanged). **Round 12 returned → 1.84.0** (Ranks B, fixes, near-you/delta) but ships a half-scale board (BOTTOM_BAND 2400). **Round 12c returned → 1.86.0** (board 215/257/456 px — playtest-ready). **In flight:** **Round 13** → 1.87.0 (belt chevrons + i18n table + two 12c leftovers). **Queued:** R13 belt chevrons +
+rename resubmit is untested until the user plays. **Round 11 returned Sep 18 ~00:10 IST → Private 1.83.0** (six playtest fixes + Ranks service board + daily period; both all-time boards unchanged). **Round 12 returned → 1.84.0** (Ranks B, fixes, near-you/delta) but ships a half-scale board (BOTTOM_BAND 2400). **Round 13 returned → 1.87.0** (chevrons, i18n table English-only, popover submenu). **In flight:** nothing — **Round 14** → 1.88.0 waits on the chips pick (static scale + chips + shards + scroll card). **Queued:** R13 belt chevrons +
 i18n table · R13 recipe shards · R14 rewarded continue · R15 Play + unlock badge · R16 Hindi · IAP
 after — all picked Sep 17, Ideas.md §10.
 

@@ -303,8 +303,48 @@ tsc --noEmit / npm run build: clean. npm run balance: 35/36/11/4/90, byte-identi
 
 ---
 
+## 2026-09-18 — Round 13 — implementation agent
+
+Outcome: verified, Private 1.87.0, committed `4e44c01`; Devanagari moderation test still needs a real guest session.
+
+Clean. Everything's deployed and verified. Here's the Round 13 report.
+
+Round 13 — deployed as v1.87.0 (Private). Review/Public unchanged at 1.69.0.
+Part 1 — Chevrons riding the belt
+New Graphics layer in towerScene.ts drawn between the belt stroke and world (bugs/props/hatches/gauge all still paint over it). 40 chevrons (floor(2440/60)), 18×12 units, apex-oriented via posAt() sampling — same path function the bugs use.
+
+Base speed: stag, 50 units/s (the slowest archetype — beetle 90, wasp 150, snail 55, hornet 160, stag 50), read from enemyDef('stag'), not hardcoded.
+
+Verified live: static in build phase, moving rightward along the belt in wave phase (two 500ms-apart zoomed screenshots show a clear positional shift — resting-state rule holds). Fade-out is wired to the same block-boundary tick that already drives the backdrop crossfade (every block change in this game follows a boss clear, so that check is "boss level's last leak/kill"); fade-in to every build→wave transition. I could not capture the fade tween itself live (its internal state isn't exposed and forcing a real boss-clear headlessly wasn't practical in the time available) — reasoned through code, not device-verified. Belt tread stays perceptible under the chevrons — confirmed in the zoomed screenshots, the tile pattern and chevrons read as two separate, both-visible layers. reducedMotion pins chevrons static with no fade, reusing the file's existing flag.
+
+Part 2 — i18n table
+src/i18n/en.ts (245-row table) + src/i18n/index.ts (t/tn/setLocale/getLocale), locale persisted as an additive locale field in state/save.ts (default 'en'), restored at boot. Wired 244 of 245 live-game keys across 22 files (I did the four hazard files plus Hud/WaveBubble/PostBossPanel/DialogueBox/towerScene myself; five parallel passes handled MainMenu, Leaderboard+sdk, StationRail+targeting, EndScreen, and a bundle of six smaller files — all reports cross-checked against tsc).
+
+Dish names: both titleCase sites (PostBossPanel, WaveBubble) now read t('dish.'+slug).
+Block labels: blocks.ts's label/chefBodyAliasForBlock untouched; every render site (Hud, DialogueBox, PostBossPanel) reads t('block.'+id) instead.
+NAME_PATTERN: widened to /^[\p{L}\p{M} .']*$/u in both dialogs — verified live that Devanagari/Tamil pass and digits/symbols still don't.
+Plurals: all 10 pl rows go through tn(), one/other identical text this round (structure only, zero visible change).
+Station names: data/towers.ts stays sealed/untouched — a new src/i18n/towerKeys.ts maps tower id → key, used by StationRail and MetaUpgrades.
+One gap found mid-wiring: ranks.rankDelta documented as one combined key but the real code branches on sign into two literals — split into ranks.rankDelta.up/.down and wired.
+Left unwired (1 + trivial passthroughs): boss.dishName ("{name}", pure passthrough — wrapping is a no-op). Test Mode (54 rows) and the 5 unrendered enemy names skipped per your own allowance.
+
+Acceptance: grepped the built bundle — "Escapes left", "Upcoming dishes", "What do they call you?" each appear exactly once. npx tsc --noEmit and npm run build both clean project-wide.
+
+Part 3 — the two leftovers
+3.1 WaveBubbleTrigger now caps shown icons at 2 (was always 3) below a 620px width media query, folding the rest into the existing pan/"···" carousel. Tested against real level-82 data — 10 distinct dishes, not the 3 the handover assumed (Overtime's wave generator now spawns all 5 double-dish archetypes that early; I trusted the live data). Trigger height held at exactly 72px; clearance to the first pad row: 25.2 / 44.3 / 193.6px at 360×780 / 403×874 / 744×1315 — all comfortably ≥8px (12c's own 4.7px near-miss is gone). One honest nuance: the trigger still lands on its own row2 line rather than sharing the WAVE-chip's line — measured that even the WAVE/ring group plus speed buttons alone consume ~337 of 336 available px at 360px, so no trigger width fits beside them there. I read "stays on one line" as "the trigger's own cells never wrap internally" (which holds, fixed 72px), not "shares a line with the chip" — flagging this interpretation in case it's not what was meant.
+
+3.2 WaveBubbleSubmenu is now a fixed, full-frame 40% chocolate scrim (rgba(42,29,16,0.4), confirmed live) + a pointer-events-auto panel with maxHeight: 60dvh / overflowY: auto. Verified live: tapping the board while open lands on the scrim (closes the popover, pad stays unselected) — pads are provably not tappable while it's open. Grid layout inside is unchanged.
+
+Build, verify, deploy
+tsc --noEmit and npm run build: clean. npm run balance: 35/36/11/4/90, byte-identical. find public -name '*.json': empty. Sealed files (sim/engine.ts, data/enemies.ts, data/towers.ts, data/waves.ts) and config: untouched, confirmed via git diff --stat and the deploy's own "No server config changes detected." rundot whoami: offroadinggamedev@gmail.com. Tags: Private 1.87.0, Review 1.69.0, Public 1.69.0.
+
+What I couldn't verify
+The live Devanagari-name leaderboard moderation test is not done — I don't have access to a real RUN app/host session from this environment (a plain local browser can't reach RUN's leaderboard write path; that's literally what ranks.offline's own copy says). I verified the regex itself directly instead (Devanagari/Tamil pass, digits/symbols/hyphens still rejected, matching pre-round behavior for the latter). The actual guest-session daily-board submission + CLI readback needs a real device or RUN-app session — flagging for you to run, or for a future round with that access.
+
+---
+
 ## Pending
 
-- **Round 13** (implementation agent, → 1.87.0) — issued Sep 18 ~06:30 IST, not returned.
+- **Round 14** (implementation agent, → 1.88.0) — awaiting the user's chips pick (A/B/C), not yet issued.
 - **Marketing agent** — post-close results entry, after judging closes 00:30 IST Sep 19.
 - **Marketing agent** — post-close results entry, after judging closes 00:30 IST Sep 19 (writes its own docs; Central syncs).
