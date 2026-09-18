@@ -6,25 +6,29 @@
  * control opts back in with pointer-events-auto.
  *
  * LAYOUT CONTRACT (portrait, phone-first):
- *   row 1        lives chip + coins chip left, hamburger right — this and
- *                row 2 sit inside `topRowRef` below, whose real rendered
- *                height stage.ts reserves as `hudTopPx` (Round 12b Part 1 —
- *                see that file's own doc for why this replaced a design-unit
- *                TOP_BAND guess)
- *   row 2        rush counter left, speed buttons right, both nowrap
+ *   row 1        lives chip + coins chip left, hamburger right — measured by
+ *                `row1Ref` below.
+ *   row 2        WAVE chip + ring/head group left (measured by
+ *                `waveRingGroupRef`), then the wave-bubble trigger and speed
+ *                buttons (NOT measured — Round 12c Part 1: only row 1 and the
+ *                WAVE/ring group actually sit over board content near the
+ *                entry hatch; the bubble/speed buttons hang over backdrop-only
+ *                board area and are excluded so their own height doesn't
+ *                shrink the board — see the ResizeObserver effect's own doc).
+ *                `hudTopPx` = the taller of row1Ref's and waveRingGroupRef's
+ *                own bottom edge from #app-frame's top.
  *   bottom       `bottomColRef` below, whose real rendered height stage.ts
  *                reserves as `hudBottomPx`. Round 7 item 4: one
- *                always-mounted column — row 1 is the chef idle portrait
- *                (bottom-centre, 120px — ChefPortrait.tsx) with "Ready!"
- *                immediately to its right, vertically centred on it, shown
- *                only during the build phase (hidden with the rail while a
- *                pad is selected, with the shift menu, or under the post-
- *                boss panel below); row 2 is the Kitchen Actions row,
- *                centred under the pair, same build-phase gating. This
- *                retires the old bottom-left idle mount and its device-
- *                dependent gutter sizing (ChefPortrait.tsx's own doc has
- *                the detail) — the bottom band exists on every phone now,
- *                so there's no gutter left to measure.
+ *                always-mounted column — row 1 is Ready (build phase only)
+ *                above the chef idle portrait (132px — ChefPortrait.tsx),
+ *                with the Kitchen Actions chips in a column to the
+ *                portrait's right (Round 12c Part 4: was a row underneath),
+ *                vertically centred on the portrait's lower half, same
+ *                build-phase gating throughout. This retires the old
+ *                bottom-left idle mount and its device-dependent gutter
+ *                sizing (ChefPortrait.tsx's own doc has the detail) — the
+ *                bottom band exists on every phone now, so there's no gutter
+ *                left to measure.
  *   post-boss    PostBossPanel.tsx: a centred overlay for the one build
  *                phase right after a boss level clears — its own READY
  *                replaces the inline one for that wave; the Kitchen
@@ -126,8 +130,11 @@ export default function Hud() {
     const [showObjective, setShowObjective] = useState(true);
     const [showMilestone, setShowMilestone] = useState(false);
     const [showGrant, setShowGrant] = useState(false);
-    // Round 12b Part 1: measured by the ResizeObserver effect below.
-    const topRowRef = useRef<HTMLDivElement>(null);
+    // Round 12c Part 1: measured by the ResizeObserver effect below —
+    // row1Ref is row 1 (lives/coins/hamburger), waveRingGroupRef is the WAVE
+    // chip + ring/head group only (was: the whole two-row block, 12b).
+    const row1Ref = useRef<HTMLDivElement>(null);
+    const waveRingGroupRef = useRef<HTMLDivElement>(null);
     const bottomColRef = useRef<HTMLDivElement>(null);
 
     // Coin top-up toast (round D, task 3): re-show on every grant, even a
@@ -168,33 +175,37 @@ export default function Hud() {
         return () => clearTimeout(t);
     }, [isMilestoneWave]);
 
-    // Round 12b Part 1 (HUD bands in pixels): the two containers stage.ts
-    // now reserves clearance for, measured directly rather than guessed as
-    // a design-unit constant — see stage.ts's own doc for why the old guess
-    // was the actual bug. Distance is taken from #app-frame's own top/
-    // bottom edges (not the raw viewport), since that's the exact box
-    // stage.ts's screenW/screenH already describe: GameCanvas's own host and
-    // this HUD's root are both `inset-0` siblings inside the same
-    // app-frame-filling wrapper (App.tsx), so #app-frame IS the canvas's
-    // frame of reference. Both containers are ALWAYS mounted (only their
-    // INNER content — Ready, the actions row — comes and goes), so one
-    // ResizeObserver on each, set up once, sees every real change; a
-    // requestAnimationFrame coalesces the (up to two) callbacks that can
-    // fire in the same tick into one store write, so stage.ts's own
-    // rAF-debounced layout() (see that file) never re-lays-out twice for
-    // one visual change.
+    // Round 12c Part 1 ("reserve only what collides"): 12b measured the
+    // WHOLE top-row block (row 1 + row 2 in full), but only row 1 and the
+    // WAVE chip + ring/head group actually sit over board content near the
+    // entry hatch (170, 90) — the wave-bubble trigger and speed buttons hang
+    // over the board's top-right, which is backdrop only until the belt's
+    // first horizontal run. Measuring the trigger's own height into hudTopPx
+    // meant its Round-11-era ~114.5px (see 12b's own report) shrank the
+    // board for space nothing there actually needed. Now hudTopPx is the
+    // taller of row1Ref's and waveRingGroupRef's own bottom edges (both
+    // measured from #app-frame's top, same box stage.ts's screenW/screenH
+    // describe, per 12b's own doc) — the trigger/submenu/speed row stay in
+    // the same visual row/order (see the JSX below) but no longer feed this
+    // number. Their own clearance against the board's real top-left content
+    // is a separate, explicit check (this round's own acceptance table), not
+    // something this measurement enforces.
+    // hudBottomPx keeps 12b's whole-column measurement — bottomColRef itself
+    // is unchanged by this round's Part 4 (only what renders INSIDE it moves).
     useEffect(() => {
         const frame = document.getElementById('app-frame');
-        const topEl = topRowRef.current;
+        const row1El = row1Ref.current;
+        const groupEl = waveRingGroupRef.current;
         const bottomEl = bottomColRef.current;
-        if (!frame || !topEl || !bottomEl) return;
+        if (!frame || !row1El || !groupEl || !bottomEl) return;
         let raf: number | null = null;
         const measure = () => {
             raf = null;
             const frameRect = frame.getBoundingClientRect();
-            const topRect = topEl.getBoundingClientRect();
+            const row1Rect = row1El.getBoundingClientRect();
+            const groupRect = groupEl.getBoundingClientRect();
             const bottomRect = bottomEl.getBoundingClientRect();
-            const hudTopPx = Math.max(0, topRect.bottom - frameRect.top);
+            const hudTopPx = Math.max(0, row1Rect.bottom - frameRect.top, groupRect.bottom - frameRect.top);
             const hudBottomPx = Math.max(0, frameRect.bottom - bottomRect.top);
             const cur = store.get();
             if (cur.hudTopPx !== hudTopPx || cur.hudBottomPx !== hudBottomPx) {
@@ -206,7 +217,8 @@ export default function Hud() {
             raf = requestAnimationFrame(measure);
         };
         const ro = new ResizeObserver(schedule);
-        ro.observe(topEl);
+        ro.observe(row1El);
+        ro.observe(groupEl);
         ro.observe(bottomEl);
         schedule();
         return () => {
@@ -235,26 +247,21 @@ export default function Hud() {
     return (
         <div className="pointer-events-none absolute inset-0 pt-safe-top">
             <div className="flex flex-col gap-2 px-3">
-                {/* Round 12b Part 1: topRowRef wraps ONLY the persistent
-                    chrome (row 1, row 2, the wave-bubble submenu) — NOT the
-                    coin-toast or the objective/milestone banners just below,
-                    which are moved to after this wrapper's close. Those are
-                    transient (2.6s / 4-4.5s) and the objective banner in
-                    particular defaults to SHOWING on every run's first
-                    render — measuring straight through them inflated
-                    hudTopPx by ~200px in testing (a banner's own real
-                    height), which fed stage.ts's getFit() and visibly
-                    shrank the board for that whole opening window. Keeping
-                    them outside the measured subtree means they still
-                    render in the same visual column (just after row 1/2/
-                    submenu instead of interleaved before row 2) and simply
-                    draw over whatever's beneath them while visible, exactly
-                    as they effectively did before this round (band
-                    reservation was a fixed design-unit guess before,
-                    unaware of ANY HUD content's real height either). */}
-                <div ref={topRowRef} className="flex flex-col gap-2">
+                {/* Round 12b Part 1: this column wraps row 1, row 2, and the
+                    wave-bubble submenu — NOT the coin-toast or the
+                    objective/milestone banners just below, which are moved
+                    to after this wrapper's close. Those are transient
+                    (2.6s / 4-4.5s) and the objective banner in particular
+                    defaults to SHOWING on every run's first render —
+                    measuring straight through them inflated hudTopPx by
+                    ~200px in testing (a banner's own real height). Round
+                    12c: this div itself is no longer what's measured (see
+                    row1Ref/waveRingGroupRef below and the ResizeObserver
+                    effect's own doc) — it's kept only for the shared gap-2
+                    visual column. */}
+                <div className="flex flex-col gap-2">
                 {/* row 1: status + hamburger */}
-                <div className="flex items-center justify-between gap-2">
+                <div ref={row1Ref} className="flex items-center justify-between gap-2">
                     <div id="hud-chip-row" className="flex min-w-0 gap-2">
                         {/* Round 3 HUD relabel (docs/LevelBlocks.md §11): 🚪 10
                             named nothing; ESCAPES LEFT names what a lost life
@@ -335,7 +342,25 @@ export default function Hud() {
                     and lets it drop to its own line otherwise. Per Round 6
                     Part B's own already-documented allowance, "row 2 may
                     grow taller as a result." */}
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-start gap-2">
+                    {/* Round 12c Part 1: `items-start` (was `items-center`) —
+                        the trigger is now the row's tallest child (72px vs
+                        the WAVE/ring group's 52px); centering the group
+                        against the taller row pushed its own bottom edge (=
+                        hudTopPx, since only this group is measured) 10px
+                        lower than its own content needs, for no visual
+                        benefit measured against the old center-line (the row
+                        no longer has a single dominant tall item to center
+                        against once the trigger stopped being measured).
+                        Top-aligning instead recovers that 10px directly as
+                        board height. This group (WAVE chip + ring/head) is
+                        what actually sits over board content near the entry
+                        hatch — measured by waveRingGroupRef below. The
+                        bubble trigger and speed buttons, still ordinary flex
+                        siblings of this group in the same row, are NOT
+                        wrapped here and stay unmeasured (see the
+                        ResizeObserver effect's own doc). */}
+                    <div ref={waveRingGroupRef} className="flex items-center gap-2">
                     <div className="flex shrink-0 flex-col items-start rounded-xl bg-black/55 px-3 py-1 leading-tight whitespace-nowrap">
                         <span className="text-lg font-bold tabular-nums">WAVE {wave}</span>
                         <span className="text-[0.68rem] font-semibold text-white/70">
@@ -371,9 +396,13 @@ export default function Hud() {
                             <ChefHeadIcon />
                         </button>
                     </div>
+                    </div>
                     {/* Round 4 Part E: the wave bubble trigger — plain DOM
                         flow next to #chef-head-button is "anchored to its
-                        right" by construction (see WaveBubble.tsx). */}
+                        right" by construction (see WaveBubble.tsx). Round
+                        12c Part 1: outside waveRingGroupRef above, so its own
+                        height (Part 2: now capped at 72px) no longer feeds
+                        hudTopPx — see this file's own ResizeObserver doc. */}
                     <WaveBubbleTrigger state={waveBubble} />
                     <div className="pointer-events-auto ml-auto flex shrink-0 overflow-hidden rounded-xl bg-black/55">
                         {([1, 2, 3, 4] as const).map((s) => (
@@ -415,8 +444,11 @@ export default function Hud() {
                     just pushes whatever comes after it down for the ~2.6s
                     it's visible, same trade the objective/milestone banners
                     make. Round 12b Part 1: moved from BETWEEN row 1 and row
-                    2 to AFTER the topRowRef-measured block (see that ref's
-                    own comment) — visually it now appears below the speed
+                    2 to AFTER the row1/row2/submenu block (Round 12c: that
+                    block's own measurement now comes from row1Ref/
+                    waveRingGroupRef, not a single wrapping ref, but this
+                    toast's position relative to it is unchanged) — visually
+                    it now appears below the speed
                     row instead of above it, a deliberate placement change to
                     keep this transient toast out of the persistent HUD-band
                     measurement, not an accident. */}
@@ -440,8 +472,9 @@ export default function Hud() {
                     shared `gap-2` is the only spacing rule, and it already
                     applies correctly whether 0, 1, or 2 of the rows above
                     grow. Round 12b Part 1: this column's ITSELF is now
-                    outside topRowRef (see that ref's own comment) — still
-                    the same shared flex-col, still "below the top rows" by
+                    outside the row1/row2/submenu block (see that block's own
+                    comment) — still the same shared flex-col, still "below
+                    the top rows" by
                     the same construction, just no longer part of what
                     stage.ts reserves board-scale clearance for. Objective
                     and milestone are mutually exclusive
@@ -496,7 +529,10 @@ export default function Hud() {
                 shaved 4px off the column's total height, part of clearing
                 the path's exit corner alongside stage.ts's then-BOTTOM_BAND
                 bump (that constant is gone — Round 12b Part 1 replaced it
-                with a measured hudBottomPx; see stage.ts's own doc). */}
+                with a measured hudBottomPx; see stage.ts's own doc). Round
+                12c Part 4: the Kitchen Actions chips move beside the
+                portrait instead of under it, so this column's height is now
+                Ready + gap + portrait + safe-area — see below. */}
             <div ref={bottomColRef} className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-1 px-3 pb-safe-bottom">
                 {/* Round 2c (docs/Ideas.md §6d amendment) removed the
                     upgrade-reminder toast that used to live here at
@@ -508,35 +544,35 @@ export default function Hud() {
                     1.83.0" item 4) moved Ready from beside the portrait to
                     ABOVE it, once Part 1.2 rescaled the portrait to 132px —
                     at that size, beside it pushed the row's total width past
-                    what 360px-wide phones have to spare. flex-col
-                    items-center stacks the two and horizontally centres the
-                    narrower of them on the wider by construction (same
-                    "flow does the centring, not a manual offset" posture the
-                    old inline comment already called out for the vertical
-                    case) — whichever of Ready/the portrait is wider, the
-                    other lands centred under/over it with no hand-measured
-                    offset either could drift from. Gap is the spec's own
-                    6*mu, replacing the old fixed gap-3. */}
-                <div className="flex flex-col items-center" style={{ gap: 6 * mu }}>
+                    what 360px-wide phones have to spare. Round 12c: this
+                    stays — Ready above the portrait, IDLE_SIZE at 132, are
+                    both explicit user decisions this round doesn't revisit.
+                    flex-col items-center stacks Ready over the portrait+chips
+                    row below and horizontally centres the narrower of them
+                    on the wider by construction (same "flow does the
+                    centring, not a manual offset" posture the old inline
+                    comment already called out for the vertical case). Gap is
+                    the spec's own 6*mu, replacing the old fixed gap-3. */}
+                <div className="flex w-full flex-col items-center" style={{ gap: 6 * mu }}>
                     {showInlineReady && (
-                        /* Ready: enlarged for a bigger tap target, sized down at
-                            narrow (~400 CSS px) widths via the sm: breakpoint
-                            rather than a single fixed size — px-16/py-5/text-3xl
-                            read as oversized on a phone but are the right scale
-                            again once the viewport is wide enough (~740 px) not
-                            to look undersized. The looping pulse lives on a
-                            WRAPPING div, not the button itself — animating the
-                            button's own transform would fight active:scale-95's
-                            tap feedback (both target the same property; the
-                            keyframe would win every frame and the press would
-                            never visibly register). Locked (visibly, via
-                            disabled + dimmed styling, not just inert) for
-                            BACKDROP_LOCK_S while a real block transition
-                            crossfades — actions.ts's startWave() is the real
-                            gate, same one-gate posture as every other FTUE wall
-                            in this file; disabled also suspends the pulse, since
-                            animating "tap me" on a button that currently can't
-                            be tapped would be its own small lie. Round 7 item 4:
+                        /* Ready: Round 12c Part 3 removed the old sm:
+                            breakpoint enlargement (px-16/py-5/text-3xl past
+                            ~740px) in favour of one size everywhere — the
+                            spec's own min-height 44px, 12*mu/8*mu padding,
+                            font 14*mu capped at 20px. The looping pulse lives
+                            on a WRAPPING div, not the button itself —
+                            animating the button's own transform would fight
+                            active:scale-95's tap feedback (both target the
+                            same property; the keyframe would win every frame
+                            and the press would never visibly register).
+                            Locked (visibly, via disabled + dimmed styling,
+                            not just inert) for BACKDROP_LOCK_S while a real
+                            block transition crossfades — actions.ts's
+                            startWave() is the real gate, same one-gate
+                            posture as every other FTUE wall in this file;
+                            disabled also suspends the pulse, since animating
+                            "tap me" on a button that currently can't be
+                            tapped would be its own small lie. Round 7 item 4:
                             hidden for the one build phase PostBossPanel owns
                             instead (its own READY takes over); the panel's own
                             visibility already implies backdropTransitioning is
@@ -548,51 +584,79 @@ export default function Hud() {
                                 type="button"
                                 disabled={backdropTransitioning}
                                 className={
-                                    'pointer-events-auto rounded-2xl px-10 py-4 text-2xl font-bold shadow-lg transition-transform active:scale-95 sm:px-16 sm:py-5 sm:text-3xl ' +
+                                    'pointer-events-auto rounded-2xl font-bold shadow-lg transition-transform active:scale-95 ' +
                                     (backdropTransitioning ? 'bg-white/20 text-white/40' : 'bg-primary text-black')
                                 }
+                                style={{ minHeight: 44, padding: `${8 * mu}px ${12 * mu}px`, fontSize: Math.min(14 * mu, 20) }}
                                 onClick={() => { sfx.startWave(); startWave(); }}
                             >
                                 Ready!
                             </button>
                         </div>
                     )}
-                    <ChefPortraitIdle />
-                </div>
-
-                {/* Row 2: Kitchen Actions — the coin sink. One wave's effect,
-                    bought here, gone after. Deliberately minimal/provisional
-                    (round 3 restyles this area) — a plain row of three
-                    buttons, each showing its live price (sim/engine.ts's
-                    kitchenActionCost) and disabling once bought for this wave
-                    or unaffordable. Hidden for the same waves Ready would
-                    show on (ftueBeat === null can be true mid-FTUE, between
-                    forced beats) — the scripted intro keeps the coin sink out
-                    of the player's hands until wave 4. Round 7 item 4: stays
-                    usable even while PostBossPanel owns Ready (bottomBandActive
-                    doesn't check bossPanel.visible, unlike showInlineReady). */}
-                {bottomBandActive && !ftueActive && (
-                    <div className="pointer-events-auto flex justify-center gap-2">
-                        {(['freeze', 'heat', 'slow'] as const).map((kind) => {
-                            const bought = getEngine()?.state.kitchenActions[kind] ?? false;
-                            const price = kitchenActionPrice(kind);
-                            const label = kind === 'freeze' ? 'Deep Freeze' : kind === 'heat' ? 'Turn Up The Heat' : 'Slow Service';
-                            const disabled = bought || coins < price;
-                            return (
-                                <button
-                                    key={kind}
-                                    type="button"
-                                    disabled={disabled}
-                                    className="rounded-xl bg-black/55 px-2 py-1.5 text-center text-[0.7rem] font-bold leading-tight text-white disabled:opacity-45"
-                                    onClick={() => { sfx.click(); buyKitchenAction(kind); }}
-                                >
-                                    <span className="block">{label}</span>
-                                    <span className="block">{bought ? '✓ bought' : `${price}c`}</span>
-                                </button>
-                            );
-                        })}
+                    {/* Round 12c Part 4: the portrait and the Kitchen Actions
+                        chips are now a row (was: chips in their own row
+                        UNDER the portrait+Ready column) — `w-full` on this
+                        row and its `flex-col` ancestor above give it a
+                        definite width to shrink the chip column against
+                        (bottomColRef's own `inset-x-0` gives THAT a definite
+                        width first); `justify-center` then centres the
+                        (portrait + chips) group when it's narrower than that,
+                        and lets the chip column shrink/wrap instead of
+                        overflowing when it isn't — "never wider than the
+                        free space to the frame edge" without a hand-typed
+                        pixel budget. */}
+                    <div className="flex w-full items-start justify-center" style={{ gap: 6 * mu }}>
+                        <div className="relative shrink-0" style={{ width: 132, height: 132 }}>
+                            <ChefPortraitIdle />
+                        </div>
+                        {/* Kitchen Actions — the coin sink. One wave's effect,
+                            bought here, gone after. Deliberately minimal/
+                            provisional (round 3 restyles this area) — a plain
+                            column of three buttons, each showing its live
+                            price (sim/engine.ts's kitchenActionCost) and
+                            disabling once bought for this wave or
+                            unaffordable. Hidden for the same waves Ready
+                            would show on (ftueBeat === null can be true
+                            mid-FTUE, between forced beats) — the scripted
+                            intro keeps the coin sink out of the player's
+                            hands until wave 4. Round 7 item 4: stays usable
+                            even while PostBossPanel owns Ready
+                            (bottomBandActive doesn't check
+                            bossPanel.visible, unlike showInlineReady).
+                            Round 12c Part 4: the column is exactly as tall as
+                            the portrait (height: 132) and split into two
+                            equal (66px) flex regions — an empty top half and
+                            a `justify-center`d bottom half — so the chips sit
+                            "vertically centred on the portrait's lower half"
+                            by construction rather than a guessed offset. */}
+                        {bottomBandActive && !ftueActive && (
+                            <div className="pointer-events-auto flex min-w-0 flex-col" style={{ height: 132 }}>
+                                <div style={{ flex: 1 }} />
+                                <div className="flex min-w-0 flex-col" style={{ flex: 1, gap: 6 * mu, justifyContent: 'center' }}>
+                                    {(['freeze', 'heat', 'slow'] as const).map((kind) => {
+                                        const bought = getEngine()?.state.kitchenActions[kind] ?? false;
+                                        const price = kitchenActionPrice(kind);
+                                        const label = kind === 'freeze' ? 'Deep Freeze' : kind === 'heat' ? 'Turn Up The Heat' : 'Slow Service';
+                                        const disabled = bought || coins < price;
+                                        return (
+                                            <button
+                                                key={kind}
+                                                type="button"
+                                                disabled={disabled}
+                                                className="min-w-0 rounded-xl bg-black/55 px-2 py-1.5 text-center text-[0.7rem] font-bold leading-tight text-white disabled:opacity-45"
+                                                onClick={() => { sfx.click(); buyKitchenAction(kind); }}
+                                            >
+                                                <span className="block">{label}</span>
+                                                <span className="block">{bought ? '✓ bought' : `${price}c`}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
             </div>
 
             <PostBossPanel state={bossPanel} />

@@ -63,6 +63,14 @@
  * for "reset for a new wave" below. None of this needs towerScene.ts's
  * engine instance directly.
  */
+// Round 12c Part 2 (HUD bands round 2, "reserve only what collides"): each
+// trigger cell goes from a vertical stack (icon over name over count, ~114.5px
+// measured tall) to a HORIZONTAL chip (icon left, name-over-count stacked to
+// its right, cell/button height <=72px) -- the old vertical stack was what
+// dominated hudTopPx even after 12b's own measured-pixel fix (that round's
+// own report named this exact element as the binding one). Only the trigger
+// changes; the submenu grid (WaveBubbleSubmenu) keeps its stacked layout per
+// the handover ("it's not measured and it closes on tap").
 import { useEffect, useRef, useState } from 'react';
 import { MANIFEST } from '../assets/manifest.ts';
 import { CONFIG } from '../game/config.ts';
@@ -306,18 +314,23 @@ export function useWaveBubble(): WaveBubbleState {
 }
 
 /** The chat bubble over Ramu — up to 3 distinct dish icons (then a +n
- *  badge), each with its recipe name underneath, and the wave's live
- *  remaining unit count. Mounted inline right after #chef-head-button in
- *  Hud.tsx's own row 2, so "anchored to the right of #chef-head-button"
- *  falls out of plain DOM flow — no runtime measurement (the arrow-round
- *  lesson StationRail.tsx's own doc argues from: getBoundingClientRect/
- *  ResizeObserver cue positioning has failed on device three rounds
- *  running). Round 5 Part A: icons grew 24 -> 40px with a name label under
- *  each; Round 6 Part B: 40 -> 56px, and the bubble (this trigger) now
- *  stays mounted through the whole wave, not just build — row 2 may grow
- *  taller as a result (the handover's own allowance); it can't overlap the
- *  speed row because both are ordinary flex children of the same row, not
- *  independently positioned. */
+ *  badge), each with its recipe name and the wave's live remaining unit
+ *  count set beside it (Round 12c Part 2: was underneath, in a vertical
+ *  stack). Mounted inline right after #chef-head-button in Hud.tsx's own row
+ *  2, so "anchored to the right of #chef-head-button" falls out of plain DOM
+ *  flow — no runtime measurement (the arrow-round lesson StationRail.tsx's
+ *  own doc argues from: getBoundingClientRect/ResizeObserver cue positioning
+ *  has failed on device three rounds running). Round 5 Part A: icons grew
+ *  24 -> 40px with a name label under each; Round 6 Part B: 40 -> 56px, and
+ *  the bubble (this trigger) now stays mounted through the whole wave, not
+ *  just build — row 2 may grow taller as a result (the handover's own
+ *  allowance); it can't overlap the speed row because both are ordinary flex
+ *  children of the same row, not independently positioned. Round 12c Part 1:
+ *  this trigger (and its submenu) is no longer part of what stage.ts
+ *  reserves board clearance for — see Hud.tsx's own doc on hudTopPx — so its
+ *  own height (now capped at 72px, Part 2 below) only needs to clear the
+ *  board's actual top-left content (the entry hatch/first pad row/first
+ *  belt turn), not fit inside a fixed budget. */
 export function WaveBubbleTrigger({ state }: { state: WaveBubbleState }) {
     const reducedMotion = usePrefersReducedMotion();
     const dishes = state.triggerDishes;
@@ -367,7 +380,7 @@ export function WaveBubbleTrigger({ state }: { state: WaveBubbleState }) {
             type="button"
             aria-label="Upcoming wave"
             onClick={state.open}
-            className="pointer-events-auto relative flex shrink-0 items-end gap-1.5 rounded-2xl bg-black/80 py-1.5 pr-2.5 pl-3 active:scale-95"
+            className="pointer-events-auto relative flex shrink-0 items-center gap-1.5 rounded-2xl bg-black/80 py-1 pr-2.5 pl-3 active:scale-95"
         >
             {/* Tail toward #chef-head-button, on the bubble's own left edge. */}
             <span
@@ -379,23 +392,30 @@ export function WaveBubbleTrigger({ state }: { state: WaveBubbleState }) {
                 style={{ transitionDuration: `${PAN_EASE_MS}ms`, opacity: panFading ? 0 : 1 }}
             >
                 {shown.map((d) => (
-                    <span key={d.slug} className="flex shrink-0 flex-col items-center gap-0.5">
+                    // Round 12c Part 2: horizontal cell (icon left, text
+                    // stacked right) instead of the old vertical stack --
+                    // icon height (64px) still dominates, but the button's
+                    // own height is now icon-height + this row's own py-1
+                    // padding (8px) = 72px, not icon+two stacked text lines.
+                    <span key={d.slug} className="flex shrink-0 items-center gap-1.5">
                         <img
                             src={d.icon}
                             alt=""
-                            className="h-16 w-16 rounded-full border border-black/40 bg-surface object-contain"
+                            className="h-16 w-16 shrink-0 rounded-full border border-black/40 bg-surface object-contain"
                         />
-                        {/* Round 11 Part 1.5 (docs/Ideas.md §6d, "Playtest of
-                            1.82.0" item 5): icon 56->64px, name/count off the
-                            rem scale and onto explicit px so both clear the
-                            11/12px floors exactly rather than just landing
-                            near them (0.55rem/0.6rem measured out at
-                            8.8/9.6px — under the floor on every device). */}
-                        <span className="max-w-[4rem] truncate text-[11px] font-bold text-white/85">{d.name}</span>
-                        {/* Round 7 item 1: this dish's own live remaining
-                            count, replacing the old collective total. */}
-                        <span className="text-[12px] font-bold tabular-nums text-white/70">
-                            {d.remaining}/{d.count}
+                        <span className="flex flex-col items-start leading-none">
+                            {/* Round 11 Part 1.5 (docs/Ideas.md §6d, "Playtest of
+                                1.82.0" item 5): icon 56->64px, name/count off the
+                                rem scale and onto explicit px so both clear the
+                                11/12px floors exactly rather than just landing
+                                near them (0.55rem/0.6rem measured out at
+                                8.8/9.6px — under the floor on every device). */}
+                            <span className="max-w-[4rem] truncate text-[11px] font-bold text-white/85">{d.name}</span>
+                            {/* Round 7 item 1: this dish's own live remaining
+                                count, replacing the old collective total. */}
+                            <span className="text-[12px] font-bold tabular-nums text-white/70">
+                                {d.remaining}/{d.count}
+                            </span>
                         </span>
                     </span>
                 ))}
