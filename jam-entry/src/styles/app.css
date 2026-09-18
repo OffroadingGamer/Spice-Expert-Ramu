@@ -31,6 +31,15 @@
        nudge (not the vertical animate-bounce Hud.tsx's old downward arrow
        used) reads as "over here, to the right" for a sideways pointer. */
     --animate-nudge-right: nudge-right 1s ease-in-out infinite;
+
+    /* Round 14 Part 3 (docs/Ideas.md §10.4): the wave-bubble shard-award
+       toast — rises 8px and fades over 1.2s, one run (not infinite, unlike
+       the two above). Gated behind motion-safe: at the call site
+       (WaveBubble.tsx's ShardAwardToast), same posture as every other
+       motion in this file; under reduced motion the element still mounts
+       and un-mounts on the same 1.2s timer, just without the transform/
+       opacity animation, so "resting state after 1.2s" holds either way. */
+    --animate-shard-rise: shard-rise 1.2s ease-out forwards;
 }
 
 @keyframes ready-pulse {
@@ -41,6 +50,11 @@
 @keyframes nudge-right {
     0%, 100% { transform: translateX(0); }
     50% { transform: translateX(8px); }
+}
+
+@keyframes shard-rise {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-8px); opacity: 0; }
 }
 
 /* ---------------------------------------------------------------------------

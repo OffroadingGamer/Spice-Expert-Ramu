@@ -460,6 +460,82 @@ export function WaveBubbleTrigger({ state }: { state: WaveBubbleState }) {
     );
 }
 
+/**
+ * Round 14 Part 3 (docs/Ideas.md §10.4): the shard-award feedback for a
+ * full-service (zero-leak) wave clear — store.shardAward (towerScene.ts's
+ * trackWaveClears patches it, off the sealed engine's own wave-clear event).
+ * Deliberately NOT built from useWaveBubble's own triggerDishes/cells: those
+ * reset to the UPCOMING wave's own dish set the instant `wave` changes
+ * (this file's own render-time reset, right above), which happens in the
+ * SAME tick as the award — the cleared wave's cells may already be gone (a
+ * block boundary can swap the whole dish set, e.g. level 10 -> 11). Building
+ * the toast straight from the award payload's own slugs/icons instead means
+ * it always shows the recipe that was actually just served, never whatever
+ * the trigger has already moved on to. Mounted next to #chef-head-button in
+ * Hud.tsx, absolutely positioned against a `relative` wrapper there.
+ */
+export function ShardAwardToast() {
+    const award = useStore((s) => s.shardAward);
+    const [shown, setShown] = useState(false);
+    const prevNonce = useRef(award.nonce);
+
+    if (prevNonce.current !== award.nonce) {
+        prevNonce.current = award.nonce;
+        if (award.slugs.length > 0) {
+            setShown(true);
+        }
+    }
+
+    useEffect(() => {
+        if (!shown) return;
+        const timer = setTimeout(() => setShown(false), 1200);
+        return () => clearTimeout(timer);
+    }, [shown, award.nonce]);
+
+    if (!shown || award.slugs.length === 0) return null;
+
+    // Anchored just above the trigger's own top edge (not translated by its
+    // own height first — that stacked with the rise keyframe below and read
+    // as a much bigger jump than the spec's own "rising 8px"). The keyframe
+    // alone supplies the 8px rise.
+    return (
+        <div className="pointer-events-none absolute bottom-full left-0 mb-1 flex flex-col gap-1">
+            {award.slugs.map((slug) => {
+                const scrolled = award.scrolledSlugs.includes(slug);
+                return (
+                    <span
+                        key={slug}
+                        className="motion-safe:animate-shard-rise flex items-center gap-1 rounded-full bg-black/80 py-0.5 pr-2 pl-0.5 text-[11px] font-bold whitespace-nowrap text-primary"
+                    >
+                        <img src={ASSET_SRC.get(`dish-${slug}`)} alt="" className="h-4 w-4 rounded-full bg-surface object-contain" />
+                        {scrolled ? (
+                            t('bubble.scroll')
+                        ) : (
+                            <>
+                                {t('bubble.shard')}
+                                {/* Part 4: ui-shard PNG, 128^2 canvas, opaque
+                                    content spans ~37% of its own width x ~67%
+                                    of its own height (measured offline, same
+                                    "shipped PNG's own opaque bbox" posture
+                                    Leaderboard.tsx's laurel constants use) —
+                                    rendering the full (padded) image at
+                                    128*(14/86) tall makes the OPAQUE glyph
+                                    itself exactly 14px tall, the handover's
+                                    own "renders at 14px in the bubble". */}
+                                <img
+                                    src={ASSET_SRC.get('ui-shard')}
+                                    alt=""
+                                    style={{ height: 128 * (14 / 86), width: 128 * (14 / 86) }}
+                                />
+                            </>
+                        )}
+                    </span>
+                );
+            })}
+        </div>
+    );
+}
+
 /** Round 5 Part B: the scroll submenu — closed until tapped (see
  *  useWaveBubble's render-time reset above for why it can no longer be
  *  caught open on its own), a GRID of one cell per recipe (two columns once

@@ -54,7 +54,7 @@ import {
     makeTowerLevelTextures,
 } from './textures.ts';
 import { store } from '../state/store.ts';
-import { getSave, recordRunEnd } from '../state/save.ts';
+import { getSave, recordRunEnd, awardShards } from '../state/save.ts';
 import { submitRunScores } from '../sdk/leaderboard.ts';
 import { duckMusicForSting, playSample, resetMusicDuck, sfx } from '../audio/audio.ts';
 import type { Stage } from './stage.ts';
@@ -1085,6 +1085,14 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     // 'wave') — never recomputed mid-wave, so SAFE can't drift as lives drop.
     let killsAtWaveStart = engine.state.kills;
     let livesAtWaveStart = engine.state.lives;
+    // Round 14 Part 3 (docs/Ideas.md §10.4): leaks THIS wave only, for the
+    // "full service = zero leaks" shard rule — reset at the exact same
+    // build->wave transition killsAtWaveStart/livesAtWaveStart already key
+    // off below, incremented per substep alongside trackLeaksForStep, read
+    // once by trackWaveClears() at the wave-clear event this same frame (the
+    // next reset can't happen before then — it only fires on the NEXT
+    // wave's own start, a later tick).
+    let leaksThisWave = 0;
     // Memoized by waveIndex — waveAt(index).entries never changes for a
     // given index within one run, so there's no reason to re-sum it every
     // tick just because syncGauge() itself runs every tick.
@@ -1345,6 +1353,42 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 lives_remaining: engine.state.lives,
                 duration_s: (performance.now() - waveStartedAt) / 1000,
             });
+            // Round 14 Part 3 (docs/Ideas.md §10.4 pick B): "full service" =
+            // this wave leaked nothing — leaksThisWave was reset at this
+            // exact wave's own start (the tick loop above) and never reset
+            // again until the NEXT wave starts, so it's still accurate here.
+            // Distinct recipes = the SAME dedup-by-slug set WaveBubble.tsx's
+            // triggerDishes computes (waveAt/blockForLevel, entry order) —
+            // read straight off e.cleared, not the tick's own `level` var,
+            // so this is correct regardless of game speed or which frame the
+            // clear landed on.
+            if (leaksThisWave === 0) {
+                const clearedWave = waveAt(e.cleared - 1);
+                const clearedBlock = blockForLevel(e.cleared);
+                const seenSlugs = new Set<string>();
+                const slugs: string[] = [];
+                for (const entry of clearedWave.entries) {
+                    for (const slug of clearedBlock.dishes[entry.enemy] ?? []) {
+                        if (seenSlugs.has(slug)) continue;
+                        seenSlugs.add(slug);
+                        slugs.push(slug);
+                    }
+                }
+                if (slugs.length > 0) {
+                    const { newlyCompleted, save } = awardShards(slugs);
+                    store.patch({
+                        shards: save.shards,
+                        scrolls: save.scrolls,
+                        shardAward: {
+                            wave: e.cleared,
+                            slugs,
+                            scrolledSlugs: newlyCompleted,
+                            nonce: store.get().shardAward.nonce + 1,
+                        },
+                    });
+                    if (newlyCompleted.length > 0) sfx.scrollUnlock();
+                }
+            }
             if (e.cleared === 1) {
                 trackFunnelStep(5, 'wave_1_cleared', 'run', 2);
                 // Round 10 Part 2: the heat-gauge FTUE beat, queued BEFORE
@@ -2398,12 +2442,14 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                     // (every non-boss wave), the visible fade-in only when
                     // the prior block boundary just faded them out.
                     startChevronFade(1);
+                    leaksThisWave = 0;
                 }
                 prevPhase = engine.state.phase;
                 const stepEvents = engine.drainEvents();
                 trackLeaksForStep(stepEvents, preUids);
                 trackDeathBounties(stepEvents, preUids, levelForStep);
                 trackDishTally(preUids);
+                leaksThisWave += stepEvents.filter((e) => e.type === 'leak').length;
                 allEvents.push(...stepEvents);
             }
         }

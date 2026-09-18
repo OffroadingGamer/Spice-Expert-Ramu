@@ -91,7 +91,7 @@ import ServiceRing from './ServiceRing.tsx';
 import { Card, CardCredit, CardDivider, CardScrim, CardTitle } from './SettingsCard.tsx';
 import Slider from './Slider.tsx';
 import { useMenuUnit } from './useMenuUnit.ts';
-import { useWaveBubble, WaveBubbleSubmenu, WaveBubbleTrigger } from './WaveBubble.tsx';
+import { ShardAwardToast, useWaveBubble, WaveBubbleSubmenu, WaveBubbleTrigger } from './WaveBubble.tsx';
 
 /** Danger threshold for the lives chip's red pulse: ≤30% of starting lives
  *  is the conventional "danger zone" cutoff (enough runway left to react,
@@ -131,6 +131,28 @@ export default function Hud() {
     const [showObjective, setShowObjective] = useState(true);
     const [showMilestone, setShowMilestone] = useState(false);
     const [showGrant, setShowGrant] = useState(false);
+    // Round 14 Part 2: the Kitchen Actions icon chips' tap-and-hold name
+    // toast — 300ms hold shows the action's full name for 1.2s; a normal
+    // tap (released before 300ms) never shows it and still buys via the
+    // button's own onClick, which fires independently of this timer.
+    const [holdToastKind, setHoldToastKind] = useState<'freeze' | 'heat' | 'slow' | null>(null);
+    const holdTimers = useRef<Record<string, ReturnType<typeof setTimeout> | null>>({});
+    const holdClearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const startHold = (kind: 'freeze' | 'heat' | 'slow') => {
+        if (holdTimers.current[kind]) clearTimeout(holdTimers.current[kind]!);
+        holdTimers.current[kind] = setTimeout(() => {
+            holdTimers.current[kind] = null;
+            setHoldToastKind(kind);
+            if (holdClearTimer.current) clearTimeout(holdClearTimer.current);
+            holdClearTimer.current = setTimeout(() => { holdClearTimer.current = null; setHoldToastKind(null); }, 1200);
+        }, 300);
+    };
+    useEffect(() => {
+        return () => {
+            for (const id of Object.values(holdTimers.current)) if (id) clearTimeout(id);
+            if (holdClearTimer.current) clearTimeout(holdClearTimer.current);
+        };
+    }, []);
     // Round 12c Part 1: measured by the ResizeObserver effect below —
     // row1Ref is row 1 (lives/coins/hamburger), waveRingGroupRef is the WAVE
     // chip + ring/head group only (was: the whole two-row block, 12b).
@@ -404,7 +426,10 @@ export default function Hud() {
                         12c Part 1: outside waveRingGroupRef above, so its own
                         height (Part 2: now capped at 72px) no longer feeds
                         hudTopPx — see this file's own ResizeObserver doc. */}
-                    <WaveBubbleTrigger state={waveBubble} />
+                    <div className="relative shrink-0">
+                        <WaveBubbleTrigger state={waveBubble} />
+                        <ShardAwardToast />
+                    </div>
                     <div className="pointer-events-auto ml-auto flex shrink-0 overflow-hidden rounded-xl bg-black/55">
                         {([1, 2, 3, 4] as const).map((s) => (
                             <button
@@ -555,35 +580,31 @@ export default function Hud() {
                     comment already called out for the vertical case). Gap is
                     the spec's own 6*mu, replacing the old fixed gap-3. */}
                 <div className="flex w-full flex-col items-center" style={{ gap: 6 * mu }}>
-                    {showInlineReady && (
-                        /* Ready: Round 12c Part 3 removed the old sm:
-                            breakpoint enlargement (px-16/py-5/text-3xl past
-                            ~740px) in favour of one size everywhere — the
-                            spec's own min-height 44px, 12*mu/8*mu padding,
-                            font 14*mu capped at 20px. The looping pulse lives
-                            on a WRAPPING div, not the button itself —
-                            animating the button's own transform would fight
-                            active:scale-95's tap feedback (both target the
-                            same property; the keyframe would win every frame
-                            and the press would never visibly register).
-                            Locked (visibly, via disabled + dimmed styling,
-                            not just inert) for BACKDROP_LOCK_S while a real
-                            block transition crossfades — actions.ts's
-                            startWave() is the real gate, same one-gate
-                            posture as every other FTUE wall in this file;
-                            disabled also suspends the pulse, since animating
-                            "tap me" on a button that currently can't be
-                            tapped would be its own small lie. Round 7 item 4:
-                            hidden for the one build phase PostBossPanel owns
-                            instead (its own READY takes over); the panel's own
-                            visibility already implies backdropTransitioning is
-                            false for that wave (the dialogue-then-panel sequence
-                            runs well after the crossfade lock expires), so no
-                            extra check is needed here for that overlap. */
-                        <div className={backdropTransitioning ? '' : 'motion-safe:animate-ready-pulse'}>
+                    {/* Round 14 Part 1 (docs/Ideas.md §6d, "Playtest of
+                        1.86.0" item 1): Ready used to be conditionally
+                        UNMOUNTED ({showInlineReady && (...)}) — dropping it
+                        (and its 6*mu gap) from bottomColRef's own measured
+                        height every time selecting a pad, entering wave
+                        phase, opening dialogue/pause, or a post-boss panel
+                        made bottomBandActive false. hudBottomPx (Hud.tsx's
+                        own ResizeObserver, above) mirrored that shrink
+                        straight into stage.ts's getFit(), so the board
+                        visibly resized on every one of those transitions —
+                        "the belt glitches out in size." Fix: ALWAYS mount
+                        this wrapper (same box, same gap, every build-phase
+                        pixel reserved at all times) and toggle visibility
+                        instead — visibility:hidden keeps the layout box
+                        (unlike display:none) and drops out of hit-testing on
+                        its own, so no separate pointer-events flag is
+                        needed. The pulse and the disabled dimming only apply
+                        while actually shown; the pulse still suspends under
+                        backdropTransitioning exactly as before. */}
+                    <div style={{ visibility: showInlineReady ? 'visible' : 'hidden' }}>
+                        <div className={showInlineReady && !backdropTransitioning ? 'motion-safe:animate-ready-pulse' : ''}>
                             <button
                                 type="button"
-                                disabled={backdropTransitioning}
+                                disabled={!showInlineReady || backdropTransitioning}
+                                tabIndex={showInlineReady ? 0 : -1}
                                 className={
                                     'pointer-events-auto rounded-2xl font-bold shadow-lg transition-transform active:scale-95 ' +
                                     (backdropTransitioning ? 'bg-white/20 text-white/40' : 'bg-primary text-black')
@@ -594,7 +615,7 @@ export default function Hud() {
                                 {t('hud.ready')}
                             </button>
                         </div>
-                    )}
+                    </div>
                     {/* Round 12c Part 4: the portrait and the Kitchen Actions
                         chips are now a row (was: chips in their own row
                         UNDER the portrait+Ready column) — `w-full` on this
@@ -612,50 +633,79 @@ export default function Hud() {
                             <ChefPortraitIdle />
                         </div>
                         {/* Kitchen Actions — the coin sink. One wave's effect,
-                            bought here, gone after. Deliberately minimal/
-                            provisional (round 3 restyles this area) — a plain
-                            column of three buttons, each showing its live
-                            price (sim/engine.ts's kitchenActionCost) and
-                            disabling once bought for this wave or
-                            unaffordable. Hidden for the same waves Ready
-                            would show on (ftueBeat === null can be true
-                            mid-FTUE, between forced beats) — the scripted
-                            intro keeps the coin sink out of the player's
-                            hands until wave 4. Round 7 item 4: stays usable
-                            even while PostBossPanel owns Ready
-                            (bottomBandActive doesn't check
-                            bossPanel.visible, unlike showInlineReady).
-                            Round 12c Part 4: the column is exactly as tall as
-                            the portrait (height: 132) and split into two
-                            equal (66px) flex regions — an empty top half and
-                            a `justify-center`d bottom half — so the chips sit
-                            "vertically centred on the portrait's lower half"
-                            by construction rather than a guessed offset. */}
-                        {bottomBandActive && !ftueActive && (
-                            <div className="pointer-events-auto flex min-w-0 flex-col" style={{ height: 132 }}>
-                                <div style={{ flex: 1 }} />
-                                <div className="flex min-w-0 flex-col" style={{ flex: 1, gap: 6 * mu, justifyContent: 'center' }}>
-                                    {(['freeze', 'heat', 'slow'] as const).map((kind) => {
-                                        const bought = getEngine()?.state.kitchenActions[kind] ?? false;
-                                        const price = kitchenActionPrice(kind);
-                                        const label = t(kind === 'freeze' ? 'hud.action.freeze' : kind === 'heat' ? 'hud.action.heat' : 'hud.action.slow');
-                                        const disabled = bought || coins < price;
-                                        return (
+                            bought here, gone after. Round 14 Part 2
+                            (docs/Ideas.md §6d, "Playtest of 1.86.0" item 2,
+                            pick A): the old column of three full-width text
+                            buttons (taller than the portrait's own lower
+                            half, which is what made THIS column the bottom
+                            band's own height) is now a ROW of three 44x44
+                            icon chips — glyph + a short cost line, same
+                            affordability colouring (disabled:opacity-45).
+                            Round 14 Part 1: same always-mounted/
+                            visibility-hidden treatment as Ready above — this
+                            column's own box (height 132, vertically centred
+                            row inside it) is reserved at all times, hidden
+                            (not unmounted) for the same waves Ready hides on
+                            plus the FTUE. Round 7 item 4: stays usable even
+                            while PostBossPanel owns Ready (bottomBandActive
+                            doesn't check bossPanel.visible, unlike
+                            showInlineReady). */}
+                        <div
+                            className="flex min-w-0 flex-col items-center"
+                            style={{
+                                height: 132,
+                                visibility: bottomBandActive && !ftueActive ? 'visible' : 'hidden',
+                            }}
+                        >
+                            {/* Empty top half + a justify-center'd bottom
+                                half — same split Round 12c Part 4 used, so
+                                the row lands vertically centred on the
+                                portrait's LOWER half (y 66-132), not the
+                                full 132px (a plain single-region centering
+                                would land it on the 66px seam instead, ~33px
+                                too high). */}
+                            <div style={{ flex: 1 }} />
+                            <div className="pointer-events-auto flex min-w-0 items-center" style={{ flex: 1, gap: 6 * mu, alignItems: 'center' }}>
+                                {(['freeze', 'heat', 'slow'] as const).map((kind) => {
+                                    const bought = getEngine()?.state.kitchenActions[kind] ?? false;
+                                    const price = kitchenActionPrice(kind);
+                                    const glyph = kind === 'freeze' ? '❄️' : kind === 'heat' ? '🔥' : '🐌';
+                                    const labelKey = kind === 'freeze' ? 'hud.action.freeze' : kind === 'heat' ? 'hud.action.heat' : 'hud.action.slow';
+                                    const label = t(labelKey);
+                                    const disabled = bought || coins < price;
+                                    const cancelHold = () => {
+                                        if (holdTimers.current[kind]) {
+                                            clearTimeout(holdTimers.current[kind]!);
+                                            holdTimers.current[kind] = null;
+                                        }
+                                    };
+                                    return (
+                                        <div key={kind} className="relative shrink-0" style={{ width: 44, height: 44 }}>
+                                            {holdToastKind === kind && (
+                                                <span className="pointer-events-none absolute -top-1.5 left-1/2 z-10 -translate-x-1/2 -translate-y-full rounded-md bg-[var(--color-chocolate)] px-1.5 py-0.5 text-[11px] font-bold whitespace-nowrap text-cream">
+                                                    {t('hud.actions.aria', { label })}
+                                                </span>
+                                            )}
                                             <button
-                                                key={kind}
                                                 type="button"
                                                 disabled={disabled}
-                                                className="min-w-0 rounded-xl bg-black/55 px-2 py-1.5 text-center text-[0.7rem] font-bold leading-tight text-white disabled:opacity-45"
+                                                aria-label={t('hud.actions.aria', { label })}
+                                                className="flex h-11 w-11 flex-col items-center justify-center rounded-xl bg-black/55 text-white disabled:opacity-45"
+                                                onPointerDown={() => startHold(kind)}
+                                                onPointerUp={cancelHold}
+                                                onPointerLeave={cancelHold}
                                                 onClick={() => { sfx.click(); buyKitchenAction(kind); }}
                                             >
-                                                <span className="block">{label}</span>
-                                                <span className="block">{bought ? t('hud.action.bought') : t('hud.action.price', { n: price })}</span>
+                                                <span className="text-[20px] leading-none">{glyph}</span>
+                                                <span className="text-[11px] leading-none font-bold">
+                                                    {bought ? t('hud.action.bought') : t('hud.action.price', { n: price })}
+                                                </span>
                                             </button>
-                                        );
-                                    })}
-                                </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
-                        )}
+                        </div>
                     </div>
                 </div>
             </div>

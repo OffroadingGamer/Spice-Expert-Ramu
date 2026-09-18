@@ -299,6 +299,17 @@ export const MANIFEST: Manifest = {
                 // Deferred: Ranks can't open before the menu/HUD boot path
                 // finishes either.
                 { alias: 'ui-laurel', src: 'images/ui/laurel.png' },
+                // Round 14 Part 4 (docs/Ideas.md §10.4): recipe scrolls.
+                // Art/_gen/ranks-kitchen-final/{recipe-scroll,shard}.png,
+                // both 1024^2 sources — resized Lanczos, alpha kept, same
+                // treatment as ui-laurel above. recipe-scroll -> 256^2 (the
+                // Kitchen's unlocked-card ground); shard -> 128^2 (the "+1 ✦"
+                // glyph, wave bubble + progress bar). Deferred: neither
+                // shows before the Kitchen or a wave clear, both well after
+                // boot. Opaque-bbox measurements (ui/MetaUpgrades.tsx,
+                // ui/WaveBubble.tsx) are in each render site's own doc.
+                { alias: 'ui-recipe-scroll', src: 'images/ui/recipe-scroll.png' },
+                { alias: 'ui-shard', src: 'images/ui/shard.png' },
             ],
         },
     ],

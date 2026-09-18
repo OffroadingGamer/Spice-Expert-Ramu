@@ -94,8 +94,17 @@ export const en: Record<string, TranslationEntry> = {
     'hud.action.freeze': 'Deep Freeze',
     'hud.action.heat': 'Turn Up The Heat',
     'hud.action.slow': 'Slow Service',
-    'hud.action.bought': '✓ bought',
+    // Round 14 Part 2 (docs/Ideas.md §6d "Playtest of 1.86.0" item 2, pick
+    // A): the three actions become 44x44 icon chips — 'hud.action.bought'
+    // shortens from "✓ bought" (fit the old text chip) to a bare check (the
+    // new chip's whole cost line is one glyph or the price, never both).
+    'hud.action.bought': '✓',
     'hud.action.price': '{n}c',
+    // hud.actions.* (Round 14 Part 2): the icon chip's own aria-label — the
+    // visible button now carries only a glyph + price, so the full action
+    // name (hud.action.freeze/heat/slow above) still needs to reach a
+    // screen reader. Also the tap-and-hold name toast's content.
+    'hud.actions.aria': '{label}',
     'hud.pause.title': 'Shift paused',
     'hud.pause.continue': 'Continue',
     'hud.pause.mainMenu': 'Main Menu',
@@ -181,6 +190,15 @@ export const en: Record<string, TranslationEntry> = {
         one: '{remaining} of {count} remaining',
         other: '{remaining} of {count} remaining',
     },
+    // Round 14 Part 3 (docs/Ideas.md §10.4): the shard-award toast on a
+    // full-service (zero-leak) wave clear — see WaveBubble.tsx's
+    // ShardAwardToast. 'bubble.scroll' replaces 'bubble.shard' for whichever
+    // slugs crossed 8 shards on THIS clear. No ✦ glyph baked into the string
+    // — Part 4's ui-shard PNG renders as its own <img> beside this text (the
+    // handover's own "the shard renders at 14px tall in the bubble"), not a
+    // unicode character.
+    'bubble.shard': '+1',
+    'bubble.scroll': 'Scroll!',
 
     // ---- 10. Post-boss panel (ui/PostBossPanel.tsx) ------------------------
     'boss.title': 'Congratulations!',
@@ -363,4 +381,37 @@ export const en: Record<string, TranslationEntry> = {
     'pixi.preview.dmgTo': '{b} dmg',
     'pixi.preview.rateFrom': '{a} → ',
     'pixi.preview.rateTo': '{b}/s',
+
+    // ---- 19. Recipe scrolls (Round 14 Part 3, ui/MetaUpgrades.tsx) --------
+    'kitchen.scrolls.title': 'Recipe scrolls',
+    'kitchen.scrolls.count': '{n} / {max} scrolls',
+    // No ✦ glyph baked in — same reasoning as bubble.shard above, the
+    // ui-shard PNG renders beside this text at 12px (the progress-bar size).
+    'kitchen.scrolls.progress': '{n} / {max}',
+    'kitchen.scrolls.buy': '💎 {n}',
+
+    // ---- 20. Recipe notes (game/data/recipes.ts) — keyed on dish slug, one
+    // line of Ramu's voice, shown on an UNLOCKED scroll card only. ----------
+    'recipe.chai.note': 'Boil it twice. Trust me on this one.',
+    'recipe.coffee.note': 'Bitter first, sweet after. Like most mornings.',
+    'recipe.naan.note': "Slap it, don't stroke it. The tandoor forgives noise.",
+    'recipe.jeera-rice.note': 'Toast the cumin till it argues back.',
+    'recipe.palak-aloo.note': 'Spinach lies about how much it shrinks. Buy more.',
+    'recipe.gobhi-masala.note': 'Char the cauliflower first. Sad florets, happy plate.',
+    'recipe.rajma.note': "Soak overnight or don't bother starting.",
+    'recipe.coconut-chutney.note': 'Fresh coconut or none. The dried stuff is a rumor.',
+    'recipe.idli.note': 'Steam hot, serve hotter. Cold idli is a crime.',
+    'recipe.upma.note': 'Roast the rava till the kitchen smells like Sunday.',
+    'recipe.sambar.note': 'Tamarind first, patience second.',
+    'recipe.beans-poriyal.note': 'Cut small, cook fast. Nobody wants mushy beans.',
+    'recipe.pesto.note': "Crush, don't blend. The blender lies about basil.",
+    'recipe.minestrone.note': "Whatever's in the fridge. That's the whole recipe.",
+    'recipe.arrabbiata.note': 'One chili too few is still one chili too few.',
+    'recipe.aglio-e-olio.note': 'Garlic gold, not garlic brown. Watch it like a customer.',
+    'recipe.risotto.note': 'Stir until your arm complains. Then stir more.',
+    'recipe.veg-thukpa.note': 'Broth first, noodles last. Reverse it and regret it.',
+    'recipe.bamboo-shoot-fry.note': 'Rinse it twice. The first rinse is a lie too.',
+    'recipe.veg-momo.note': 'Fold it ugly, it still steams the same.',
+    'recipe.sticky-rice.note': "Soak it, don't rush it. Rice remembers shortcuts.",
+    'recipe.ooti.note': 'The boss dish. Serve it like you mean it.',
 };

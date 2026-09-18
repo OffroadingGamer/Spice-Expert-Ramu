@@ -152,7 +152,7 @@ export function initAudio(volumes: { music: number; sfx: number }): void {
 // as before.
 // ---------------------------------------------------------------------------
 
-type SampleId = 'lose' | 'upgrade' | 'wave-clear' | 'kettle-boil' | 'water-pour' | 'block-transition';
+type SampleId = 'lose' | 'upgrade' | 'wave-clear' | 'kettle-boil' | 'water-pour' | 'block-transition' | 'scroll-unlock';
 
 /** Playback gain per sample — peak-matched to the synth cues they replace
  * (MP3s normalise to -3dBFS ~= 0.708 peak; the synth peaks at 0.30-0.35),
@@ -179,6 +179,10 @@ const SAMPLES: Record<SampleId, { url: string; gain: number }> = {
     // stays 'block-transition' (ids and filenames already differ
     // elsewhere, e.g. lose -> ah.mp3), only the url was wrong.
     'block-transition': { url: 'audio/bombay-transition.mp3', gain: 0.75 }, // 1.5x: user could not hear it under the ducked BGM at 0.5. Output peaks -10.08 dBFS, ample headroom.
+    // Round 14 Part 4 (docs/Ideas.md §10.4): plays once per wave clear that
+    // completes a recipe scroll — the master, unedited (its own .mp3.json
+    // sidecar stays behind, same posture as every other SAMPLES entry here).
+    'scroll-unlock': { url: 'audio/sfx-scroll-unlock.mp3', gain: 1.0 },
 };
 
 /** The CDN-streamed music cues (see switchCue near the sequencer, below).
@@ -407,6 +411,15 @@ export const sfx = {
         tone('sine', 880, 880, 0.08, 0.35);
         tone('sine', 1100, 1100, 0.08, 0.35, 0.08);
         tone('sine', 1320, 1320, 0.16, 0.35, 0.16);
+    },
+    /** A recipe scroll unlocks (docs/Ideas.md §10.4). Synth fallback: a
+     *  brighter three-note chime than upgrade()'s, so it doesn't read as the
+     *  same event under the permanent-fallback path. */
+    scrollUnlock(): void {
+        if (playSample('scroll-unlock')) return;
+        tone('sine', 990, 990, 0.09, 0.32);
+        tone('sine', 1320, 1320, 0.09, 0.32, 0.09);
+        tone('sine', 1760, 1760, 0.18, 0.32, 0.18);
     },
     win(): void {
         tone('square', 660, 660, 0.12, 0.35);

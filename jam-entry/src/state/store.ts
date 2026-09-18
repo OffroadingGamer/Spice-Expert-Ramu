@@ -224,6 +224,22 @@ export interface AppState {
      *  circular import). */
     hudTopPx: number;
     hudBottomPx: number;
+    /** Round 14 Part 3 (docs/Ideas.md §10.4 pick B): mirrors of the save's
+     *  shard/scroll progress (state/save.ts) — ui/MetaUpgrades.tsx's Recipe
+     *  scrolls grid reads these, same "persisted data mirrored into the
+     *  store for React" posture as gems/metaLevels above. Patched at boot
+     *  (main.tsx) and after every towerScene.ts awardShards()/MetaUpgrades.tsx
+     *  buyScroll() call. */
+    shards: Record<string, number>;
+    scrolls: string[];
+    /** The wave bubble's shard-award feedback (docs/Ideas.md §10.4): patched
+     *  once per full-service (zero-leak) wave clear by towerScene.ts's
+     *  trackWaveClears, off the sealed engine's own wave-clear event —
+     *  `slugs` is every distinct recipe that wave served, `scrolledSlugs` is
+     *  the subset that crossed 8 shards THIS clear. `nonce` (not the slugs
+     *  themselves — a wave can repeat the same dish set) is what keys the
+     *  WaveBubble toast's re-trigger, same posture as ftueGrantNonce above. */
+    shardAward: { wave: number; slugs: string[]; scrolledSlugs: string[]; nonce: number };
 }
 
 const INITIAL: AppState = {
@@ -280,6 +296,9 @@ const INITIAL: AppState = {
     renameOpen: false,
     hudTopPx: 96,
     hudBottomPx: 240,
+    shards: {},
+    scrolls: [],
+    shardAward: { wave: 0, slugs: [], scrolledSlugs: [], nonce: 0 },
 };
 
 /**

@@ -101,6 +101,21 @@ export interface SaveData {
      *  starts at 'en'. i18n/index.ts owns reading/writing this via
      *  setSaveLocale/getSave().locale — never patched directly by UI code. */
     locale: string;
+    /** Round 14 Part 3 (docs/Ideas.md §10.4 pick B): full-service shard
+     *  progress, keyed by dish slug — +1 per distinct recipe on a wave's
+     *  order every time that wave clears with zero leaks (towerScene.ts's
+     *  trackWaveClears, off the sealed engine's own {type:'leak'} events).
+     *  Stops incrementing once the slug is in `scrolls` (awardShards below).
+     *  Additive, migration-safe like locale/rankMemory above. */
+    shards: Record<string, number>;
+    /** Unlocked recipe scroll slugs — earned at 8 shards OR bought outright
+     *  (buyScroll below). The single source of truth for "is this dish
+     *  unlocked" in ui/MetaUpgrades.tsx's Recipe scrolls grid. */
+    scrolls: string[];
+    /** Subset of `scrolls` bought with gems rather than earned by shards —
+     *  audit trail only (awardShards never writes here); nothing reads this
+     *  to decide locked/unlocked, that's `scrolls` alone. */
+    scrollsBought: string[];
 }
 
 /** One remembered rank plus the UTC day it was recorded on. `utcDay` is only
@@ -137,6 +152,9 @@ const DEFAULTS: SaveData = {
     seenBeats: [],
     rankMemory: {},
     locale: 'en',
+    shards: {},
+    scrolls: [],
+    scrollsBought: [],
 };
 
 let data: SaveData = structuredClone(DEFAULTS);
@@ -224,6 +242,18 @@ function parse(raw: string | null): SaveData | null {
                 return out;
             })(),
             locale: typeof parsed.locale === 'string' && parsed.locale.length > 0 ? parsed.locale : 'en',
+            shards: (() => {
+                const raw = (parsed.shards ?? {}) as Record<string, unknown>;
+                const out: Record<string, number> = {};
+                for (const [k, v] of Object.entries(raw)) out[k] = num(v, 0, Number.MAX_SAFE_INTEGER);
+                return out;
+            })(),
+            scrolls: Array.isArray(parsed.scrolls)
+                ? parsed.scrolls.filter((s): s is string => typeof s === 'string')
+                : [],
+            scrollsBought: Array.isArray(parsed.scrollsBought)
+                ? parsed.scrollsBought.filter((s): s is string => typeof s === 'string')
+                : [],
         };
     } catch {
         return null;
@@ -417,6 +447,54 @@ export function setAudioVolumes(music: number, sfxVol: number): void {
         audioFlushTimer = null;
         flushSave();
     }, 400);
+}
+
+/** Round 14 Part 3 (docs/Ideas.md §10.4 pick B): shards needed to unlock one
+ *  recipe scroll, and the gem price to buy one outright. */
+export const SHARDS_PER_SCROLL = 8;
+export const SCROLL_GEM_PRICE = 150;
+
+/**
+ * Award +1 shard to each of `slugs` (a full-service wave clear's distinct
+ * recipes — towerScene.ts's trackWaveClears computes the set, this function
+ * never re-derives it). A slug already in `scrolls` is skipped entirely —
+ * "shards keep accumulating only until the scroll exists." Returns the new
+ * save plus which slugs (if any) crossed the threshold THIS call, so the
+ * caller can fire the "Scroll!" cell animation / sfx exactly once per
+ * newly-completed recipe.
+ */
+export function awardShards(slugs: string[]): { newlyCompleted: string[]; save: SaveData } {
+    const shards = { ...data.shards };
+    const scrolls = [...data.scrolls];
+    const newlyCompleted: string[] = [];
+    for (const slug of slugs) {
+        if (scrolls.includes(slug)) continue;
+        const count = (shards[slug] ?? 0) + 1;
+        shards[slug] = count;
+        if (count >= SHARDS_PER_SCROLL) {
+            scrolls.push(slug);
+            newlyCompleted.push(slug);
+        }
+    }
+    data = { ...data, shards, scrolls };
+    flushSave();
+    return { newlyCompleted, save: data };
+}
+
+/** Buy a recipe scroll outright for SCROLL_GEM_PRICE gems. Returns null if
+ *  already unlocked or unaffordable (MetaUpgrades.tsx disables the button,
+ *  but never trusts the UI — same posture as buyMetaUpgrade below). */
+export function buyScroll(slug: string): SaveData | null {
+    if (data.scrolls.includes(slug)) return null;
+    if (data.gems < SCROLL_GEM_PRICE) return null;
+    data = {
+        ...data,
+        gems: data.gems - SCROLL_GEM_PRICE,
+        scrolls: [...data.scrolls, slug],
+        scrollsBought: [...data.scrollsBought, slug],
+    };
+    flushSave();
+    return data;
 }
 
 /**
