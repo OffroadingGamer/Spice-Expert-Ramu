@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.91.0** (Rounds 0–17) — playtest-ready. Review and Public stay at **1.69.0**, the jam build. Nothing is in flight. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Nothing with an agent.** Waiting on the user's pick of card option A / B / C (drawn, §6d) and on the four §6d decisions, which together make **Round 18 → 1.92.0**: the 44 step strings, the rail fixes, the chai/coffee 2.75× zoom, the card restyle, the plural key, Coffee Decoction. **Round 19 is Hindi**, and it must follow R18 because it translates R18's own new English. |
+| **In flight** | **Art round 5** — handover issued Sep 23, nine ingredient sprites, ≤ 1,764 credits. **Round 18 → 1.92.0** is specified and unblocked (all four §6d decisions answered, card option A approved) but not yet issued. Round 19 is Hindi, which must follow R18 because it translates R18's own new English. |
 | **Repo** | `origin/main` = **`66c12c2`**, tree clean apart from Round 17's in-progress edits. Pushed continuously since Sep 18; `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is in the public repo. Every push preceded by the secret scan with its 3-line positive control. ⚠️ `references/Errors/The kitchen upgrades refix.mp4` (3 MB) is untracked and **not** committed — no other reference video is tracked; the user's call. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -3550,3 +3550,44 @@ zoom, the chosen card option, the plural key and the name change. Round 19 is Hi
 follow because it translates Round 18's own new English. Art round 5 (oil / pasta / cabbage,
 441 credits) runs beside either. The user's end-to-end play still gates the Public promotion, and
 the ingredient rail's **touch** drag is still untested on a device.
+
+---
+
+### 2026-09-23 — Art round 5 handover issued — nine ingredient sprites
+
+Written when the handover was written, per the rule. Full brief and the reasoning in
+[Ideas.md](Ideas.md) §6d's "four §6d decisions answered" block.
+
+**Why nine and not the three I first proposed.** The user approved short rails, and that
+changed the ranking rather than just the content. Deleting the wrong tiles fixes the *lies*
+and leaves the *gaps* — after the deletions, **six dishes still carry a note naming something
+the rail cannot show** (upma/rava, veg-thukpa/noodles, pesto/basil, beans-poriyal/beans,
+palak-aloo/spinach, sambar/tamarind), and the sheet renders the note directly above the rail.
+My original ranking was by dishes served, which put cooking oil (12) first. That was correct
+while the bar was *fill the tiles*; the user moved the bar to *show true things*, so a sprite
+that stops a note contradicting its own rail now outranks one that adds a generic tile.
+Tiered so the ask can be cut at any line: **T1 six** (the note contradictions), **T2 one**
+(spaghetti, a missing locked primary), **T3 two** (oil, cabbage — coverage only).
+
+**1,323 credits** for nine, ceiling **1,764** with three retakes, against a balance of 197,868.
+Batched into one round because each art round costs a style check, a contact sheet and a user
+review regardless of size.
+
+**The substance of the brief is the confusion pairs, not the subjects.** rava vs the existing
+`flour`; basil vs `parsley`; spinach vs both; green beans vs `green-chilli`; tamarind vs
+`dried-red-chilli`; noodles vs spaghetti; oil vs `milk`; cabbage vs `cauliflower`. The round
+adds a **third and fourth green leaf** to a rail that already holds parsley and curry leaf, and
+the handover instructs the agent to **report that they cannot be separated at 26 px rather than
+force it** — a reported failure there is worth more than four sprites that all read as "green".
+
+**Route: credits (RUN imagegen, `--remove-background`, 147 each), not the local SDXL + LoRA
+path.** Reasons recorded so they are not re-litigated: style continuity (all 33 shipped `ing-*`
+came from imagegen; `ramuess-ess-v3` is trained on the licensed Kitchen Essentials pack) and
+clean alpha for a family that needs it. ⚠️ Explicitly **not** the old "the LoRA cannot paint
+white or green" finding — `recolour.py` lifted that (KitchenMode §8.8), and citing it would
+have been exactly the stale objection Retro 67 was written about. Checked before writing.
+
+**Also in the handover:** margins ≥ 8% on all four sides with a local scale-and-recentre
+preferred over spending a retake (round 4's garlic precedent), and a new **optical-size target
+of 0.82–0.88** against the 33-sprite median of 0.84 — round 4's flour landed at 0.74 and reads
+small beside its neighbours.

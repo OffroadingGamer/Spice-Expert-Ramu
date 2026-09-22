@@ -851,6 +851,59 @@ and the focused rail is visibly focused.
 
 ---
 
+**✏️ Amendment — the four §6d decisions answered, Sep 23 2026.** User's words are quoted where
+they set the rule.
+
+1. **Short rails approved.** *"yes, we delete the wrong ones as per your recommendations."* The six
+   wrong tiles go (`coffee` cream, `upma` flour, `beans-poriyal` peas, `pesto` tomato,
+   `veg-thukpa` and `veg-momo` coriander-seed), `ooti` is replaced wholesale with
+   `peas · onion · ginger · garlic · dried-red-chilli`, and `minestrone` drops `aubergine`.
+   Resulting counts: coffee **2**, pesto **3**, veg-thukpa **3**, upma / beans-poriyal /
+   veg-momo / minestrone **4**, ooti **5**. Nothing falls below 2. Chai, sambar, idli and
+   sticky-rice are untouched. **Both constraints in `recipes.ts`'s header comment are dropped** —
+   "every one of the 33 aliases is used at least once" and the fixed tile counts.
+   ⚠️ **Consequence to handle in Round 18:** no dish has 7 tiles any more, so the sheet-height
+   acceptance case becomes **2 vs 5**, not 2 vs 7. Ooti can honestly reach 7 only if bamboo shoot
+   and greens are ever drawn.
+2. **Coffee Decoction — labels only.** *"rename both labels, keep the internal id."*
+   `en.ts:425` (live, the recipe rail tile) and `levels.ts:73` (`label: 'Coffee Extract'`, in the
+   unmounted Kitchen Mode scene — renamed so it is correct if that scene ever ships). The id
+   `coffee-extract`, the alias `ing-coffee-extract`, the PNG filename and the LoRA dataset file
+   **all stay**, matching the accepted `tea-leaf` / "Tea Leaf" pattern. Docs to read
+   "Coffee Decoction (id: `coffee-extract`)" so this is not re-opened.
+3. **Plural key — deferred, not rejected.** *"Since it'll be samagri anyway I don't think this
+   needs correction as of now, maybe once implemented we can check back on how it feels."*
+   Correct call: the shortest rail after (1) is 2, so `Ingredients · 1` is unreachable, and Hindi
+   needs no plural form here. Revisit after Hindi ships if the label reads oddly at any count.
+4. **Art round 5 — credits route confirmed**, and **re-ranked by decision (1)**. Deleting wrong
+   tiles fixes the lies and leaves the gaps: **six dishes still have a note naming something the
+   rail cannot show** (upma/rava, veg-thukpa/noodles, pesto/basil, beans-poriyal/beans,
+   palak-aloo/spinach, sambar/tamarind). The old ranking by "dishes served" put cooking oil first,
+   which was right while the bar was *fill the tiles*; the bar is now *show true things*, so
+   note-contradictions rank above coverage. **Nine sprites, 1,323 credits** (ceiling 1,764 with
+   three retakes), in three tiers so the ask can be cut at any line:
+   **T1 (6, closes every note contradiction):** noodles, rava, basil, green beans, spinach,
+   tamarind. **T2 (1, missing locked primary):** spaghetti. **T3 (2, coverage):** cooking oil
+   (12 dishes), cabbage (named secondary for momo and thukpa).
+   🔴 **Named confusion risks, which are the substance of the brief:** rava vs the existing
+   `flour`; basil vs `parsley`; spinach vs both; green beans vs `green-chilli`; tamarind vs
+   `dried-red-chilli`; oil vs `milk`; cabbage vs `cauliflower`; noodles vs spaghetti. The round
+   adds a **third and fourth green leaf** to a rail that already has parsley and curry leaf — if
+   they cannot be separated at 26 px the agent is to **report that rather than force it**.
+   Route reasoning: style continuity (all 33 shipped `ing-*` came from imagegen; the LoRA is
+   trained on the licensed pack) and clean alpha, **not** the old "LoRA cannot paint white or
+   green" limit, which `recolour.py` lifted (KitchenMode §8.8, Retro 67).
+5. **Devanagari names — test first, build nothing.** *"Sure we can decide through testing."*
+   The user's proposal (client shows Devanagari, server stores Latin) works only in a limited
+   form: the board is shared, so other players always see the server value, and romanisation is
+   not reversible. The workable version needs no round-trip — **the player's own row renders from
+   their local save, every other row from the server** — but it means the player sees a name
+   nobody else does. **If the test fails, the recommendation is the simpler one:** when the locale
+   is Hindi, the name field carries *"Leaderboard names use English letters"* and the player
+   chooses their own spelling, rather than an algorithm choosing it for them.
+
+---
+
 ## 7. Wave-intro scroll — proposed Sep 13 2026 — ✅ shipped as the wave bubble's scroll grid, 1.76.0
 
 **Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll
