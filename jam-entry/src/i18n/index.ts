@@ -81,3 +81,17 @@ export function tn(key: string, count: number, params?: Record<string, unknown>)
     const str = typeof entry === 'string' ? entry : (count === 1 ? entry.one : entry.other);
     return interpolate(str, params);
 }
+
+/**
+ * Round 17 Part 3 (docs/Ideas.md §6d): whether a key actually has a table
+ * entry, WITHOUT the console.warn / key-echo fallback t() does for a missing
+ * one. ui/RecipeSheet.tsx uses this to decide whether to render a Prep/
+ * Garnish section at all — recipe.<slug>.prep/.finish are allowed to be
+ * absent until a later writing pass lands (the handover's own words: "omit
+ * a missing section entirely — never show an empty heading or a
+ * placeholder"), so silently rendering t()'s echoed key as body text would
+ * be exactly the placeholder the spec forbids.
+ */
+export function hasTranslation(key: string): boolean {
+    return TABLES[currentLocale]?.[key] !== undefined || en[key] !== undefined;
+}

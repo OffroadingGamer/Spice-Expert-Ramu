@@ -194,3 +194,16 @@ body {
     cursor: pointer;
     box-sizing: border-box;
 }
+
+/* Round 17 Part 3 (docs/Ideas.md §6d, ui/RecipeSheet.tsx's ingredient
+   rail): hides the native scrollbar on the sideways-scrolling tile row —
+   Tailwind has no core utility for this (unlike scroll-snap/scroll-behavior,
+   which are plain classes below). Scroll-snap-type/align and touch-action
+   are set inline per element (they vary per instance elsewhere); this is
+   the one property no Tailwind utility reaches. */
+.recipe-rail {
+    scrollbar-width: none;
+}
+.recipe-rail::-webkit-scrollbar {
+    display: none;
+}

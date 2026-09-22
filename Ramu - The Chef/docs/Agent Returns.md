@@ -523,6 +523,59 @@ Two other findings: aubergine has no honest dish among the 22 — it was drawn f
 
 ---
 
+## 2026-09-22 — Round 17 — implementation agent
+
+Outcome: pasted before verification. Verification in the record.
+
+Deployed and verified. Here's the Round 17 report.
+
+Round 17 — deployed as v1.91.0 (Private). Review/Public unchanged at 1.69.0.
+Part 1 — two tabs
+MetaUpgrades.tsx splits into a segmented control (Stations / Recipes), Stations selected on every open (React state, resets on remount — never persisted). Each pane's scroll offset lives in a module-scope object (not React state, since the whole component unmounts on Kitchen close) and both panes stay mounted with display:none toggling, so an in-session tab switch preserves scrollTop for free.
+
+Verified at 360×780 (real save seeded via localStorage, 7 scrolls unlocked, 2 seen → badge = 5):
+
+Both segments: 154×51px box, font 18px (≥11px floor).
+Badge "+5" shows on the Recipes segment and the menu's Kitchen button simultaneously.
+Tapped Recipes → badge clears on both the segment and (via the shared store field) the main-menu Kitchen button in the same tick.
+Scrolled Stations to 120px → switched to Recipes → back to Stations: offset still 120. Closed the Kitchen entirely, reopened: Stations selected again (as required) and its scroll offset still 120 — the module-scope persistence survives a full unmount/remount, not just a tab switch.
+Part 2 — recipe card rebuilt
+Banner (26mu, ui-recipe-scroll as background-size:cover) with a 30mu white medallion, dish icon inside; name/note moved onto solid chocolate below, truncate deleted (real word-wrap now). Locked cards keep the identical structure, desaturated (grayscale(1) banner, medallion 35% opacity), plus the shard bar and a 150💎 button (≥44px, greyed under 150 gems).
+
+Verified: "Coconut Chutney" and "Bamboo Shoot Fry" both render with scrollWidth === clientWidth (no clipping) at 13.5px font (≥11px). Grid is 2 columns at mu=1.5 (360-wide), confirmed visually.
+
+Part 3 — recipe sheet (new RecipeSheet.tsx)
+Parchment shell between two brass-capped walnut rollers, 40% chocolate scrim, tap-outside-or-Close dismisses, locked cards never open.
+
+A bug I found and fixed before it shipped: the page-dots row only rendered when there were >4 ingredients, so a 2-ingredient sheet (idli) came out ~9px shorter than a 7-ingredient one (ooti) — directly contradicting the round's own acceptance line ("the sheet's height is identical for a 2- and a 7-ingredient dish"). Fixed by always reserving the dots row's height and only conditionally rendering the dots themselves inside it.
+
+Dish sprite sizing ("measure offline like the laurel, report the numbers"): measured all 22 shipped dish-*.png opaque bboxes. 20 of 22 sit at a consistent ~204×133 on their shared 212×141 canvas (~96%w/94%h — a ~4px padding convention); chai and coffee are real outliers at 75×55 (~35%w/39%h — the two older FTUE/Kitchen-Mode placeholder glyphs), so they render visibly smaller in the header — that's their own art being smaller, not a scaling bug, and it's visible in the chai screenshot. Using 204×133 as the canonical bbox, width-matched to Leaderboard's laurel convention: target 46mu opaque width → full image renders 47.8mu × 31.8mu, giving an opaque bbox of ~46×29.9mu, safely inside the 60mu plate.
+
+Verified at 360, 403, and 744 wide (chai/sambar = 5 ingredients, idli = 2, ooti = 7):
+
+Sheet height identical across all four dishes at every width after the fix (399.7 / 447.1 / 460.8px at 360/403/744).
+Parchment scrollHeight === clientHeight at every case — no internal scroll for chai/sambar/idli/ooti at any of the three widths.
+Exactly 4 tiles fully visible with the 5th peeking, for both chai/sambar (5) and ooti (7), at all three widths; idli (2) shows no affordances at all (≤4 rule).
+Horizontal input on the rail (wheel(220,0)) moved rail.scrollLeft to 171px while the parchment's own scrollTop stayed at 0 throughout — confirms the drag never bleeds into the sheet's vertical scroll.
+Locked card (Naan): exactly 1 button (Buy), tapping the card itself never opens a sheet.
+Not fully verifiable headlessly: touch-action: pan-x's real job is stopping a touch drag specifically from scrolling the parent — Chromium's mouse/wheel emulation proved the scroll-isolation behavior but isn't a real touchscreen gesture. No device test this round.
+
+Deviation, disclosed: no Google Font is loaded anywhere in this game (confirmed via index.html) — the mock's Fraunces "display face" is approximated with Tailwind's font-serif system stack at weight 900 rather than adding the game's first network font dependency for one dish name. Flag if this should be revisited.
+
+Prep/Garnish sections: no recipe.<slug>.prep/.finish keys exist yet (writing pass not done this round, per the handover's own allowance) — hasTranslation() correctly omits both sections entirely rather than echoing a missing key as placeholder text.
+
+Part 4 — ingredient sprites
+23 from Art/_gen/ingredients/ (skipped _style-check.png and tea-leaf.png, already shipped) + 3 from Art/_gen/ingredients-r4-final/ (flour, garlic, tomato — landed, so shipped) = 26 new ing-*.png, 128², Lanczos, alpha preserved, 394,702 bytes total, no .png.json sidecars. All 26 aliased into the deferred bundle beside the existing 7.
+
+recipes.ts gains RECIPE_INGREDIENTS for all 22 dishes (cook's-order sprite-alias arrays) plus 33 new ingredient.<key> i18n names — every one of the 33 available ingredient sprites is used at least once. Chai/sambar deliberately at 5, idli/sticky-rice at 2, ooti at 7 (the acceptance test cases); naan/aglio-e-olio closed to 3 with flour/garlic per the source doc's own note; arrabbiata/minestrone/risotto/pesto/veg-momo each pick up flour/garlic/tomato as "strengthened."
+
+Build, verify, deploy
+tsc --noEmit and npm run build: clean. npm run balance: 35/36/11/4/90, byte-identical. find public -name '*.json': empty. git diff --stat against the four sealed sim files, kitchenScene.ts, package*.json, rundot/leaderboard.config.json: zero changes. New i18n keys added this round: 6 (kitchen.tab.*/recipe.sheet.*) + 33 ingredient names = 39. Tags: Private 1.91.0, Review 1.69.0, Public 1.69.0.
+
+One pre-existing, unrelated untracked file outside jam-entry/ scope showed up again in git status (references/Errors/The kitchen upgrades refix.mp4) — not touched, not mine.
+
+---
+
 ## Pending
 
-- **Round 17** (implementation agent, → 1.91.0) — issued Sep 22: Kitchen tabs, fixed recipe card, parchment recipe sheet with the ingredient rail, 23 sprites shipped. Its edits are already visible in the tree (`data/recipes.ts`, `MainMenu.tsx`) — **do not commit until it returns**.
+- Nothing outstanding. All three of the Sep 22 dispatches (Round 17, art round 4, the recipe-writing pass) have returned and been verified.

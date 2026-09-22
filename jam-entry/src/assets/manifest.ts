@@ -310,6 +310,41 @@ export const MANIFEST: Manifest = {
                 // ui/WaveBubble.tsx) are in each render site's own doc.
                 { alias: 'ui-recipe-scroll', src: 'images/ui/recipe-scroll.png' },
                 { alias: 'ui-shard', src: 'images/ui/shard.png' },
+                // Round 17 Part 4 (docs/Ideas.md §6d item 4): the 23
+                // Art/_gen/ingredients/ renders (skip _style-check.png,
+                // skip tea-leaf.png — already shipped above as
+                // ing-tea-leaf) plus art round 4's flour/garlic/tomato from
+                // Art/_gen/ingredients-r4-final/, all resized 128^2
+                // (Lanczos, alpha kept, same treatment as ui-laurel/
+                // ui-recipe-scroll above). ui/RecipeSheet.tsx's ingredient
+                // rail is the only consumer; Deferred since no sheet can
+                // open before the Kitchen does, well after boot.
+                { alias: 'ing-aubergine', src: 'images/ing-aubergine.png' },
+                { alias: 'ing-bay-leaf', src: 'images/ing-bay-leaf.png' },
+                { alias: 'ing-cardamom', src: 'images/ing-cardamom.png' },
+                { alias: 'ing-cauliflower', src: 'images/ing-cauliflower.png' },
+                { alias: 'ing-chilli-flakes', src: 'images/ing-chilli-flakes.png' },
+                { alias: 'ing-clove', src: 'images/ing-clove.png' },
+                { alias: 'ing-coconut-half', src: 'images/ing-coconut-half.png' },
+                { alias: 'ing-coriander-seed', src: 'images/ing-coriander-seed.png' },
+                { alias: 'ing-cumin-seed', src: 'images/ing-cumin-seed.png' },
+                { alias: 'ing-curry-leaf', src: 'images/ing-curry-leaf.png' },
+                { alias: 'ing-dried-red-chilli', src: 'images/ing-dried-red-chilli.png' },
+                { alias: 'ing-green-chilli', src: 'images/ing-green-chilli.png' },
+                { alias: 'ing-kidney-beans', src: 'images/ing-kidney-beans.png' },
+                { alias: 'ing-mustard-seed', src: 'images/ing-mustard-seed.png' },
+                { alias: 'ing-onion', src: 'images/ing-onion.png' },
+                { alias: 'ing-oregano', src: 'images/ing-oregano.png' },
+                { alias: 'ing-parsley', src: 'images/ing-parsley.png' },
+                { alias: 'ing-peas', src: 'images/ing-peas.png' },
+                { alias: 'ing-pine-nut', src: 'images/ing-pine-nut.png' },
+                { alias: 'ing-potato', src: 'images/ing-potato.png' },
+                { alias: 'ing-toor-dal', src: 'images/ing-toor-dal.png' },
+                { alias: 'ing-turmeric', src: 'images/ing-turmeric.png' },
+                { alias: 'ing-urad-dal', src: 'images/ing-urad-dal.png' },
+                { alias: 'ing-flour', src: 'images/ing-flour.png' },
+                { alias: 'ing-garlic', src: 'images/ing-garlic.png' },
+                { alias: 'ing-tomato', src: 'images/ing-tomato.png' },
             ],
         },
     ],

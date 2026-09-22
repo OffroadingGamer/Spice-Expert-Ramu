@@ -40,7 +40,7 @@ import { scriptedRunStart } from '../game/actions.ts';
 import { blockForLevel } from '../game/data/blocks.ts';
 import { openComments, promptLike } from '../sdk/engagement.ts';
 import { trackFunnelStep } from '../sdk/analytics.ts';
-import { computeKitchenBadge, markScrollsSeen } from '../state/save.ts';
+import { computeKitchenBadge } from '../state/save.ts';
 import { devModeEnabled } from '../state/devMode.ts';
 import { t } from '../i18n/index.ts';
 import { store, useStore } from '../state/store.ts';
@@ -485,12 +485,17 @@ export default function MainMenu() {
                     badge={kitchenBadge}
                     onClick={() => {
                         sfx.click();
-                        // Round 16 Part 3: cleared on OPEN, not on claim —
-                        // buyScroll (state/save.ts) separately keeps the
-                        // badge from firing on a purchase made inside an
-                        // already-open Kitchen.
-                        const updated = markScrollsSeen();
-                        store.patch({ metaOpen: true, scrollsSeenCount: updated.scrollsSeenCount });
+                        // Round 17 Part 1 (docs/Ideas.md §6d "Kitchen
+                        // relayout"): the badge now clears when the Kitchen's
+                        // own Recipes TAB opens (MetaUpgrades.tsx), not when
+                        // the Kitchen itself opens — Stations is selected on
+                        // open, so a player who never visits Recipes keeps
+                        // seeing the badge, and this button reads the same
+                        // store field the Recipes segment does, so the two
+                        // can never disagree. No markScrollsSeen() call here
+                        // any more (was Round 16's Kitchen-opens-clears-it
+                        // rule).
+                        store.patch({ metaOpen: true });
                     }}
                 >
                     {t('menu.kitchen')}

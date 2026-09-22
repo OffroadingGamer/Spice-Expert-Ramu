@@ -39,9 +39,9 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.90.0** (Rounds 0–16 — Round 16 verified Sep 22; order chip restored, "Play", Kitchen unlock badge — **playtest-ready; Round 17 in flight toward 1.91.0**; 🔒 Private-only until human verification — Ideas.md §6d) |
+| **Live version** | **Private 1.91.0** (Rounds 0–17) — playtest-ready. Review and Public stay at **1.69.0**, the jam build. Nothing is in flight. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Round 17** → Private 1.91.0: Kitchen tabs (Stations first) + fixed recipe card + the parchment recipe sheet with the side-scrolling ingredient rail + the 23 existing ingredient sprites shipped. **Art round 4 returned and is verified** (flour, garlic, tomato — 441 credits, and Round 17 has already picked all three up into `public/images/`). The **recipe-writing pass returned and is verified** — [docs/i18n/recipes.md](i18n/recipes.md), 44 step strings ready to paste, plus seven shipped ingredient rails it calls wrong as food. **Four decisions are open with the user** (rail fixes, the `coffee-extract` name, the `Ingredients · {n}` plural, art round 5). Then Hindi · IAP · the Public promotion decision. |
+| **In flight** | **Nothing.** All three Sep 22 dispatches returned and are verified. Next: the four §6d decisions (rail fixes · Coffee Decoction · the plural key · art round 5) fold into **Round 18** alongside Hindi. Then IAP, and the Public promotion decision whenever the user has played 1.91.0 end to end. |
 | **Repo** | `origin/main` = **`66c12c2`**, tree clean apart from Round 17's in-progress edits. Pushed continuously since Sep 18; `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is in the public repo. Every push preceded by the secret scan with its 3-line positive control. ⚠️ `references/Errors/The kitchen upgrades refix.mp4` (3 MB) is untracked and **not** committed — no other reference video is tracked; the user's call. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -3468,3 +3468,55 @@ time, because its acceptance check counted tiles.
 **Verdict: accepted, and better than the brief asked for.** The 44 strings are ready to
 paste as-is. Four decisions are now open with the user — recorded in
 [Ideas.md](Ideas.md) §6d.
+
+---
+
+### 2026-09-22 — Round 17 verified — Private 1.91.0
+
+Return pasted verbatim into [Agent Returns.md](Agent%20Returns.md) before verification.
+The largest round since the jam: the Kitchen splits in two, the recipe card is rebuilt, a
+new `RecipeSheet.tsx` lands, and 26 sprites ship.
+
+**The gate, run from source:**
+
+| Check | Result |
+|---|---|
+| Tags | `rundot game list-tags` — **Private 1.91.0**, Review 1.69.0, Public 1.69.0. Exactly the required end state; the frozen jam build is untouched. |
+| Balance | `npm run balance` — fox-spam 35 · balanced 36 · miser 11 · pad0-rush 4 · maxed-meta 90. **Byte-identical to the baseline** for the eighteenth round running. |
+| Sealed files | `git diff --stat` across `engine.ts`, `enemies.ts`, `towers.ts`, `waves.ts`, `kitchenScene.ts`, `package*.json`, `rundot/leaderboard.config.json` — **zero changes**. |
+| Typecheck / build | `tsc --noEmit` exit 0. `npm run build` ✓ built, exit 0 (the 500 kB chunk notice is the pre-existing Pixi bundle warning, not an error). |
+| Sidecars | `find public -name '*.json'` — empty. |
+| The 26 sprites | Counted and measured myself: **26 new files, 394,702 bytes total — the reported figure to the byte**, every one 128² and RGBA with alpha intact. |
+| Account | `rundot whoami` — `offroadinggamedev@gmail.com`. |
+
+**Claims about its own code, checked:**
+
+- `truncate` is **gone** from `MetaUpgrades.tsx` — the Round 16 card bug is structurally fixed, not masked.
+- Tabs are real: `kitchen.tab.stations` / `.recipes`, both panes mounted, scroll offsets held in a **module-scope** object (`MetaUpgrades.tsx:284–285, 332, 438`) precisely because the component unmounts on Kitchen close. The design reason is sound and is written down in the file.
+- **No Google Font anywhere in `index.html`** — the disclosed deviation is true, and declining to add the game's first network font dependency for one dish name was the right call. Worth revisiting only if the sheet's display face ever carries more weight than it does now.
+- The dots-row bug it caught and fixed is documented in `RecipeSheet.tsx:256–262`, in the file, against the acceptance line it would have broken.
+
+**Its dish-sprite measurement, re-measured independently.** I measured every
+`dish-*.png` myself: **30 files, all on a 212×141 canvas. 28 of 30 cluster at 205–206 ×
+134**; the only outliers are **chai and coffee at exactly 75×55**, the figure the agent
+reported. (It measured the 22 recipe slugs and said 20 of 22; across all 30 sprites the
+proportion is the same.) Its ~204×133 vs my 205×134 is an alpha-threshold difference of
+one pixel and changes nothing. **So the two small dish icons in the sheet header are those
+sprites' own art, not a scaling bug** — confirmed, and now on the record as an art-side
+item rather than a layout one: chai and coffee are the FTUE dishes, so they are the first
+two headers most players will ever see.
+
+**One number in the report is wrong, harmlessly.** It says "6 (`kitchen.tab.*` /
+`recipe.sheet.*`) + 33 ingredient names = 39" new i18n keys. The diff shows **7 chrome keys**
+— 2 tab labels and **5** sheet keys (`ingredients`, `prepHeading`, `finishHeading`, `close`,
+`closeAria`) — so **40**, not 39. The localisation agent's own §0.2 independently lists the
+same five. Nothing depends on the count; recorded because a miscount in a handover is the
+kind of thing that later gets quoted as fact.
+
+**Not verified, and it should not be claimed.** `touch-action: pan-x` was exercised with
+Chromium's wheel emulation, which proved the rail does not steal the sheet's vertical
+scroll under a *mouse*. **A real touch drag on a real device is untested.** The agent said
+so plainly rather than letting the wheel test stand in for it. This is the one item in
+1.91.0 that wants a finger on glass, and it belongs in the user's end-to-end play.
+
+**Verdict: accepted.** Private 1.91.0 is the playtest build.

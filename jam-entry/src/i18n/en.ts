@@ -403,6 +403,56 @@ export const en: Record<string, TranslationEntry> = {
     'kitchen.scrolls.progress': '{n} / {max}',
     'kitchen.scrolls.buy': '💎 {n}',
 
+    // ---- 19b. Kitchen tabs + recipe sheet (Round 17, docs/Ideas.md §6d
+    // "Kitchen relayout + recipe sheet") -------------------------------------
+    'kitchen.tab.stations': 'Stations',
+    'kitchen.tab.recipes': 'Recipes',
+    // "Ingredients · {n}" — the rail's own label, count appended live so it
+    // can never drift from the tile count actually rendered.
+    'recipe.sheet.ingredients': 'Ingredients · {n}',
+    'recipe.sheet.prepHeading': 'Prep',
+    'recipe.sheet.finishHeading': 'Garnish & Cooking',
+    'recipe.sheet.close': 'Close',
+    'recipe.sheet.closeAria': 'Close recipe',
+
+    // ---- 19c. Ingredient names (game/data/recipes.ts's RECIPE_INGREDIENTS,
+    // ui/RecipeSheet.tsx's rail tiles) — keyed on the bare ingredient key
+    // (ingredientNameKey strips the ing- alias prefix), translated once each
+    // regardless of how many dishes reference the same ingredient. --------
+    'ingredient.milk': 'Milk',
+    'ingredient.ginger': 'Ginger',
+    'ingredient.tea-leaf': 'Tea Leaf',
+    'ingredient.coffee-extract': 'Coffee Extract',
+    'ingredient.cream': 'Cream',
+    'ingredient.rice': 'Rice',
+    'ingredient.ghee': 'Ghee',
+    'ingredient.aubergine': 'Aubergine',
+    'ingredient.bay-leaf': 'Bay Leaf',
+    'ingredient.cardamom': 'Cardamom',
+    'ingredient.cauliflower': 'Cauliflower',
+    'ingredient.chilli-flakes': 'Chilli Flakes',
+    'ingredient.clove': 'Clove',
+    'ingredient.coconut-half': 'Coconut',
+    'ingredient.coriander-seed': 'Coriander Seed',
+    'ingredient.cumin-seed': 'Cumin Seed',
+    'ingredient.curry-leaf': 'Curry Leaf',
+    'ingredient.dried-red-chilli': 'Dried Red Chilli',
+    'ingredient.green-chilli': 'Green Chilli',
+    'ingredient.kidney-beans': 'Kidney Beans',
+    'ingredient.mustard-seed': 'Mustard Seed',
+    'ingredient.onion': 'Onion',
+    'ingredient.oregano': 'Oregano',
+    'ingredient.parsley': 'Parsley',
+    'ingredient.peas': 'Peas',
+    'ingredient.pine-nut': 'Pine Nut',
+    'ingredient.potato': 'Potato',
+    'ingredient.toor-dal': 'Toor Dal',
+    'ingredient.turmeric': 'Turmeric',
+    'ingredient.urad-dal': 'Urad Dal',
+    'ingredient.flour': 'Flour',
+    'ingredient.garlic': 'Garlic',
+    'ingredient.tomato': 'Tomato',
+
     // ---- 20. Recipe notes (game/data/recipes.ts) — keyed on dish slug, one
     // line of Ramu's voice, shown on an UNLOCKED scroll card only. ----------
     'recipe.chai.note': 'Boil it twice. Trust me on this one.',
