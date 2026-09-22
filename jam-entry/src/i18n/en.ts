@@ -49,13 +49,22 @@ export const en: Record<string, TranslationEntry> = {
     'menu.runNameToast': 'Your name comes from your RUN profile.',
     'menu.testMode': 'Play Game',
     'menu.best': 'Best · Rush {n}',
-    'menu.startShift': 'Start shift',
+    // Round 16 Part 2 (docs/Ideas.md §10.5 pick "Play"): was menu.startShift
+    // = "Start shift" — renamed key and value together since "Play" is a
+    // different word, not a re-translation of the same one.
+    'menu.play': 'Play',
     'menu.kitchen': 'The Kitchen',
     'menu.ranks': 'Ranks',
     'menu.backdropCredit': 'Backdrop: @ArchitaSharma',
     'menu.liked': '♥ Liked',
     'menu.like': '♥ Like',
     'menu.comments': '💬 Comments',
+    // Round 16 Part 3 (docs/Ideas.md §10.5 pick B): the greeting bubble's
+    // unlock-notice variants — see save.ts's kitchenBadgeCount doc for why
+    // "ready" here means "unlocked since the Kitchen was last opened", not a
+    // live shard-threshold check.
+    'menu.greeting.scrollReady': 'Welcome back, {name} — the {dish} scroll is ready in the kitchen.',
+    'menu.greeting.rewardsWaiting': 'Rewards are waiting in the kitchen.',
 
     // ---- 3. Name dialogs ------------------------------------------------
     'name.title': 'What do they call you?',

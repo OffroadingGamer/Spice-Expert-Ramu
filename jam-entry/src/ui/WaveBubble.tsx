@@ -190,10 +190,13 @@ export interface WaveBubbleState {
     cells: DishCell[];
     /** Trigger tap: opens the submenu. */
     open: () => void;
-    /** Submenu outside-tap: closes it AND dismisses the bubble for the rest
-     *  of this build phase — "the player taps it" (the handover's own
-     *  bubble-dismiss condition) covers a tap that opened the submenu, so
-     *  closing it again must not resurrect the trigger. */
+    /** Submenu outside-tap: closes the submenu only. Round 16 Part 1
+     *  (docs/Ideas.md §6d, "Playtest of 1.89.0" item 1): this used to also
+     *  dismiss the trigger for the rest of the build phase (a Round 5 rule —
+     *  "a tap that opened the submenu counts as the bubble-dismiss tap") —
+     *  the playtest found that wrong: closing the scroll reverts to the
+     *  chip, always. The chip's own visibility no longer depends on
+     *  anything this function touches. */
     close: () => void;
 }
 
@@ -202,31 +205,32 @@ export function useWaveBubble(): WaveBubbleState {
     const wave = useStore((s) => s.wave);
     const dialogue = useStore((s) => s.dialogue);
     const waveDishServed = useStore((s) => s.waveDishServed);
-    const [dismissed, setDismissed] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
 
     // Round 5 playtest fix: a new build phase (a new upcoming wave) always
-    // starts fresh — "stays until the wave starts or the player taps it," so
-    // the previous wave's tap/dismiss must never bleed into the next one.
-    // The ORIGINAL fix for this was a `useEffect(() => {...}, [wave])` —
-    // correct eventually, but an effect runs AFTER the wave-change render
-    // has already committed and painted, so a screenshot (or a frame of
-    // real playback) taken in that single window could still catch the
-    // PREVIOUS wave's isOpen=true submenu on screen for wave 4's build —
-    // exactly the reported "open on wave 4 build with no tap." Comparing a
-    // ref during RENDER and calling the setters right here is React's own
-    // documented pattern for "derived state that must reset when an input
-    // changes" (see react.dev, "Adjusting state when a prop changes") — it
-    // forces an immediate re-render before paint, so there's no frame left
-    // in which the stale value could ever be shown.
+    // starts fresh — the previous wave's open submenu must never bleed into
+    // the next one. The ORIGINAL fix for this was a `useEffect(() => {...},
+    // [wave])` — correct eventually, but an effect runs AFTER the
+    // wave-change render has already committed and painted, so a screenshot
+    // (or a frame of real playback) taken in that single window could still
+    // catch the PREVIOUS wave's isOpen=true submenu on screen for wave 4's
+    // build — exactly the reported "open on wave 4 build with no tap."
+    // Comparing a ref during RENDER and calling the setter right here is
+    // React's own documented pattern for "derived state that must reset when
+    // an input changes" (see react.dev, "Adjusting state when a prop
+    // changes") — it forces an immediate re-render before paint, so there's
+    // no frame left in which the stale value could ever be shown.
+    //
+    // Round 16 Part 1 (docs/Ideas.md §6d, "Playtest of 1.89.0" item 1): this
+    // used to also reset a `dismissed` flag — deleted along with every other
+    // read of it (see close() above and showTrigger below): closing the
+    // scroll no longer dismisses the chip, so there is nothing left for a
+    // new wave to reset on that axis.
     const prevWaveRef = useRef(wave);
-    let dismissedNow = dismissed;
     let isOpenNow = isOpen;
     if (prevWaveRef.current !== wave) {
         prevWaveRef.current = wave;
-        dismissedNow = false;
         isOpenNow = false;
-        setDismissed(false);
         setIsOpen(false);
     }
 
@@ -236,13 +240,36 @@ export function useWaveBubble(): WaveBubbleState {
     // NEXT wave-clear, per this file's own doc above), so the wave-keyed
     // reset above can't catch it. A second render-time reset, same pattern,
     // keyed on tdPhase instead: the moment it leaves 'build', force the
-    // submenu shut (dismissed is untouched — if the trigger was already
-    // dismissed for this wave, it stays dismissed through combat, same as
-    // any other mid-build dismiss).
+    // submenu shut.
     const prevPhaseRef = useRef(tdPhase);
     if (prevPhaseRef.current !== tdPhase) {
         prevPhaseRef.current = tdPhase;
         if (tdPhase !== 'build' && isOpenNow) {
+            isOpenNow = false;
+            setIsOpen(false);
+        }
+    }
+
+    // Round 16 Part 1 (found during this round's own verification, not
+    // named in the handover, but squarely inside its own acceptance line
+    // "open the scroll, let a dialogue beat fire -> both hidden, beat ends
+    // -> chip back"): a dialogue beat arriving while the submenu is open
+    // hides BOTH halves via baseVisible below (a derived gate), but never
+    // touched `isOpen` itself — so once the beat ends and baseVisible goes
+    // true again, showSubmenu's own condition (baseVisible && isOpenNow &&
+    // ...) was still satisfied and the scroll silently reopened, leaving the
+    // chip hidden instead of "back". A third render-time reset, same
+    // pattern as the wave/phase ones above, keyed on dialogue newly
+    // blocking the bubble: force the submenu shut right then, so there's
+    // nothing left for it to resume once the beat is over. Pre-existing
+    // (not introduced by this round's own dismissed-flag removal) but was
+    // never exercised by a passing test before — the acceptance case above
+    // is Round 16's own scenario, so it's fixed here.
+    const dialogueBlocksBubbleNow = dialogue !== null && dialogue.id !== 'recipe-widget';
+    const prevDialogueBlocksRef = useRef(dialogueBlocksBubbleNow);
+    if (prevDialogueBlocksRef.current !== dialogueBlocksBubbleNow) {
+        prevDialogueBlocksRef.current = dialogueBlocksBubbleNow;
+        if (dialogueBlocksBubbleNow && isOpenNow) {
             isOpenNow = false;
             setIsOpen(false);
         }
@@ -301,15 +328,14 @@ export function useWaveBubble(): WaveBubbleState {
         }
     }, [wave, tdPhase, triggerDishes.length]);
 
-    // Dialogue wins: waiting (not permanently dismissed) behind an open box
-    // — "the bubble waits until the box closes." Round 6: the trigger no
-    // longer hides at wave start — it now persists build phase through wave
-    // end (both 'build' and 'wave' are visible), only 'lost' (and a
-    // dialogue box) hide it. The wave-keyed reset above starts everything
-    // fresh for the NEXT build phase; the phase-keyed reset above closes
-    // just the submenu at wave start. baseVisible gates BOTH halves;
-    // dismissedNow/isOpenNow then split which of the two (if either) is
-    // showing.
+    // Dialogue wins: waiting behind an open box — "the bubble waits until
+    // the box closes." Round 6: the trigger no longer hides at wave start —
+    // it now persists build phase through wave end (both 'build' and 'wave'
+    // are visible), only 'lost' (and a dialogue box) hide it. The wave-keyed
+    // reset above starts everything fresh for the NEXT build phase; the
+    // phase-keyed reset above closes just the submenu at wave start.
+    // baseVisible gates both halves; isOpenNow then splits which of the two
+    // is showing.
     //
     // Round 11 Part 1.1 (docs/Ideas.md §6d, "Playtest of 1.82.0" item 1): the
     // 'recipe-widget' beat (this file's own useEffect above) is ABOUT the
@@ -320,11 +346,15 @@ export function useWaveBubble(): WaveBubbleState {
     // null` still gates showSubmenu outright, so a beat that happens to
     // leave isOpenNow stale can never surface the scroll grid on top of the
     // dialogue box.
-    const dialogueBlocksBubble = dialogue !== null && dialogue.id !== 'recipe-widget';
-    const baseVisible = (tdPhase === 'build' || tdPhase === 'wave') && !dialogueBlocksBubble;
+    const baseVisible = (tdPhase === 'build' || tdPhase === 'wave') && !dialogueBlocksBubbleNow;
 
     return {
-        showTrigger: baseVisible && !dismissedNow && !isOpenNow,
+        // Round 16 Part 1: was `baseVisible && !dismissedNow && !isOpenNow`
+        // — closing the scroll (isOpenNow -> false) is now the ONLY thing
+        // that can bring the chip back besides baseVisible itself, exactly
+        // "visible through build and wave, hidden only by dialogue, lost,
+        // and while the scroll itself is open."
+        showTrigger: baseVisible && !isOpenNow,
         // Belt-and-suspenders on top of the phase-keyed reset above: the
         // submenu can never show outside 'build' even if isOpenNow were
         // somehow still true (e.g. a render this same tick that hasn't
@@ -336,7 +366,7 @@ export function useWaveBubble(): WaveBubbleState {
         triggerDishes,
         cells,
         open: () => setIsOpen(true),
-        close: () => { setIsOpen(false); setDismissed(true); },
+        close: () => setIsOpen(false),
     };
 }
 

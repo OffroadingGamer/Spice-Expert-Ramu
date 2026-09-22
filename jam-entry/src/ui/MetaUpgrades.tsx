@@ -253,7 +253,7 @@ export default function MetaUpgrades() {
                                             const result = buyScroll(slug);
                                             if (result) {
                                                 sfx.upgrade();
-                                                store.patch({ gems: result.gems, scrolls: result.scrolls, shards: result.shards });
+                                                store.patch({ gems: result.gems, scrolls: result.scrolls, shards: result.shards, scrollsSeenCount: result.scrollsSeenCount });
                                             }
                                         }}
                                     >

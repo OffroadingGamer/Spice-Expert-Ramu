@@ -232,6 +232,13 @@ export interface AppState {
      *  buyScroll() call. */
     shards: Record<string, number>;
     scrolls: string[];
+    /** Round 16 Part 3 (docs/Ideas.md §10.5 pick B): mirrors of the save's
+     *  own badge-tracking fields (state/save.ts) — same mirror posture as
+     *  shards/scrolls above, patched at the identical three call sites plus
+     *  MainMenu.tsx's own markScrollsSeen() call (Kitchen open). See
+     *  save.ts's computeKitchenBadge doc for what these two feed into. */
+    scrollsSeenCount: number;
+    lastUnlockedScrollSlug: string | null;
     /** The wave bubble's shard-award feedback (docs/Ideas.md §10.4): patched
      *  once per full-service (zero-leak) wave clear by towerScene.ts's
      *  trackWaveClears, off the sealed engine's own wave-clear event —
@@ -317,6 +324,8 @@ const INITIAL: AppState = {
     hudBottomPx: 240,
     shards: {},
     scrolls: [],
+    scrollsSeenCount: 0,
+    lastUnlockedScrollSlug: null,
     shardAward: { wave: 0, slugs: [], scrolledSlugs: [], nonce: 0 },
     continuedThisRun: false,
     runEndDecided: false,

@@ -40,6 +40,7 @@ import { scriptedRunStart } from '../game/actions.ts';
 import { blockForLevel } from '../game/data/blocks.ts';
 import { openComments, promptLike } from '../sdk/engagement.ts';
 import { trackFunnelStep } from '../sdk/analytics.ts';
+import { computeKitchenBadge, markScrollsSeen } from '../state/save.ts';
 import { devModeEnabled } from '../state/devMode.ts';
 import { t } from '../i18n/index.ts';
 import { store, useStore } from '../state/store.ts';
@@ -102,15 +103,53 @@ function ghostButtonStyle(mu: number): CSSProperties {
     };
 }
 
-function GhostButton({ mu, onClick, children }: { mu: number; onClick: () => void; children: ReactNode }) {
+/** Round 16 Part 3 (docs/Ideas.md §10.5 pick B): the optional `badge` prop
+ *  is the Kitchen button's unlock notice — the only call site that passes
+ *  it (Ranks/Test Mode don't). Pinned at the button's own top-right corner,
+ *  translated half outside it so it can never sit over the centred label
+ *  regardless of mu or label text width. `relative` on the button costs
+ *  nothing for callers that never pass a badge (no absolutely-positioned
+ *  child exists to be relative-to). */
+function GhostButton({ mu, onClick, children, badge }: { mu: number; onClick: () => void; children: ReactNode; badge?: number }) {
     return (
         <button
             type="button"
-            className="transition-transform active:scale-95"
+            className="relative transition-transform active:scale-95"
             style={ghostButtonStyle(mu)}
             onClick={onClick}
         >
             {children}
+            {typeof badge === 'number' && badge > 0 && (
+                <span
+                    aria-hidden="true"
+                    className="absolute flex items-center justify-center font-extrabold"
+                    style={{
+                        top: 0,
+                        right: 0,
+                        // Half outside the button's own corner on both axes
+                        // (a standard notification-badge placement) — at
+                        // 40% the badge's own bottom edge measured within
+                        // 0.1px of the label's own top edge at mu 1.5
+                        // (360-wide), too fragile a margin to trust across
+                        // every viewport; 50% clears it by a full 1*mu.
+                        transform: 'translate(50%, -50%)',
+                        minWidth: 16 * mu,
+                        height: 16 * mu,
+                        borderRadius: 8 * mu,
+                        padding: `0 ${4 * mu}px`,
+                        backgroundColor: '#f97316',
+                        color: 'var(--color-chocolate)',
+                        // 16px isn't much room at low mu — the 11px floor
+                        // (the handover's own acceptance number) wins over
+                        // the 9*mu formula whenever they'd disagree.
+                        fontSize: Math.max(11, 9 * mu),
+                        lineHeight: 1,
+                        border: `${mu < 1.5 ? 1 : 1 * mu}px solid var(--color-chocolate)`,
+                    }}
+                >
+                    +{badge}
+                </span>
+            )}
         </button>
     );
 }
@@ -123,10 +162,17 @@ export default function MainMenu() {
     const isGuest = useStore((s) => s.isGuest);
     const runUsername = useStore((s) => s.runUsername);
     const playerName = useStore((s) => s.playerName);
+    // Round 16 Part 3: the Kitchen unlock badge + greeting notice — see
+    // save.ts's computeKitchenBadge doc for the seen-count diff this is
+    // built from.
+    const scrolls = useStore((s) => s.scrolls);
+    const scrollsSeenCount = useStore((s) => s.scrollsSeenCount);
+    const lastUnlockedScrollSlug = useStore((s) => s.lastUnlockedScrollSlug);
+    const kitchenBadge = computeKitchenBadge(scrolls.length, scrollsSeenCount);
     // Round A2, task 4: Test Mode is unfinished — gated behind ?test=1
-    // (devMode.ts). Styled as a ghost, ABOVE Start shift — the spec's
-    // "only filled button" rule applies regardless of dev flags, and this
-    // is a QA affordance nobody outside the team ever sees.
+    // (devMode.ts). Styled as a ghost, ABOVE Play — the spec's "only filled
+    // button" rule applies regardless of dev flags, and this is a QA
+    // affordance nobody outside the team ever sees.
     const showTestMode = devModeEnabled();
     const backdropSrc = ASSET_SRC.get('menu-backdrop');
     const costumeBlock = blockForLevel(Math.max(1, bestWave));
@@ -140,6 +186,19 @@ export default function MainMenu() {
     // useState timeout, not a shared toast system this codebase doesn't have).
     const [showRunNameToast, setShowRunNameToast] = useState(false);
     const greetingName = isGuest ? (playerName ?? t('menu.greeting.fallback')) : (runUsername ?? t('menu.greeting.fallback'));
+    // Round 16 Part 3: n>=3 -> the generic "rewards waiting" line (today
+    // this can only mean several scrolls unlocked since the last Kitchen
+    // visit — the claimable-rewards term is still 0, see save.ts); n===1 or
+    // 2 -> names the specific dish; n===0 -> today's plain greeting,
+    // unchanged. lastUnlockedScrollSlug is only null when kitchenBadge is
+    // also 0 (see that field's own doc), so the fallback below never fires
+    // in practice — kept anyway, same defensive posture as this file's other
+    // "never trust derived state blindly" spots.
+    const greetingText = kitchenBadge >= 3
+        ? t('menu.greeting.rewardsWaiting')
+        : kitchenBadge >= 1 && lastUnlockedScrollSlug
+            ? t('menu.greeting.scrollReady', { name: greetingName, dish: t(`dish.${lastUnlockedScrollSlug}`) })
+            : t('menu.greeting', { name: greetingName });
 
     const beginShift = () => {
         // GDD §10.11 (round D): the scripted three-wave FTUE is persistent —
@@ -319,7 +378,7 @@ export default function MainMenu() {
                             fontWeight: 700,
                         }}
                     >
-                        {t('menu.greeting', { name: greetingName })}
+                        {greetingText}
                     </button>
                     {showRunNameToast && (
                         <div
@@ -418,10 +477,22 @@ export default function MainMenu() {
                     }}
                     onClick={handleStartShift}
                 >
-                    {t('menu.startShift')}
+                    {t('menu.play')}
                 </button>
 
-                <GhostButton mu={mu} onClick={() => { sfx.click(); store.patch({ metaOpen: true }); }}>
+                <GhostButton
+                    mu={mu}
+                    badge={kitchenBadge}
+                    onClick={() => {
+                        sfx.click();
+                        // Round 16 Part 3: cleared on OPEN, not on claim —
+                        // buyScroll (state/save.ts) separately keeps the
+                        // badge from firing on a purchase made inside an
+                        // already-open Kitchen.
+                        const updated = markScrollsSeen();
+                        store.patch({ metaOpen: true, scrollsSeenCount: updated.scrollsSeenCount });
+                    }}
+                >
                     {t('menu.kitchen')}
                 </GhostButton>
 

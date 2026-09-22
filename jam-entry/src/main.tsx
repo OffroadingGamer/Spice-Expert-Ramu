@@ -56,6 +56,8 @@ async function boot() {
         playerName: save.playerName,
         shards: save.shards,
         scrolls: save.scrolls,
+        scrollsSeenCount: save.scrollsSeenCount,
+        lastUnlockedScrollSlug: save.lastUnlockedScrollSlug,
     });
     // Audio unlocks on the first user gesture (autoplay policy).
     initAudio(save.audio);

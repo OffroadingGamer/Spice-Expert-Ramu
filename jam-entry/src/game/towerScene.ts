@@ -1384,6 +1384,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                     store.patch({
                         shards: save.shards,
                         scrolls: save.scrolls,
+                        lastUnlockedScrollSlug: save.lastUnlockedScrollSlug,
                         shardAward: {
                             wave: e.cleared,
                             slugs,

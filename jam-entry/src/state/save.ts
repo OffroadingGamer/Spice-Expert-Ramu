@@ -116,6 +116,21 @@ export interface SaveData {
      *  audit trail only (awardShards never writes here); nothing reads this
      *  to decide locked/unlocked, that's `scrolls` alone. */
     scrollsBought: string[];
+    /** Round 16 Part 3 (docs/Ideas.md §10.5 pick B): a snapshot of
+     *  `scrolls.length` as of the last time the Kitchen was opened —
+     *  kitchenBadgeCount below is how many scrolls exist now that weren't
+     *  there at that snapshot. See that function's own doc for why this
+     *  (not a literal shards>=8 check) is what makes the unlock badge a real
+     *  feature. Additive, migration-safe like shards/scrolls above — an old
+     *  save with no such field defaults to its OWN scrolls.length (parse()
+     *  below), not 0, so a returning player's already-owned scrolls never
+     *  falsely light up the badge on their first post-update menu visit. */
+    scrollsSeenCount: number;
+    /** Round 16 Part 3: the most recent dish slug to complete a scroll
+     *  (awardShards below) — the greeting bubble's "the ‹dish› scroll is
+     *  ready" names this one. Never set by buyScroll (a gem purchase happens
+     *  IN the Kitchen — there is nothing to announce back at the menu). */
+    lastUnlockedScrollSlug: string | null;
 }
 
 /** One remembered rank plus the UTC day it was recorded on. `utcDay` is only
@@ -155,6 +170,8 @@ const DEFAULTS: SaveData = {
     shards: {},
     scrolls: [],
     scrollsBought: [],
+    scrollsSeenCount: 0,
+    lastUnlockedScrollSlug: null,
 };
 
 let data: SaveData = structuredClone(DEFAULTS);
@@ -188,6 +205,9 @@ function parse(raw: string | null): SaveData | null {
             const f = Number(v);
             return Number.isFinite(f) ? Math.min(1, Math.max(0, f)) : fallback;
         };
+        const scrolls = Array.isArray(parsed.scrolls)
+            ? parsed.scrolls.filter((s): s is string => typeof s === 'string')
+            : [];
         const rawAudio = (parsed.audio ?? {}) as Partial<SaveData['audio']>;
         const rawFtue = (parsed.ftue ?? {}) as Partial<FtueState>;
         const ftue: FtueState = {
@@ -248,12 +268,18 @@ function parse(raw: string | null): SaveData | null {
                 for (const [k, v] of Object.entries(raw)) out[k] = num(v, 0, Number.MAX_SAFE_INTEGER);
                 return out;
             })(),
-            scrolls: Array.isArray(parsed.scrolls)
-                ? parsed.scrolls.filter((s): s is string => typeof s === 'string')
-                : [],
+            scrolls,
             scrollsBought: Array.isArray(parsed.scrollsBought)
                 ? parsed.scrollsBought.filter((s): s is string => typeof s === 'string')
                 : [],
+            // Missing (any pre-1.90.0 save) defaults to THIS save's own
+            // scrolls.length, not 0 — see the field's own doc on SaveData.
+            scrollsSeenCount:
+                typeof parsed.scrollsSeenCount === 'number' && Number.isFinite(parsed.scrollsSeenCount)
+                    ? Math.min(Math.max(0, Math.floor(parsed.scrollsSeenCount)), scrolls.length)
+                    : scrolls.length,
+            lastUnlockedScrollSlug:
+                typeof parsed.lastUnlockedScrollSlug === 'string' ? parsed.lastUnlockedScrollSlug : null,
         };
     } catch {
         return null;
@@ -476,7 +502,20 @@ export function awardShards(slugs: string[]): { newlyCompleted: string[]; save: 
             newlyCompleted.push(slug);
         }
     }
-    data = { ...data, shards, scrolls };
+    data = {
+        ...data,
+        shards,
+        scrolls,
+        // Round 16 Part 3: the scroll grant above is atomic with the shard
+        // count crossing the threshold — there is no separate "claim" step —
+        // so this is the only place a scroll ever newly completes. Records
+        // the LAST one this call (a single wave can complete more than one
+        // recipe at once) for the greeting bubble's dish name; left as-is
+        // when nothing completed this call.
+        lastUnlockedScrollSlug: newlyCompleted.length > 0
+            ? newlyCompleted[newlyCompleted.length - 1]
+            : data.lastUnlockedScrollSlug,
+    };
     flushSave();
     return { newlyCompleted, save: data };
 }
@@ -487,12 +526,70 @@ export function awardShards(slugs: string[]): { newlyCompleted: string[]; save: 
 export function buyScroll(slug: string): SaveData | null {
     if (data.scrolls.includes(slug)) return null;
     if (data.gems < SCROLL_GEM_PRICE) return null;
+    const scrolls = [...data.scrolls, slug];
     data = {
         ...data,
         gems: data.gems - SCROLL_GEM_PRICE,
-        scrolls: [...data.scrolls, slug],
+        scrolls,
         scrollsBought: [...data.scrollsBought, slug],
+        // Round 16 Part 3: a purchase happens INSIDE the Kitchen — the
+        // player is already looking at it, so it must not also light up the
+        // unlock badge back at the menu (the badge announces something they
+        // haven't seen yet; this is the opposite of that).
+        scrollsSeenCount: scrolls.length,
     };
+    flushSave();
+    return data;
+}
+
+/** Round 16 Part 3 (docs/Ideas.md §10.5 pick B): claimable-reward count for
+ *  the Kitchen unlock badge below. No claimable-reward system exists yet —
+ *  this term is 0 today; it stays its own function so a later round that
+ *  adds one only has to fill this in, not touch the badge math itself. */
+function countClaimableRewards(): number {
+    return 0;
+}
+
+/**
+ * The Kitchen button's unlock-badge count (MainMenu.tsx), given the current
+ * scroll count and the seen-count snapshot from the last Kitchen open —
+ * plain numbers, not `data`, so the UI can call it with its own reactive
+ * store values rather than reading this module's save state directly (this
+ * codebase's established "store mirrors save for React" posture — see
+ * store.ts's own doc on the shards/scrolls mirror).
+ *
+ * The handover's own formula is "dishes at >=8 shards and not yet in
+ * save.scrolls" — but awardShards (above) grants the scroll in the SAME
+ * call that crosses the threshold, so that raw state can never be observed:
+ * shards[slug] >= SHARDS_PER_SCROLL implies slug is already in scrolls,
+ * always (barring a corrupt save). A badge built from that literal
+ * condition would therefore never show in real play. What actually makes
+ * "+n, cleared when the Kitchen opens (not when the scroll is claimed)" a
+ * real, testable feature is this seen-count diff: `scrollsSeenCount` is a
+ * snapshot of scrolls.length as of the last Kitchen open (markScrollsSeen
+ * below); the badge is how many scrolls exist now that weren't there at
+ * that snapshot — "unlocked since last seen", which is what "unlockable
+ * now" means from the player's side even though the underlying grant
+ * already happened automatically mid-run.
+ */
+export function computeKitchenBadge(scrollsCount: number, scrollsSeenCount: number): number {
+    return Math.max(0, scrollsCount - scrollsSeenCount) + countClaimableRewards();
+}
+
+/** Same as computeKitchenBadge, reading this module's own save state —
+ *  for callers that don't already have the two numbers from the store
+ *  (e.g. a headless verification script). */
+export function kitchenBadgeCount(): number {
+    return computeKitchenBadge(data.scrolls.length, data.scrollsSeenCount);
+}
+
+/** Clears the Kitchen badge — called when the Kitchen opens, never when a
+ *  scroll is bought/claimed (buyScroll above already handles that case by
+ *  setting scrollsSeenCount itself). Idempotent, same posture as the other
+ *  mark* functions in this file. */
+export function markScrollsSeen(): SaveData {
+    if (data.scrollsSeenCount === data.scrolls.length) return data;
+    data = { ...data, scrollsSeenCount: data.scrolls.length };
     flushSave();
     return data;
 }
