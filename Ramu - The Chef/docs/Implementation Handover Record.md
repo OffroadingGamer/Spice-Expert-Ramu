@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.90.0** (Rounds 0–16 — Round 16 verified Sep 22; order chip restored, "Play", Kitchen unlock badge — **playtest-ready**; 🔒 Private-only until human verification — Ideas.md §6d) |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | Nothing dispatched. Next: **R17 Hindi** (the user's review pass 1 is in `docs/i18n/strings.md`; the rest of the file needs reviewing against its Review-log rules) and **IAP** (Ideas §10.6 B). Both wait on the user's playtest of 1.90.0 and the **Public promotion decision**. Then the user plays 1.85.0 → R13 belt chevrons + i18n table (four constraints from the inventory) → R14 shards (projection measured) → R15 continue → R16 Play/badge → R17 Hindi. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
+| **In flight** | **Round 17** → Private 1.91.0: Kitchen tabs (Stations first) + fixed recipe card + the parchment recipe sheet with the side-scrolling ingredient rail + the 23 existing ingredient sprites shipped. **Art round 4** (flour, garlic, tomato) and the **recipe-writing pass** (44 + ~33 strings) run beside it. Then Hindi · IAP · the Public promotion decision. |
 | **Repo** | **Pushed Sep 18 ~02:15 IST** (`4858e3b..591031d`, 17 commits) on the user's word — `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is now in the public repo. Secret scan over the whole range: clean, control positive. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -53,7 +53,7 @@ of the present.**
 | **FTUE opening pad** | **`FTUE_FIRST_PAD = 4`** (B3, `damage ×1.5`), then pads 3 and 2 |
 | **Sealed files** | `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` |
 | **`data/waves.ts`** | ⚠️ **RE-SEALED.** Unsealed for the v1.69.0 block-1 retune only |
-| **Credits (Sep 18, ~02:40 IST)** | **98,209** (`rundot credits`). Was 93,273 on Sep 15; **+6,093 arrived before art round 2** (not the Meta remainder at the flight's rate — ledger to be read), then **−561** hatch/belt round, **−593** art round 3 (588 by calls) and **−8** audio round 5 (the −5 and −3 the art log saw were the two SFX). Only the +6,093 remains unexplained. Durable pool: 50,000 grant (Dec 13) + 15,000 grant (Dec 8) + 25,000 starter + quests/daily |
+| **Credits (Sep 22)** | **198,309** (`rundot credits`). ⚠️ Up from 98,209 on Sep 18 — **+100,100 unexplained**, the second such rise (the first was +6,093 before art round 2). Not a spend; flagged, ledger unread. Art round 4's budget is ≤ 882. |
 | **Paid campaign** | ✅ **`kitchen-rush-meta` COMPLETE** (ended Sep 16). **$70.05 of $82 spent · 4,228 impr · 171 clicks · 4.04 % CTR · 18 installs · CPI $3.66.** Unspent remainder refunds on completion per RUN's rule — verify on the studio page. Paid is done for this jam (marketing agent's prior, Sep 14) |
 | **Art round 2 (Sep 17)** | ✅ **DONE** — `Art/_gen/pass-final/`: `pass-entry.png`, `pass-exit.png` (1024², take 1 each), `belt-tile.png` (128², procedural, `#3a3a44`, seamless both axes). **561 credits.** Awaiting the hatch-wiring implementation round |
 | **Art leg (Sep 14)** | ✅ **DONE** — `Art/_gen/chef-final/`: 9 bodies + 4 faces + scroll, **7,003 credits**, verified. Faces are aligned eyebrow-to-jaw bands. ⚠️ Expressions read at **≥ 160 px, not 96** — spec amended in Ideas.md §6b. Nothing ships before judging |
@@ -3336,3 +3336,25 @@ chip stayed hidden. Third render-time reset added, keyed on dialogue newly block
 
 **Also owned:** the badge sat 0.1 px from the Kitchen label at the corner offset I specified
 (40 %) — widened to 50 %, now 2.5 px clear at 360×780.
+
+---
+
+### 2026-09-22 — Kitchen relayout and recipe sheet decided; art round 4 issued
+
+The user's video of the Kitchen plus an annotated screenshot. Diagnosed: the screen runs two
+unrelated jobs down one column (four station cards ≈ 1.5 screens, then a 22-card recipe wall),
+and the recipe card paints text over `ui-recipe-scroll` with `truncate` on the name — the
+"TEXT WRAPPING NEEDS FIX" annotation is a layering bug, not a wrapping one.
+
+Three layouts drawn → **A (two tabs, Stations first)** picked, with the badge moving to the
+Recipes tab. Three sheet designs drawn → the user asked for **B's parchment shell with A's
+formatting and a side-scrolling ingredient row**; that hybrid was drawn and **approved as the
+style**. Full spec in Ideas §6d "Kitchen relayout + recipe sheet".
+
+**Sprite cross-reference (mine, from the files):** 30 ingredient sprites exist, all 30 map to a
+recipe, 20 of 22 dishes have ≥ 3. Only naan and aglio e olio are thin → **art round 4 issued**
+for flour, garlic, tomato (147 credits each, estimate confirmed with the exact call parameters
+per Retro 112; ≤ 882 budget).
+
+⚠️ **Credits rose to 198,309** from 98,209 on Sep 18 — +100,100 with no purchase I know of.
+Second unexplained rise; recorded, not acted on.

@@ -665,6 +665,47 @@ anchors to the **wave chip** instead. §7's data path is unchanged.
 2. Screenshots otherwise accepted: heat gauge at 3/10, chips beside the portrait, static scale
    across states, Ready above the portrait, chevrons — all as specified at wave 44.
 
+**Kitchen relayout + recipe sheet — decided Sep 22 2026, for Round 17:**
+
+Source: the user's video `references/Errors/The kitchen upgrades refix.mp4` and an annotated
+screenshot. Proposal pages (private, not spec of record): layouts
+`https://claude.ai/artifact/FxVRqjr5UzmxHhgLsVuACY`, sheet designs
+`https://claude.ai/artifact/LbAWwou5GEgBkVmB5KZ9N7`, the approved hybrid
+`https://claude.ai/artifact/QrmaTewse8CEL4KNtchdV7`.
+
+1. 🔴 **Recipe card text sits on the art.** `MetaUpgrades.tsx:199` paints
+   `ui-recipe-scroll` as `absolute inset-0 object-cover` with the name and note laid over it,
+   plus `truncate` on the name — unreadable at every size. **Fixed card:** parchment becomes a
+   **26-mu banner** with the dish medallion on it; name and note sit on solid chocolate below;
+   name **wraps to two lines** (no truncate); note clamped to two lines; locked = the same card
+   desaturated with the shard bar and the 150 💎 button.
+2. **The Kitchen screen splits into two tabs (option A, picked).** Segmented control under the
+   title, 2 × 44 px: **Stations** (selected on open — the stations must not be buried under a
+   22-card wall) and **Recipes**. Each tab scrolls independently and keeps its offset for the
+   session. The `computeKitchenBadge` count moves onto the **Recipes tab** and clears when that
+   tab opens, not when the Kitchen does. Recipes grid: 2 columns at mu ≤ 1.5, 3 above; unlocked
+   first, then locked by progress descending.
+3. **Recipe sheet — approved style: parchment shell with a prep-bench layout** (B's shell, A's
+   formatting). Parchment `#f7efd8 → #e9d7b0` with a fibre pattern between two walnut rollers
+   with brass caps; **ink on flat parchment with 10-mu padding, never over art**. Centred header:
+   60-mu plate, dish sprite **46 mu** sized by its opaque bbox, name 15 mu, epigraph italic,
+   2-mu rule. Then **Ingredients → Prep → Garnish & cooking** in that fixed order for all 22.
+   **Ingredient rail:** tiles **42 × 44 mu**, gap 5, sprite 26 mu, label 6.5 mu (two lines max),
+   one line that **scrolls sideways** — never wraps, so every dish's sheet is the same height.
+   4 tiles visible + a peek at every viewport; `scroll-snap-type: x mandatory`, snap-start per
+   tile, `touch-action: pan-x` so a sideways drag can't steal the sheet's vertical scroll;
+   right-edge fade + chevron and page dots render **only** when more tiles exist; the label
+   carries the count ("Ingredients · 7"). Steps: tomato numbered discs, 8-mu body, ≤ 240
+   characters each. Dismiss: 40 % chocolate scrim, tap outside or Close; locked cards never open.
+4. **Ingredient sprites — cross-referenced Sep 22:** 30 exist (7 shipping as `ing-*`, 23 finished
+   in `Art/_gen/ingredients/`). **Every one maps to at least one recipe**; 20 of 22 dishes have
+   ≥ 3 sprites, 16 have ≥ 4. Thin: **naan** (ghee, cumin) and **aglio e olio** (chilli flakes,
+   parsley) — art round 4 adds **flour, garlic, tomato** to close both and strengthen arrabbiata,
+   minestrone, risotto, pesto and veg momo.
+5. **Content:** `data/recipes.ts` gains an ordered `ingredients: string[]` per slug (cook's order,
+   not alphabetical); strings `recipe.<slug>.prep` / `.finish` (44) plus `ingredient.<key>` names
+   (~33, translated once each, not per dish). Hindi picks them all up in R17's own pass.
+
 ## 7. Wave-intro scroll — proposed Sep 13 2026 — ✅ shipped as the wave bubble's scroll grid, 1.76.0
 
 **Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll
