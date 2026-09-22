@@ -438,7 +438,48 @@ All analysis and drafted framing only — nothing posted, prepared, or funded. H
 
 ---
 
+## 2026-09-22 — Round 16 — implementation agent
+
+Outcome: verified, Private 1.90.0, committed `e35e147`. Part 3 reimplemented by the agent on a seen-count diff — Central's formula was unobservable.
+
+Private 1.90.0, Review 1.69.0, Public 1.69.0 — exactly the required end state.
+
+Round 16 — deployed as v1.90.0 (Private). Review/Public unchanged at 1.69.0.
+Part 1 — order scroll no longer dismisses the chip
+WaveBubble.tsx: deleted the dismissed state, its wave-keyed reset, and close()'s setDismissed(true) — closing the scroll now only closes the scroll (close: () => setIsOpen(false)). Visibility is exactly baseVisible && !isOpenNow.
+
+Five-cycle test, 403×874 (real engine run, jumped to wave via engine.state.waveIndex, submitted through syncStore()):
+
+Wave 44 (block 5, two distinct dishes): chip box before opening {x:12, y:128.39, w:246.97, h:72} — identical after all 5 open/close cycles, beforeEqualsAfter: true, allCyclesIdentical: true. Chip correctly hidden while the scroll is open on every cycle.
+Wave 55 (block 6, two-dish archetypes): box {x:12, y:128.39, w:284, h:72} — same result, all 5 cycles pixel-identical (verified under reduced-motion to freeze the unrelated Round-7 icon-pan carousel, which otherwise varies the trigger's width as an orthogonal, pre-existing animation — not something this fix touches).
+Starting the wave with the scroll open: scroll closes, chip visible — confirmed both waves.
+Bug found and fixed, inside this round's own acceptance line: "open the scroll, let a dialogue beat fire → both hidden, beat ends → chip back" was failing — a dialogue beat correctly hid both halves, but never reset isOpen, so the scroll silently reopened the instant the beat ended, leaving the chip hidden. This predates Round 16 (the wave/phase resets never touched this path either), but it sits squarely in this round's acceptance surface, so I added a third render-time reset keyed on dialogue newly blocking the bubble, same pattern as the existing wave/phase ones. Re-verified: trigHiddenDuring: true, submenuHiddenDuring: true, trigBackAfter: true — both waves.
+
+Part 2 — "Start shift" → "Play"
+Renamed the i18n key itself (menu.startShift → menu.play, value "Play") rather than just its text, per the handover's own naming. Single render site (MainMenu.tsx's filled button) updated. Ranks' "No shift yet today — start one" is a separate key (ranks.bar.noRunToday), untouched.
+
+Grep for "Start shift" afterward — 9 hits left, all in code comments, none rendered: main.tsx:95, App.tsx:53, store.ts:196,203, en.ts:53 (my own new comment documenting the rename), MainMenu.tsx:21,180,432, NameDialog.tsx:3.
+
+Part 3 — unlock badge and greeting notice
+A finding that changed the implementation: the handover's literal formula ("dishes at ≥8 shards and not yet in save.scrolls") can never be true in real play — awardShards (Round 14) grants the scroll in the same call that crosses the threshold, so that raw state is unobservable outside a corrupted save. A badge built from it would never show. What actually makes "+n, cleared when the Kitchen opens (not when the scroll is claimed)" a real feature is a seen-count diff: a new persisted scrollsSeenCount (snapshot of scrolls.length as of the last Kitchen open) — the badge is max(0, scrolls.length − scrollsSeenCount) + claimableRewards(0). Documented at length in save.ts's computeKitchenBadge. Existing saves default scrollsSeenCount to their own current scrolls.length (not 0) so nobody's already-owned scrolls falsely light up the badge on their first post-update visit. buyScroll (a Kitchen-internal purchase) also marks itself seen immediately, so buying a scroll never triggers its own notification.
+
+Verified (real save round-trip via localStorage, not just faked store state):
+
+n=0: no badge, plain "Welcome, {name}".
+n=1: badge "+1", font-size 13.5px at 360×780 (max(11, 9×mu) where mu=1.5 — the 11px floor never actually binds at this viewport, formula confirmed correct either way), greeting "Welcome back, {name} — the Bamboo Shoot Fry scroll is ready in the kitchen."
+n=2: badge "+2", still names a dish (per "n≥1" rule).
+n=3: badge "+3", switches to "Rewards are waiting in the kitchen." with no dish name.
+Badge/label overlap bug found and fixed: at the spec'd 40% corner offset, the badge's bottom edge measured 0.1px from the label text's top edge at 360×780 — passing, but by a margin too thin to trust across viewports. Widened to a standard 50%/50% corner offset; re-measured clear by 2.5px at 360×780 and by a proportionally similar margin at 744×1315 (higher mu).
+Longest dish name ("Bamboo Shoot Fry", 19 chars) in the greeting bubble: wraps to two lines, no horizontal overflow, at 360×780 (bubble height grew from one line to 138.5px within the unchanged 85-mu maxWidth — confirmed via scrollWidth ≤ clientWidth).
+Badge clears on Kitchen open: scrollsSeenCount correctly updates to 3 in the store and in the flushed localStorage save; badge disappears immediately, confirmed on the real save path (not a store-only fake).
+Build, verify, deploy
+tsc --noEmit and npm run build: clean. npm run balance: 35/36/11/4/90, byte-identical. find public -name '*.json': empty. git diff --stat against the sealed files, kitchenScene.ts, package*.json, rundot/leaderboard.config.json: zero changes. Tags: Private 1.90.0, Review 1.69.0, Public 1.69.0.
+
+Not verifiable headlessly
+Everything above was exercised on the real engine/store/save in a live Chromium session, so there's nothing this round that specifically needs the RUN host (no ads/SDK surface touched). One incidental note: two unrelated, pre-existing uncommitted files outside jam-entry/ (Marketing Strategy.md, Social Media Handover Record.md) showed up in git status — not touched by this round, left as-is.
+
+---
+
 ## Pending
 
-- **Round 16** (implementation agent, → 1.90.0) — issued Sep 22, not returned.
-- Nothing else outstanding.
+- Nothing outstanding. Next round waits on the user's playtest of 1.90.0 and the promotion decision.

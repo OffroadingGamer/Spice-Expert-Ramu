@@ -819,7 +819,7 @@ shard per dish served, 100/scroll; rare dishes never come). C *boss drops* (3 sh
 block dish per boss kill, 6/scroll, 200 gems; first unlock run 2–3, top players only) — keep as a
 later sweetener (+2 on a boss kill).
 
-**10.5 "Start shift" → Play; unlock notice.** **Play** (over Start): one syllable, localises
+**10.5 "Start shift" → Play; unlock notice.** ✅ **shipped 1.90.0 (Round 16, Sep 22)** — badge built on a seen-count diff, not the shard threshold (Central's formula was unobservable). **Play** (over Start): one syllable, localises
 cleanly (खेलें / விளையாடு), no object needed. **B — recommended: badge + Ramu says it** — a 16-mu
 orange "+n" chip top-right of The Kitchen (count = unlockable scrolls + claimable rewards,
 cleared when the Kitchen opens) and the greeting bubble carries the notice: *"Welcome back,

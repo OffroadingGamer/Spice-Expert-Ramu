@@ -39,9 +39,9 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.89.0** (Rounds 0–15 — Round 15 verified Sep 22; rewarded continue with the ⟳ board marker — **playtest-ready**; 🔒 Private-only until human verification — Ideas.md §6d) |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.90.0** (Rounds 0–16 — Round 16 verified Sep 22; order chip restored, "Play", Kitchen unlock badge — **playtest-ready**; 🔒 Private-only until human verification — Ideas.md §6d) |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | Nothing dispatched. **Round 16** (Play + unlock badge, Ideas §10.5 B) waits on the user's playtest of 1.88.0/1.89.0 — the continue can only be exercised in the RUN host. Then R17 Hindi · IAP. Then the user plays 1.85.0 → R13 belt chevrons + i18n table (four constraints from the inventory) → R14 shards (projection measured) → R15 continue → R16 Play/badge → R17 Hindi. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
+| **In flight** | Nothing dispatched. Next: **R17 Hindi** (the user's review pass 1 is in `docs/i18n/strings.md`; the rest of the file needs reviewing against its Review-log rules) and **IAP** (Ideas §10.6 B). Both wait on the user's playtest of 1.90.0 and the **Public promotion decision**. Then the user plays 1.85.0 → R13 belt chevrons + i18n table (four constraints from the inventory) → R14 shards (projection measured) → R15 continue → R16 Play/badge → R17 Hindi. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
 | **Repo** | **Pushed Sep 18 ~02:15 IST** (`4858e3b..591031d`, 17 commits) on the user's word — `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is now in the public repo. Secret scan over the whole range: clean, control positive. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -3306,3 +3306,33 @@ argument for a real relaunch — taken from my reading, the agent has no leaderb
 (d) fresh launch copy for the 1.89.0+ build, judged/editorial attention pitched deliberately
 (the $300 Editor's Pick went to a 159-DUP entry), paid held until attribution is proven live.
 Nothing posted, prepared or funded.
+
+---
+
+### 2026-09-22 — Round 16 returned and verified: Private **1.90.0**
+
+**Verified:** tags 1.90.0 / 1.69.0 / 1.69.0 · balance 35/36/11/4/90 · tsc + build clean · no
+sidecars · sealed files + config untouched · `dismissed` survives only in three comments;
+`showTrigger: baseVisible && !isOpenNow` (`WaveBubble.tsx:357`) · `'menu.play': 'Play'`, the only
+"Start shift" strings left are comments · `scrollsSeenCount` + `computeKitchenBadge`
+(`save.ts:575`) · greeting keys present. Committed `e35e147`. Return verbatim in
+`Agent Returns.md`.
+
+🔴 **My Part 3 formula was unbuildable and the agent caught it.** I specified the badge as
+"dishes at ≥ 8 shards and not yet in `save.scrolls`" — but Round 14's `awardShards` grants the
+scroll in the same call that crosses 8, so that state never exists in a healthy save and the
+badge would have been dead code that always rendered 0. The agent replaced it with a **seen-count
+diff**: `scrollsSeenCount` snapshots `scrolls.length` at each Kitchen open, badge =
+`max(0, scrolls.length − scrollsSeenCount) + claimable`. It also handled the two edges I would
+have missed — pre-1.90.0 saves default the field to **their own `scrolls.length`** (verified at
+`save.ts:277`, clamped), so nobody's existing scrolls light the badge once; and `buyScroll`
+marks itself seen, so buying never notifies you about your own purchase. **Lesson: a spec that
+names a state must be checkable against the code that produces that state** — I wrote the
+condition from the design, not from `awardShards`.
+
+**Second bug, pre-existing, fixed on this round's acceptance line:** a dialogue beat hid the
+bubble without clearing `isOpen`, so the scroll silently reopened when the beat ended and the
+chip stayed hidden. Third render-time reset added, keyed on dialogue newly blocking.
+
+**Also owned:** the badge sat 0.1 px from the Kitchen label at the corner offset I specified
+(40 %) — widened to 50 %, now 2.5 px clear at 360×780.
