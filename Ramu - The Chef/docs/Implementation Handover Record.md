@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.91.0** (Rounds 0–17) — playtest-ready. Review and Public stay at **1.69.0**, the jam build. Nothing is in flight. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Art round 5 — re-scoped and not yet fired**: twelve exports from the licensed pack at **0 credits**, plus `spaghetti` generated for **147** (ceiling 294). Was costed at 1,323 before the folder was listed. **Round 18 → 1.92.0** is specified and unblocked but not issued. Round 19 is Hindi. |
+| **In flight** | **Round 18 → Private 1.92.0** (issued Sep 23, six parts) and **art round 5** (in progress: twelve pack exports at 0 credits + `spaghetti` at 147). The two run in parallel and are deliberately independent — R18 does not reference art round 5's aliases. Round 19 is Hindi and must follow R18. |
 | **Repo** | `origin/main` = **`66c12c2`**, tree clean apart from Round 17's in-progress edits. Pushed continuously since Sep 18; `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is in the public repo. Every push preceded by the secret scan with its 3-line positive control. ⚠️ `references/Errors/The kitchen upgrades refix.mp4` (3 MB) is untracked and **not** committed — no other reference video is tracked; the user's call. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -3591,3 +3591,44 @@ have been exactly the stale objection Retro 67 was written about. Checked before
 preferred over spending a retake (round 4's garlic precedent), and a new **optical-size target
 of 0.82–0.88** against the 33-sprite median of 0.84 — round 4's flour landed at 0.74 and reads
 small beside its neighbours.
+
+---
+
+### 2026-09-23 — Round 18 handover issued — Private 1.92.0, six parts
+
+Logged when issued. Target **Private 1.92.0**; Review and Public stay at 1.69.0.
+
+| Part | What | Where the decision came from |
+|---|---|---|
+| 1 | Rail corrections — eight rails changed, both `recipes.ts` header constraints dropped | User: *"yes, we delete the wrong ones"* |
+| 2 | The 44 step strings pasted from `docs/i18n/recipes.md` §3 | The writing pass, verified Sep 22 |
+| 3 | chai / coffee icon zoom at `204 / 75` = 2.72 | Measured; the 1.91.0 playtest |
+| 4 | Recipe card option A — banner 34 mu, medallion 26 mu | User: *"A, and keep the parchment in the grid"* |
+| 5 | Coffee Decoction on both labels, id unchanged | User: *"rename both labels, keep the internal id"* |
+| 6 | Rail mouse input — wheel, pointer-drag, snap, focus ring | User's 1.91.0 report |
+
+**Exact rails were specified in the brief so nothing is inferred:** `coffee` 2 · `pesto` 3 ·
+`veg-thukpa` 3 · `upma` / `beans-poriyal` / `veg-momo` / `minestrone` 4 · `ooti` 5
+(`peas · onion · ginger · garlic · dried-red-chilli`). The other fourteen are untouched.
+
+**Three traps named in the brief, because they are how this round goes quietly wrong:**
+
+- `aubergine` falls to **zero** rail references once the use-every-sprite rule dies. Correct — it
+  was drawn for Baingan Bharta, a level dish. The brief says to leave the asset and alias alone
+  and not to find it a new home.
+- The sheet-height acceptance case moves from **2-vs-7 to 2-vs-5**, since no dish has 7 tiles
+  after the corrections.
+- **Art round 5 is in flight in parallel.** The brief forbids referencing its aliases or leaving
+  placeholders. A round that depends on an unreturned agent cannot be verified, so the two are
+  kept independent and the new ingredients land later as a data-only change.
+
+**Retro 115 applied:** the card's arithmetic is stated in the brief rather than left to be summed
+— banner 34 − medallion 26 = 8 (4 mu clear top and bottom), medallion 26 − image 18 = 8 (4 mu
+clear each side). Round 17's fault was two such numbers given ten lines apart.
+
+**Retro 117 applied:** acceptance item 6 requires the agent to say which inputs it exercised with
+a real pointer versus a synthesised event, and to name the event type. Round 17 passed this same
+rail using `wheel(220, 0)` — a horizontal wheel event no ordinary mouse emits.
+
+Out of scope and stated as such: the plural key (user deferred), the sheet's layout (user
+deferred until the text is in it), art round 5's sprites, and Hindi.
