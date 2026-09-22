@@ -498,7 +498,31 @@ All three read unambiguously against onion/potato/cauliflower at 26px in the con
 
 ---
 
+## 2026-09-22 — Recipe-writing pass — localisation agent
+
+Outcome: pasted before verification. Verification below in the record.
+
+Written for: Central (Round 17 implementation) and the user as the cook reviewing the food.
+
+Output: docs/i18n/recipes.md — 623 lines, one new file, no src edits, no git, no other doc touched.
+
+What's in it: 33 ingredient.<key> display names, an ordered ingredient rail for each of the 22 slugs with a separate wanted column, and the 44 recipe.<slug>.prep / .finish strings. All 44 are 173–209 characters against the 240 cap, checked by script for the cap, em dashes, emoji and non-ASCII: zero violations. All 22 existing note lines were compared character-for-character against live en.ts so nothing contradicts them.
+
+The tree moved under me, and it changes the shape of the delivery. When I started, recipes.ts held 22 slugs. By the end Round 17 had shipped RECIPE_INGREDIENTS, both helpers, all 33 ingredient.* names, the sheet chrome and all 33 sprites. Three things follow:
+
+The step text is still the open slot — i18n/index.ts:85-97 says in as many words that .prep/.finish "are allowed to be absent until a later writing pass lands." There are zero of them in en.ts. That's this pass, and it's the bulk of the brief.
+My 33 ingredient names agree with the shipped ones on 31. The two that differ are in §4.7; I'd concede Tea Leaf and keep Coffee Decoction.
+Seven of the shipped rails are wrong as food. §0.1 sets mine against theirs dish by dish: 2 identical, 10 agree, 1 where theirs is better than mine (sticky rice — they paired rice with coconut, which is honest and solves a problem I'd left open), 2 cosmetic, and 7 wrong. The cause is visible in their own header comment: every one of the 33 aliases had to be used at least once and four dishes had to hit exact tile counts for an acceptance check. Reasonable constraints; they pushed the food off.
+If one thing gets fixed, fix ooti. The boss dish's rail is rice · ghee · cardamom · clove · cumin-seed · bay-leaf · turmeric — that's a pulao. Ooti is ground dried peas cooked long with bamboo shoot and greens, and RecipeList §7.4 already locks its primary as Peas. upma is next (flour is not rava, and the dish's own note is about roasting rava), then beans-poriyal (peas is not a green bean). All three are the same underlying problem: the dish's primary has no sprite, so a wrong one went in its place instead of the rail being left short.
+
+Ten dishes flagged rather than guessed (§4.3), since you'll catch them: ooti (Angami variants), sticky rice (bora saul vs sunga saul), bamboo shoot fry (fermented vs fresh changes the whole step), veg thukpa (I wrote the NE dhaba version with tomato; a Tibetan cook wouldn't), risotto (the cream is technique I don't endorse — it's there because the sprite exists), coffee (I assumed filter decoction throughout), upma (ghee vs oil, chana dal and cashew left out), coconut chutney (roasted gram left off rather than guessed), naan (milk not yoghurt, cumin not kalonji — both forced by the pool), minestrone (its own note makes any fixed rail slightly false).
+
+Two other findings: aubergine has no honest dish among the 22 — it was drawn for Baingan Bharta, which is a level dish and not a recipe slug, and the use-every-sprite rule put it in minestrone. And recipe.sheet.ingredients shipped as a flat 'Ingredients · {n}' rather than a plural entry, so "Ingredients · 1" is reachable; tn() already exists, so it's a one-line fix.
+
+§4.6 has the consolidated art ask ranked by dishes served. If only three sprites get drawn: cooking oil (12 dishes — ghee is the only fat, and RecipeList assigns a different oil to four of five nodes), a pasta or noodle (4, two of them locked primaries), and cabbage (2, the secondary for both momo and thukpa).
+
+---
+
 ## Pending
 
 - **Round 17** (implementation agent, → 1.91.0) — issued Sep 22: Kitchen tabs, fixed recipe card, parchment recipe sheet with the ingredient rail, 23 sprites shipped. Its edits are already visible in the tree (`data/recipes.ts`, `MainMenu.tsx`) — **do not commit until it returns**.
-- **Recipe-writing pass** (localisation agent) — handover written Sep 22, fire at the user's discretion; Round 17 ships without it.

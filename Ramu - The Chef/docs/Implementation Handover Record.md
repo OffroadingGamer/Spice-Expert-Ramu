@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.90.0** (Rounds 0–16 — Round 16 verified Sep 22; order chip restored, "Play", Kitchen unlock badge — **playtest-ready; Round 17 in flight toward 1.91.0**; 🔒 Private-only until human verification — Ideas.md §6d) |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Round 17** → Private 1.91.0: Kitchen tabs (Stations first) + fixed recipe card + the parchment recipe sheet with the side-scrolling ingredient rail + the 23 existing ingredient sprites shipped. **Art round 4 returned and is verified** (flour, garlic, tomato — 441 credits, and Round 17 has already picked all three up into `public/images/`). The **recipe-writing pass** (44 + ~33 strings) still runs beside it. Then Hindi · IAP · the Public promotion decision. |
+| **In flight** | **Round 17** → Private 1.91.0: Kitchen tabs (Stations first) + fixed recipe card + the parchment recipe sheet with the side-scrolling ingredient rail + the 23 existing ingredient sprites shipped. **Art round 4 returned and is verified** (flour, garlic, tomato — 441 credits, and Round 17 has already picked all three up into `public/images/`). The **recipe-writing pass returned and is verified** — [docs/i18n/recipes.md](i18n/recipes.md), 44 step strings ready to paste, plus seven shipped ingredient rails it calls wrong as food. **Four decisions are open with the user** (rail fixes, the `coffee-extract` name, the `Ingredients · {n}` plural, art round 5). Then Hindi · IAP · the Public promotion decision. |
 | **Repo** | `origin/main` = **`66c12c2`**, tree clean apart from Round 17's in-progress edits. Pushed continuously since Sep 18; `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is in the public repo. Every push preceded by the secret scan with its 3-line positive control. ⚠️ `references/Errors/The kitchen upgrades refix.mp4` (3 MB) is untracked and **not** committed — no other reference video is tracked; the user's call. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -3409,3 +3409,62 @@ honestly rather than charged to flour.
 
 **Verdict: accepted.** Both of the agent's disclosed deviations were checked and are
 accurate; its one unreported number (flour's margins) passes. Art round 4 closes.
+
+---
+
+### 2026-09-22 — Recipe-writing pass verified — `docs/i18n/recipes.md`
+
+Return pasted verbatim into [Agent Returns.md](Agent%20Returns.md) before verification.
+The agent's brief was written when `recipes.ts` held 22 slugs and nothing else; Round 17
+shipped `RECIPE_INGREDIENTS`, both helpers, all 33 `ingredient.*` names, the sheet chrome
+and all 33 sprites *while it was writing*. It noticed, and rewrote the delivery around
+that instead of handing back a brief that no longer fit. That is the right instinct and it
+is why this return is worth more than the 44 strings it was asked for.
+
+**Verified independently from source:**
+
+| Check | Result |
+|---|---|
+| The file | 623 lines, one new file. `git status -- docs/` shows only `docs/i18n/recipes.md` — no other doc touched, no src edit, no git run. Boundary held. |
+| The 44 step strings | Parsed all 44 out of §3. **Min 173, max 209** against the 240 cap — the claimed range exactly. **Every "Chars" column figure matches the real length.** Zero non-ASCII, zero em/en dashes, zero emoji. 22 distinct slugs, and none of the 44 keys is in `en.ts` yet. |
+| The 22 note quotes | Compared against live `en.ts` — **all 22 match character-for-character, and every cited line number (458–479) is correct.** (My first extractor reported five mismatches; they were my bug — the five notes containing apostrophes are double-quoted TS strings.) |
+| `.prep` / `.finish` really are the open slot | `grep` finds **zero** in `en.ts`, and `i18n/index.ts:85–96` says in as many words that they "are allowed to be absent until a later writing pass lands." `RecipeSheet.tsx:283–284` gates both sections on `hasTranslation()`. Accurate. |
+| The two name differences | `en.ts:424` Tea Leaf, `:425` Coffee Extract. Exactly the two it names; the other 31 agree. |
+| Its diagnosis of *why* the rails drifted | Confirmed from `recipes.ts`'s own header comment, which states both constraints: every one of the 33 aliases used at least once, and chai/sambar at 5, idli/sticky-rice at 2, ooti at 7 for the acceptance check. The agent read the cause correctly rather than just the symptom. |
+| `ooti` | Rail is `rice · ghee · cardamom · clove · cumin-seed · bay-leaf · turmeric`, quoted correctly. **[RecipeList.md:398](RecipeList.md) does lock Ooti's primary as Peas**, oil mustard, secondary onion, Pressure Cooker. The citation is real. |
+| `aubergine` | Used exactly once across all 22 rails, in minestrone. `baingan` is not in `RECIPE_SLUGS`. Both claims hold. |
+| §4.6 counts | Cooking oil 12 dishes, pasta/noodle 4, cabbage 2 — recounted from its own lists, all three correct. RecipeList §7.4 does name cabbage the secondary for both momo and thukpa. |
+| Tally | 2 identical + 10 agree + 1 shipped-is-better + 2 cosmetic + 7 wrong = 22. Sums. |
+
+**One place the chat summary was looser than the document.** The return says
+`Ingredients · 1` "is reachable". The shortest shipped rail is **2** (idli, sticky-rice),
+and `RecipeSheet.tsx:187` passes `ingredients.length`, so it is **not** reachable today.
+§0.2 of the doc itself says it correctly — "what sticky rice will render *under my rail*",
+which was one tile. The plural entry is still right to write, as hygiene before Hindi,
+where the plural question does not exist the way it does in English. Not an error in the
+work; noted so the fix is not sold as a live bug.
+
+**A finding of my own, which sharpens the rail question.** The sheet now renders the note
+and the rail on the same page, so a rail that disagrees with its own note is visible in
+one glance. Checking all 22 notes against all 22 shipped rails, **six dishes name in their
+note something the rail does not contain**:
+
+| Dish | Its shipped note names… | The rail has |
+|---|---|---|
+| `upma` | "Roast the **rava**…" | `flour` — a different grain entirely |
+| `pesto` | "The blender lies about **basil**." | no basil; `parsley` stands in, plus `tomato` |
+| `veg-thukpa` | "Broth first, **noodles** last." | no noodles at all |
+| `beans-poriyal` | "Nobody wants mushy **beans**." | `peas`, which cannot be cut small |
+| `palak-aloo` | "**Spinach** lies about how much it shrinks." | no spinach |
+| `sambar` | "**Tamarind** first…" | no tamarind |
+
+Four of those six are in the agent's wrong-as-food seven; `palak-aloo` and `sambar` it
+classed as "agree", because its own rail could not reach them either — no sprite exists.
+So the honest statement of the problem is not "seven rails are wrong": it is **the rail
+can only draw what has a sprite, and seven dishes' primaries do not have one**, which
+forces a choice between a wrong tile and a short rail. Round 17 chose the wrong tile every
+time, because its acceptance check counted tiles.
+
+**Verdict: accepted, and better than the brief asked for.** The 44 strings are ready to
+paste as-is. Four decisions are now open with the user — recorded in
+[Ideas.md](Ideas.md) §6d.

@@ -706,6 +706,49 @@ screenshot. Proposal pages (private, not spec of record): layouts
    not alphabetical); strings `recipe.<slug>.prep` / `.finish` (44) plus `ingredient.<key>` names
    (~33, translated once each, not per dish). Hindi picks them all up in R17's own pass.
 
+**✏️ Amendment — recipe-writing pass returned, Sep 22 2026.**
+[docs/i18n/recipes.md](i18n/recipes.md) delivers the 44 `‹slug›.prep` / `.finish` strings
+(173–209 chars, all verified against the 240 cap) ready to paste. It also reports back on
+item 5 above, and four decisions fall out of it.
+
+**The structural finding, which is not the agent's framing but follows from it:** the rail
+can only show what has a sprite. Seven dishes' *primary* ingredient has none — rava, green
+beans, basil, noodles, spinach, bamboo shoot, tamarind — and Round 17's acceptance check
+counted tiles, so a wrong sprite went in each empty slot rather than the rail being left
+short. The sheet renders the dish's note directly above the rail, so **six dishes will show
+a note naming something the rail does not contain**: `upma` (rava → flour), `pesto` (basil
+→ parsley + tomato), `veg-thukpa` (noodles → none), `beans-poriyal` (beans → peas),
+`palak-aloo` (spinach → none), `sambar` (tamarind → none). That contradiction in one glance
+is the actual cost, not culinary pedantry.
+
+1. 🔴 **Rails: fix the seven, and let a rail be short.** `coffee` (drop `cream`),
+   `upma`, `beans-poriyal`, `pesto` (drop `tomato`), `veg-thukpa` and `veg-momo` (drop
+   `coriander-seed`), and above all **`ooti`** — the boss dish, whose rail
+   (`rice · ghee · cardamom · clove · cumin-seed · bay-leaf · turmeric`) describes a pulao,
+   while [RecipeList.md:398](RecipeList.md) locks its primary as **Peas**. Replace with
+   `peas · onion · ginger · garlic · dried-red-chilli`. **Two constraints in `recipes.ts`'s
+   header comment must be dropped to allow this:** "every one of the 33 aliases is used at
+   least once" (it is what put `aubergine` in minestrone — aubergine was drawn for Baingan
+   Bharta, a *level* dish, not one of the 22 slugs) and the fixed tile counts. Keep chai/
+   sambar at 5 and idli/sticky-rice at 2 for the sheet-height check; **move the 7-tile case
+   off `ooti`** to any dish that honestly reaches seven.
+2. **`ingredient.coffee-extract`: "Coffee Extract" → "Coffee Decoction"** (recommended).
+   Extract is the filename; decoction is the drink, and it tells the Hindi/Tamil translator
+   which beverage this is. `ingredient.tea-leaf` stays **"Tea Leaf"** — the agent conceded
+   its own "Tea Leaves". The other 31 names agree. Decide **before** Hindi translates them.
+3. **`recipe.sheet.ingredients` becomes a plural entry.** It shipped flat as
+   `'Ingredients · {n}'`; `tn()` already exists. Not reachable today — the shortest shipped
+   rail is 2 — but any corrected rail that lands on one tile renders "Ingredients · 1", and
+   the plural must be right before Hindi, where it behaves differently. One-line fix.
+4. **Art round 5 ask, ranked by dishes served (§4.6 of the doc):** cooking oil (**12
+   dishes** — ghee is the only fat with a sprite, and RecipeList assigns a different oil to
+   four of five nodes), a pasta/noodle (**4**, two of them locked primaries), cabbage (**2**,
+   the secondary for both momo and thukpa per §7.4). Three sprites = **441 credits** at the
+   measured 147 each. Ten dishes are flagged in §4.3 as needing a cook's eye rather than a
+   guess — the user's call, not an agent's.
+
+---
+
 ## 7. Wave-intro scroll — proposed Sep 13 2026 — ✅ shipped as the wave bubble's scroll grid, 1.76.0
 
 **Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll
