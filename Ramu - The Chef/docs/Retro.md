@@ -2724,3 +2724,13 @@ after **00:30 IST Sep 19**.
      agent into a round with the wrong stop-line. ✅ **Rule:** estimate with the exact parameters
      of the call — duration, model, size, background removal — and write those parameters next to
      the number in the handover, so the agent's own gate can catch a mismatch.
+
+113. 🟠 **Optimising for the published metric can cost a prize decided another way.** Sep 22 2026.
+     The jam ranked on daily unique plays, so every lever — paid flight, socials, the daily loop —
+     aimed at that number, and the entry finished **6th of 100 (638 DUP), 112 behind the money**.
+     A separate **$300 Editor's Pick** went to an entry with **159 DUP**: a judged award, open the
+     whole time, that cost nothing to compete for and was never pitched. ✅ **Rule:** when a
+     competition has a judged category alongside a measured one, spend a little of the effort on
+     the judged one — a written pitch, a readable page, a thumbnail — because it is a second,
+     uncorrelated chance and the measured race is usually won by whoever had the bigger audience
+     on day one.

@@ -653,6 +653,18 @@ anchors to the **wave chip** instead. §7's data path is unchanged.
 3. Screenshot 1 (wave 3, chevrons, horizontal bubble, Ready above portrait): no annotation —
    accepted as rendered.
 
+**Playtest of 1.89.0 (Sep 22) — decided, for Round 16:**
+
+1. 🔴 **Closing the order scroll must not hide the order chip.** `WaveBubble.tsx:339`
+   `close: () => { setIsOpen(false); setDismissed(true); }` — the outside tap closes the submenu
+   *and* dismisses the trigger for the rest of the build phase, so the player loses the order
+   display entirely until the next wave (screenshots 2–4, wave 44). That dismissal was a Round 5
+   rule ("a tap that opened the submenu counts as the bubble-dismiss tap") and is now wrong:
+   **closing the scroll reverts to the chip**, always. The chip stays visible through build and
+   wave as it does today; nothing dismisses it.
+2. Screenshots otherwise accepted: heat gauge at 3/10, chips beside the portrait, static scale
+   across states, Ready above the portrait, chevrons — all as specified at wave 44.
+
 ## 7. Wave-intro scroll — proposed Sep 13 2026 — ✅ shipped as the wave bubble's scroll grid, 1.76.0
 
 **Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll

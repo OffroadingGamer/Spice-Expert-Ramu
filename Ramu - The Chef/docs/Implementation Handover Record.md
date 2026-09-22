@@ -40,7 +40,7 @@ of the present.**
 | | |
 |---|---|
 | **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.89.0** (Rounds 0–15 — Round 15 verified Sep 22; rewarded continue with the ⟳ board marker — **playtest-ready**; 🔒 Private-only until human verification — Ideas.md §6d) |
-| **Jam — CLOSED** | Judging closed **00:30 IST Sep 19 2026**. ⚠️ **Final standing not yet read.** Last reading before close: **6th, 613 daily uniques** (901 plays) at Sep 17 21:50 IST — 16 behind 5th (Pest Control Tycoon 629, $100). The marketing agent owes a post-close results entry; the user has the board. Public/Review still frozen at 1.69.0 — **the promotion decision is now unblocked** and waits on the user's end-to-end play. |
+| **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
 | **In flight** | Nothing dispatched. **Round 16** (Play + unlock badge, Ideas §10.5 B) waits on the user's playtest of 1.88.0/1.89.0 — the continue can only be exercised in the RUN host. Then R17 Hindi · IAP. Then the user plays 1.85.0 → R13 belt chevrons + i18n table (four constraints from the inventory) → R14 shards (projection measured) → R15 continue → R16 Play/badge → R17 Hindi. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
 | **Repo** | **Pushed Sep 18 ~02:15 IST** (`4858e3b..591031d`, 17 commits) on the user's word — `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is now in the public repo. Secret scan over the whole range: clean, control positive. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
@@ -3257,3 +3257,27 @@ test.**
 
 **Jam is over** (closed 00:30 IST Sep 19). Open: the final standing, the marketing results
 entry, and the Public/Review promotion decision — all the user's calls.
+
+---
+
+### 2026-09-22 — Jam final standing, from the results page
+
+**6th of 100 · 638 DUP · 942 total plays · 15 days in jam · no prize.** Full top of the board:
+1 The Grind 2,063 DUP / 3,209 total ($1,000) · 2 Back That Thing Up! 1,770 / 2,398 ($600) ·
+3 9 to Thrive 1,280 / 2,140 ($300) · 4 GT Rush: Coastal Life (3D) 976 / 1,592 ($200) ·
+5 Pest Control Tycoon 750 / 833 ($100) · **6 Spice Expert: Ramu 638 / 942** · 7 The Good Life
+499 / 695 · 8 Order Up 478 / 652 · 9 Employment Crisis 449 / 752. **Editor's Pick, $300:
+Don't Let Him Die — 159 DUP**, ranked 20th on plays.
+
+**Two facts worth carrying into any next jam** (also in Retro §4):
+1. **The gap to the money closed in the wrong direction on the last day.** Sep 17 21:50: us 613,
+   5th 629 — 16 apart. Final: us 638, 5th 750 — **112 apart**. They added 121 DUP in the final
+   27 hours; we added 25. Whatever they did on the last day, we did not have a last-day lever.
+2. **A $300 prize was decided by judgement, not plays** — the Editor's Pick went to an entry with
+   a quarter of our daily uniques. We optimised the whole fortnight for the metric and never
+   pitched the game to a human reader. Cheap to fix next time: one strong description, a good
+   thumbnail, and a note to the organisers — a second, independent shot at a prize.
+
+Retention, not reach, is what the entry actually has: **942 total plays over 638 daily uniques**
+across 15 days, and the two all-time boards have kept growing since close (108 / 102 players,
+last submission Sep 20 23:47 UTC) with **zero promotion** and a build 20 versions behind Private.
