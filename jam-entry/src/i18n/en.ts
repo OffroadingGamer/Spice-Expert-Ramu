@@ -267,6 +267,7 @@ export const en: Record<string, TranslationEntry> = {
     'beat.district7': 'Two kitchens, one plate. Nobody taught me this.',
     'beat.district8': "This one's mine. Every bit of it.",
     'beat.overtime': 'Every plate tonight had two pairs of hands. Thank you.',
+    'beat.continueGranted': 'Back to work. Nobody leaves hungry.',
 
     // ---- 14a. Dialogue box chrome (ui/DialogueBox.tsx) ---------------------
     'dialogue.continue.aria': 'Continue',
@@ -361,6 +362,9 @@ export const en: Record<string, TranslationEntry> = {
     // wiring pass found the single combined key couldn't be called correctly.
     'ranks.rankDelta.up': '▲{n}',
     'ranks.rankDelta.down': '▼{n}',
+    // Round 15 Part 3 (docs/Ideas.md §10.3 pick A): the ⟳ glyph's tap-and-
+    // hold toast, on any row/podium card whose entry.continues >= 1.
+    'ranks.continued': 'Continued once with an ad.',
 
     // ---- 17. Engagement toasts (sdk/engagement.ts) -------------------------
     'engage.likeThanks': 'Thanks for the like!',
@@ -414,4 +418,17 @@ export const en: Record<string, TranslationEntry> = {
     'recipe.veg-momo.note': 'Fold it ugly, it still steams the same.',
     'recipe.sticky-rice.note': "Soak it, don't rush it. Rice remembers shortcuts.",
     'recipe.ooti.note': 'The boss dish. Serve it like you mean it.',
+
+    // ---- 21. Continue offer (Round 15, ui/ContinueOffer.tsx) ---------------
+    'continue.title': 'Continue the shift?',
+    'continue.body': "Ramu's not done. Six more customers' worth of patience, one time only.",
+    'continue.adsLeft': {
+        one: '{n} ad left today',
+        other: '{n} ads left today',
+    },
+    'continue.watch': '▶ Watch',
+    'continue.close': 'Close the kitchen',
+    'continue.loading': 'Loading…',
+    'continue.adName': 'Continue the shift',
+    'continue.adDescription': 'One rewarded continue',
 };

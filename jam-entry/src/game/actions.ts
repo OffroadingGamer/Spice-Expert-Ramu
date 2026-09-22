@@ -5,7 +5,7 @@
  */
 import { store, type AppState } from '../state/store.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
-import { switchCue, prefetchCue, isAudioUnlocked } from '../audio/audio.ts';
+import { switchCue, prefetchCue, isAudioUnlocked, sfx } from '../audio/audio.ts';
 import { completeFtue, setFtueFirstTower } from '../state/save.ts';
 import { CONFIG } from './config.ts';
 import { WAVES } from './data/waves.ts';
@@ -18,10 +18,26 @@ import { kitchenActionCost, type Engine, type KitchenActionKind } from './sim/en
  * DEV ROBUSTNESS: the engine reference lives on globalThis for the same
  * reason as the store's state (see store.ts) — Vite on Windows can serve
  * duplicate copies of this module after a hot reload, and a module-scoped
- * reference would strand the UI's copy at null.
+ * reference would strand the UI's copy at null. Round 15 Part 2: the same
+ * slot also carries `reArmRunEnd` — towerScene.ts registers a closure here
+ * (right alongside its own registerEngine(engine) call) that resets its
+ * private `ended` latch; see applyContinueGrant below for why an outside
+ * re-arm is needed at all.
  */
-const host = globalThis as typeof globalThis & { __spice_ramu_engine__?: { current: Engine | null } };
-const slot = (host.__spice_ramu_engine__ ??= { current: null });
+const host = globalThis as typeof globalThis & {
+    __spice_ramu_engine__?: { current: Engine | null; reArmRunEnd: (() => void) | null };
+};
+const slot = (host.__spice_ramu_engine__ ??= { current: null, reArmRunEnd: null });
+
+/** Round 15 Part 2: towerScene.ts calls this once, right after
+ *  registerEngine(engine), with a closure that resets its own private
+ *  `ended` run-end latch (checkEnd() would otherwise never fire again for
+ *  the REAL loss that follows a granted continue — see applyContinueGrant's
+ *  own doc). Cleared (null) on scene teardown so a stale closure from a
+ *  destroyed scene can never fire. */
+export function registerRunEndReArm(fn: (() => void) | null): void {
+    slot.reArmRunEnd = fn;
+}
 
 /**
  * Onboarding-balance round: the FTUE's forced first placement, moved off pad
@@ -131,6 +147,11 @@ export function scriptedRunStart(): Partial<AppState> {
         dialogue: showOpening
             ? { id: OPENING_DIALOGUE.id, voice: OPENING_DIALOGUE.voice, lines: OPENING_DIALOGUE.lines, index: 0 }
             : null,
+        // Round 15 Part 1: the one rewarded continue is per-run — every
+        // fresh run (Retry, menu Start, cold boot) gets a clean slate here,
+        // same posture as adBonusClaimed's own per-run reset in checkEnd.
+        continuedThisRun: false,
+        runEndDecided: false,
     };
 }
 
@@ -381,4 +402,47 @@ export function grantFtueShortfall(requiredCost: number): number {
         store.patch({ ftueGrantAmount: shortfall, ftueGrantNonce: store.get().ftueGrantNonce + 1 });
     }
     return shortfall;
+}
+
+/**
+ * Round 15 Part 2 (docs/Ideas.md §10.3 pick A, no-nerf variant — the engine
+ * stays sealed, no `handicap` hook added). Called ONLY from
+ * ui/ContinueOffer.tsx's onReward, after ads.grantReward() has already
+ * confirmed the rewarded ad actually completed (anything else never reaches
+ * here — no grant, the end screen mounts as normal).
+ *
+ * The patch itself is two fields on the engine's own exposed state object
+ * (engine.ts:185's plain `state`, never a method the sealed engine offers —
+ * there is no "revive" verb in engine.ts and Part 2's brief is explicit that
+ * none should be added): `lives = 6` (the +6 escapes) and `phase = 'wave'`.
+ * Nothing else needs touching — engine.ts's step() only ever gates on
+ * `state.phase !== 'wave'` (a single early return, sim/engine.ts:503) and
+ * loss itself (sim/engine.ts:532-536) never clears enemies/projectiles or
+ * the spawn cursors, only sets lives/phase — so flipping phase back to
+ * 'wave' resumes stepSpawning, enemy movement and firing exactly where they
+ * were, with whatever was still on the belt. The three action guards
+ * (placeTower/upgradeTower/sellTower, sim/engine.ts:665/695/708) are each a
+ * bare `if (state.phase === 'lost') return false`, so they un-gate for free
+ * the instant phase flips too.
+ *
+ * The ONE latch this does NOT self-heal: towerScene.ts's checkEnd() guards
+ * itself with a private `ended` closure flag that goes true forever the
+ * first time it sees phase 'lost' (so a genuine SECOND loss later in the
+ * same continued run would otherwise never re-run recordRunEnd/
+ * submitRunScores/trackRunEnd — the run would look like it never ended).
+ * That flag lives inside createTowerScene's closure with no exported
+ * setter, so it's re-armed from here via the registerRunEndReArm() slot
+ * towerScene.ts populates at scene creation — see that function's own doc.
+ */
+export function applyContinueGrant(): void {
+    const engine = slot.current;
+    if (!engine) return;
+    engine.state.lives = 6;
+    engine.state.phase = 'wave';
+    syncStore();
+    slot.reArmRunEnd?.();
+    store.patch({ continuedThisRun: true });
+    queueDialogue('continue-granted');
+    sfx.continueGranted();
+    track('continue_granted', { wave: engine.state.waveIndex + 1 });
 }

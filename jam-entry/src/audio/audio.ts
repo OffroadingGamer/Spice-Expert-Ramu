@@ -152,7 +152,7 @@ export function initAudio(volumes: { music: number; sfx: number }): void {
 // as before.
 // ---------------------------------------------------------------------------
 
-type SampleId = 'lose' | 'upgrade' | 'wave-clear' | 'kettle-boil' | 'water-pour' | 'block-transition' | 'scroll-unlock';
+type SampleId = 'lose' | 'upgrade' | 'wave-clear' | 'kettle-boil' | 'water-pour' | 'block-transition' | 'scroll-unlock' | 'continue';
 
 /** Playback gain per sample — peak-matched to the synth cues they replace
  * (MP3s normalise to -3dBFS ~= 0.708 peak; the synth peaks at 0.30-0.35),
@@ -183,6 +183,10 @@ const SAMPLES: Record<SampleId, { url: string; gain: number }> = {
     // completes a recipe scroll — the master, unedited (its own .mp3.json
     // sidecar stays behind, same posture as every other SAMPLES entry here).
     'scroll-unlock': { url: 'audio/sfx-scroll-unlock.mp3', gain: 1.0 },
+    // Round 15 Part 4 (docs/Ideas.md §10.3): plays once per granted continue
+    // (actions.ts's applyContinueGrant), never on the offer itself — the
+    // master, unedited, its own .mp3.json sidecar stays behind.
+    continue: { url: 'audio/sfx-continue.mp3', gain: 1.0 },
 };
 
 /** The CDN-streamed music cues (see switchCue near the sequencer, below).
@@ -420,6 +424,15 @@ export const sfx = {
         tone('sine', 990, 990, 0.09, 0.32);
         tone('sine', 1320, 1320, 0.09, 0.32, 0.09);
         tone('sine', 1760, 1760, 0.18, 0.32, 0.18);
+    },
+    /** A rewarded continue is granted (docs/Ideas.md §10.3), never on the
+     *  offer itself. Synth fallback: a rising three-note flourish, brighter
+     *  than scrollUnlock()'s so it doesn't read as the same event. */
+    continueGranted(): void {
+        if (playSample('continue')) return;
+        tone('sawtooth', 440, 440, 0.08, 0.3);
+        tone('sawtooth', 660, 660, 0.08, 0.3, 0.08);
+        tone('sawtooth', 880, 880, 0.2, 0.3, 0.16);
     },
     win(): void {
         tone('square', 660, 660, 0.12, 0.35);

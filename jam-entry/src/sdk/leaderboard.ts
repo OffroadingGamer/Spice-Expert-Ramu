@@ -105,11 +105,24 @@ async function spacedSubmitScore(params: Parameters<typeof RundotGameAPI.leaderb
  * one. All four calls still share the one spaced queue below (5s apart,
  * module scope, so navigating off the end screen mid-queue can't drop the
  * tail).
+ *
+ * Round 15 Part 3 (docs/Ideas.md §10.3 pick A): `continuedThisRun` rides
+ * along as `metadata.continues` (1 or 0) on EVERY submission — always
+ * present, never omitted, so the field stays queryable even for a run that
+ * never continued (Ideas §10.3's own wording: "a continued run's score is
+ * that player's best forever — the marker is not optional").
  */
-export function submitRunScores(kills: number, wavesCleared: number, seconds: number, guestDisplayName?: string): void {
+export function submitRunScores(
+    kills: number,
+    wavesCleared: number,
+    seconds: number,
+    guestDisplayName?: string,
+    continuedThisRun = false,
+): void {
     if (!sdkReady()) return;
     const duration = Math.max(1, Math.round(seconds));
-    const metadata = guestDisplayName ? { displayName: guestDisplayName } : undefined;
+    const metadata: Record<string, unknown> = { continues: continuedThisRun ? 1 : 0 };
+    if (guestDisplayName) metadata.displayName = guestDisplayName;
     const submit = (mode: BoardMode, score: number) => {
         if (score <= 0) return;
         for (const period of BOARD_PERIODS) {
@@ -174,12 +187,19 @@ export async function resubmitBestWithName(displayName: string): Promise<RenameR
                 results.push({ mode, period, before: null, after: null });
                 continue;
             }
+            // Round 15 Part 3: a rename resubmit must never reset a
+            // continued best's marker back to 0 — read whatever the server
+            // already has on this entry (0 if the field predates this round,
+            // or was never set) and carry it forward unchanged, changing
+            // only displayName.
+            const beforeMeta = before.metadata as Record<string, unknown> | null | undefined;
+            const continues = typeof beforeMeta?.continues === 'number' ? beforeMeta.continues : 0;
             const after = await spacedSubmitScore({
                 score: before.score,
                 duration: before.duration,
                 mode,
                 period,
-                metadata: { displayName },
+                metadata: { displayName, continues },
             });
             results.push({ mode, period, before, after });
         }
@@ -202,6 +222,12 @@ export interface BoardEntry {
      *  live-board reality the 75%-anonymous finding described) > the raw
      *  username unchanged. */
     displayName: string;
+    /** Round 15 Part 3 (docs/Ideas.md §10.3 pick A): 1 if this entry's score
+     *  came from a run that used its rewarded continue, 0 otherwise —
+     *  defaults to 0 for entries predating this round (no metadata.continues
+     *  at all), never undefined, so Leaderboard.tsx's `>= 1` check is always
+     *  well-defined. */
+    continues: number;
 }
 
 const ANONYMOUS_PREFIX = 'anonymous_';
@@ -239,6 +265,7 @@ function toEntry(e: {
     profileId: string; username: string; avatarUrl: string | null;
     rank: number | null; score: number; metadata?: Record<string, unknown> | null;
 }): BoardEntry {
+    const continuesRaw = e.metadata?.continues;
     return {
         profileId: e.profileId,
         username: e.username,
@@ -246,6 +273,7 @@ function toEntry(e: {
         rank: e.rank,
         score: e.score,
         displayName: displayNameFor(e.username, e.metadata),
+        continues: typeof continuesRaw === 'number' ? continuesRaw : 0,
     };
 }
 

@@ -24,7 +24,7 @@ import { enemyDef } from './data/enemies.ts';
 import { BLOCKS, blockForLevel, chefBodyAliasForBlock, type Block } from './data/blocks.ts';
 import { MANIFEST } from '../assets/manifest.ts';
 import { createEngine, posAt, PATH_LENGTH, type EngineEvent } from './sim/engine.ts';
-import { registerEngine, syncStore, getTowersPlacedThisRun, grantFtueShortfall, retireFtue, FTUE_FIRST_PAD } from './actions.ts';
+import { registerEngine, syncStore, getTowersPlacedThisRun, grantFtueShortfall, retireFtue, registerRunEndReArm, FTUE_FIRST_PAD } from './actions.ts';
 import { TOWERS } from './data/towers.ts';
 import { dialogueForBlock } from './data/dialogue.ts';
 import { queueDialogue, queueDialogueOnce } from './dialogueController.ts';
@@ -1049,6 +1049,11 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     // ---- engine (with the player's persistent meta upgrades applied) -------
     const engine = createEngine(getSave().meta);
     registerEngine(engine); // also fires the run_start funnel step + event (actions.ts)
+    // Round 15 Part 2: lets actions.ts's applyContinueGrant() reset `ended`
+    // (declared further down, in this same closure) from outside after a
+    // granted continue — see that function's own doc for why checkEnd()
+    // would otherwise never fire again for this run's real, later loss.
+    registerRunEndReArm(() => { ended = false; });
     // GDD §10.11's pre-start beat pre-selects FTUE_FIRST_PAD (set by
     // MainMenu.tsx / EndScreen.tsx's Retry BEFORE this scene mounts) — this
     // reset must not clobber it, or the FTUE's opening StationRail never
@@ -2312,6 +2317,17 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
         if (ended) return;
         const phase = engine.state.phase;
         if (phase === 'lost') {
+            // Round 15 Part 1/2 (docs/Ideas.md §10.3): a fresh loss might
+            // still be offered a rewarded continue — EndScreen.tsx/
+            // ContinueOffer.tsx own that decision and patch
+            // store.runEndDecided once it resolves to "no grant" (ad
+            // unavailable, declined, or a failed watch). Without this gate,
+            // this function would finalize (record/submit/track) on the very
+            // next tick after 'lost', before the player even sees the offer
+            // card — submitting a run that's about to be un-lost. A SECOND
+            // loss (continuedThisRun already true) always finalizes
+            // immediately — this run has no more continues left to offer.
+            if (!store.get().continuedThisRun && !store.get().runEndDecided) return;
             ended = true;
             // Round 7 item 6: capture the OLD best before recordRunEnd
             // overwrites it below — EndScreen.tsx's "new best" vs "near
@@ -2325,7 +2341,18 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             // rides along as metadata.displayName; a RUN account submits
             // exactly as before (undefined — their own username is used).
             const guestDisplayName = store.get().isGuest ? (store.get().playerName ?? undefined) : undefined;
-            submitRunScores(engine.state.kills, engine.state.waveIndex, engine.state.elapsed, guestDisplayName);
+            // Round 15 Part 3: metadata.continues rides along on every
+            // submission (1/0, always present so the field is queryable) —
+            // store.continuedThisRun is correct here regardless of how many
+            // times this run passed through 'lost', since it only ever
+            // flips true once, on the (at most one) granted continue.
+            submitRunScores(
+                engine.state.kills,
+                engine.state.waveIndex,
+                engine.state.elapsed,
+                guestDisplayName,
+                store.get().continuedThisRun,
+            );
             store.patch({
                 bestWave: save.bestWave,
                 previousBestWave,
@@ -2492,6 +2519,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             offResize();
             offGaugeResize();
             registerEngine(null);
+            registerRunEndReArm(null); // never let a destroyed scene's closure fire
             // Sprite.destroy() (default options) never touches the texture
             // itself — safe for both the Assets-cache-owned backdrop
             // textures and tex.grass's generated fallback (freed below).

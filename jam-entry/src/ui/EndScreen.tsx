@@ -28,6 +28,7 @@ import { track } from '../sdk/analytics.ts';
 import { addGems } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import ChefPortrait from './ChefPortrait.tsx';
+import ContinueOffer from './ContinueOffer.tsx';
 
 const INPUT_LOCK_MS = 600;
 const COUNT_UP_MS = 600;
@@ -144,6 +145,7 @@ export default function EndScreen() {
     const adBonusClaimed = useStore((s) => s.adBonusClaimed);
     const runKills = useStore((s) => s.runKills);
     const runId = useStore((s) => s.runId);
+    const continuedThisRun = useStore((s) => s.continuedThisRun);
     const [confirmAd, setConfirmAd] = useState(false);
     const [busy, setBusy] = useState(false);
     const [locked, setLocked] = useState(true);
@@ -180,7 +182,59 @@ export default function EndScreen() {
     const killsDisplay = useCountUp(runKills, runId, COUNT_UP_MS, reducedMotion);
     const gemsDisplay = useCountUp(gemsEarned, runId, COUNT_UP_MS, reducedMotion);
 
+    // Round 15 Part 1 (docs/Ideas.md §10.3 pick A): on the FIRST loss of a
+    // run that hasn't continued yet, probe whether a rewarded ad actually
+    // exists before showing the offer card at all — "never show a Watch
+    // button that can't deliver" is the handover's own wording. adsCapability
+    // false means a no-ads platform, where the RunBucks fallback inside
+    // ads.grantReward() needs no probe of its own (systems/ads.ts's own doc:
+    // "skip this on no-ads platforms... the host's confirm dialog handles
+    // everything") and is cap-exempt by design — so it's always "available"
+    // there without an async round-trip. On an ad-capable platform,
+    // ads.isAvailable() folds in BOTH the daily cap and the live SDK
+    // readiness probe in one call.
+    const [offerState, setOfferState] = useState<'unknown' | 'checking' | 'show' | 'skip'>('unknown');
+    useEffect(() => {
+        if (tdPhase !== 'lost') { setOfferState('unknown'); return; }
+        // Round 15's own posture: "the next loss goes straight to the end
+        // screen" once this run has already used its one continue — no ad
+        // probe needed at all.
+        if (continuedThisRun) { setOfferState('skip'); return; }
+        let alive = true;
+        setOfferState('checking');
+        (async () => {
+            const ads = adsSystem();
+            let available: boolean;
+            try {
+                available = ads.adsCapability() ? await ads.isAvailable() : true;
+            } catch {
+                available = false;
+            }
+            if (!alive) return;
+            // No ad to offer — this loss is final; unblock towerScene.ts's
+            // checkEnd() (see its own doc) so the run finalizes as normal.
+            if (!available) store.patch({ runEndDecided: true });
+            setOfferState(available ? 'show' : 'skip');
+        })();
+        return () => { alive = false; };
+    }, [tdPhase, runId, continuedThisRun]);
+
     if (tdPhase !== 'lost') return null;
+    // Blank for the brief async availability check — the offer card or the
+    // ticket UI below takes over the instant it resolves.
+    if (offerState === 'unknown' || offerState === 'checking') return null;
+    if (offerState === 'show') {
+        return (
+            <ContinueOffer
+                onClose={() => {
+                    // Decline, or a watch that resolved to no grant — this
+                    // loss is final either way; unblock checkEnd().
+                    store.patch({ runEndDecided: true });
+                    setOfferState('skip');
+                }}
+            />
+        );
+    }
 
     const beatCampaign = survived >= waveCount;
     const bonus = Math.ceil(gemsEarned * CONFIG.ads.gemBonusFactor);

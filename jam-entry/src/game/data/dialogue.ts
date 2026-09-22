@@ -132,6 +132,16 @@ export const DIALOGUE_BEATS: DialogueBeat[] = [
         voice: 'C',
         lines: ['Every plate tonight had two pairs of hands. Thank you.'],
     },
+    /** Round 15 Part 2 (docs/Ideas.md §10.3 pick A): fires every time a
+     *  continue is granted (actions.ts's applyContinueGrant), not once ever
+     *  — a run can only continue once, but this beat resets with every run
+     *  like beats 5-12 above, not gated by queueDialogueOnce. */
+    {
+        id: 'continue-granted',
+        trigger: 'continue-granted',
+        voice: 'A',
+        lines: ['Back to work. Nobody leaves hungry.'],
+    },
 ];
 
 export const OPENING_DIALOGUE = DIALOGUE_BEATS[0];

@@ -153,6 +153,36 @@ export default function Hud() {
             if (holdClearTimer.current) clearTimeout(holdClearTimer.current);
         };
     }, []);
+    // Round 15 Part 2 (docs/Ideas.md §10.3): the Escapes chip's 0->6 count-up
+    // on a granted continue. `lives` only ever RISES via applyContinueGrant
+    // (actions.ts) — every other change is a leak, which only ever falls —
+    // so "lives increased since last render" is an unambiguous "a continue
+    // just landed" signal, with no separate store field needed to key off.
+    // Reduced motion snaps straight to the target (no rAF loop at all), same
+    // posture as every other JS-driven animation in this file/EndScreen.tsx.
+    // After the 400ms ramp, displayLives === lives exactly — the chip is
+    // rendered from the SAME `lives` value and styling a natural 6-lives
+    // state would use, satisfying the handover's own resting-state rule.
+    const [displayLives, setDisplayLives] = useState(lives);
+    const prevLivesRef = useRef(lives);
+    useEffect(() => {
+        const from = prevLivesRef.current;
+        prevLivesRef.current = lives;
+        if (lives <= from) { setDisplayLives(lives); return; }
+        let reduced = false;
+        try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { /* default false */ }
+        if (reduced) { setDisplayLives(lives); return; }
+        const to = lives;
+        const t0 = performance.now();
+        let raf = 0;
+        const tick = (now: number) => {
+            const u = Math.min(1, (now - t0) / 400);
+            setDisplayLives(Math.round(from + (to - from) * u));
+            if (u < 1) raf = requestAnimationFrame(tick); else setDisplayLives(to);
+        };
+        raf = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(raf);
+    }, [lives]);
     // Round 12c Part 1: measured by the ResizeObserver effect below —
     // row1Ref is row 1 (lives/coins/hamburger), waveRingGroupRef is the WAVE
     // chip + ring/head group only (was: the whole two-row block, 12b).
@@ -298,7 +328,7 @@ export default function Hud() {
                         <div
                             className={
                                 'flex flex-col items-start rounded-xl px-3 py-1.5 leading-tight whitespace-nowrap ' +
-                                (lives <= LIVES_DANGER
+                                (displayLives <= LIVES_DANGER
                                     ? 'bg-red-900 text-red-200 motion-safe:animate-pulse'
                                     : 'bg-surface text-white')
                             }
@@ -306,7 +336,14 @@ export default function Hud() {
                             <span className="text-[0.62rem] font-bold uppercase tracking-wide opacity-80">
                                 {t('hud.escapesLeft')}
                             </span>
-                            <span className="text-xl font-bold tabular-nums">{lives}</span>
+                            {/* Round 15 Part 2: displayLives ramps 0->6 over
+                                400ms on a granted continue (see the effect
+                                above) — both the number AND the danger
+                                styling key off it, so the chip never flashes
+                                red mid-ramp on its way up through
+                                LIVES_DANGER, and is pixel-identical to a
+                                natural `lives` render the instant it lands. */}
+                            <span className="text-xl font-bold tabular-nums">{displayLives}</span>
                         </div>
                         <div className="flex flex-col items-start rounded-xl bg-surface px-3 py-1.5 leading-tight text-white whitespace-nowrap">
                             <span className="text-[0.62rem] font-bold uppercase tracking-wide opacity-80">{t('hud.cash')}</span>
@@ -317,6 +354,15 @@ export default function Hud() {
                         type="button"
                         aria-label={t('hud.shiftMenu.aria')}
                         className="pointer-events-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-black/55 transition-transform active:scale-95"
+                        // Round 15 (docs/Ideas.md §10.3): must stay reachable
+                        // OVER ContinueOffer.tsx's full-screen scrim (z-index
+                        // 15, EndScreen.tsx) — "the pause card's Main Menu
+                        // during the offer" is a named acceptance check, so
+                        // the hamburger can't be one more thing the offer
+                        // silently blocks. Below the shift menu's OWN
+                        // CardScrim (z-index 20, right below) so that card
+                        // still layers correctly once opened.
+                        style={{ position: 'relative', zIndex: 16 }}
                         onClick={openMenu}
                     >
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"

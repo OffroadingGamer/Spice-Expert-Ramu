@@ -132,6 +132,7 @@ const BEAT_KEY: Record<string, string> = {
     'district-7': 'beat.district7',
     'district-8': 'beat.district8',
     overtime: 'beat.overtime',
+    'continue-granted': 'beat.continueGranted',
 };
 
 /** Round 7 item 2: "box ~15% taller" for a header beat — 184 is the box's

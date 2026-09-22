@@ -103,6 +103,56 @@ const TURMERIC = '#d9a520';
 const DELTA_UP = '#16a34a';
 const DELTA_DOWN = '#dc2626';
 
+/** Round 15 Part 3 (docs/Ideas.md §10.3 pick A): the ⟳ glyph marking a
+ *  continued run's score, shown next to the score on any row/podium card
+ *  whose entry.continues >= 1. Tap-and-hold (300ms, same pattern as Hud.tsx's
+ *  Round 14 icon chips) shows the "Continued once with an ad." toast for
+ *  1.2s; a plain tap does nothing (this glyph isn't a button, just a marker
+ *  — Ideas §10.3's own wording: "the marker is not optional", not that it's
+ *  interactive beyond the toast). */
+function ContinuedGlyph({ mu }: { mu: number }) {
+    const [showToast, setShowToast] = useState(false);
+    const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const clearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => () => {
+        if (holdTimer.current) clearTimeout(holdTimer.current);
+        if (clearTimer.current) clearTimeout(clearTimer.current);
+    }, []);
+
+    const startHold = () => {
+        if (holdTimer.current) clearTimeout(holdTimer.current);
+        holdTimer.current = setTimeout(() => {
+            holdTimer.current = null;
+            setShowToast(true);
+            if (clearTimer.current) clearTimeout(clearTimer.current);
+            clearTimer.current = setTimeout(() => { clearTimer.current = null; setShowToast(false); }, 1200);
+        }, 300);
+    };
+    const cancelHold = () => {
+        if (holdTimer.current) { clearTimeout(holdTimer.current); holdTimer.current = null; }
+    };
+
+    return (
+        <span
+            className="relative shrink-0 font-black"
+            style={{ fontSize: Math.max(11, 12 * mu), color: 'rgba(253,250,231,0.7)' }}
+            onPointerDown={startHold}
+            onPointerUp={cancelHold}
+            onPointerLeave={cancelHold}
+        >
+            ⟳
+            {showToast && (
+                <span
+                    className="pointer-events-none absolute -top-1 left-1/2 z-10 -translate-x-1/2 -translate-y-full rounded-md bg-black/85 px-2 py-1 text-[11px] font-bold whitespace-nowrap text-cream"
+                >
+                    {t('ranks.continued')}
+                </span>
+            )}
+        </span>
+    );
+}
+
 function Avatar({ entry, size, bg, color }: { entry: BoardEntry; size: number; bg: string; color: string }) {
     const style = { width: size, height: size };
     if (entry.avatarUrl) {
@@ -180,6 +230,7 @@ function Row({ entry, highlight, mu, delta }: { entry: BoardEntry; highlight: bo
             <span className="shrink-0 font-black tabular-nums" style={{ fontSize: Math.max(11, 13 * mu), color: TOMATO }}>
                 {entry.score.toLocaleString()}
             </span>
+            {entry.continues >= 1 && <ContinuedGlyph mu={mu} />}
         </div>
     );
 }
@@ -297,8 +348,9 @@ function PodiumStep({ entry, rank, highlight, mu }: { entry: BoardEntry; rank: 1
             >
                 {entry.displayName}
             </span>
-            <span className="font-black tabular-nums" style={{ fontSize: Math.max(11, 11 * mu), color: GOLD }}>
+            <span className="flex items-center gap-1 font-black tabular-nums" style={{ fontSize: Math.max(11, 11 * mu), color: GOLD }}>
                 {entry.score.toLocaleString()}
+                {entry.continues >= 1 && <ContinuedGlyph mu={mu} />}
             </span>
             <div
                 className="mt-1 flex w-full items-start justify-center"

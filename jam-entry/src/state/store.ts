@@ -240,6 +240,25 @@ export interface AppState {
      *  themselves — a wave can repeat the same dish set) is what keys the
      *  WaveBubble toast's re-trigger, same posture as ftueGrantNonce above. */
     shardAward: { wave: number; slugs: string[]; scrolledSlugs: string[]; nonce: number };
+    /** Round 15 Part 1/2 (docs/Ideas.md §10.3 pick A, no-nerf variant): true
+     *  once THIS run has used its one rewarded continue — gates the offer
+     *  card (EndScreen.tsx skips straight to the normal end screen on the
+     *  next loss) and rides along on the run-end leaderboard submission as
+     *  metadata.continues. Reset to false by actions.ts's scriptedRunStart
+     *  (every fresh run, same posture as adBonusClaimed's own per-run reset
+     *  in checkEnd), set true only by actions.ts's applyContinueGrant. */
+    continuedThisRun: boolean;
+    /** Round 15 Part 1/2: gates towerScene.ts's checkEnd() so a loss that
+     *  MIGHT still be offered a continue never finalizes (recordRunEnd/
+     *  submitRunScores/trackRunEnd) before that offer resolves — without
+     *  this, checkEnd() fires on the very next tick after phase flips to
+     *  'lost', submitting a run that's about to be un-lost. Set true by
+     *  EndScreen.tsx the instant the offer resolves to "no grant" (ad
+     *  unavailable, declined, or a failed/cancelled watch); never needs
+     *  setting on a grant (phase leaves 'lost' instead) or on a SECOND loss
+     *  (continuedThisRun already true is checkEnd()'s other, immediate,
+     *  finalize condition). Reset false by scriptedRunStart every run. */
+    runEndDecided: boolean;
 }
 
 const INITIAL: AppState = {
@@ -299,6 +318,8 @@ const INITIAL: AppState = {
     shards: {},
     scrolls: [],
     shardAward: { wave: 0, slugs: [], scrolledSlugs: [], nonce: 0 },
+    continuedThisRun: false,
+    runEndDecided: false,
 };
 
 /**
