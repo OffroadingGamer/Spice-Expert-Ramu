@@ -480,8 +480,25 @@ Everything above was exercised on the real engine/store/save in a live Chromium 
 
 ---
 
+## 2026-09-22 — Art round 4 — art agent
+
+Outcome: verified — 441 credits (3 x 147, exact), balance 197,868. No repo changes (Art/ is gitignored). Garlic mechanically padded, not regenerated.
+
+Done — flour, garlic, tomato.
+
+Files: Art/_gen/ingredients-r4-final/flour.png, garlic.png, tomato.png, plus contact-sheet-26px.png (all three new sprites next to onion/potato/cauliflower, all at 26px on a checkerboard so transparency shows).
+
+Credits: 198,309 -> 197,868 = 441 credits (3 x 147, clean — no summed-vs-balance gap this round). Well under the 882 budget; 0 of 3 retakes used.
+
+What I rejected and why: nothing rejected outright, but one fix worth flagging — garlic's first take had good composition but its top/right margins (7.4%/6.9%) fell under the 8% floor. Rather than spend a retake regenerating a composition that was already correct, I scaled it down and recentered it on a fresh transparent canvas locally (no credits spent), landing at 11-15% margins all around. Logged as a mechanical pad, not a regeneration.
+
+Operating facts that turned out wrong: two minor ones. (1) The handover says the wheat grain is what disambiguates flour "at 26px" — in practice the grain washes out to an invisible brown blip at that size; the triangular white silhouette does the actual disambiguating instead, and it still passes cleanly. (2) Tomato came out closer to straight-on than three-quarter view — not a legibility issue (the calyx still reads fine), just noting the deviation.
+
+All three read unambiguously against onion/potato/cauliflower at 26px in the contact sheet — no confusion in either direction.
+
+---
+
 ## Pending
 
 - **Round 17** (implementation agent, → 1.91.0) — issued Sep 22: Kitchen tabs, fixed recipe card, parchment recipe sheet with the ingredient rail, 23 sprites shipped. Its edits are already visible in the tree (`data/recipes.ts`, `MainMenu.tsx`) — **do not commit until it returns**.
-- **Art round 4** (art agent) — issued Sep 22: flour, garlic, tomato sprites, ≤ 882 credits.
 - **Recipe-writing pass** (localisation agent) — handover written Sep 22, fire at the user's discretion; Round 17 ships without it.

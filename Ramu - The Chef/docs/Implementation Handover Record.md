@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.90.0** (Rounds 0–16 — Round 16 verified Sep 22; order chip restored, "Play", Kitchen unlock badge — **playtest-ready; Round 17 in flight toward 1.91.0**; 🔒 Private-only until human verification — Ideas.md §6d) |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Round 17** → Private 1.91.0: Kitchen tabs (Stations first) + fixed recipe card + the parchment recipe sheet with the side-scrolling ingredient rail + the 23 existing ingredient sprites shipped. **Art round 4** (flour, garlic, tomato) and the **recipe-writing pass** (44 + ~33 strings) run beside it. Then Hindi · IAP · the Public promotion decision. |
+| **In flight** | **Round 17** → Private 1.91.0: Kitchen tabs (Stations first) + fixed recipe card + the parchment recipe sheet with the side-scrolling ingredient rail + the 23 existing ingredient sprites shipped. **Art round 4 returned and is verified** (flour, garlic, tomato — 441 credits, and Round 17 has already picked all three up into `public/images/`). The **recipe-writing pass** (44 + ~33 strings) still runs beside it. Then Hindi · IAP · the Public promotion decision. |
 | **Repo** | `origin/main` = **`66c12c2`**, tree clean apart from Round 17's in-progress edits. Pushed continuously since Sep 18; `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is in the public repo. Every push preceded by the secret scan with its 3-line positive control. ⚠️ `references/Errors/The kitchen upgrades refix.mp4` (3 MB) is untracked and **not** committed — no other reference video is tracked; the user's call. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -53,7 +53,7 @@ of the present.**
 | **FTUE opening pad** | **`FTUE_FIRST_PAD = 4`** (B3, `damage ×1.5`), then pads 3 and 2 |
 | **Sealed files** | `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` |
 | **`data/waves.ts`** | ⚠️ **RE-SEALED.** Unsealed for the v1.69.0 block-1 retune only |
-| **Credits (Sep 22)** | **198,309**, fully reconciled from the studio Finances page: 25,000 starter + 616 + 1,500 quest rewards + grants 15,000 / 50,000 / 5,000 / 1,093 / **100,000** + 100 daily. The **+100,000** (expires Dec 18) is RUN's compensation for the broken marketing module; the old **+6,093** mystery was the 5,000 + 1,093 grants. ✅ **Both credit watch items closed — nothing unexplained.** 616 credits expire Dec 3; plan Free, 100/day, no rollover. |
+| **Credits (Sep 22)** | **197,868** after art round 4 (−441 = 3 × 147, verified against `rundot credits`). The 198,309 it came down from was fully reconciled from the studio Finances page: 25,000 starter + 616 + 1,500 quest rewards + grants 15,000 / 50,000 / 5,000 / 1,093 / **100,000** + 100 daily. The **+100,000** (expires Dec 18) is RUN's compensation for the broken marketing module; the old **+6,093** mystery was the 5,000 + 1,093 grants. ✅ **Both credit watch items closed — nothing unexplained.** 616 credits expire Dec 3; plan Free, 100/day, no rollover. |
 | **Paid campaign** | ✅ **`kitchen-rush-meta` COMPLETE** (ended Sep 16). **$70.05 of $82 spent · 4,228 impr · 171 clicks · 4.04 % CTR · 18 installs · CPI $3.66.** Unspent remainder refunds on completion per RUN's rule — verify on the studio page. Paid is done for this jam (marketing agent's prior, Sep 14) |
 | **Art round 2 (Sep 17)** | ✅ **DONE** — `Art/_gen/pass-final/`: `pass-entry.png`, `pass-exit.png` (1024², take 1 each), `belt-tile.png` (128², procedural, `#3a3a44`, seamless both axes). **561 credits.** Awaiting the hatch-wiring implementation round |
 | **Art leg (Sep 14)** | ✅ **DONE** — `Art/_gen/chef-final/`: 9 bodies + 4 faces + scroll, **7,003 credits**, verified. Faces are aligned eyebrow-to-jaw bands. ⚠️ Expressions read at **≥ 160 px, not 96** — spec amended in Ideas.md §6b. Nothing ships before judging |
@@ -3377,3 +3377,35 @@ calls are **our own CLI generation attributed to the game id** across this month
 rounds. **Going public therefore adds no per-player credit cost** — one less risk on the
 promotion call. (Re-check this if a future round ever adds TextGen for dish names — Ideas §10.2
 raised it and it was not taken.)
+
+---
+
+### 2026-09-22 — Art round 4 verified — flour, garlic, tomato
+
+Return pasted verbatim into [Agent Returns.md](Agent%20Returns.md) before verification,
+per the ledger rule.
+
+**Verified independently from source, not from the report:**
+
+| Check | Result |
+|---|---|
+| Credits | `rundot credits` → **197,868**. 198,309 − 197,868 = **441 = 3 × 147 exactly**. No summed-vs-balance gap, 0 of 3 retakes used, against a ≤ 882 budget. |
+| Files | `Art/_gen/ingredients-r4-final/` — `flour.png`, `garlic.png`, `tomato.png` (1024² each) + `contact-sheet-26px.png` (2540×660). No `.json` sidecars anywhere in the folder. |
+| Repo boundary | `git check-ignore` confirms `.gitignore:63` covers `Ramu - The Chef/Art/`. The agent made no tracked change and ran no git — boundary held. |
+| Garlic's pad claim | Measured alpha bbox: **L 14.8% / T 11.5% / R 11.0% / B 12.0%** — the report said "11–15% all around". Exact. The 8% floor is met on every side; the mechanical pad did what it claimed and cost nothing. |
+| Tomato | L 11.0 / T 9.2 / R 11.0 / B 9.2 — clears the floor. |
+| Flour | L 10.1 / T 25.1 / R 19.2 / B 23.8 — clears the floor, but the report never gave flour's margins and these are the loosest of the three. See the note below. |
+| Contact sheet, read directly | Flour's wheat grain is genuinely invisible at 26 px — the agent's self-correction is accurate, and the white triangular silhouette does carry it. Tomato is straight-on rather than three-quarter, as disclosed. All six read apart from one another; flour vs. garlic (the only two pale sprites) separate cleanly on silhouette, sharp triangle vs. round bulb. |
+| Already shipped | Round 17's agent picked all three up into `jam-entry/public/images/` at 21:02:56, seven minutes after they landed, as 128² downscales — mean absolute difference from a LANCZOS downscale of the source is **< 1/255**, i.e. the same artwork. **All 33 `ing-*` sprites are now in the tree** (the pool of 30 + these three). No re-ship needed. |
+
+**One observation the report didn't make, and what it isn't.** Flour's art fills 0.74 of
+its tile against a 33-sprite median of 0.84, so it renders optically smaller than its
+neighbours in a rail. That is *not* a flour defect: measured across all 33, the library
+spans **0.72 (bay-leaf) to 0.96 (coffee-extract)** and was never optically normalised at
+all. Flour sits third-smallest, beside bay-leaf and tea-leaf, both of which shipped long
+ago. If the ingredient rail ever wants consistent optical weight it is a **set-wide
+normalisation pass**, not a retake of this round — logged here so the option is costed
+honestly rather than charged to flour.
+
+**Verdict: accepted.** Both of the agent's disclosed deviations were checked and are
+accurate; its one unreported number (flour's margins) passes. Art round 4 closes.
