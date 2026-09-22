@@ -576,6 +576,29 @@ One pre-existing, unrelated untracked file outside jam-entry/ scope showed up ag
 
 ---
 
+## 2026-09-23 — Art round 5 — art agent
+
+Outcome: pasted before verification. Verification in the record.
+
+All 13 files present, PNGs only, no sidecars. Round complete.
+
+Credits: 197,868 → 197,721 = 147 credits (the one spaghetti generation; export cost nothing). Ceiling was 294; 0 of 1 retake used.
+
+13 files in Art/_gen/ingredients-r5-final/: semolina, tamarind, basil, green-beans, spinach, cabbage, bamboo-shoot, noodles, oil-mustard, oil-coconut, oil-sesame, oil-olive (all exported, 0.857–0.860 linear fill), plus spaghetti (generated, kept first take, 0.859 fill) and the required contact-sheet-26px.png.
+
+Rejected takes: none — spaghetti's first take passed cleanly (dry straight bundle with paper band, clearly distinct from the cooked-noodle nest).
+
+The confusability check — 8 of 9 groups pass, one real collision: oil-sesame and oil-olive don't separate at 26px. Both render as dark reddish-brown bottles of the same size/shape (avg RGB 97,55,25 vs 118,79,42 — too close against mustard/coconut/milk/ghee, which are all fine). I didn't fix this myself since it means recoloring licensed art — flagging for your call: a color shift on olive (toward the more accurate golden-green) is the cleanest fix, or you could accept the overlap.
+
+What turned out wrong in the handover:
+
+Four of the twelve sources render as containers or potted plants, not loose ingredients — semolina and tamarind are storage jars (the pack has no alternative), basil is a potted plant, bamboo-shoot is a potted leafy plant, not the "pale knobbly form" the Part 3 description assumed. Doesn't break any comparison, but changes what's actually being compared.
+noodles reads as a plated dish (visible red-orange sauce), not an ingredient — confirmed, as you suspected.
+The "33-sprite median of 0.84" fill-fraction figure only matches if "fill fraction" means linear fill (longest bbox side ÷ longest canvas side); bbox-area fill has a median of 0.58. I used the linear definition throughout — it's the one that matches your number.
+Basil/parsley/curry-leaf separate, but not for the stated reason (leaf-shape differences are invisible at 26px) — it's basil's potted-plant silhouette and warmer tone doing the work instead.
+
+---
+
 ## Pending
 
-- Nothing outstanding. All three of the Sep 22 dispatches (Round 17, art round 4, the recipe-writing pass) have returned and been verified.
+- **Round 18** (implementation agent, → 1.92.0) — issued Sep 23, six parts. Art round 5 has returned; Round 18 is the only outstanding dispatch.

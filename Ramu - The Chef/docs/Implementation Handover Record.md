@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.91.0** (Rounds 0–17) — playtest-ready. Review and Public stay at **1.69.0**, the jam build. Nothing is in flight. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Round 18 → Private 1.92.0** (issued Sep 23, six parts) and **art round 5** (in progress: twelve pack exports at 0 credits + `spaghetti` at 147). The two run in parallel and are deliberately independent — R18 does not reference art round 5's aliases. Round 19 is Hindi and must follow R18. |
+| **In flight** | **Round 18 → Private 1.92.0** (issued Sep 23, six parts). **Art round 5 has returned and is verified** — 13 sprites in `Art/_gen/ingredients-r5-final/`, 147 credits. Shipping them is **Round 18b**, a data-only round after R18 returns, gated on three user calls (noodles, the oil collision, whether oil appears on every dish). |
 | **Repo** | `origin/main` = **`66c12c2`**, tree clean apart from Round 17's in-progress edits. Pushed continuously since Sep 18; `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is in the public repo. Every push preceded by the secret scan with its 3-line positive control. ⚠️ `references/Errors/The kitchen upgrades refix.mp4` (3 MB) is untracked and **not** committed — no other reference video is tracked; the user's call. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -3632,3 +3632,57 @@ rail using `wheel(220, 0)` — a horizontal wheel event no ordinary mouse emits.
 
 Out of scope and stated as such: the plural key (user deferred), the sheet's layout (user
 deferred until the text is in it), art round 5's sprites, and Hindi.
+
+---
+
+### 2026-09-23 — Art round 5 verified — 13 sprites for 147 credits
+
+Return pasted verbatim into [Agent Returns.md](Agent%20Returns.md) before verification.
+
+| Check | Result |
+|---|---|
+| Credits | `rundot credits` → **197,721**. 197,868 − 197,721 = **147 exactly** — one generation, twelve exports free, 0 of 1 retake. |
+| Delivery | `Art/_gen/ingredients-r5-final/` — **13 sprites + the contact sheet = 14 files**, all PNG, no sidecars. (The report says "13 files" and then enumerates 14; the delivery is right, the sentence miscounts.) |
+| Linear fill | Measured **0.859–0.866**; the report claims 0.857–0.860. The top end is understated — basil 0.866, oil-sesame 0.864. All well inside the 0.82–0.88 target, so it changes nothing. |
+| Canvas | Eight are 128², five keep their source aspect (basil 67×199, the three tall oils, oil-coconut 97×171). The brief said 128² and this was not disclosed — but the ship step re-exports to 128² and linear fill is preserved, so it is inert. |
+| Repo | `Art/` gitignored; no tracked change, no git run. Boundary held. |
+
+**The oil collision is real, and the agent's numbers are exact.** Measured average opaque RGB:
+`oil-olive` (118, 79, 42) vs `oil-sesame` (97, 55, 25) — **distance 36.1**, against 61–106 for
+every other oil pair. Independently confirmed, and visible on the contact sheet.
+
+⚠️ **But it does not matter in the game, for a reason the agent could not know.** RecipeList §7
+assigns **one oil per cuisine node**: sesame to node 2 (coconut chutney, sambar), olive to node 3
+(all six Italian dishes). Each dish carries exactly one oil, so **the two never appear in the same
+rail** — the collision exists only on a contact sheet. Recommendation: **ship all four, recolour
+nothing.** Modifying licensed art to fix a pairing the player never sees is the wrong trade, and
+dropping sesame would force coconut oil onto sambar, which is a content lie to fix a
+non-problem.
+
+**Both of the agent's self-corrections hold, and one is a real find:**
+
+- 🔴 **`noodles` reads as a plated dish** — a bowl with visible red-orange sauce. Confirmed by
+  eye. It is `Final Recipe/01-Cooked Noodles.png`, and at 26 px it reads as a bowl of soup, not
+  an ingredient. **Recommend holding it.** Veg Thukpa is better at 3 true tiles plus cabbage than
+  showing a finished bowl of thukpa as an ingredient of thukpa.
+- **Basil separates from parsley and curry leaf, but not by leaf shape** — leaf-shape difference
+  is invisible at 26 px, exactly as the agent says. What actually separates it is the **terracotta
+  pot** in basil's silhouette. The brief's stated reason was wrong; the outcome is right. Same
+  shape of finding as round 4's invisible wheat grain, and the second time this agent has
+  corrected a stated mechanism rather than quietly passing the check.
+
+**Container convention, disclosed and acceptable.** Five of the twelve exports are vessels rather
+than loose ingredients — semolina and tamarind are jars, basil and bamboo-shoot are potted plants,
+spinach sits in a bowl. 🔒 This is **already the shipped convention**: `ing-milk` is the pack's
+"Milk Jar", `ing-ginger` and `ing-cream` are likewise containers, and all three have shipped since
+before the rail existed. Not a new inconsistency. `bamboo-shoot` is the weakest of them — a potted
+leafy plant rather than a cut shoot — but it lets Bamboo Shoot Fry finally show the thing it is
+named after.
+
+**What this unlocks, which reverses a cost from the short-rail decision.** With `bamboo-shoot` and
+the oils in hand, **ooti and sambar both reach 7 tiles honestly** — so the 2-vs-7 sheet-height
+acceptance case, which Round 18's brief had to downgrade to 2-vs-5, comes **back**.
+
+**Verdict: accepted.** Shipping is **Round 18b**, data-only, after Round 18 returns — the two were
+deliberately kept independent and that holds. Three user calls gate it: hold `noodles`, ship all
+four oils, and whether an oil tile belongs on every dish or is assumed like salt.
