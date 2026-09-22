@@ -482,4 +482,6 @@ Everything above was exercised on the real engine/store/save in a live Chromium 
 
 ## Pending
 
-- Nothing outstanding. Next round waits on the user's playtest of 1.90.0 and the promotion decision.
+- **Round 17** (implementation agent, → 1.91.0) — issued Sep 22: Kitchen tabs, fixed recipe card, parchment recipe sheet with the ingredient rail, 23 sprites shipped. Its edits are already visible in the tree (`data/recipes.ts`, `MainMenu.tsx`) — **do not commit until it returns**.
+- **Art round 4** (art agent) — issued Sep 22: flour, garlic, tomato sprites, ≤ 882 credits.
+- **Recipe-writing pass** (localisation agent) — handover written Sep 22, fire at the user's discretion; Round 17 ships without it.
