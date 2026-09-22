@@ -1,6 +1,6 @@
 # Marketing Strategy
 
-**Last updated:** Sep 17 2026
+**Last updated:** Sep 22 2026
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)
 
@@ -1387,7 +1387,7 @@ and 5th's own daily deltas on the next board pull.
 Trigger: Central's closing handover. `whoami` confirmed
 `offroadinggamedev@gmail.com` before any pull.
 
-### Final numbers — verified live, matches Central exactly
+### Final numbers — verified live Sep 17, **superseded by a Sep 22 re-check below**
 
 ```
 rundot marketing status --name kitchen-rush-meta
@@ -1399,8 +1399,8 @@ rundot marketing status --name kitchen-rush-meta
 Spend $70.05 of $82 (2 days, Sep 15–16): Sep 15 $25.52 / 49 clicks / 7
 installs / CPI $2.72; **Sep 16 +$44.53 / +122 clicks / +11 installs** —
 day 2 delivered faster and cheaper than day 1's pace projected in §18.
-Totals: 4,228 impressions, 2,833 reach, 171 clicks (4.04% CTR), 16
-conversions, **18 installs**, CPI $3.66, CPA $4.38.
+Totals as read Sep 17: 4,228 impressions, 2,833 reach, 171 clicks (4.04%
+CTR), 16 conversions, **18 installs**, CPI $3.66, CPA $4.38.
 
 **`campaign_attribution_funnel_30d` re-checked Sep 17, a day after the
 flight ended: still zero on every stage** (`hermes_install`,
@@ -1409,7 +1409,24 @@ flight ended: still zero on every stage** (`hermes_install`,
 the last finalized UTC day, which is plausible and not contradicted here,
 but two full days past flight end with nothing landed is the point where
 "lag" and "never lands" stop being distinguishable from this seat. Not
-resolvable further from this agent's tools.
+resolvable further from this agent's tools as of Sep 17 — **resolved
+Sep 22, see §20(b).**
+
+> **Correction, logged Sep 22, not silently overwritten:** re-pulling
+> `rundot marketing status --name kitchen-rush-meta --game-id
+> PpB5gECS0AMU49mGYAKM` and `rundot marketing list --game-id
+> PpB5gECS0AMU49mGYAKM` today shows **Status: completed, spend $80.96 of
+> $82, 22 installs, ROAS 0.00x** — not the $70.05 / 18 installs this
+> section recorded as "final" on Sep 17. The campaign evidently kept
+> accruing spend/installs for some period after the Sep 17 pull despite
+> reading as "flighted... ends 2026-09-16" at the time; either the Sep 17
+> snapshot was mid-reconciliation or provider-side numbers settled later.
+> New CPI = $80.96 / 22 = **$3.68** (vs $3.66) — materially the same
+> story. **The §13.6 verdict below is unchanged**: 22 installs is still
+> the ceiling on any install→session-start conversion and is still under
+> the 55-attributed-session-start bar before any funnel loss. Treating
+> **$80.96 spent, 22 installs, CPI $3.68, completed** as the true final
+> paid numbers from here forward.
 
 **Refund — flagged as asked, not yet landed.** `rundot credits` still
 reads **93,273**, unchanged from the Sep 15 check. $82 − $70.05 = $11.95
@@ -1422,14 +1439,15 @@ other spend in between, if anyone wants a clean read.
 
 ### Against §13.6 — paid: not met
 
-**≥ 55 attributed session starts required; RUN reports zero, four days
-running.** Verdict stands even under the most generous framing: 18
-installs is the ceiling on any install→session-start conversion, and 18
-is already under 55 before any funnel loss is applied. **Said plainly, as
-asked: paid did not meet its own bar.**
+**≥ 55 attributed session starts required; RUN reports zero, confirmed
+flat six days after the flight closed (§20b).** Verdict stands even
+under the most generous framing: 22 installs (final, corrected above) is
+the ceiling on any install→session-start conversion, and 22 is already
+under 55 before any funnel loss is applied. **Said plainly, as asked:
+paid did not meet its own bar.**
 
 **What it was for, and what it bought:** BACK-TO-WORK's remaining value
-was going to evaporate at expiry regardless. 18 Android installs for
+was going to evaporate at expiry regardless. 22 Android installs for
 credits that would otherwise have gone to zero is the honest frame —
 neither a win nor a loss against the board, a wash against the lot.
 
@@ -1441,12 +1459,14 @@ should have converted installs into plays never got the chance to prove
 itself either way, because the objective pointed at the wrong 27% of the
 audience from the start. **Creative worked. Objective didn't fit.**
 
-### Board — final reading, Sep 17 ~21:50 IST, 1d 02h 37m to close
+### Board — true final standing, jam closed, superseding the Sep 17 interim read
 
-User-supplied, closing this section per instruction ("close §19 with this
-as the final standing unless a later screenshot follows"):
+The Sep 17 ~21:50 IST reading below was logged as final "unless a later
+screenshot follows" — one did, via Central's Sep 22 closing handover
+(§20). **This is now the actual final standing, jam closed, 100 entries,
+~21k plays**, kept for the record rather than deleted:
 
-| Rank | Entry | Total DUP | Prize |
+| Rank | Entry | Total DUP (Sep 17 21:50 read) | Prize |
 |---|---|---|---|
 | 1 | Back That Thing Up! | 1,373 | podium |
 | 2 | The Grind | 1,324 | podium |
@@ -1457,26 +1477,38 @@ as the final standing unless a later screenshot follows"):
 | 7 | The Good Life | 479 | — |
 | 8 | Order Up | 447 | — |
 
-100 entries total, ~21k plays across the jam. **This is a real swing from
-the Sep 15 17:45 IST read** (then 4th, 541 DUP, $200 tier) — the field
-grew substantially in the closing days (this agent's own pace also
-accelerated, per the 588-through-Sep-16 figure above, but so did
-everyone else's, harder). Currently **16 DUP behind 5th** ($100) with
-**1d 02h 37m** left — a tighter, more reachable gap than the podium, and
-the one worth naming plainly: this is now a fight to get back into the
-money, not to climb it. The three podium entries (1,229–1,373) are out of
-range regardless.
+**True final standing (jam closed, 00:30 IST Sep 19):**
 
-**Meta flight is fully closed as of this reading** — final $70.05 spent,
-18 installs, CPI $3.66, no change from the numbers above. **Paid is
-done**, confirmed by the same word used to authorize it.
+| Rank | Entry | Total DUP | Prize |
+|---|---|---|---|
+| 1 | The Grind | 2,063 | $1,000 |
+| 2 | Back That Thing Up! | 1,770 | $600 |
+| 3 | 9 to Thrive | 1,280 | $300 |
+| 4 | GT Rush: Coastal Life (3D) | 976 | $200 |
+| 5 | Pest Control Tycoon | 750 | $100 |
+| **6** | **Spice Expert: Ramu** | **638 DUP · 942 total plays · 15 days in jam** | **— no prize** |
 
-**What's actually left to move the 16-DUP gap:** the two organic posts
-already drafted below (r/SoloDevelopment tonight, Sep 18 AM personal
-push) — no new lever is being proposed here, per the instruction not to
-add channels this late. Whether they're enough is not this agent's call
-to project further; the drafts are ready to go out now, with ~26 hours of
-runway left to matter.
+Plus a separate, judged (not metric-based) **$300 Editor's Pick to Don't
+Let Him Die (159 DUP)** — see §20(d).
+
+We finished **112 DUP behind the money** (750 − 638), having been only
+16 behind at the Sep 17 21:50 reading: **5th added 121 daily uniques in
+the final ~27 hours to our 25.** Both the podium order and the money-line
+entry itself reshuffled in the closing stretch — 1st and 4th/5th
+positions all moved from the interim read above. Full read on what that
+final surge most plausibly was, and whether any lever was available to
+this agent, is in §20(a).
+
+**Meta flight fully closed** — see the corrected final numbers above
+($80.96 spent, 22 installs, CPI $3.68). **Paid is done.**
+
+**What was actually left, in hindsight:** the two organic posts drafted
+below were sized against a 16-DUP gap. The final gap was 112 — a swing
+of that size, driven by a single competitor's final-day pace (~4.5
+DUP/hour sustained vs this entry's own ~0.9/hour in the same window),
+was not something either of the two drafted posts, or any organic lever
+available to this agent, was ever going to close. Said plainly rather
+than left implied.
 
 ### Organic — Sep 17 and Sep 18, both links, no new channels
 
@@ -1530,7 +1562,155 @@ single attributed row and that was never resolved. Sep 14's prior
 this is the longer-horizon answer Central asked for, not a reopening of
 that call now.
 
-**Status:** closed. Analysis and drafted copy only, per the standing
-rule — nothing posted, prepared, generated, submitted, or funded by this
-agent. Board reading above is final for this section unless a later
-screenshot supersedes it. Handing back for Central to sync.
+**Status:** closed, board and paid numbers now the true final figures
+(superseded the Sep 17 interim read per the note above). Analysis and
+drafted copy only, per the standing rule — nothing posted, prepared,
+generated, submitted, or funded by this agent. Handed back for Central
+to sync. **Post-close write-up requested by Central's Sep 22 handover is
+§20, below.**
+
+---
+
+## 20. Post-close analysis — jam final, retention signal, post-jam call — Sep 22 2026
+
+Trigger: Central's Sep 22 handover — final jam numbers plus a request for
+a post-close write-up covering (a) the last-day surge, (b) paid vs
+organic, (c) the retention signal on the frozen build, (d) what a
+post-jam launch on 1.89.0 should do differently. `whoami` confirmed
+`offroadinggamedev@gmail.com` before any pull.
+
+**Numbers re-verified live before writing this, not just carried
+forward** — see the correction logged in §19 above (paid: $80.96/22
+installs, not $70.05/18; attribution: confirmed flat, not "maybe
+lagging"). The board and totals Central gave (638 DUP, 942 total, 15
+days, 6th, no prize; winners' table; Editor's Pick) match this agent's
+own §19 board work exactly and are taken as given — there is no CLI or
+fetchable page for jam standings, same limitation noted throughout this
+doc.
+
+### (a) The last-day surge — what it plausibly was, and whether a lever existed
+
+This agent's own `daily_activity_30d` (fresh pull, Sep 22) for the final
+stretch:
+
+| Day | Unique players |
+|---|---|
+| Sep 17 | 27 |
+| Sep 18 | 19 |
+| Sep 19 (through 00:30 close) | 2 |
+
+That's consistent with the +25 total-DUP growth Central cited for this
+entry across the final ~27 hours. **5th place added 121 in the same
+window** — roughly five times this entry's per-hour pace, sustained. This
+agent has no visibility into any other entry's day-by-day activity or
+channel mix, so the honest answer is that the specific cause can't be
+pinned down from here. Two plausible, non-accusatory explanations worth
+naming: (1) RUN's own end-of-jam surfacing (a featured-entries push,
+board sort order, a closing Discord call) tends to compound for entries
+already higher up the board, not flatten the gap; (2) the entry likely
+has a larger or better-timed owned audience (its own community, launch
+list, etc.) that it activated specifically in the closing hours — the
+same kind of "genuine last call" post this agent drafted for Sep 18, just
+reaching a bigger base. **Not raising the possibility of anything against
+the "no fake plays" rule** — RUN audits and voids entries itself, and
+nothing here is evidence of that; a fast finish from a bigger owned
+audience is the unremarkable explanation and the one this agent defaults
+to absent anything more specific.
+
+**Was any lever available to us?** No, not one of comparable scale, and
+this isn't hindsight bias — it's arithmetic. This entry's own best single
+day all jam was 60 unique players (Sep 7). Even a flawless repeat of that
+peak on both Sep 18 and Sep 19 combined would add well under half of the
+121-point swing 5th place produced. Paid had already closed Sep 16.
+Central's own "no new channels this late" instruction (Sep 17) foreclosed
+the one category of lever — a new surface — that might have added
+meaningfully at that scale, but nothing in this agent's toolkit or
+mandate had that scale available regardless. **The two drafted posts were
+sized correctly against the gap they were drafted for (16 DUP); the gap
+that actually mattered (112) was not one organic copy, on the surfaces
+and cadence this agent had, was ever going to close.**
+
+### (b) Paid vs. organic — an honest read, final numbers
+
+**Paid, corrected:** $80.96 of $82 spent, 22 installs, CPI $3.68, CPA
+recomputed at $80.96 / 16 conversions ≈ $5.06 (using the Sep 17 conversion
+count, since that figure wasn't part of today's re-check and isn't
+flagged as wrong). ROAS **0.00x** — that's `rundot marketing list`'s own
+figure, not this agent's characterization. `campaign_attribution_funnel_30d`
+re-pulled today, **six days after the flight closed**: still flat zero
+across all five stages (`hermes_install` → `game_session_start`), for
+both the Meta campaign and the never-flighted Reddit one. At six days
+out, "lag through the last finalized UTC day" (Central's Sep 17
+explanation) is no longer a credible read — **this is confirmed zero,
+not delayed.** That resolves the question this doc has carried open
+since §16.
+
+**Organic, for comparison:** every one of the 15 days in the jam has a
+directly attributable row in `daily_activity_30d` — no funnel, no
+platform-resolution ambiguity, $0 spent, peak 60 unique players in a
+single day (Sep 7). The fair comparison isn't "which had better ROI" —
+paid's ROI is RUN's own 0.00x, full stop. It's that **organic produced
+the entire scored total (638 DUP) with full attribution and zero spend,
+while paid produced 22 installs that RUN's own funnel shows no evidence
+ever became a single game session.** Even the most generous possible
+credit to paid — assuming all 22 installs eventually opened the game,
+which the data gives no support for — would not have closed any
+meaningful fraction of the 112-DUP final gap. **Paid's honest
+contribution to the board result this jam was ~zero, provably; organic
+was the entire result.**
+
+### (c) The retention signal — frozen 1.69.0, growing since close
+
+Central's figures, taken as given (no CLI query for leaderboard-entry
+counts exists in this agent's toolkit): **two all-time leaderboards at
+108 and 102 players, last submission Sep 20 — a day after judging closed,
+with zero promotion since Sep 18 and the jam build frozen at 1.69.0**
+(two full Private version cycles behind the current 1.89.0).
+
+This is a meaningfully different signal from the jam's own DUP metric,
+worth not conflating: DUP measures *new discovery* driven by active
+promotion; a leaderboard submission two days after the last post went out,
+on a build nobody's been pointed to since, measures **people coming back
+on their own** — the core loop holding attention without a link being
+pushed at them. That's the strongest single data point in this entire
+document for treating a post-jam relaunch as a real product moment
+rather than a token "thanks for playing" close-out post.
+
+### (d) What a post-jam launch on 1.89.0 should do differently
+
+**The jam board and the current build are now two different products.**
+1.89.0 (Private) adds Ranks with a daily board, recipe scrolls, a rewarded
+continue, and Hindi — none of which exist in the 1.69.0 build the
+leaderboard retention signal above was measured against. That changes
+the honest pitch from "still here" to genuinely "new," and a daily board
+specifically gives a returning-player hook the jam build never had.
+Concretely, once 1.89.0 goes public:
+
+- **Write fresh copy, don't recycle.** The Sep 15–18 drafts were jam-close
+  framing ("last call," "thank you for playing"); a public 1.89.0 launch
+  is a different message entirely and should open with what's new, with
+  the retention numbers above as the proof point ("people are still
+  finding this on the old build — here's what's different now").
+- **Pitch for judged/editorial attention, not only plays.** The **$300
+  Editor's Pick to Don't Let Him Die at 159 DUP** — well below what any
+  metric tier needed — is direct evidence RUN's own judging rewards
+  things a plays-race doesn't capture. Given this entry's DUP performance
+  didn't clear the money line even with genuine organic effort, a
+  judged/editorial submission (screenshots, a short write-up, a
+  Story & Video-style piece if a comparable track exists post-jam) is a
+  lower-competition path to recognition worth pursuing deliberately, not
+  as an afterthought.
+- **Hold paid, and hold the same objective mismatch lesson.** Nothing in
+  today's re-check changes the §19 recommendation — traffic/web
+  objective only, meta or google only, and only once
+  `campaign_attribution_funnel_30d` is confirmed populating *before* any
+  budget is trusted against it. Today's six-days-flat re-check makes that
+  precondition firmer, not weaker.
+
+**Status:** analysis and drafted framing only, per the standing rule —
+nothing posted, prepared, generated, submitted, or funded by this agent,
+and no campaign proposed or authorized here. This is a recommendation for
+what a future launch push should look like, not a plan being executed
+now; a second approval would still be needed before any of it becomes
+copy that goes out or a campaign that gets funded. Handing back for
+Central to sync.

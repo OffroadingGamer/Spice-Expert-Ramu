@@ -420,7 +420,25 @@ The real rewarded-ad watch flow — this dev host's SDK reports sdkReady() true 
 
 ---
 
+## 2026-09-22 — Post-close marketing analysis — marketing agent
+
+Outcome: synced by Central after a secret scan; the spend correction ($80.96 / 22 installs) independently confirmed via `rundot marketing list`.
+
+Both docs are updated and dated Sep 22 2026. Summary of what changed:
+
+§19 corrected, not silently overwritten: re-verifying live rather than trusting Central's Sep 17 "final" numbers turned up a real discrepancy — the campaign actually settled at $80.96 spent, 22 installs, CPI $3.68, status completed, not $70.05/18. Logged as an explicit correction; the §13.6 verdict (paid failed its own bar) is unchanged. The board section now carries the true final standing: 6th of 100, 638 DUP, 942 total, no prize — a 112-DUP gap to the money, not the 16 it looked like on Sep 17.
+
+New §20, covering Central's four asks:
+
+(a) Our own daily uniques for the closing days (27/19/2) confirm the +25 DUP we added; 5th place added 121 in the same window — no lever available to us was ever going to close a gap that size.
+(b) campaign_attribution_funnel_30d re-pulled six days post-flight: still flat zero. That resolves the "lag vs. never lands" question left open since §16 — it's confirmed zero, not delayed. Organic produced the entire scored result with full attribution and $0 spend; paid's provable contribution was ~zero.
+(c) The retention numbers (108/102 leaderboard players, last submission Sep 20, on the frozen 1.69.0 build with no promotion since Sep 18) are taken as given — no CLI access to leaderboard counts — and flagged as the strongest signal in the doc for a real post-jam relaunch.
+(d) Recommends fresh launch copy (not recycled jam-close drafts) for 1.89.0, and explicitly floats pitching for judged/editorial attention — the $300 Editor's Pick going to a 159-DUP entry is direct evidence that path exists — alongside holding paid until attribution is proven live.
+All analysis and drafted framing only — nothing posted, prepared, or funded. Handed back for Central's sync.
+
+---
+
 ## Pending
 
-- **Round 16** (implementation agent, → 1.90.0) — not yet issued; waits on the user's playtest of 1.88.0/1.89.0.
-- **Marketing agent** — post-close results entry (judging closed 00:30 IST Sep 19); not yet requested.
+- **Round 16** (implementation agent, → 1.90.0) — issued Sep 22, not returned.
+- Nothing else outstanding.

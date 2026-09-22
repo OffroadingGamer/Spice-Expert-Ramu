@@ -1,6 +1,6 @@
 # Social Media Handover Record
 
-**Last updated:** Sep 17 2026
+**Last updated:** Sep 22 2026
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Marketing Strategy.md](Marketing%20Strategy.md)
 
@@ -1443,3 +1443,55 @@ new channels this late" instruction. §19's status line updated to
 **Next:** handed back to the user to relay to Central for the doc sync.
 This agent holds through judging close (00:30 IST Sep 19) — no further
 action pending unless a new handover or a later board screenshot arrives.
+
+### 2026-09-22 — Central Agent's post-close handover: jam final, post-close write-up requested
+
+**From:** Central Agent, relayed by the user
+**Status:** ✅ complete — §19 board/paid numbers corrected to true final,
+§20 written, pointer here
+
+Verbatim: final standing 6th of 100, 638 DUP, 942 total, 15 days, no
+prize; winners (The Grind 2,063/$1,000 · Back That Thing Up! 1,770/$600 ·
+9 to Thrive 1,280/$300 · GT Rush: Coastal Life (3D) 976/$200 · Pest
+Control Tycoon 750/$100) plus a separate judged $300 Editor's Pick to
+Don't Let Him Die (159 DUP); 112 DUP behind the money at close vs. 16
+behind at the Sep 17 21:50 reading (5th added 121 in the final ~27h to
+our 25). Requested: close §19 with these numbers, and a post-close
+section on (a) the last-day surge and whether a lever existed, (b) an
+honest paid-vs-organic read, (c) the retention signal (108/102 all-time
+leaderboard players, last submission Sep 20, frozen 1.69.0 build, no
+promotion), (d) what a post-jam 1.89.0 public launch should do
+differently, including a judged/editorial pitch. Analysis/drafts only,
+no posting/prep/funding, no campaign without a second approval.
+
+**Before writing anything, re-verified rather than carried forward**
+(per the standing rule on carried claims): `whoami` confirmed identity;
+`rundot marketing status --name kitchen-rush-meta --game-id
+PpB5gECS0AMU49mGYAKM` and `rundot marketing list --game-id
+PpB5gECS0AMU49mGYAKM` came back **completed, $80.96 spent, 22
+installs** — not the $70.05/18 this doc logged as "final" on Sep 17.
+Logged as an explicit correction in §19, not a silent overwrite; verdict
+against §13.6 unchanged (22 is still under the 55-session-start bar).
+`campaign_attribution_funnel_30d` re-pulled: still flat zero on every
+stage, six days after flight close — resolves the "lag vs. never lands"
+question left open since §16/§18/§19 in favor of **never lands, this
+flight**. Fresh `daily_activity_30d` pulled to check this entry's own
+Sep 17–19 daily uniques (27 / 19 / 2) against Central's +25 figure —
+consistent. No CLI query exists for leaderboard-entry counts, so the
+retention figures (c) are taken as given, same limitation as jam-board
+readings throughout this doc.
+
+Written into [Marketing Strategy.md](Marketing%20Strategy.md): §19's
+final-numbers and board subsections corrected and superseded with the
+true final figures (paid $80.96/22/completed; board 6th/638 DUP/942
+total/no prize, both standings tables kept for the record); new **§20**
+added covering (a)–(d) in full, including the arithmetic on why no
+available organic lever could have closed the actual 112-DUP gap, the
+Editor's Pick precedent as a reason to pitch judged/editorial attention
+post-jam, and a hold-paid recommendation unchanged from §19 but now
+resting on a confirmed (not suspected) zero-attribution finding.
+
+**Next:** handed back to the user to relay to Central for the doc sync.
+No further campaign, post, or spend proposed — §20 is a recommendation
+for a future 1.89.0 public launch, not a plan in motion. This agent holds
+for a new handover.

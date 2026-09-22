@@ -3281,3 +3281,28 @@ Don't Let Him Die — 159 DUP**, ranked 20th on plays.
 Retention, not reach, is what the entry actually has: **942 total plays over 638 daily uniques**
 across 15 days, and the two all-time boards have kept growing since close (108 / 102 players,
 last submission Sep 20 23:47 UTC) with **zero promotion** and a build 20 versions behind Private.
+
+---
+
+### 2026-09-22 — Marketing post-close analysis synced (§19 corrected, §20 written)
+
+Return verbatim in `Agent Returns.md`; both docs committed after a secret scan (every `?k=`
+hit in them is the rule text or a redaction note, no key, id or UserId).
+
+🔴 **A number I carried was wrong.** The Meta flight's "final" figures in this record
+(**$70.05, 18 installs, CPI $3.66**, from the Sep 17 reading) were not final — the agent
+re-pulled and found **$80.96, 22 installs, CPI $3.68, status completed**. I confirmed it myself
+with `rundot marketing list`. The agent was right to re-verify rather than trust the record;
+the §13.6 verdict (paid failed its own bar) is unchanged either way. **Lesson for me: a figure
+labelled "final" in a doc is still a claim — re-read the source before repeating it** (the
+carried-claims rule applies to my own records, not only to blockers).
+
+§20 covers: (a) our closing-day uniques 27 / 19 / 2 = +25 against 5th place's +121 — no lever
+of that scale existed for us; (b) `campaign_attribution_funnel_30d` re-pulled six days after the
+flight is **still flat zero**, which settles the open "lag or never lands?" question from §16 —
+organic produced the entire scored result at $0; (c) the retention signal (108 / 102 board
+players, last submission Sep 20, on a frozen build with no promotion) named as the strongest
+argument for a real relaunch — taken from my reading, the agent has no leaderboard CLI;
+(d) fresh launch copy for the 1.89.0+ build, judged/editorial attention pitched deliberately
+(the $300 Editor's Pick went to a 159-DUP entry), paid held until attribution is proven live.
+Nothing posted, prepared or funded.
