@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.91.0** (Rounds 0–17) — playtest-ready. Review and Public stay at **1.69.0**, the jam build. Nothing is in flight. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Nothing.** All three Sep 22 dispatches returned and are verified. Next: the four §6d decisions (rail fixes · Coffee Decoction · the plural key · art round 5) fold into **Round 18** alongside Hindi. Then IAP, and the Public promotion decision whenever the user has played 1.91.0 end to end. |
+| **In flight** | **Nothing with an agent.** Waiting on the user's pick of card option A / B / C (drawn, §6d) and on the four §6d decisions, which together make **Round 18 → 1.92.0**: the 44 step strings, the rail fixes, the chai/coffee 2.75× zoom, the card restyle, the plural key, Coffee Decoction. **Round 19 is Hindi**, and it must follow R18 because it translates R18's own new English. |
 | **Repo** | `origin/main` = **`66c12c2`**, tree clean apart from Round 17's in-progress edits. Pushed continuously since Sep 18; `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is in the public repo. Every push preceded by the secret scan with its 3-line positive control. ⚠️ `references/Errors/The kitchen upgrades refix.mp4` (3 MB) is untracked and **not** committed — no other reference video is tracked; the user's call. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -3520,3 +3520,33 @@ so plainly rather than letting the wheel test stand in for it. This is the one i
 1.91.0 that wants a finger on glass, and it belongs in the user's end-to-end play.
 
 **Verdict: accepted.** Private 1.91.0 is the playtest build.
+
+---
+
+### 2026-09-22 — Playtest of Private 1.91.0 — both faults are mine, and both are arithmetic
+
+Three annotated screenshots. Full diagnosis and the three drawn card options in
+[Ideas.md](Ideas.md) §6d; proposal page
+`https://claude.ai/artifact/RBd4NYK4wDfW8kdCUhQLLr`.
+
+- 🔴 **"Thumbnail still not neat & precise"** — banner **26 mu**, medallion **30 mu**, card
+  `overflow: hidden`. The circle is sliced 2 mu at each end. **Both numbers are in my own Round 17
+  handover, two sentences apart.** The agent built what was written. → **Retro 115**, which also
+  records that this is the *second* time (Round 12b was the first) and that the lesson written then
+  was not actionable enough to prevent it.
+- 🔴 **Chai and coffee render at 36% of every other dish** — 75×55 of art on the shared
+  212×141 canvas against 206×134 for the other 28, perfectly centred, and the sources in
+  `Art/_gen/dishes-final/` are small too. Fixed by a per-slug `zoom = 206 / bboxWidth` on the
+  `<img>` inside a clipping container — not a CSS `transform`, which would blur an
+  already-rasterised layer. **Zero credits**, and the shared assets stay untouched so the wave
+  bubble and the order chip do not move.
+- ✅ **Accepted as working:** the two tabs, the parchment sheet, the rail, the dots, the count
+  label. The user deferred the sheet review until the step text is in it — *"once the entire
+  recipes are placed… reviewing them will allow for any fine tweaking"* — so **the sheet is not
+  re-opened in Round 18 beyond filling it.**
+
+**Agenda set from here:** Round 18 (→ 1.92.0) carries the 44 strings, the rail corrections, the
+zoom, the chosen card option, the plural key and the name change. Round 19 is Hindi, which must
+follow because it translates Round 18's own new English. Art round 5 (oil / pasta / cabbage,
+441 credits) runs beside either. The user's end-to-end play still gates the Public promotion, and
+the ingredient rail's **touch** drag is still untested on a device.

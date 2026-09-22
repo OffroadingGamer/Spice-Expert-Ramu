@@ -2744,3 +2744,27 @@ after **00:30 IST Sep 19**.
      you have, name the tool that would explain it and ask for that, rather than logging the gap
      and moving on. The same page also settled a second question for free (no runtime AI in the
      shipped build), which is the usual payoff for looking at the source of truth.
+
+115. 🔴 **A spec that gives a container's size and its child's size has stated an inequality, and
+     I have now got it wrong twice.** Sep 22 2026. Round 17's handover said "parchment becomes a
+     26-mu banner" and, two sentences later, "30mu white medallion" — a 30 mu circle inside a 26
+     mu strip, in a card with `overflow: hidden`. The agent built exactly that, and the user's
+     screenshot came back annotated "thumbnail still not neat & precise": the disc is sliced flat
+     top and bottom. This is the *same failure* as Round 12b (lesson recorded then as "two correct
+     instructions whose sum was wrong"), which proves that lesson was not actionable — it named
+     the shape of the mistake without giving me anything to do differently. ✅ **The actionable
+     version:** before issuing a spec, list every pair of numbers that share a container and do
+     the subtraction out loud in the handover. `banner 34 − medallion 26 = 4 mu clear at each end`
+     is a sentence an agent can check and a reviewer can catch; "26-mu banner" and "30mu
+     medallion" ten lines apart is not. Sizes are never independent facts — the arithmetic is the
+     spec.
+
+116. 🔴 **Never truncate a file before the replacement is known to encode.** Sep 22 2026. A doc
+     script opened the 3,522-line Implementation Handover Record with `open(p, "w")` and only then
+     hit a `UnicodeEncodeError` on a surrogate pair in its own new text — the open had already
+     emptied the file. `git checkout --` restored it because the previous entry had been committed
+     minutes earlier, so the cost was two minutes instead of the whole record. ✅ **Rule:** build
+     the whole string, write it to `<path>.tmp`, then `os.replace()`. The rename is atomic and a
+     failed encode leaves the original untouched. Corollary, and the reason this was cheap:
+     **commit each verified return before starting the next edit** — the restore point is worth
+     more than the tidy history.

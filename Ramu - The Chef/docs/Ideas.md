@@ -749,6 +749,55 @@ is the actual cost, not culinary pedantry.
 
 ---
 
+**✏️ Amendment — user playtest of Private 1.91.0, Sep 22 2026.**
+Three annotated screenshots of the Kitchen's Recipes tab and two open chai/sambar sheets.
+Proposal page (private, not spec of record): `https://claude.ai/artifact/RBd4NYK4wDfW8kdCUhQLLr`.
+
+**Accepted as working:** the two-tab split, the scroll structure, the rail, the page dots, the
+count label, Close. The user's words: *"Recipe scroll structure feels promising, once the entire
+recipes are placed in their respective recipe scrolls then reviewing them will allow for any fine
+tweaking."* **So the sheet is not re-litigated until the 44 step strings are in it** — that review
+is deferred to after Round 18, deliberately.
+
+1. 🔴 **"Thumbnail still not neat & precise" — the medallion is bigger than the banner.**
+   `MetaUpgrades.tsx:167–193` sets the banner to **26 mu** and the medallion inside it to
+   **30 mu**, and the card wrapper carries `overflow: hidden`. A 30 mu circle centred in a 26 mu
+   strip overflows 2 mu at each end: the top is sliced flat by the card's own edge, the bottom
+   spills onto the chocolate. **The disc is never a circle.** ⚠️ **Both numbers are mine** — the
+   Round 17 spec in the block above says "26-mu banner" and "30mu white medallion" in consecutive
+   sentences. The agent built exactly what was written. Same failure class as Round 12b: two
+   instructions that are each correct and whose sum is not. The banner also paints the parchment
+   with `background-size: cover`, cropping a 256² texture into a 26 mu slot at an arbitrary
+   offset — the stray diagonal edge visible in the top row.
+2. 🔴 **Chai and coffee are small in the file, not on screen.** Measured: every `dish-*.png`
+   shares a **212×141** canvas; 28 of 30 fill it to **206×134**, while **chai and coffee carry
+   75×55** centred (left 68 / right 69, top 43 / bottom 43 — dead centre). `object-contain` fits
+   the *canvas*, so those two render at **36% of every other dish**. The sources in
+   `Art/_gen/dishes-final/tray-chai.png` / `tray-coffee.png` are **also 75×55**, so there is no
+   sharper original to re-export — **and none is needed.** Fix: a per-slug
+   `zoom = 206 / bboxWidth` (**2.75×** for these two, 1.0 for the other 28) applied by sizing the
+   `<img>` itself inside a clipping container — **not** a CSS `transform`, which would scale an
+   already-rasterised layer and blur it. 75 source px rendered into ~18 mu is still a *downscale*,
+   so it stays sharp. **Zero credits, no regeneration.**
+   🔒 **The shared `dish-chai` / `dish-coffee` assets are not re-exported.** They feed the wave
+   bubble's scroll grid and the order chip (`manifest.ts:41, 165`); re-cropping the files would
+   silently change every one of those surfaces. The zoom lives in the two recipe surfaces only.
+3. **Card restyle — three options drawn, recommendation A.**
+   **A · Contained medallion (recommended):** banner **26 → 34 mu**, medallion **30 → 26 mu**
+   (4 mu clear at both ends, nothing clipped); parchment **`100% auto` centred** so the fibre runs
+   straight and all 22 crop identically; disc gains a **1.5 mu walnut ring** and loses the heavy
+   drop shadow, reading as a plate rim rather than a sticker; dish icon **18 mu × zoom**.
+   **B · Plate, no disc:** 38 mu banner, dish straight on the parchment over a cast shadow,
+   rhyming with the sheet's own 60 mu plate — but idli and coconut chutney are cream on cream.
+   **C · Recipe list:** one column, 34 mu rounded-square thumbs on a cream tile, parchment leaves
+   the grid entirely. The most literally neat, and it matches the Stations tab — but it trades the
+   shelf-of-scrolls look, and that is a taste call, not a defect fix.
+   **Why A:** it answers exactly what was pointed at. B and C both settle the larger question
+   *"should the grid carry parchment at all?"*, which deserves to be asked once the sheets are
+   full of text — not decided as a side effect of fixing a clipping bug.
+
+---
+
 ## 7. Wave-intro scroll — proposed Sep 13 2026 — ✅ shipped as the wave bubble's scroll grid, 1.76.0
 
 **Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll
