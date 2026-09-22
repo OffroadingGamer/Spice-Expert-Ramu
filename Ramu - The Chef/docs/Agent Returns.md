@@ -384,7 +384,43 @@ The sfx.scrollUnlock() call-count spy (explained above — code-verified, not em
 
 ---
 
+## 2026-09-19 ~03:10 IST — Round 15 — implementation agent
+
+Outcome: verified, Private 1.89.0, committed `9794e4a`. (Pasted twice in chat; one copy kept.)
+
+Private 1.89.0, Review 1.69.0, Public 1.69.0 — exactly as required. Here's the Round 15 report.
+
+Round 15 — deployed as v1.89.0 (Private). Review/Public unchanged at 1.69.0.
+A design bug I caught and fixed before it shipped
+towerScene.ts's checkEnd() fires on the very next tick after phase becomes 'lost' — before this round, that was correct (loss was always final). With a continue possible, that would have submitted and finalized a run the instant it lost, before the offer card even had a chance to grant a continue — a double-submission bug (once prematurely, once for real). Fixed by gating checkEnd() on a new store.runEndDecided flag, set by EndScreen.tsx/ContinueOffer.tsx only once the offer genuinely resolves to "no grant" (unavailable, declined, or a failed watch); a second loss in an already-continued run still finalizes immediately, no gate needed. Documented in both files.
+
+Part 1 — The offer
+Card built on the shared SettingsCard.tsx shell (ContinueOffer.tsx), gated on tdPhase==='lost' && !continuedThisRun, with an async pre-check (ads.adsCapability() ? ads.isAvailable() : true) so it's skipped whenever no ad can actually deliver. Verified: budget-0 (ads.state().watchedToday=15) → offer count 0, end screen shows directly. Bug found and fixed: the offer's full-screen scrim blocked the hamburger entirely, making "pause during the offer" unreachable — gave the hamburger z-index:16 (below the shift-menu's own z-index:20, above the offer's z-index:15). Verified: hamburger reachable during the offer, pause card renders on top, tapping Main Menu abandons to phase:'menu' with continuedThisRun still false and no grant.
+
+Part 2 — The grant (engine sealed)
+actions.ts's new applyContinueGrant() patches exactly two engine fields: engine.state.lives = 6, engine.state.phase = 'wave'. Nothing else was needed — step()'s only gate is phase !== 'wave', and loss never clears enemies/projectiles/spawn cursors, so flipping phase back resumes everything in place. The one latch that did need external re-arming: towerScene.ts's checkEnd() has a private ended closure flag that goes true forever on the first loss — without intervention, a genuine second loss later in the same run would never re-fire recordRunEnd/submitRunScores/trackRunEnd. Re-armed via a new registerRunEndReArm() slot (same globalThis-anchored pattern as the engine reference, for the same Vite-duplicate-module reason) that applyContinueGrant() calls.
+
+Verified end-to-end (undefended wave, forced to lives=1, real leak to lost, engine.step frozen for an atomic snapshot):
+
+Before: {phase:'lost', lives:0, enemyUids:[2,3,4,5,6]}
+Immediately after grant: {phase:'wave', lives:6, enemyUids:[2,3,4,5,6]} — identical enemy set, continuedThisRun:true, dialogue armed to continue-granted ("Back to work. Nobody leaves hungry.")
+Escapes chip: sampled 0→1→2→3→4→5 within ~270ms of unfreezing (target 400ms), then real leaks resumed normally — the ramp and live gameplay are cleanly separable in the trace.
+Re-arm proven: let the run reach a genuine second loss (continued wave cleared by depletion, then a second undefended wave lost for real) — offer correctly skipped (continuedThisRun already true), Retry appeared, and bestWave/gemsEarned/gauge all reflect a fresh, second recordRunEnd() call, not stale first-loss values.
+Part 3 — The board marker
+submitRunScores() gained a continuedThisRun parameter, always writing metadata.continues: 1|0 (never omitted). resubmitBestWithName() now reads before.metadata.continues off the server's own entry and carries it forward unchanged on a rename — never resets a continued best to 0. BoardEntry/toEntry() carry a continues field (0 when the server has no such metadata). Leaderboard.tsx's Row/PodiumStep show a cream-70% ⟳ glyph after the score when continues >= 1, tap-and-hold (300ms) toasting "Continued once with an ad." for 1.2s. Verified via the CLI: pulled the top 3 raw JSON of kills_alltime (and the printed top-3 of waves_alltime) — no metadata field exists on any pre-Round-15 entry, confirming they render with continues:0 and no glyph, no data migration needed.
+
+Part 4 — Sting
+sfx-continue.mp3 copied verbatim (17,180 bytes, .mp3.json left behind) to public/audio/, registered as 'continue' in audio.ts at gain 1.0 on the SFX bus, played only inside applyContinueGrant() — never on the offer itself. Synth fallback added for parity with every other sampled cue in this file.
+
+Build, verify, deploy
+tsc --noEmit and npm run build: clean. npm run balance: 35/36/11/4/90, byte-identical. find public -name '*.json': empty. git diff --stat against sim/engine.ts, data/enemies.ts, data/towers.ts, data/waves.ts, kitchenScene.ts, package*.json, rundot/leaderboard.config.json: zero changes to any of them. Both all-time boards read-only (confirmed via the CLI checks above; no writes made). New i18n keys: 10 (continue.title/body/adsLeft/watch/close/loading/adName/adDescription, ranks.continued, beat.continueGranted). Tags: Private 1.89.0, Review 1.69.0, Public 1.69.0.
+
+What I couldn't fully verify
+The real rewarded-ad watch flow — this dev host's SDK reports sdkReady() true and isAvailable() resolves correctly (proving the offer's availability check works against the real SDK surface), but the actual showRewardedAdAsync() promise never resolved in headless local dev (it needs the RUN host's real ad overlay, exactly the limitation the handover itself anticipated). I verified the grant mechanism by monkey-patching adsSystem().grantReward (a plain mutable object property, not an ES export) to simulate true/false outcomes — this exercises 100% of this round's own code, just not the SDK's ad-delivery internals themselves. One incidental finding worth flagging: my test's second, genuine loss did call submitRunScores() for real (as designed) while sdkReady() was true — I checked the live boards immediately after and no stray low-score entry appeared, so nothing landed on the leaderboard, but the submission was likely just still sitting in leaderboard.ts's 5-second spacing queue when the browser closed rather than provably blocked. Worth keeping in mind for any future local testing that drives a run to a real end.
+
+---
+
 ## Pending
 
-- **Round 15** (implementation agent, → 1.89.0) — issued Sep 18 ~21:50 IST, not returned.
-- **Marketing agent** — post-close results entry, after judging closes 00:30 IST Sep 19.
+- **Round 16** (implementation agent, → 1.90.0) — not yet issued; waits on the user's playtest of 1.88.0/1.89.0.
+- **Marketing agent** — post-close results entry (judging closed 00:30 IST Sep 19); not yet requested.
