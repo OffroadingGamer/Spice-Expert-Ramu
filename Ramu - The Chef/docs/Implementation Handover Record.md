@@ -53,7 +53,7 @@ of the present.**
 | **FTUE opening pad** | **`FTUE_FIRST_PAD = 4`** (B3, `damage ×1.5`), then pads 3 and 2 |
 | **Sealed files** | `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` |
 | **`data/waves.ts`** | ⚠️ **RE-SEALED.** Unsealed for the v1.69.0 block-1 retune only |
-| **Credits (Sep 22)** | **198,309** (`rundot credits`). ⚠️ Up from 98,209 on Sep 18 — **+100,100 unexplained**, the second such rise (the first was +6,093 before art round 2). Not a spend; flagged, ledger unread. Art round 4's budget is ≤ 882. |
+| **Credits (Sep 22)** | **198,309**, fully reconciled from the studio Finances page: 25,000 starter + 616 + 1,500 quest rewards + grants 15,000 / 50,000 / 5,000 / 1,093 / **100,000** + 100 daily. The **+100,000** (expires Dec 18) is RUN's compensation for the broken marketing module; the old **+6,093** mystery was the 5,000 + 1,093 grants. ✅ **Both credit watch items closed — nothing unexplained.** 616 credits expire Dec 3; plan Free, 100/day, no rollover. |
 | **Paid campaign** | ✅ **`kitchen-rush-meta` COMPLETE** (ended Sep 16). **$70.05 of $82 spent · 4,228 impr · 171 clicks · 4.04 % CTR · 18 installs · CPI $3.66.** Unspent remainder refunds on completion per RUN's rule — verify on the studio page. Paid is done for this jam (marketing agent's prior, Sep 14) |
 | **Art round 2 (Sep 17)** | ✅ **DONE** — `Art/_gen/pass-final/`: `pass-entry.png`, `pass-exit.png` (1024², take 1 each), `belt-tile.png` (128², procedural, `#3a3a44`, seamless both axes). **561 credits.** Awaiting the hatch-wiring implementation round |
 | **Art leg (Sep 14)** | ✅ **DONE** — `Art/_gen/chef-final/`: 9 bodies + 4 faces + scroll, **7,003 credits**, verified. Faces are aligned eyebrow-to-jaw bands. ⚠️ Expressions read at **≥ 160 px, not 96** — spec amended in Ideas.md §6b. Nothing ships before judging |
@@ -3358,3 +3358,22 @@ per Retro 112; ≤ 882 budget).
 
 ⚠️ **Credits rose to 198,309** from 98,209 on Sep 18 — +100,100 with no purchase I know of.
 Second unexplained rise; recorded, not acted on.
+
+---
+
+### 2026-09-22 — Credit ledger reconciled; the shipped game makes **no** runtime AI calls
+
+The user supplied the studio Finances page. The arithmetic closes exactly: the grant list sums
+to **98,209** before the newest grant — the same balance read on Sep 18 — and **+100,000**
+(expiring Dec 18) is compensation from RUN for the marketing module being broken. The earlier
+**+6,093** was simply the 5,000 and 1,093 grants landing together. **Both watch items closed.**
+
+**A finding worth keeping for the promotion decision.** That page reports "Runtime AI usage this
+month — Spice Expert: Ramu, 107,547 credits, 4 AI features, 145 calls", which reads alarmingly
+like players burning our credits. It isn't: `grep` across `jam-entry/src` finds **no** call to any
+RUN generation API — the only `generate*` in the codebase is Pixi's own
+`renderer.generateTexture` (`game/textures.ts:132/159/376`), which is local and free. The 145
+calls are **our own CLI generation attributed to the game id** across this month's art and audio
+rounds. **Going public therefore adds no per-player credit cost** — one less risk on the
+promotion call. (Re-check this if a future round ever adds TextGen for dish names — Ideas §10.2
+raised it and it was not taken.)

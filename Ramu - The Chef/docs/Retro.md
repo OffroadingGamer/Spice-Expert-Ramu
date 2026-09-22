@@ -2734,3 +2734,13 @@ after **00:30 IST Sep 19**.
      the judged one — a written pitch, a readable page, a thumbnail — because it is a second,
      uncorrelated chance and the measured race is usually won by whoever had the bigger audience
      on day one.
+
+114. 🟢 **An unexplained balance is a question for the ledger, not a mystery to carry.** Sep 22 2026.
+     Two credit rises (+6,093 on Sep 17, +100,000 on Sep 22) sat in the record as watch items for
+     five days because the CLI only reports a balance, never its provenance. One screenshot of the
+     studio Finances page closed both in a minute — they were grants, one of them RUN's
+     compensation for the broken marketing module — and the grant list summed to the exact
+     balance we had already recorded. ✅ **Rule:** when a number can't be explained by the tool
+     you have, name the tool that would explain it and ask for that, rather than logging the gap
+     and moving on. The same page also settled a second question for free (no runtime AI in the
+     shipped build), which is the usual payoff for looking at the source of truth.
