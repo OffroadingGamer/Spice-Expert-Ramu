@@ -784,7 +784,7 @@ Tamil when reviewed. Test RUN's moderation on non-Latin text in Private. **Inven
 stays English — the wrong half). C *runtime machine translation* (credits per player, gated off
 for guests — non-starter).
 
-**10.3 Continue after losing.** **A — recommended: one rewarded continue per run**: loss →
+**10.3 Continue after losing.** ✅ **shipped 1.89.0 (Round 15, Sep 19)** — no-nerf variant, engine sealed; +6 escapes, ⟳ marker. **A — recommended: one rewarded continue per run**: loss →
 *"Continue the shift? ▶ Watch"* → +10 walkouts, −15 % prop damage for 5 waves, once; the run
 submits normally with `metadata.continues: 1` and Ranks shows ⟳ (a continued run's score is
 that player's best forever — the marker is not optional). The nerf needs one engine hook

@@ -1144,7 +1144,8 @@ the design of record is [Ideas.md](Ideas.md) §6d (every playtest decision, date
 | 12–12c | 1.84–1.86 | Ranks look B (pass counter), Dishes served / Waves held, portrait ×1.5 with Ready above; HUD bands reserved in measured pixels |
 | 13 | 1.87.0 | Chevrons riding the belt; i18n string table (English only, 244 keys); wave-bubble submenu as a scrimmed popover |
 | 14 | 1.88.0 | Board scale static across HUD states; Kitchen-Actions icon chips; recipe shards (+1 per recipe on a full-service clear, 8 per scroll or 150 gems) and scroll cards in the Kitchen |
-| 15–17 (queued) | — | rewarded continue · Play + unlock badge · Hindi · IAP (content, not power) |
+| 15 | 1.89.0 | One rewarded continue per run (+6 escapes, engine untouched); ⟳ marker on continued board entries; continue sting |
+| 16–17 (queued) | — | Play + unlock badge · Hindi · IAP (content, not power) |
 
 **Naming today:** the menu's primary is *Start shift* (→ *Play*), the meta screen is *The Kitchen*, the boards are *Ranks*; the
 tower game is the only public mode (the belt/Kitchen Mode of §10.3a stays behind `?test=1`).

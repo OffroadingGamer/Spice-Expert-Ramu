@@ -39,9 +39,9 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.88.0** (Rounds 0–14 — Round 14 verified Sep 18 ~21:40 IST; scale static across HUD states, icon chips, recipe scrolls in the Kitchen — **playtest-ready**; 🔒 Private-only until human verification — Ideas.md §6d) |
-| **Jam (Sep 17, ~21:50 IST)** | **6th, 613 daily uniques** (901 total plays) at ~21:50 IST Sep 17 — out of the money by 16: 5th Pest Control Tycoon 629 ($100), 4th GT Rush 902 ($200), 7th The Good Life 479. Judging closes **Sep 18 12:00 PT = 00:30 IST Sep 19** (1d 02h 37m at the reading). Public is frozen at 1.69.0 through judging. |
-| **In flight** | **Round 15** → Private 1.89.0: one rewarded continue per run (Ideas §10.3 A, +6 escapes, no nerf — engine stays sealed, `engine.state` patched from `actions.ts`), ⟳ board marker via `metadata.continues`, `sfx-continue`. Then R16 Play/badge · R17 Hindi · IAP. Then the user plays 1.85.0 → R13 belt chevrons + i18n table (four constraints from the inventory) → R14 shards (projection measured) → R15 continue → R16 Play/badge → R17 Hindi. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
+| **Live version** | **Public 1.69.0** · Review 1.69.0 · **Private 1.89.0** (Rounds 0–15 — Round 15 verified Sep 22; rewarded continue with the ⟳ board marker — **playtest-ready**; 🔒 Private-only until human verification — Ideas.md §6d) |
+| **Jam — CLOSED** | Judging closed **00:30 IST Sep 19 2026**. ⚠️ **Final standing not yet read.** Last reading before close: **6th, 613 daily uniques** (901 plays) at Sep 17 21:50 IST — 16 behind 5th (Pest Control Tycoon 629, $100). The marketing agent owes a post-close results entry; the user has the board. Public/Review still frozen at 1.69.0 — **the promotion decision is now unblocked** and waits on the user's end-to-end play. |
+| **In flight** | Nothing dispatched. **Round 16** (Play + unlock badge, Ideas §10.5 B) waits on the user's playtest of 1.88.0/1.89.0 — the continue can only be exercised in the RUN host. Then R17 Hindi · IAP. Then the user plays 1.85.0 → R13 belt chevrons + i18n table (four constraints from the inventory) → R14 shards (projection measured) → R15 continue → R16 Play/badge → R17 Hindi. Queued R11–R16 per Ideas.md §10. 🔒 10.3's damage nerf waits on an explicit `engine.ts` unseal. ⚠️ Rename's live resubmit (guest 106 on waves → `metadata.displayName` before/after) is **untested on the real board** — the agent's local paths all hit the mock identity; the user's own playtest is the test. |
 | **Repo** | **Pushed Sep 18 ~02:15 IST** (`4858e3b..591031d`, 17 commits) on the user's word — `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is now in the public repo. Secret scan over the whole range: clean, control positive. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -3229,3 +3229,31 @@ Windows — a known hazard here); code-verified instead. The user's playtest of 
 
 **Next:** the user plays 1.88.0 (static scale, icon chips, first two scrolls at the level-10
 boss). Round 15 issued in parallel; playtest notes fold into R16.
+
+---
+
+### 2026-09-22 — Round 15 returned and verified: Private **1.89.0**
+
+**Verified:** tags 1.89.0 / 1.69.0 / 1.69.0 · balance 35/36/11/4/90 · tsc + build clean · no
+sidecars · `public/audio/sfx-continue.mp3` = the 17,180-byte master · **`src/game/sim/` has zero
+changes — the engine stayed sealed**: `applyContinueGrant()` (`actions.ts:437`) sets only
+`engine.state.lives = 6` and `phase = 'wave'` · `runEndDecided` gate in store +
+`towerScene.ts:2330` + `EndScreen.tsx` · `registerRunEndReArm` registered at `towerScene.ts:1056`
+and nulled on destroy · `metadata.continues` always written and carried through rename
+(`leaderboard.ts:196`), defaulting to 0 for old entries · ⟳ glyph at `Leaderboard.tsx:233` ·
+`'continue'` sample registered. Committed `9794e4a`. Return verbatim in `Agent Returns.md`.
+
+**Bug the agent caught before deploy:** `checkEnd()` fires the tick after `phase === 'lost'`, so
+without a gate the run would have submitted *before* the offer could grant a continue — a real
+double-submission. Gated on `runEndDecided`, set only when the offer resolves to "no grant".
+
+**Live boards (read-only, Sep 22):** waves 108 players, kills 102, last submission Sep 20 23:47
+UTC — growth from public play on 1.69.0; top three unchanged (PuneetMakes 106 / 6,231). No stray
+dev entry from the agent's test run, which it flagged honestly as unproven.
+
+**Not verifiable headlessly:** the real rewarded-ad watch (needs the RUN host overlay) — the
+agent simulated both outcomes through `adsSystem().grantReward`. **The user's playtest is the
+test.**
+
+**Jam is over** (closed 00:30 IST Sep 19). Open: the final standing, the marketing results
+entry, and the Public/Review promotion decision — all the user's calls.
