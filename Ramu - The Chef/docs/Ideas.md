@@ -904,6 +904,46 @@ they set the rule.
 
 ---
 
+**✏️ Correction — art round 5 re-scoped before it was fired, Sep 23 2026.**
+🔴 **Eight of the nine sprites I costed at 1,323 credits already exist as licensed art we own.**
+Found by listing `Art/_sliced/01 - Kitchen Essentials/` when the user asked whether the handover
+was ready to send.
+
+| Ask | Already on disk |
+|---|---|
+| Cooking oil | **Four** — `Cooking Oil/02-Mustard Oil`, `03-Coconut Oil`, `06-Sesame Oil`, `07-Olive Oil` |
+| Noodles | `Final Recipe/01-Cooked Noodles.png` |
+| Rava | `Container/01-Semolina.png` |
+| Tamarind | `Container/10-Tamarind.png` |
+| Basil | `Ingredient/27-Primary-Basil Plant.png` |
+| Green beans | `Ingredient/11-Primary-Green Beans.png` |
+| Spinach | `Ingredient/16-Primary-Spinach.png` |
+| Cabbage | `Ingredient/01-Primary-Cabbage.png` |
+| **Spaghetti** | ❌ **nothing — the only genuine gap** |
+
+All twelve candidates measured RGBA with real alpha and tight bboxes (fill 0.94–0.97).
+**Bonus: `Ingredient/03-Primary-Bamboo Shoot.png` exists**, which serves bamboo-shoot-fry (a dish
+named after an ingredient its rail cannot show) and lets **ooti honestly reach 7 tiles** —
+restoring the sheet-height acceptance case that the short-rail decision was going to cost us.
+
+**The pack already ships.** `ing-milk`, `ing-cream`, `ing-ginger`, `ing-rice` and
+`ing-coffee-extract` are **byte-identical** to their pack files (mean difference 0.00/255) — five
+of the 33 rail tiles are pack art today. toxiccolors' consent covers it, conditional on credit
+attribution, which is in place. 🔒 This is *shipping* the pack, never using it as generator input.
+
+**Revised round 5: export twelve files at 0 credits, generate `spaghetti` for 147** (ceiling 294
+with one retake). Four oils rather than one generic bottle, because RecipeList §7 assigns a
+different oil to four of the five nodes — free, and more truthful than the sprite I specified.
+Two fit problems handed to the agent rather than assumed away: `basil` (64×179) and `olive-oil`
+(63×141) are tall and narrow and will render thin in a 42×44 mu tile; `noodles` comes from
+`Final Recipe/` and may read as a plated dish rather than an ingredient.
+
+⚠️ **My style-continuity argument against the LoRA route was overstated** and is corrected here:
+the rail has mixed pack art and imagegen art since before this round. Credits remain right for
+spaghetti for the simpler reason that it is one sprite matching the other generated ones.
+
+---
+
 ## 7. Wave-intro scroll — proposed Sep 13 2026 — ✅ shipped as the wave bubble's scroll grid, 1.76.0
 
 **Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll

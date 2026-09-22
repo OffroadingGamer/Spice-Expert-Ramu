@@ -2780,3 +2780,16 @@ after **00:30 IST Sep 19**.
      emits that event, the test is a no-op dressed as a pass. This is Retro 112 (estimate with the
      call's own parameters) wearing different clothes — the shared root is *substituting a
      convenient parameter for the real one and reporting the result as if it were the real one*.
+
+118. 🔴 **I costed a 1,323-credit art round against a document, and the folder already held eight
+     of the nine sprites.** Sep 23 2026. The writing agent's §4.6 "wanted list" meant *no shipped
+     `ing-*` alias exists*, which was true. I read it as *no art exists* and built a nine-sprite
+     generation brief on it. One `ls` of `Art/_sliced/01 - Kitchen Essentials/` — run only because
+     the user asked "does the handover go as is?" — found cabbage, spinach, basil, green beans,
+     semolina, tamarind, cooked noodles, **four** cooking oils and a bamboo shoot, all RGBA with
+     clean alpha. Real spend: 147 credits for the one genuine gap. ✅ **Rule:** an asset brief is
+     costed against `ls`, never against a wanted-list written by someone solving a different
+     problem. This is lesson 66 repeated — and it was committed in the same session in which I
+     quoted lesson 67 at myself, which is the actual warning: invoking one lesson is not evidence
+     of having applied its siblings. **Before any brief that spends money, list the source folder
+     first and paste the listing into the brief.**
