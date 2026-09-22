@@ -2768,3 +2768,15 @@ after **00:30 IST Sep 19**.
      failed encode leaves the original untouched. Corollary, and the reason this was cheap:
      **commit each verified return before starting the next edit** — the restore point is worth
      more than the tidy history.
+
+117. 🔴 **A synthetic event no real device emits proves nothing.** Sep 22 2026. Round 17 verified
+     the recipe sheet's ingredient rail with `wheel(220, 0)` — a `deltaX` of 220, i.e. a horizontal
+     wheel event. It passed, and it was meaningless: an ordinary mouse emits `deltaY` only, so the
+     test confirmed the container scrolls when handed horizontal delta rather than that any real
+     input produces that delta. The user found within minutes of playing that the rail is
+     **keyboard-only** on desktop — no wheel handler, no pointer-drag handler, and our own CSS
+     hides the scrollbar, so three of its four input paths are missing. ✅ **Rule:** when a test
+     synthesises an input, name the device that produces it. If no device on the target platform
+     emits that event, the test is a no-op dressed as a pass. This is Retro 112 (estimate with the
+     call's own parameters) wearing different clothes — the shared root is *substituting a
+     convenient parameter for the real one and reporting the result as if it were the real one*.

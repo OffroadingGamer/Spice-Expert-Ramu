@@ -798,6 +798,59 @@ is deferred to after Round 18, deliberately.
 
 ---
 
+**✏️ Amendment — card option A approved, and the rail is keyboard-only on desktop. Sep 22 2026.**
+
+**Option A is approved**, with the parchment staying in the grid. B and C are closed, not parked —
+the "should the grid carry parchment at all" question was asked and answered.
+
+🔴 **New defect, found by the user in the same session: the ingredient rail cannot be scrolled by
+mouse at all.** Reported as *"The drag doesn't work, I can scroll horizontally with the right and
+left arrow keys. Not working with scroll or click and drag."* Read from
+`RecipeSheet.tsx:150–196` and `app.css:204–209`, the rail is a native `overflow-x-auto` scroller
+with **three of its four input paths missing**:
+
+| Input | Status | Why |
+|---|---|---|
+| **Arrow keys** | ✅ works | An explicit `onKeyDown` at `:174` with `tabIndex={0}` at `:192`. This is the only handler on the element. |
+| **Mouse click-drag** | 🔴 never worked | A native scroll container does not drag under a mouse. That is browser behaviour, not a bug in our code — but it means it needs JS we never wrote. |
+| **Mouse wheel** | 🔴 never worked | There is **no `onWheel`** anywhere in the file. A mouse emits `deltaY`; Chromium's deltaY→horizontal fallback is unreliable against `snap-mandatory` and a scrollable ancestor, and empirically it does nothing here. |
+| **Scrollbar** | 🔴 hidden by us | `app.css:204–209` sets `scrollbar-width: none` and hides the webkit scrollbar, so the last mouse affordance is gone too. |
+
+**So on desktop the chevron and the page dots advertise content that no mouse gesture can reach.**
+RUN games run in a browser, so desktop players are real players. **Touch is a separate question and
+is still untested** — `touch-action: pan-x` on a native x-scroller is the correct setup and is
+likely fine; do not assume this report condemns it.
+
+⚠️ **Round 17 tested this and passed it.** The check was `wheel(220, 0)` — `deltaX: 220`, a
+*horizontal* wheel event that an ordinary mouse cannot generate. It proved the container scrolls
+when handed horizontal delta, which was never in doubt, rather than that any real input produces
+that delta. → **Retro 117.** The agent was straight about what it could not test (touch); the gap
+is that the thing it *did* test was synthetic.
+
+**Round 18 fix, specified:**
+
+1. **Wheel → horizontal.** Bind with `addEventListener('wheel', h, { passive: false })` inside a
+   `useEffect`, **not** React's `onWheel` — React attaches wheel listeners passively at the root,
+   so `preventDefault()` from a JSX handler is ignored. When `Math.abs(deltaY) > Math.abs(deltaX)`,
+   add `deltaY` to `scrollLeft` and `preventDefault()` so the page behind does not scroll instead.
+2. **Mouse drag.** `pointerdown` → `setPointerCapture`, record `startX` and `startScrollLeft`;
+   `pointermove` → `scrollLeft = startScrollLeft - (x - startX)`; `pointerup` → release. **Guard on
+   `e.pointerType === 'mouse'`** and let touch keep its native scrolling, which already works.
+   Require a **4 px movement threshold** before it counts as a drag, and suppress the trailing
+   `click` only when that threshold was crossed, so a plain click on a tile is unaffected.
+3. **Snap fights the drag.** Set `scroll-snap-type: none` on `pointerdown` and restore
+   `x mandatory` on `pointerup`, so the rail follows the cursor freely and then settles onto a tile.
+4. **Say it is draggable.** `cursor: grab`, `cursor: grabbing` while held.
+5. **Keep the keyboard path** and give `tabIndex={0}` a visible focus ring — it currently has none,
+   so the one input that works is also invisible.
+
+Acceptance: at 360, 403 and 744 wide, on ooti (7 tiles) — a mouse wheel over the rail moves
+`scrollLeft` and leaves the sheet's `scrollTop` at 0; a click-drag of 120 px moves `scrollLeft` by
+120 and then snaps to a tile edge; a 2 px click on a tile does not scroll; arrow keys still work
+and the focused rail is visibly focused.
+
+---
+
 ## 7. Wave-intro scroll — proposed Sep 13 2026 — ✅ shipped as the wave bubble's scroll grid, 1.76.0
 
 **Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll
