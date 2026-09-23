@@ -1357,6 +1357,85 @@ this. If North-East stays unfarmable past L60, a higher requirement there is not
 difficult", it is unreachable. **Any progressive-cost pass has to decide the block-9 dish set at
 the same time**, or state explicitly that late recipes are meant to be bought with gems.
 
+### 11.2b 🔴 CORRECTION to §11.2, Sep 24 — there is no level select, and it changes the conclusion
+
+§11.2 above concluded that North/South Indian are *"farmable forever"* while North-East *"stops
+accruing at level 60"*. **The exposure table is right; the conclusion drawn from it is wrong**, and
+two facts from `TestBelt.tsx` settle it:
+
+- `const [levelId, setLevelId] = useState(FIRST_LEVEL_ID)` (`:226`) — the current level is **React
+  state seeded from level 1**, never restored from the save. **Every session restarts at level 1.**
+  The only other writer is the Next Level button (`:418`), which advances linearly.
+- `kitchen.bestLevel` and `kitchen.clears` are shaped and migrated in `save.ts` but **have no writers
+  anywhere in `src/`**. There is no persistent level progress today at all.
+
+So block 9 (levels 81+) is not a farm, it is nearly unreachable, and its dish set barely matters.
+What actually governs acquisition is **how deep into an unbroken session a dish first appears**:
+chai and coffee are served in every session that is ever played, while ooti requires surviving
+**40 levels in one sitting, every time**. Acquisition difficulty is therefore **monotonic with block
+depth, and steeply so** — which is exactly the curve the user asked for, and it already exists in
+the data. The grid's order was never misleading; my reading of it was.
+
+**This makes the design simpler, and it raises the real risk:** a steep *price* curve multiplies
+with an already steep *rarity* curve. That product, not the price, is what the player feels.
+
+### 11.2c Proposed ordering — by block, then by the enemy that carries the dish
+
+`RECIPE_SLUGS` (`data/recipes.ts:10`) is what the grid renders in (`MetaUpgrades.tsx:418` only
+floats unlocked cards to the front), so ordering is a one-line data change. It is **already grouped
+by block**; only the within-block order needs to move, onto the archetype ladder from
+`data/enemies.ts` — `wasp` 34 hp → `beetle` 46 → `hornet` 90 → `snail` 175 → `stag` 700 ×3 lives:
+
+| # | Dish | Cuisine | Carried by | Rail |
+|---|---|---|---|---|
+| 1 | chai | Cafe | beetle · snail · stag | 5 |
+| 2 | coffee | Cafe | wasp · hornet · stag | 2 |
+| 3–7 | jeera-rice · naan · gobhi-masala · palak-aloo · **rajma** | North Indian | wasp→stag | 4,3,6,7,6 |
+| 8–12 | idli · coconut-chutney · sambar · upma · **beans-poriyal** | South Indian | wasp→stag | 2,6,7,6,6 |
+| 13–17 | minestrone · pesto · aglio-e-olio · arrabbiata · **risotto** | Italian | wasp→stag | 5,5,5,6,5 |
+| 18–22 | bamboo-shoot-fry · veg-thukpa · sticky-rice · veg-momo · **ooti** | North East | wasp→stag | 6,6,2,5,7 |
+
+Each cuisine therefore **ends on its boss dish**, and ooti — 7 ingredients, stag-carried, block 5 —
+is the last card by every measure. **Chai is kept at #1 over coffee** although coffee's carriers are
+the weaker pair: it is level 1's dish, the FTUE, and the game's signature. That one is taste, not data.
+
+### 11.2d Three cost schemes, and why the literal sketch is the one to avoid
+
+Today's totals to compare against: **176 shards** (22 × 8) and **3,300 gems** (22 × 150). Award rate
+is `awardShards()`'s **+1 per dish per cleared wave**; gems are `gemsPerWave: 4` (`config.ts:224`).
+
+| Scheme | Shape | chai → ooti | Total badges | vs today |
+|---|---|---|---|---|
+| **A — pure linear** (the sketch, 10/20/30…) | one step per card | 10 → 220 | **2,530** | **14.4×** |
+| **B — flat per cuisine** | 5 prices | 10 → 52 | 680 | 3.9× |
+| **C — cuisine base + step** | 5 bases, +2 within | 10 → 60 | 762 | 4.3× |
+
+🔴 **A is the one to avoid, and it is worth being explicit about why**, because it is the user's
+own sketch and it reads perfectly reasonably. Its top price is 220 badges on **ooti** — a dish that
+appears only in levels 41–60, in a game with no level select, so every one of those 220 wave-clears
+must come from a session already 40 levels deep. The price curve and the rarity curve multiply.
+**A does not make ooti hard; it makes it decorative.**
+
+**C is the recommendation.** Bases **10 / 16 / 26 / 38 / 52** with **+2 per archetype step**, gems at
+**×10** (100 → 600):
+
+| Cuisine | Badges | Gems |
+|---|---|---|
+| Cafe | 10, 12 | 100, 120 |
+| North Indian | 16, 18, 20, 22, 24 | 160–240 |
+| South Indian | 26, 28, 30, 32, 34 | 260–340 |
+| Italian | 38, 40, 42, 44, 46 | 380–460 |
+| North East | 52, 54, 56, 58, 60 | 520–600 |
+
+Monotonic across all 22 with no collisions between tiers, every number legible on a card, a 6×
+spread from chai to ooti rather than A's 22×, and the within-cuisine step encodes the enemy ladder
+the player is already reading. Gems at ×10 keeps the shortcut honest: chai is 25 cleared waves'
+worth, ooti 150.
+
+⚠️ **Whatever scheme is picked, the award rate has to be set in the same pass.** Cost ÷ award is
+what the player experiences, and `awardShards()`'s flat +1 was written against a flat 8. Leaving it
+at +1 while the price climbs 6× is a decision, not a default — it should be made deliberately.
+
 ### 11.3 🔴 "Chef hats" is already a live currency with that exact name and icon
 
 Belt mode already pays out **Chef Hats** and already ships the art:
