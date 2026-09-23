@@ -1482,10 +1482,25 @@ cuisine, and it is the same tier index the price table already uses — no secon
 | 13–17 | minestrone · pesto · aglio-e-olio · arrabbiata · risotto | Italian | 38 40 42 44 46 | 380–460 | **+4** |
 | 18–22 | bamboo-shoot-fry · veg-thukpa · sticky-rice · veg-momo · ooti | North East | 52 54 56 58 60 | 520–600 | **+5** |
 
-⚠️ **Two caveats on these numbers.** They assume one cleared level = one cleared wave, which is
-what `ladderPosition()` and `ladderFor()` imply but no one has confirmed by playing. And **no run
-has ever been played to level 50 on any build** — the deep-tier figures are arithmetic, not
-observation. Treat the tier-5 row as the first thing to re-measure once someone gets there.
+⚠️ **Caveat, corrected Sep 24.** Central first wrote that *"no run has ever been played to level
+50 on any build"* and that the deep-tier figures were therefore unobserved. 🔴 **That was Central's
+assumption, not a sourced fact, and it is wrong — the user has tested to level 100.** It was inferred
+from the absence of any writer for `kitchen.bestLevel`, which shows only that depth is not
+*recorded*, never that it was not *reached*. An empty telemetry field is not evidence about the
+player.
+
+What the level-100 run does and does not settle:
+
+- ✅ **Depth is reachable.** Levels 41–60 (North East) and the whole Italian stretch are real play,
+  not theory, so the tier-4/5 rows describe content people can get to.
+- ✅ **Linear advance works** across all nine blocks without a level select, which is what the
+  "every session restarts at level 1" reading predicted.
+- ❓ **Still unmeasured, and it is the number the whole scheme rests on: how long one level takes.**
+  Every figure in §11.2f is denominated in *levels played*, which only becomes a design judgement
+  once it converts to minutes. At 20 s/level, ooti's 150 levels is ~50 minutes; at 90 s/level it is
+  nearly four hours. **Get this from the user before the numbers are frozen.**
+- ❓ **One cleared level = one cleared wave** is still only what `ladderPosition()`/`ladderFor()`
+  imply structurally; a player who has been to 100 can confirm it in a sentence.
 
 ### 11.3 🔴 "Chef hats" is already a live currency with that exact name and icon
 
