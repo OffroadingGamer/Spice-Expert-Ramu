@@ -1436,6 +1436,57 @@ worth, ooti 150.
 what the player experiences, and `awardShards()`'s flat +1 was written against a flat 8. Leaving it
 at +1 while the price climbs 6× is a decision, not a default — it should be made deliberately.
 
+### 11.2e ✅ DECIDED Sep 24 — one Toque Badge sprite, value written beside it
+
+*"Just one toque badge and write the value next to it."* One sprite, **147 credits**, read like the
+gem counter: icon plus number, not N repeated pips. Settles §11.4.
+
+### 11.2f Award rate under scheme C — recommendation: **+tier, not +1**
+
+**The wave ladder makes this exact.** `LADDER` (`data/waves.ts:147`) is fixed and shared by every
+block, and it is perfectly symmetric — **each of the five archetypes appears in exactly 4 of the 10
+waves** (beetle W1/3/8/10, wasp W2/3/8/10, snail W4/6/9/10, hornet W5/6/9/10, stag W7/8/9/10). Block
+1's FTUE override gives chai and coffee **8 of 10** each. Since blocks 2–5 map one dish per
+archetype, **one full pass of a block pays each of its dishes +4** at today's flat +1.
+
+🔴 **What the flat +1 does to scheme C.** Cost ÷ 4 per pass, times the levels a pass costs:
+
+| Dish | Cost | Passes @ +1 | **Levels played** | Passes @ +tier | **Levels played** |
+|---|---|---|---|---|---|
+| chai | 10 | 1.3 | **12** | 1.3 | **12** |
+| rajma | 24 | 6.0 | 120 | 3.0 | 60 |
+| beans-poriyal | 34 | 8.5 | 255 | 2.9 | 85 |
+| risotto | 46 | 11.5 | 460 | 2.9 | 115 |
+| **ooti** | 60 | **15.0** | **750** | **3.0** | **150** |
+
+At flat +1, **ooti costs 60× the levels chai does.** That is the two curves multiplying, measured:
+the price climbs 6× *and* each unit of progress costs 5× more depth. Worse, it is **dead depth** —
+`awardShards()` skips any dish whose scroll already exists, so a player who owns blocks 1–4 earns
+nothing across the 46 levels of run-up and is playing purely to reach block 5's four stag/chaff
+waves.
+
+**Recommendation: award the dish's own cuisine tier, +1 / +2 / +3 / +4 / +5**, keyed to the dish's
+home cuisine rather than the block being played — so fusion blocks 6–9 still pay a North-East dish
+its +5. That flattens the grind to **1.3 → 3.0 passes across all 22 recipes**, while real difficulty
+still climbs **12×** from chai to ooti, because a tier-5 pass means reaching level 50 and a tier-1
+pass means reaching level 10. **Depth stays the difficulty; the price stays legible.** One number per
+cuisine, and it is the same tier index the price table already uses — no second concept to explain.
+
+**Full scheme C, both currencies, one table:**
+
+| # | Dish | Cuisine | Badges | Gems | Award/wave |
+|---|---|---|---|---|---|
+| 1–2 | chai · coffee | Cafe | 10 · 12 | 100 · 120 | **+1** |
+| 3–7 | jeera-rice · naan · gobhi-masala · palak-aloo · rajma | North Indian | 16 18 20 22 24 | 160–240 | **+2** |
+| 8–12 | idli · coconut-chutney · sambar · upma · beans-poriyal | South Indian | 26 28 30 32 34 | 260–340 | **+3** |
+| 13–17 | minestrone · pesto · aglio-e-olio · arrabbiata · risotto | Italian | 38 40 42 44 46 | 380–460 | **+4** |
+| 18–22 | bamboo-shoot-fry · veg-thukpa · sticky-rice · veg-momo · ooti | North East | 52 54 56 58 60 | 520–600 | **+5** |
+
+⚠️ **Two caveats on these numbers.** They assume one cleared level = one cleared wave, which is
+what `ladderPosition()` and `ladderFor()` imply but no one has confirmed by playing. And **no run
+has ever been played to level 50 on any build** — the deep-tier figures are arithmetic, not
+observation. Treat the tier-5 row as the first thing to re-measure once someone gets there.
+
 ### 11.3 🔴 "Chef hats" is already a live currency with that exact name and icon
 
 Belt mode already pays out **Chef Hats** and already ships the art:
