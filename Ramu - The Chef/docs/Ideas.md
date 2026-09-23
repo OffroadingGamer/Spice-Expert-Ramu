@@ -1040,6 +1040,34 @@ requires the agent to report failure rather than force it.
 
 ---
 
+**✏️ Amendment — user playtest of Private 1.92.0, Sep 23 2026.** Six annotated screenshots,
+four observations. All four are closed in 1.93.0; recorded here because the pattern is that every
+playtest gets its own entry, and this one was previously scattered across two other blocks.
+
+1. **"Generate new & replace" on five sprites** — `ginger`, `coffee-extract`, `green-chilli`,
+   `rice`, `cream`. A provenance sweep found **four of the five were licensed pack art** and the
+   fifth (green-chilli) was ours from round 3. What they had in common was the fault: four are
+   **containers**, and the user's line was sharper than "replace the pack stuff" — they picked the
+   ones that *could* be drawn loose and weren't. This escalated into the decision to take the whole
+   ingredient family in-house (art round 7, 18 sprites), recorded in its own block above.
+2. 🔴 **"Upgrades → Recipes is only mouse scrollable."** Confirmed: `MetaUpgrades.tsx` had **no
+   pointer handler and no wheel handler at all** — vertical wheel worked only because browsers
+   scroll vertical containers natively. Fixed in Round 18b Part 4, which then turned up the
+   `setPointerCapture` defect (Retro 124) that would have broken every button in both panes.
+3. 🔴 **"The close button feels merged with the background."** Diagnosed as **three chocolates
+   stacked**: the button is `var(--color-chocolate)`, the scrim behind it is `rgba(42,29,16,0.4)`
+   — chocolate at 40 % — and the cards behind that are `#2a1118`, separated only by a drop shadow
+   invisible on a dark ground. It had no material of its own. Fixed with a parchment fill, ink
+   text and a 1.5 mu walnut border, so it reads as part of the scroll assembly.
+4. **"Basil is missing in pesto"** — correct, and **already scheduled**: Round 18 only *removed*
+   wrong tiles, and every addition was Round 18b. No change needed; the user's eye and the plan
+   agreed.
+
+✅ **Also confirmed by this playtest:** *"the ingredient bar inside each recipe is working with
+drag"* — the first real-mouse confirmation that Round 18 Part 6 landed.
+
+---
+
 ## 7. Wave-intro scroll — proposed Sep 13 2026 — ✅ shipped as the wave bubble's scroll grid, 1.76.0
 
 **Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll

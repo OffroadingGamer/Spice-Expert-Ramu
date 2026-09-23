@@ -2886,3 +2886,15 @@ after **00:30 IST Sep 19**.
      that is engineering detail I am asserting, not a requirement I am stating.** Say what must be
      true (a drag scrolls, a tap still activates what it hits) and leave the mechanism to the agent,
      or verify the mechanism first.
+
+125. 🔴 **A correction filed in a dated entry does not reach the summary block — update both, in
+     the same commit.** Sep 23 2026. On Sep 22 the marketing agent re-pulled the campaign and found
+     it had settled at **$80.96 / 22 installs / CPI $3.68**, not the $70.05 / 18 I had carried as
+     "final" since Sep 17. I confirmed it live, wrote it into the returns ledger and into a dated
+     record entry, and committed — and left the **CURRENT STATE** row saying $70.05 / 18 for two
+     more days, in the one block whose own header reads *"This block is the only authoritative
+     statement of the present."* Found on a pre-compaction sweep, alongside a Repo row still
+     describing a head five commits stale. ✅ **Rule: a correction is not filed until every place
+     that asserts the old number has been changed. When correcting a fact, grep the number itself
+     — not the topic — and fix every hit before committing.** The dated log and the summary block
+     have opposite jobs: the log must never be rewritten, the summary must never be left alone.

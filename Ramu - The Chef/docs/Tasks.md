@@ -5,24 +5,35 @@
 > Reasoning, measurements, findings and history live in the companion docs:
 > [GDD.md](GDD.md) · [Plan.md](Plan.md) · [Specs.md](Specs.md) · [Retro.md](Retro.md).
 
-**Last updated:** Sep 17 2026, ~22:00 IST — by Central. **The authoritative present is the CURRENT
+**Last updated:** Sep 23 2026 — by Central. **The authoritative present is the CURRENT
 STATE block of [Implementation Handover Record.md](Implementation%20Handover%20Record.md);** this
-header mirrors it.
+header mirrors it. ⚠️ It had been left on Sep 17 for six days and twelve rounds — if the two ever
+disagree, the record wins and this header is the one that is wrong.
 
-**Live:** **Public 1.69.0** (frozen through judging) · Review 1.69.0 · **Private 1.81.0** — Rounds 0–9 of
-the post-jam progression pass (dialogue + Chef Ramu, ring gauge, wave scroll, prop FX, bottom band,
-end-screen debrief, dawn-backdrop main menu in mock units, hatches + belt, settings dialog, pad
-cues, player name). 🔒 Private-only until the user plays end-to-end and decides public; promotion
-is post-jam via the implementation agent's `update-tag review`.
+**Live:** **Public 1.69.0** · Review 1.69.0 — the jam build, frozen since Sep 18 and never moved
+since. **Private 1.93.0** — Rounds 0–18b. 🔒 Private-only until the user plays end-to-end and
+decides public; promotion is the implementation agent's `update-tag`, never Central's.
 
-**Round 10 returned Sep 17 ~22:40 IST → Private 1.82.0** (heat gauge, four FTUE beats, name at
-boot, pulse removed, Settings look A, rename, pause card) — verified and committed; the live
-rename resubmit is untested until the user plays. **Round 11 returned Sep 18 ~00:10 IST → Private 1.83.0** (six playtest fixes + Ranks service board + daily period; both all-time boards unchanged). **Round 12 returned → 1.84.0** (Ranks B, fixes, near-you/delta) but ships a half-scale board (BOTTOM_BAND 2400). **Round 13 returned → 1.87.0** (chevrons, i18n table English-only, popover submenu). **Round 16 returned → 1.90.0** (order chip restored, "Play", Kitchen unlock badge — playtest-ready). **In flight:** **Round 17** → 1.91.0 (Kitchen tabs, fixed recipe card, parchment recipe sheet with the ingredient rail) · **art round 4** (flour, garlic, tomato) · **recipe-writing pass**. Hindi and IAP follow; the promotion call is the user's. **Jam closed 00:30 IST Sep 19 (6th of 100, 638 DUP, no prize); promotion to Public/Review is unblocked.** **Queued:** R13 belt chevrons +
-i18n table · R13 recipe shards · R14 rewarded continue · R15 Play + unlock badge · R16 Hindi · IAP
-after — all picked Sep 17, Ideas.md §10.
+**Since the jam closed,** the whole line of work has been the Kitchen. Rounds 13–16 brought i18n,
+recipe shards, the rewarded continue and the unlock badge; **Round 17** split the Kitchen into
+Stations/Recipes tabs and added the parchment recipe sheet; **Round 18** corrected the ingredient
+rails, landed all 44 prep/garnish strings and repaired mouse input; **Round 18b** shipped the
+finished 46-sprite ingredient set, the 22 true rails, pane drag-scroll and the Close button.
+**The Kitchen is feature-complete at 1.93.0.**
 
-**Jam:** **6th, 613 daily uniques** (901 total plays) at ~21:50 IST Sep 17 — out of the money by 16: 5th Pest Control Tycoon 629 ($100), 4th GT Rush 902 ($200), 7th The Good Life 479. Judging closes **Sep 18 12:00 PT = 00:30 IST Sep 19** (1d 02h 37m at the reading). Paid Meta flight complete ($70.05, 18 installs). *Twelve
-Glasses* in consideration for Story & Video. Credits 98,805.
+**In flight:** nothing. **Next:** **Round 19 — Hindi**, which now has a stable English table to
+translate. Then IAP (Ideas.md §10.6 B, content-not-power).
+
+**Open on the user:** the Public promotion call · a one-click check of the studio page's
+"4 AI features" row before promoting · the Devanagari guest-name test · **touch-drag on the rail
+and both Kitchen panes, which no one has tested on any build** · whether `ing-tea-leaf.png` (256²,
+the only non-128² sprite) gets normalised.
+
+**Jam — FINAL:** **6th of 100 · 638 daily uniques · 942 total plays · no prize**, closed 00:30 IST
+Sep 19. **112 DUP behind the money**, not the 16 it looked like on Sep 17. Paid Meta flight
+settled at **$80.96 / 22 installs / CPI $3.68** and attribution never credited it a single
+install; organic produced the entire result at $0. **Credits 199,587**, reconciled to the grant
+list.
 
 **Baseline:** balance **35 / 36 / 11 / 4 / 90**, sealed `sim/engine.ts` · `data/{enemies,towers,waves}.ts`.
 
