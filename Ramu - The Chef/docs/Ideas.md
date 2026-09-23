@@ -1314,6 +1314,82 @@ Play/badge → IAP; all post-jam, Private first.
 
 ---
 
+## 11. Recipe shards — progressive difficulty + chef-hat icon — proposed Sep 23 2026
+
+**User, on an annotated 1.93.0 Recipes screenshot:** *"Shards for the recipe will be progressively
+difficult to attain!!"* and *"Each recipe's shard icon would be chef hats!!"* Captured on the
+agenda, not scheduled — Round 19 (Hindi) is still next.
+
+### 11.1 What ships today, verified from source
+
+Both numbers are **single global constants**, so the 22 recipes are identical by construction:
+
+| | |
+|---|---|
+| `SHARDS_PER_SCROLL = 8` | `state/save.ts:480` |
+| `SCROLL_GEM_PRICE = 150` | `state/save.ts:481` |
+| shard icon | one shared asset, `ui-shard` → `images/ui/shard.png` (`assets/manifest.ts:312`), drawn at `MetaUpgrades.tsx:331` |
+
+`awardShards()` (`save.ts:492`) gives **+1 to each distinct dish served in a cleared wave**, and
+skips any dish whose scroll already exists.
+
+### 11.2 ⚠️ The flat 8 is already not flat — and the existing gradient is not monotonic
+
+Because shards accrue per dish served, a recipe's real difficulty is **how many blocks serve that
+dish**. From `data/blocks.ts` (blocks 6–9 re-serve earlier blocks rather than adding dishes):
+
+| Cuisine | Dishes | Blocks that serve it | Levels | Farmable after L80? |
+|---|---|---|---|---|
+| Cafe (chai, coffee) | 2 | **1 only** | 1–10 | ❌ |
+| North Indian | 5 | 2, 8, **9** | 11–20, 71–80, 81+ | ✅ **forever** |
+| South Indian | 5 | 3, 7, 8, **9** | 21–30, 61–80, 81+ | ✅ **forever** |
+| Italian | 5 | 4, 6, 7 | 31–40, 51–70 | ❌ ends L70 |
+| North East | 5 | 5, 6 | 41–60 | ❌ ends L60 |
+
+`blockForLevel()` sends **every level 81+ to block 9**, which serves only the North and South Indian
+sets. So the two cuisines sitting *earliest* in the grid after the FTUE are the only ones a
+late-game player can still farm, while **North-East — the last five cards, and the ones that read
+as the end-game prize — stop accruing entirely at level 60.** The grid's visual order implies a
+difficulty curve that the data does not have, and in places inverts.
+
+**Consequence for the design:** raising the shard requirement per recipe is the smaller half of
+this. If North-East stays unfarmable past L60, a higher requirement there is not "progressively
+difficult", it is unreachable. **Any progressive-cost pass has to decide the block-9 dish set at
+the same time**, or state explicitly that late recipes are meant to be bought with gems.
+
+### 11.3 🔴 "Chef hats" is already a live currency with that exact name and icon
+
+Belt mode already pays out **Chef Hats** and already ships the art:
+
+- `KITCHEN_CONFIG.hats` — `perDish: 20`, `perLeftover: 2`, `perWalkoutAvoided: 25`,
+  `clearBonus: 100` (`game/kitchenConfig.ts:648`)
+- `kitchen.hats` is a persisted save field (`save.ts:48`)
+- rendered as *"N Chef Hats"* next to the **`ui-chef-hat`** asset (`TestBelt.tsx:709`,
+  `assets/manifest.ts:147`), on a screen reachable in the shipped build (`App.tsx:45`,
+  `phase === 'testbelt'`)
+
+A single shift pays **hundreds** of hats. If the recipe card also reads *"0 / 8 🎩"*, a player who
+has just banked 340 Chef Hats will reasonably conclude those 340 should buy scrolls — and they do
+not; the two are unrelated systems. **Two different quantities must not share a name and an icon.**
+Three ways out, in order of preference:
+
+1. **Unify them for real** — scrolls cost Chef Hats. Clean to explain, but hats are a flat shift
+   score with no per-dish attribution, so per-recipe progress would have to be rebuilt.
+2. **Keep both, give the shard its own identity** — the user's instinct with a different object
+   (a *toque badge*, a *seal*, a *ladle pin*), so the icon still says "chef" without claiming the
+   currency's name.
+3. **Rename the belt currency** — cheapest in code, but it is the older system and renaming a
+   currency a player has already banked is worse than renaming a new icon.
+
+### 11.4 ❓ Open question before this can be costed
+
+*"Each recipe's shard icon would be chef hats"* is ambiguous between **one hat shared by all 22
+cards** and **22 distinct hats, one per recipe**. At imagegen's 147 credits/sprite that is the
+difference between **147** and **~3,234 credits**, so it is the first thing to settle. The
+progressive-cost half needs no art at all.
+
+---
+
 ## 8. Previously held, still parked
 
 - **Wave roster panel** (GDD §8) — held.
