@@ -1502,6 +1502,62 @@ What the level-100 run does and does not settle:
 - ❓ **One cleared level = one cleared wave** is still only what `ladderPosition()`/`ladderFor()`
   imply structurally; a player who has been to 100 can confirm it in a sentence.
 
+### 11.2g 📏 MEASURED Sep 24 — the stock-build playtest, and what it settles
+
+**Source: `references/Errors/Playtest at stock maximum efficiency build.mp4`** (gitignored — 182 MB,
+no LFS here). Duration read from the MP4 `mvhd` header: **402.6 s**. User: *"went all the way with
+maximum efficiency … crossing 50 with stock utensils is almost impossible"*, finishing at **level 45**.
+
+**⇒ 8.95 s/level**, and a full 45-level run costs **6.7 minutes**. That is the conversion every
+number in §11.2f was waiting for.
+
+🔴 **It also overturns Central's previous message.** On learning a level was ~9 s, Central said
+tier-scaling was *"over-correction"* and the flat +1 was *"the better call"*. **That was computed
+against 4 badges per block pass — a figure that assumes clearing all ten levels of the block, which
+this very run shows a stock build cannot do.** Measuring the run-length and then reusing an
+assumption the same run invalidates is the error; the two facts arrived together and only one was
+applied. → **Retro 127.**
+
+**What a stock build actually earns in block 5** (levels 41–50; the run ends at 45, so only ladder
+positions 1–5 are ever cleared):
+
+| NE dish | Carried by | Its waves | Per full pass | **Stock pass** | @+1 | @+5 |
+|---|---|---|---|---|---|---|
+| bamboo-shoot-fry | wasp | L42, 43, 48, 50 | 4 | 2 | 174 min | **35 min** |
+| veg-thukpa | beetle | L41, 43, 48, 50 | 4 | 2 | 181 min | **36 min** |
+| sticky-rice | hornet | L45, 46, 49, 50 | 4 | 1 | 376 min | **75 min** |
+| veg-momo | snail | L44, 46, 49, 50 | 4 | 1 | 389 min | **78 min** |
+| **ooti** | **stag** | **L47, 48, 49, 50** | 4 | **0** | ❌ | ❌ |
+
+**✅ Tier-scaling is confirmed, on measurement rather than argument.** At flat +1 the last two
+reachable North-East recipes cost **six and a half hours** apiece. At +5 they cost **just over an
+hour**. The 4-per-pass symmetry that made flat +1 look survivable only exists for a player who can
+already clear the block.
+
+### 11.2h 🔴 Ooti cannot be earned at all on a stock build — decide this deliberately
+
+Stag occupies ladder positions 7–10, so **ooti's only waves are levels 47–50** and a stock
+max-efficiency run dies at 45. Not slow: **zero**. The same holds for any block-5 stag dish. Blocks
+2–4's stag dishes (rajma L17–20, beans-poriyal L27–30, risotto L37–40) are all comfortably inside
+reach, so **ooti alone sits behind the wall.**
+
+This may well be *right* — the final recipe demanding a built-up board is a defensible capstone. But
+it must be chosen, not inherited from a ladder position. Three ways:
+
+1. **Accept it as the capstone.** Ooti is the reward for a maxed board, explicitly. Then its card
+   should say so rather than showing an unmoving `0 / 60`.
+2. **Bring its waves forward** so a stock build sees stag at least once (the block-1 FTUE override
+   already proves per-block ladder overrides are supported).
+3. **Pay on reach, not only on clear** — a badge for surviving to the wave, so a losing run at 47
+   still advances ooti.
+
+⚠️ **And the currency conflict is now concrete.** Reaching level 47 needs meta upgrades; meta
+upgrades are bought with **gems** (`metaUpgradeCost`); §11.2f prices an ooti scroll at **600 gems**.
+So the shortcut for the one recipe you cannot grind is also the thing that delays your ability to
+grind it. **Recommendation: keep badges as the real path and treat gems as a deliberately steep
+skip** — and price the tier-5 gem cost above, not below, a meaningful upgrade step, so buying the
+scroll is never the efficient route to the scroll.
+
 ### 11.3 🔴 "Chef hats" is already a live currency with that exact name and icon
 
 Belt mode already pays out **Chef Hats** and already ships the art:

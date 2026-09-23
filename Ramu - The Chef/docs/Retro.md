@@ -2909,3 +2909,14 @@ after **00:30 IST Sep 19**.
      a library function's name matches the concept you want, confirm it answers *that* question and
      not a near neighbour, and sanity-check the count against something you can see. For Unicode
      "is this a mark", the test is the general category (`Mn`/`Mc`/`Me`), never the combining class.**
+
+127. **Two facts arrived together; I applied one and kept an assumption the other had just killed.**
+     The playtest video gave me a level duration (~9 s) and an end level (45) in the same breath. I
+     used the duration to recompute the grind, concluded the flat award was fine after all, and told
+     the user my earlier recommendation was over-correction — while still dividing by "4 badges per
+     block pass". That 4 assumes clearing all ten levels of the block, which *the same run* showed a
+     stock build cannot do. The real stock figures are 1–2 per pass, and zero for the block's stag
+     dish, which flips the conclusion straight back. ✅ **Rule: when new evidence lands, re-derive
+     every number that touched the old assumption, not just the one the evidence names. A
+     measurement that invalidates a premise invalidates everything standing on it — and be slowest
+     to reverse a recommendation in the same message that introduces the new data.**

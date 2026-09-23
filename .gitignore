@@ -105,3 +105,9 @@ jam-entry/rundot/marketing/
 # Video leg working media (rendered clips, contact sheets, voice samples): 73 MB,
 # regenerable from the prompts in the leg's own docs. The seven .md files are tracked.
 Ramu - The Chef/VideoGen Leg/References and Logs/
+
+# Playtest and error-repro screen captures. 185 MB combined and growing; git has no
+# LFS here, so these stay local. Not build inputs and not regenerable, but the
+# findings they produce are written up in Ideas.md and the annotated stills beside
+# them in the same folder ARE tracked. Keep the originals in references/Errors/.
+Ramu - The Chef/references/Errors/*.mp4
