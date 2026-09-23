@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.92.0** (Rounds 0–18) — the first build whose recipe sheets carry real step text. Review and Public stay at **1.69.0**, the jam build. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Nothing with an agent.** **Round 18b** is fully specified ([Ideas.md](Ideas.md) §6d — all 22 rails, 14 sprites, data + manifest only) and unblocked. Then **Round 19, Hindi**. |
+| **In flight** | **Art round 7** — 18 ingredient/oil sprites, 2,646 credits, issued Sep 23. **Round 18b is held** until it returns, then ships once: all 22 rails, the 46-sprite set, drag-scroll on the Kitchen panes and the Close button restyle. Then **Round 19, Hindi**. |
 | **Repo** | `origin/main` = **`66c12c2`**, tree clean apart from Round 17's in-progress edits. Pushed continuously since Sep 18; `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is in the public repo. Every push preceded by the secret scan with its 3-line positive control. ⚠️ `references/Errors/The kitchen upgrades refix.mp4` (3 MB) is untracked and **not** committed — no other reference video is tracked; the user's call. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -3881,3 +3881,30 @@ separate statements and the second is not resolved. 🔒 **Before the Public pro
 the finding is wrong and the promotion needs re-costing; if it lists our CLI generations
 misfiled under the game, the panel is simply mislabelled. One click settles it, and it is the last
 open question on the promotion.
+
+---
+
+### 2026-09-23 — Art round 7 issued — the ingredient rail goes fully in-house
+
+18 sprites, **2,646 credits**, ceiling 3,381. Full reasoning and the provenance sweep in
+[Ideas.md](Ideas.md) §6d. **Round 18b is held** until this returns — shipping 11 sprites we have
+already decided to discard would mean doing the manifest work twice and reviewing rejected art.
+
+**The sweep is the part worth keeping.** Comparing every shipped `ing-*` and every round-5/6
+delivery against all 563 pack files gave a **false negative on the entire round-5 set** — because
+`export.py` crops to the alpha bbox and re-centres at 7%, so a raw pixel diff against the original
+framing reads as "generated". Re-running with **both sides normalised to their bbox** returned all
+eleven at 0.00–5.19. **A provenance test has to normalise for every transform the pipeline
+applies, or it reports the pipeline rather than the provenance.**
+
+**Two instructions in the brief exist because earlier rounds taught them:**
+
+- **Geometry is stated once** — linear fill 0.86, which *is* the 7% margin, with `export.py`'s
+  `MARGIN` constant named as the single owner. The two-constraint form is withdrawn (Retro 120).
+- **Do not pad the master**; `export.py` crops to the bbox first, so round 6's pad was discarded
+  by construction.
+
+🔒 **The brief forbids passing any pack file as `--reference-image`.** The pack may be looked at
+for subject reference and never fed to the generator; the only legal reference images are our own
+RUN-generated sprites. This round replaces pack art *with* our art, which makes the temptation to
+reference it directly higher than usual, so the rule is stated explicitly rather than assumed.

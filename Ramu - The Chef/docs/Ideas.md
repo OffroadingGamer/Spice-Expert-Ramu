@@ -998,6 +998,48 @@ so the test is the **rail's own contribution**, not the sheet's.
 
 ---
 
+**✏️ Amendment — the ingredient rail goes fully in-house, Sep 23 2026.**
+User: *"We shouldn't be using the sprites from the pack for these anymore."* **Round 18b is held**
+until art round 7 returns, so the rails ship once against final art rather than twice.
+
+**Provenance, swept rather than recalled.** Every shipped `ing-*` and every round-5/6 delivery was
+compared against all 563 pack files, normalising both sides to the alpha bbox first — the raw diff
+gives a false negative on round 5's exports because `export.py` re-crops and re-centres them.
+
+- **17 pack-sourced.** Shipped: `coffee-extract`, `cream`, `ghee`, `ginger`, `milk`, `rice`.
+  Queued in 18b: `semolina`, `tamarind`, `basil`, `green-beans`, `spinach`, `cabbage`,
+  `bamboo-shoot`, `oil-mustard`, `oil-coconut`, `oil-sesame`, `oil-olive`.
+- **+1 on quality:** `green-chilli` — ours from round 3, but it reads as green blobs at 26 px and
+  was one of the five the user flagged.
+- **28 already in house style** and untouched. **18 + 28 = 46**, so after round 7 there is
+  **zero pack art in the recipe rail**.
+
+**🔒 This is not a licensing change and must not be recorded as one.** 44 `prop-*` sprites are
+byte-identical pack art and still ship — verified on six of them — and the dish trays came from a
+LoRA trained on that pack. **toxiccolors' credit stays mandatory.** Props and dish art are
+deliberately out of scope: *"we will circle back on it once the game is stable and public."*
+
+**Two things the round buys beyond consistency:**
+
+1. **The oil collision dies for free.** The pack's olive and sesame bottles measured 36.1 apart in
+   mean RGB against 61–106 for every other pair. Drawn ourselves we choose the colours — mustard
+   golden amber, coconut near-white, sesame dark amber, **olive actually green** — so the pairing
+   stops existing without recolouring licensed art.
+2. **The container problem resolves as a by-product.** The user's objection was to jars where a
+   loose ingredient was possible. `ginger`, `rice`, `semolina`, `tamarind`, `basil`, `spinach`,
+   `bamboo-shoot` all become loose; `milk`, `cream`, `ghee` and the oils stay vessels because
+   there is no honest way to draw loose milk — but they become *our* vessels.
+
+🔴 **The risk this round turns on: seven green things, and it removes what was separating them.**
+Basil, spinach, cabbage, green beans, green chilli, plus the existing parsley and curry leaf.
+Round 5's basil separated **only because of its terracotta pot**, and this round removes pots — so
+silhouette must now do work a prop was doing. Basil vs spinach is the hard pair. The brief
+requires the agent to report failure rather than force it.
+
+**18 sprites, 2,646 credits**, ceiling 3,381 (202,527 → 199,881 at plan).
+
+---
+
 ## 7. Wave-intro scroll — proposed Sep 13 2026 — ✅ shipped as the wave bubble's scroll grid, 1.76.0
 
 **Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll
