@@ -2807,3 +2807,19 @@ after **00:30 IST Sep 19**.
      changes the thing I am measuring* — and never carry an acceptance line forward from a previous
      round without re-deriving it against what this round changes. This is the acceptance-criteria
      lesson (68) at a new scale: not task-versus-feature, but part-versus-part inside one document.
+
+120. 🔴 **I specified one quantity twice, with two values that cannot both hold.** Sep 23 2026.
+     The standing ingredient-sprite brief asked for **linear fill 0.82–0.88** and **margins ≥ 8%**.
+     For a centred sprite those are the same number: margins = (1 − fill) / 2, so fill 0.84 gives
+     exactly 8%, 0.86 gives 7%, 0.88 gives 6%. The top two thirds of my own target band violated
+     my own floor. Two art rounds resolved it the same way — follow the fill figure, because it
+     came with a median and a range and was obviously the emphatic one — and **all 14 delivered
+     tiles sit at 6.0–7.1% margins.** I verified round 5 against fill and never measured margins
+     per side, so I certified it. The practical cost is **0.26 px at 26 px**, i.e. nothing; the
+     real cost was an art agent spending a mechanical pad step that `export.py` discards by
+     construction, because the exporter crops to the content bbox before applying its own 7%
+     constant. ✅ **Rule: before writing two numeric constraints into a brief, check whether they
+     are the same quantity in different clothes — and if they are, state it once and name the
+     single place in the code that owns it.** Retro 115 said to do the subtraction out loud
+     between a container and its child; this is the same failure between a ratio and its
+     complement, which is harder to see precisely because the two numbers look unrelated.

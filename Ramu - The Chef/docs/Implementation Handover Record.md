@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.92.0** (Rounds 0–18) — the first build whose recipe sheets carry real step text. Review and Public stay at **1.69.0**, the jam build. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Art round 6** — one sprite (`noodles`), 147 credits, issued Sep 23. **Round 18b** is fully specified in [Ideas.md](Ideas.md) §6d (all 22 rails, 13 sprites, manifest + data only) and goes out the moment that sprite returns. Then **Round 19, Hindi**. |
+| **In flight** | **Nothing with an agent.** **Round 18b** is fully specified ([Ideas.md](Ideas.md) §6d — all 22 rails, 14 sprites, data + manifest only) and unblocked. Then **Round 19, Hindi**. ⚠️ **Credits rose +5,100 between art round 5 and art round 6 with no known cause** — balance now **202,527**; needs the studio Finances page to close. |
 | **Repo** | `origin/main` = **`66c12c2`**, tree clean apart from Round 17's in-progress edits. Pushed continuously since Sep 18; `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is in the public repo. Every push preceded by the secret scan with its 3-line positive control. ⚠️ `references/Errors/The kitchen upgrades refix.mp4` (3 MB) is untracked and **not** committed — no other reference video is tracked; the user's call. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -3772,3 +3772,57 @@ because its entire spec is already written down.
 dishes taking a bottled oil** — the same figure the writing pass's §4.6 arrived at from the other
 direction. Two documents written by different agents for different purposes agreeing to the dish
 is the strongest evidence yet that the oil gap was real.
+
+---
+
+### 2026-09-23 — Art round 6 verified — `noodles`, 294 credits, and a spec fault of mine
+
+Return pasted verbatim into [Agent Returns.md](Agent%20Returns.md) before verification.
+
+| Check | Result |
+|---|---|
+| Credits | `rundot credits` → **202,527**. 202,821 − 202,527 = **294 = 2 × 147**, the full ceiling, exactly as reported. |
+| The retake | Justified. Take 1 measures **alpha-255 solid through the centre**; take 2 has a **real hole** — centre alpha 0, and **29.2% of the bbox is transparent**. The design fix is genuine, not a reroll. |
+| Delivered tile | 128², bbox (9,10,119,117), **linear fill 0.859**, all four corners alpha 0 — every figure as reported. |
+| Separation | Read the contact sheet: noodles is a ring with an open centre, spaghetti a tall solid bar, rice a flat oval, and the rejected pack file plainly a bowl of sauce. Separation is silhouette, exactly as briefed. |
+
+**🔴 The margin discrepancy is mine, and it is arithmetic.** The report gives final margins of
+9.0/10.1/9.1/10.4%; the delivered file measures **7.0/7.8/7.0/8.6%**. Both are true of different
+files. `take2-padded.png` really does measure 9.0/10.1/9.1/10.4 — the mechanical pad was applied
+exactly as described. But `export.py` **crops to the content bbox first** and then re-centres on
+128² with its own `MARGIN = 0.07` constant, so **any padding of the master is discarded by
+construction** and the output is always 7%. The agent's numbers were true of the master it
+padded; the pad itself was a no-op it had no way to see.
+
+**The root cause is that I specified one quantity twice, with two values that contradict.** For a
+centred sprite, margins = (1 − linear fill) / 2. So:
+
+| linear fill | margins |
+|---|---|
+| 0.84 | **8.0%** |
+| 0.86 | **7.0%** |
+| 0.88 | **6.0%** |
+
+I asked for **fill 0.82–0.88 *and* margins ≥ 8%**. Those are both satisfiable only at fill ≤ 0.84
+— the top two thirds of my own target band violates my own floor. The agents followed the fill
+number, because I gave it a median and a range and made it the emphatic one.
+
+⚠️ **So all 13 round-5 tiles are below the 8% floor too** — measured 6.0% to 7.1%, worst is
+`basil` at 6.0% and the two tall oils at 6.1–6.2%. **I verified round 5 and did not catch it,
+because I measured fill and never measured margins per side.** At 26 px the difference between a
+7% and an 8% margin is **0.26 px**, so nothing ships wrong and nothing is re-exported.
+
+✅ **The spec is corrected rather than the art.** The standing ingredient-sprite rule becomes a
+single number: **linear fill 0.86, which is a 7% margin**, with `export.py`'s `MARGIN` constant as
+the one source of truth. The two-constraint form is withdrawn. → **Retro 120.**
+
+**Tell the art agent once:** padding the master before `export.py` achieves nothing, because the
+exporter crops to the bbox. Round 6 spent that step for no effect.
+
+**🔴 Unexplained credit rise, carried as an open item.** My verified balance after art round 5 was
+**197,721**. Art round 6 opened at **202,821** — a rise of **+5,100** with no purchase or grant I
+know of, during a period in which no round ran. Per Retro 114 the tool that answers this is the
+**studio Finances page**, not the CLI, which reports a balance and never its provenance. Asked of
+the user; not guessed at here. The 294 spend itself reconciles exactly.
+
+**Verdict: accepted.** `noodles` ships in Round 18b, which is now unblocked.

@@ -643,6 +643,28 @@ Not verifiable headlessly: real touchscreen drag (Part 6's touch path was delibe
 
 ---
 
+## 2026-09-23 — Art round 6 — art agent
+
+Outcome: pasted before verification. Verification in the record.
+
+Round 6 done. Summary:
+
+Credits: 202,821 → 202,527 = 294 credits (the full ceiling — both allotted attempts used, not the expected 147).
+
+Why the second take was needed: take 1 (seed 902) was a solid filled coil — good margins, clean transparency — but checking the center at full res showed it was alpha-255 solid all the way through. At 26px the interior strand linework disappears under downsampling and it read as a smooth golden oval, closer to a bread roll than a noodle nest — exactly the failure mode you asked me to watch for. I didn't ship it. Since this is generated art (not licensed pack art) and the round budgeted a retake for exactly this, I used it rather than just flagging it: take 2 (seed 903) asked for a genuine punched-through hole and a frayed rim — a silhouette feature, which survives downsampling in a way interior line detail doesn't.
+
+Margins: take 2's raw margins were 7.0/8.0/7.1/8.4% — left/right just under your 8% floor with the composition otherwise right, so per your own instruction I did a mechanical pad (scaled to 0.95x, recentred) rather than spending a third attempt. Final: 9.0/10.1/9.1/10.4%, corners alpha 0.
+
+Final tile: noodles.png, 128×128, bbox (9,10,119,117), linear fill 0.859 — inside round 5's 0.859–0.866 band and your 0.82–0.88 target.
+
+Separation at 26px: clean, and by silhouette as required — noodles reads as a ring with a visible hole; spaghetti reads as a tall solid bar. Same pale-gold tone on both; shape alone carries it. It also separates cleanly from rice and the rejected pack noodles, neither of which was the required check but both pass for the same reason.
+
+What turned out wrong: the brief's "oval, slightly domed coil" framing is what caused the rejected take — a solid oval reads as bread at icon scale. What actually works is an open ring with a real hole, not a domed solid shape. And like round 5's basil, the stated disambiguator (strand-edge wave detail) doesn't survive to 26px either — the hole does the work, which I only found by checking, not by trusting the brief's description.
+
+Deliverables: Art/_gen/ingredients-r6-final/noodles.png + contact-sheet-26px.png. Full log at Art/_gen/ingredients-r6/LOG.md.
+
+---
+
 ## Pending
 
-- Nothing outstanding. Round 18 and art round 5 have both returned and been verified. **Round 18b** (ship art round 5's sprites, data-only) is specified but not yet issued.
+- **Round 18b** (implementation agent, data + manifest only) — fully specified in Ideas.md §6d, unblocked now that art round 6 has returned. Not yet issued.
