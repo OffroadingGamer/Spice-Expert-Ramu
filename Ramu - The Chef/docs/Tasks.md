@@ -25,7 +25,7 @@ finished 46-sprite ingredient set, the 22 true rails, pane drag-scroll and the C
 translate. Then IAP (Ideas.md §10.6 B, content-not-power).
 
 **Open on the user:** the Public promotion call · a one-click check of the studio page's
-"4 AI features" row before promoting · the Devanagari guest-name test · **touch-drag on the rail
+"4 AI features" row before promoting · the Devanagari **moderation** test — rendering passed Sep 23, the submit-and-read-back half has not · **touch-drag on the rail
 and both Kitchen panes, which no one has tested on any build** · whether `ing-tea-leaf.png` (256²,
 the only non-128² sprite) gets normalised.
 

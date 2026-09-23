@@ -1068,6 +1068,81 @@ drag"* — the first real-mouse confirmation that Round 18 Part 6 landed.
 
 ---
 
+**✏️ Amendment — the Devanagari guest-name test, Sep 23 2026. ✅ The *rendering* half passes.
+🔴 The half that was actually pending — RUN moderation — is still untested.**
+
+The user ran it on Private 1.93.0 in a logged-out session: guest name **पुनीत**, opened on the
+private tag. **The greeting bubble renders it correctly** — base consonants, the ु and ी matras all
+attached in the right places, no boxes, no dotted circles, no fallback face. It also confirms
+Round 13's widened `NAME_PATTERN` (`/^[\p{L}\p{M} .']*$/u`) accepts Devanagari on a real device,
+which until now had only been checked against the regex itself.
+
+🔴 **Central checked the item's own definition before claiming it closed, and the claim was too
+broad.** What `Implementation Handover Record.md:3191` and `Agent Returns.md:342` actually leave
+open is *"the Devanagari `displayName` **moderation** test"* — whether **RUN accepts the name on a
+leaderboard submission**, verified by a guest-session submit plus a CLI readback. Rendering was
+never the risk; **moderation is**, and this project has already been bitten by it twice (the
+standalone word "Pot", and changelogs carrying the artist's surname). A name that draws perfectly
+in the bubble can still be rejected or masked the moment it is submitted. **The test is half done.**
+
+**🔴 Correction to Central's own framing of the test.** I had been describing it as "HUD, wave-end
+card and leaderboard row". **The name is not drawn in the HUD or on the wave-end card at all** —
+`grep` over `src/game/` finds `playerName` on exactly one line (`towerScene.ts:2344`), and it is
+passed to leaderboard *metadata*, never to a Phaser text object. The complete set of surfaces that
+render a player's name is five, all React DOM: `MainMenu` (the bubble), `Leaderboard` (the row and
+the avatar initial), `NameDialog`, `RenameDialog`, `Settings`. That matters because **nothing draws
+the name to canvas**, so there is no second shaping engine that could fail independently.
+
+**Why the one pass generalises.** The project **declares no custom `font-family` anywhere** —
+verified by grep, and documented in the code itself at `MainMenu.tsx:296` and `Leaderboard.tsx:556`.
+Every name surface therefore resolves to the same system sans stack that just rendered the bubble
+correctly. A per-surface font regression is not possible here, because there is only one font.
+
+**Two Devanagari-specific risks were measured rather than assumed, and both came back smaller than
+expected.**
+
+1. 🔴 **The 16-character cap is a real fairness defect, and the user proved it on device.**
+   The cap (`save.ts:248,396,409`, `NameDialog.tsx:86`, `RenameDialog.tsx:66`) counts **UTF-16 code
+   units, not visible characters.** The user typed until the field stopped accepting input and got
+   **पुनीतपुनीतपुनीतप — 16 code units, 10 visible characters.** Devanagari spends 1.6–3.0 units per
+   character, so the same field that gives an English speaker 16 characters gives a Hindi speaker
+   **10, and as few as ~5 for a conjunct-heavy name**: श्रीकान्त is 9 units for 3 characters (3.00),
+   कृष्णमूर्ति 11 for 4 (2.75), प्रियदर्शिनी 12 for 5 (2.40). Common Hindi names still fit, so nothing
+   is *blocked* — but the penalty is up to 3× and it lands on exactly the players the Hindi build is
+   for. **Fix in Round 19: count grapheme clusters.** `maxLength` is a UTF-16 attribute and cannot
+   express this, so the cap has to move into JS (`Intl.Segmenter`, or a `/\P{M}\p{M}*/gu` count).
+   *Layout is not at risk either way* — 10 Devanagari characters are narrower than 16 Latin ones, and
+   the bubble wrapped to two lines cleanly with no clipping or overflow.
+
+   **Mid-cluster truncation did not occur and is nearly unreachable here.** The cut landed on प, a
+   complete consonant. Because the cap is enforced on *input*, a cut can only ever strand a trailing
+   virama (्), which renders as a visible halant stroke rather than a dotted circle — ugly, not broken.
+
+   ⚠️ **Central's first cluster count was wrong and the user's screenshot is what corrected it.**
+   The counter used `unicodedata.combining()`, which returns the combining *class* — **0 for
+   Devanagari matras**, which are category `Mn`/`Mc` with class 0. It therefore counted पुनीत as 5
+   characters instead of 3. Re-counted by category. → **Retro 126.**
+2. **The leaderboard avatar initial** (`Leaderboard.tsx:174`) is `.charAt(0).toUpperCase()` — one
+   UTF-16 code unit. For पुनीत it yields **प, not पु**: the matra is dropped, so the disc reads "pa"
+   where the name is "Pu". It never produces a dotted circle (a name cannot begin with a combining
+   mark, and in श्रीकान्त the virama is the *second* unit, so श survives alone cleanly), and
+   `.toUpperCase()` is a harmless no-op on a script with no case. **Cosmetic and lossy, never broken.**
+   Fix is one line — take the first grapheme cluster instead of the first code unit — and it belongs
+   in Round 19, where the rest of the script work lives.
+
+**Consequence for Round 19.** The font pipeline is cleared — the 90-odd Hindi strings can be
+commissioned with no rendering risk hanging over them, because they run through the same single
+system-font stack that just drew पुनीत. The only script-aware code defect found is the avatar
+initial above.
+
+**Still open, and it gates nothing in Round 19:** play one wave under a Devanagari guest name so a
+score is submitted, then read the board back with the CLI and check the name survived RUN's
+moderation intact rather than being rejected or masked. If it does not survive, §6d decision 5's
+fallback applies — the Hindi locale tells the player *"Leaderboard names use English letters"* and
+lets them choose their own spelling.
+
+---
+
 ## 7. Wave-intro scroll — proposed Sep 13 2026 — ✅ shipped as the wave bubble's scroll grid, 1.76.0
 
 **Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll

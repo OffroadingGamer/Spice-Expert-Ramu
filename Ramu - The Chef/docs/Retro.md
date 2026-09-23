@@ -2898,3 +2898,14 @@ after **00:30 IST Sep 19**.
      that asserts the old number has been changed. When correcting a fact, grep the number itself
      — not the topic — and fix every hit before committing.** The dated log and the summary block
      have opposite jobs: the log must never be rewritten, the summary must never be left alone.
+
+126. **A "combining" test that silently answers a different question.** Counting visible characters
+     in a Devanagari name, I used Python's `unicodedata.combining()` to detect marks. It returns the
+     canonical **combining class**, and Devanagari matras (`ु` U+0941, `ी` U+0940) have class **0**
+     while being categories `Mn`/`Mc` — so the test read them as base characters and counted पुनीत as
+     5 characters instead of 3. The function name matched my intent; its semantics did not. The
+     error was invisible because the number it produced was plausible, and it took the user's own
+     screenshot — a 16-unit string that plainly showed 10 characters — to expose it. ✅ **Rule: when
+     a library function's name matches the concept you want, confirm it answers *that* question and
+     not a near neighbour, and sanity-check the count against something you can see. For Unicode
+     "is this a mark", the test is the general category (`Mn`/`Mc`/`Me`), never the combining class.**
