@@ -2839,3 +2839,24 @@ after **00:30 IST Sep 19**.
      been charged here. **Rule: grade each panel separately, keep "my finding stands" and "their
      number is unexplained" as two statements, and name the one click that would settle it rather
      than picking whichever reading is more convenient.**
+
+122. 🔴 **A metric that caught one real failure may have caught it for a reason that does not
+     generalise — and the test surface must match the shipping surface.** Sep 23 2026. Round 5
+     found a genuine collision between the pack's olive and sesame oil bottles using mean-RGB
+     distance (36.1 against 61–106 for every other pair), and that number became the round-7
+     brief's confusability test. Art round 7 doubted it; the check it could not run settles it.
+     Colour distance only matters for tiles that **co-occur in one rail**, and measured that way
+     the tightest co-occurring pairs in the whole game are garlic/bamboo-shoot at **7.8**,
+     kidney-beans/tomato at **9.0** and tomato/chilli-flakes at **10.2** — all trivially
+     distinguishable, because a bulb is not a shoot and a scatter of flakes is not a tomato. The
+     two tightest pairs overall, spinach/parsley at 13.2 and rice/flour at 27.0, **never share a
+     rail**. The metric worked in round 5 only because those two bottles had an *identical
+     silhouette*, leaving colour as the single free variable. ✅ **Rules: test confusability by
+     silhouette and a direct look at final size, and reach for colour distance only within a
+     shape family (the four oil bottles, where it is still valid and now reads 53.5–172.6).**
+     Second half of the same lesson, learned by nearly filing a false defect: the contact sheets
+     render on a **checkerboard**, but the real ingredient tile is near-white cream. `rice` looked
+     faint on the checker — the pattern showing through the gaps between grains — and I suspected
+     the retake had traded legibility for separation. Composited over the actual tile it measures
+     **31.9** against shipped `flour`'s **30.1**. **Measure against the surface the thing will
+     ship on, or the background becomes part of your result.**

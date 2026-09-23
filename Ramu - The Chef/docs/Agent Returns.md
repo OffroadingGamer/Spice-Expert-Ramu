@@ -665,6 +665,26 @@ Deliverables: Art/_gen/ingredients-r6-final/noodles.png + contact-sheet-26px.png
 
 ---
 
+## 2026-09-23 — Art round 7 — art agent
+
+Outcome: pasted before verification. Verification in the record.
+
+Round 7 is complete — 18 sprites plus 4 required contact sheets, all in Art/_gen/ingredients-r7-final/. Summary:
+
+Credits: 202,527 → 199,587 = 2,940 credits, 20 calls (18 initial + 2 retakes, of 5 allotted), well under the 3,381 ceiling.
+
+Geometry: all 18 land at exactly linear fill 0.859 (target 0.86), corners fully transparent. No margin-padding needed anywhere — the handover's single-number MARGIN = 0.07 simplification worked cleanly and avoided round 6's wasted pad step.
+
+Two retakes, both real fixes:
+
+oil-sesame — take 1 added an unprompted "SESAME OIL" text label its three sibling oils don't have, breaking the bottle-family consistency. Retaken plain.
+rice — take 1 measured close to flour.png by round 5's own color-distance test (57.7, under the 61 "safe" floor). Retaken with a stronger textured, cool-toned grain look. The retake's color distance to flour actually got worse (44.5) by the raw metric, but direct 26px visual inspection showed it's genuinely more distinct — the metric averages away exactly the grain texture that carries recognizability. Kept the retake, flagged the metric itself as unreliable going forward.
+Separation at 26px: every pair the handover names explicitly separates — basil/spinach (the flagged hard pair) separates by silhouette (compact rosette vs. stem-bundled bunch), same mechanism as round 5's basil/pot finding. Two pairs (green-beans/green-chilli, spinach/parsley) run closer than anything in round 5 except its one real failure, but both hold up under direct visual check, not just the color metric.
+
+What turned out wrong in the handover: it didn't mention a hard imagegen rate limit (exactly 2 calls per 300s) that materially slowed the round; and the raw-RGB confusability metric that caught round 5's real collision turned out to be the weaker tool this round — it got the rice fix backwards and flagged an obvious orange-vs-green pair as "close." Full writeup, all per-sprite data, and the reasoning behind every close call are in Art/_gen/ingredients-r7/LOG.md.
+
+---
+
 ## Pending
 
-- **Round 18b** (implementation agent, data + manifest only) — fully specified in Ideas.md §6d, unblocked now that art round 6 has returned. Not yet issued.
+- **Round 18b** (implementation agent) — unblocked now that art round 7 has returned. Ships the 22 rails, the 46-sprite set, drag-scroll on the Kitchen panes and the Close button restyle. Not yet issued.

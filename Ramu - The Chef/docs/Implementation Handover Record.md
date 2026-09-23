@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.92.0** (Rounds 0–18) — the first build whose recipe sheets carry real step text. Review and Public stay at **1.69.0**, the jam build. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Art round 7** — 18 ingredient/oil sprites, 2,646 credits, issued Sep 23. **Round 18b is held** until it returns, then ships once: all 22 rails, the 46-sprite set, drag-scroll on the Kitchen panes and the Close button restyle. Then **Round 19, Hindi**. |
+| **In flight** | **Nothing with an agent.** **Round 18b** is unblocked and is now the whole remaining Kitchen job: 22 rails, the 46-sprite set (18 of them replacements), drag-scroll on the Kitchen panes, the Close button restyle. Then **Round 19, Hindi**. |
 | **Repo** | `origin/main` = **`66c12c2`**, tree clean apart from Round 17's in-progress edits. Pushed continuously since Sep 18; `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is in the public repo. Every push preceded by the secret scan with its 3-line positive control. ⚠️ `references/Errors/The kitchen upgrades refix.mp4` (3 MB) is untracked and **not** committed — no other reference video is tracked; the user's call. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -53,7 +53,7 @@ of the present.**
 | **FTUE opening pad** | **`FTUE_FIRST_PAD = 4`** (B3, `damage ×1.5`), then pads 3 and 2 |
 | **Sealed files** | `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` |
 | **`data/waves.ts`** | ⚠️ **RE-SEALED.** Unsealed for the v1.69.0 block-1 retune only |
-| **Credits (Sep 23)** | **202,527**, reconciled to the credit against the studio Finances page. The eight grant rows sum to exactly 202,527. The Sep 22→23 movement reconciles as **198,309 − 882 spent + 5,000 new grant + 100 daily = 202,527**, where the 882 is art rounds 4/5/6 (441 + 147 + 294). ✅ **Nothing unexplained.** ⚠️ The page's *usage* panels are a separate matter — see the Sep 23 entry. |
+| **Credits (Sep 23)** | **199,587**, reconciled. Art round 7 spent **2,940** (20 calls × 147). Prior close was 202,527, itself reconciled to the grant list. |
 | **Paid campaign** | ✅ **`kitchen-rush-meta` COMPLETE** (ended Sep 16). **$70.05 of $82 spent · 4,228 impr · 171 clicks · 4.04 % CTR · 18 installs · CPI $3.66.** Unspent remainder refunds on completion per RUN's rule — verify on the studio page. Paid is done for this jam (marketing agent's prior, Sep 14) |
 | **Art round 2 (Sep 17)** | ✅ **DONE** — `Art/_gen/pass-final/`: `pass-entry.png`, `pass-exit.png` (1024², take 1 each), `belt-tile.png` (128², procedural, `#3a3a44`, seamless both axes). **561 credits.** Awaiting the hatch-wiring implementation round |
 | **Art leg (Sep 14)** | ✅ **DONE** — `Art/_gen/chef-final/`: 9 bodies + 4 faces + scroll, **7,003 credits**, verified. Faces are aligned eyebrow-to-jaw bands. ⚠️ Expressions read at **≥ 160 px, not 96** — spec amended in Ideas.md §6b. Nothing ships before judging |
@@ -3908,3 +3908,64 @@ applies, or it reports the pipeline rather than the provenance.**
 for subject reference and never fed to the generator; the only legal reference images are our own
 RUN-generated sprites. This round replaces pack art *with* our art, which makes the temptation to
 reference it directly higher than usual, so the rule is stated explicitly rather than assumed.
+
+---
+
+### 2026-09-23 — Art round 7 verified — 18 sprites, and the confusability metric retired
+
+Return pasted verbatim into [Agent Returns.md](Agent%20Returns.md) before verification.
+
+| Check | Result |
+|---|---|
+| Credits | `rundot credits` → **199,587**. 202,527 − 199,587 = **2,940 = 20 × 147** — 18 sprites plus 2 retakes of 5 allowed, against a 3,381 ceiling. |
+| Delivery | 18 PNGs + the 4 required contact sheets, no `.json` sidecars. |
+| Geometry | **All 18 at linear fill 0.859** (oil-sesame 0.862), every corner alpha 0. The single-number spec from Retro 120 worked — no pad step, none wasted. |
+| Oil collision | **Fixed.** `oil-olive` vs `oil-sesame` is now **73.6** against the pack pair's 36.1, and the closest oil pair of any kind is 53.5. Drawing them ourselves did exactly what it was supposed to. |
+| The flagged hard pair | `basil` vs `spinach` measures **109.9** — comfortably separated, and the contact sheet confirms it by silhouette: compact bright rosette against a dark layered bunch. |
+
+**🔴 The finding that matters: average colour distance is not a confusability metric, and I should
+stop treating it as one.** The agent doubted it; a check it could not run settles it. Colour
+distance only means anything for tiles that appear **in the same rail**, so I measured the closest
+pair *within each of the 22 dishes* using the final palette:
+
+| Dish | Closest co-occurring pair | Distance |
+|---|---|---|
+| bamboo-shoot-fry, ooti | garlic / bamboo-shoot | **7.8** |
+| rajma | kidney-beans / tomato | **9.0** |
+| arrabbiata | tomato / chilli-flakes | **10.2** |
+| chai | tea-leaf / clove | 15.6 |
+| sambar, coconut-chutney | mustard-seed / oil-sesame | 17.3 |
+| upma | semolina / ghee | 17.7 |
+
+Every one of those is far tighter than anything the round flagged — and every one is trivially
+distinguishable, because a bulb is not a shoot, a scatter of flakes is not a tomato, and a mound
+of lentils is not a pod. Meanwhile **the two tightest pairs in the entire set — `spinach`/`parsley`
+at 13.2 and `rice`/`flour` at 27.0 — never appear in the same rail at all**, so neither could ever
+have confused anyone.
+
+**Why the metric worked once.** Round 5's olive/sesame collision was two bottles of *identical
+silhouette*: colour was the only free variable, so colour distance was the right instrument for
+that one case. It does not generalise to subjects that differ in shape, which is nearly all of
+them. **The agent's decision to keep the `rice` retake on visual grounds against a worse metric
+score was correct.** → **Retro 122.**
+
+**A worry of my own that did not survive its own test.** The granules contact sheet made `rice`
+look faint, so I suspected the retake had traded legibility for separation. The contact sheets use
+a **checkerboard**; the real ingredient tile is `rgba(255,253,245,0.75)` over parchment, about
+(253,250,238). Composited over *that*, `rice` measures **31.9** mean luminance contrast — slightly
+better than the shipped `flour` at **30.1**, which has been in the build since round 4 unremarked.
+The checkerboard was showing through the gaps between grains and making it look sparse. **No
+defect; my instrument was wrong, not the art.**
+
+**One genuine watch item from that calibration:** the palest tiles against the cream rail are the
+two new white liquids — `cream` at **25.0** and `milk` at **26.4**, both under `flour`'s 30.1.
+Both are large high-coverage forms rather than fine scatters, so they should read, but they are
+the first things to look at in the 18b playtest.
+
+**Operating fact for future art rounds, and I had it and failed to use it:** imagegen enforces a
+hard **2 calls per 300 s** rate limit, which materially slowed a 20-call round. That limit is
+recorded in my own notes from the audio thread and was not in the brief. **Any future round of
+more than about six sprites should state the expected wall-clock cost up front.**
+
+**Verdict: accepted.** All 46 ingredient and oil sprites are now RUN-generated; **zero pack art
+remains in the recipe rail.** Round 18b is unblocked.
