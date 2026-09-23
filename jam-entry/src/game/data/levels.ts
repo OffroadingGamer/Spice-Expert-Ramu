@@ -70,7 +70,7 @@ export const INGREDIENT_CATALOG: IngredientKind[] = [
     { key: 'milk', alias: 'ing-milk', label: 'Milk', color: 0xe8e2d0 },
     { key: 'ginger', alias: 'ing-ginger', label: 'Ginger', color: 0xd9a441 },
     { key: 'tea-leaf', alias: 'ing-tea-leaf', label: 'Tea Leaf', color: 0x3a5f3a },
-    { key: 'coffee-extract', alias: 'ing-coffee-extract', label: 'Coffee Extract', color: 0x4a2f1a },
+    { key: 'coffee-extract', alias: 'ing-coffee-extract', label: 'Coffee Decoction', color: 0x4a2f1a },
     { key: 'cream', alias: 'ing-cream', label: 'Cream', color: 0xf3ead2 },
     { key: 'rice', alias: 'ing-rice', label: 'Rice', color: 0xf0e6c8 },
     { key: 'ghee', alias: 'ing-ghee', label: 'Ghee', color: 0xffcd4b },

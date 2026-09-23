@@ -24,7 +24,7 @@ import { useEffect, useRef, useState } from 'react';
 import { MANIFEST } from '../assets/manifest.ts';
 import { sfx } from '../audio/audio.ts';
 import { CONFIG } from '../game/config.ts';
-import { RECIPE_SLUGS, recipeNoteKey } from '../game/data/recipes.ts';
+import { dishIconZoom, RECIPE_SLUGS, recipeNoteKey } from '../game/data/recipes.ts';
 import { TOWERS, type MetaUniqueDef } from '../game/data/towers.ts';
 import { t } from '../i18n/index.ts';
 import { stationUniqueDescKey, stationUniqueNameKey } from '../i18n/towerKeys.ts';
@@ -147,10 +147,23 @@ function TabSegment({ mu, active, badge, onClick, children }: {
  * Round 17 Part 2: the rebuilt recipe card. The old card painted
  * ui-recipe-scroll as a full backdrop with text over it (unreadable at
  * every size, per the source doc's own 🔴) — now the scroll art is a
- * 26mu BANNER at the top with the dish medallion centred on it, and every
+ * BANNER at the top with the dish medallion centred on it, and every
  * word sits on solid chocolate below. Locked keeps the exact same
  * structure (banner + medallion), just desaturated, with the shard bar and
  * buy button added beneath.
+ *
+ * Round 18 Part 4 ("thumbnail still not neat & precise"): the root cause was
+ * a spec error, not an implementation one — Round 17's own handover gave a
+ * 30mu medallion inside a 26mu banner, on a card with overflow: hidden, so
+ * the circle was sliced 2mu off top and bottom. New numbers, arithmetic
+ * kept in the comments so a future pass can check it: banner 34mu, medallion
+ * 26mu (34-26=8, i.e. 4mu clear above/below), dish image 18mu*zoom inside
+ * the medallion (26-18=8, i.e. 4mu clear each side before any zoom). The
+ * medallion also gains a 1.5mu walnut ring and a flatter shadow (reads as a
+ * plate rim, not a sticker), and the banner switches cover -> 100% auto so
+ * all 22 cards crop the 256^2 scroll texture identically instead of a
+ * cover-clipped strip at an arbitrary offset (the stray diagonal edge in the
+ * user's screenshot).
  */
 function RecipeCard({ mu, slug, unlocked, count, gems, onOpen, onBuy }: {
     mu: number;
@@ -163,13 +176,14 @@ function RecipeCard({ mu, slug, unlocked, count, gems, onOpen, onBuy }: {
 }) {
     const dishIcon = ASSET_SRC.get(`dish-${slug}`);
     const buyDisabled = gems < SCROLL_GEM_PRICE;
+    const zoom = dishIconZoom(slug);
 
     const banner = (
         <div
             style={{
-                height: 26 * mu,
+                height: 34 * mu,
                 backgroundImage: `url(${ASSET_SRC.get('ui-recipe-scroll')})`,
-                backgroundSize: 'cover',
+                backgroundSize: '100% auto',
                 backgroundPosition: 'center',
                 display: 'flex',
                 alignItems: 'center',
@@ -179,18 +193,32 @@ function RecipeCard({ mu, slug, unlocked, count, gems, onOpen, onBuy }: {
         >
             <div
                 style={{
-                    width: 30 * mu,
-                    height: 30 * mu,
+                    width: 26 * mu,
+                    height: 26 * mu,
                     borderRadius: '50%',
                     backgroundColor: '#fff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+                    border: `${1.5 * mu}px solid #7a4a24`,
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.45)',
                     opacity: unlocked ? 1 : 0.35,
+                    overflow: 'hidden',
                 }}
             >
-                <img src={dishIcon} alt="" className="object-contain" style={{ width: 20 * mu, height: 20 * mu }} />
+                <img
+                    src={dishIcon}
+                    alt=""
+                    className="object-contain"
+                    draggable={false}
+                    // maxWidth/maxHeight override Tailwind preflight's own
+                    // `img { max-width: 100% }` reset, which otherwise caps
+                    // a zoomed (chai/coffee) image back down to the 26mu
+                    // medallion it's meant to overflow — found while
+                    // verifying Part 3's zoom parity (chai rendered at the
+                    // unzoomed size until this was added).
+                    style={{ width: 18 * mu * zoom, height: 18 * mu * zoom, maxWidth: 'none', maxHeight: 'none' }}
+                />
             </div>
         </div>
     );

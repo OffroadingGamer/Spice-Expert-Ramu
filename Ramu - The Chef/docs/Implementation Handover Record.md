@@ -39,9 +39,9 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Private 1.91.0** (Rounds 0–17) — playtest-ready. Review and Public stay at **1.69.0**, the jam build. Nothing is in flight. |
+| **Live version** | **Private 1.92.0** (Rounds 0–18) — the first build whose recipe sheets carry real step text. Review and Public stay at **1.69.0**, the jam build. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Round 18 → Private 1.92.0** (issued Sep 23, six parts). **Art round 5 has returned and is verified** — 13 sprites in `Art/_gen/ingredients-r5-final/`, 147 credits. Shipping them is **Round 18b**, a data-only round after R18 returns, gated on three user calls (noodles, the oil collision, whether oil appears on every dish). |
+| **In flight** | **Nothing with an agent.** Next: **Round 18b** — ship art round 5's 13 sprites and add them to the rails (data-only), gated on three user calls. Then **Round 19, Hindi**. The Public promotion and the Devanagari name test remain the user's. |
 | **Repo** | `origin/main` = **`66c12c2`**, tree clean apart from Round 17's in-progress edits. Pushed continuously since Sep 18; `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is in the public repo. Every push preceded by the secret scan with its 3-line positive control. ⚠️ `references/Errors/The kitchen upgrades refix.mp4` (3 MB) is untracked and **not** committed — no other reference video is tracked; the user's call. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -3686,3 +3686,65 @@ acceptance case, which Round 18's brief had to downgrade to 2-vs-5, comes **back
 **Verdict: accepted.** Shipping is **Round 18b**, data-only, after Round 18 returns — the two were
 deliberately kept independent and that holds. Three user calls gate it: hold `noodles`, ship all
 four oils, and whether an oil tile belongs on every dish or is assumed like salt.
+
+---
+
+### 2026-09-23 — Round 18 verified — Private 1.92.0
+
+Return pasted verbatim into [Agent Returns.md](Agent%20Returns.md) before verification.
+
+**The gate, run from source:**
+
+| Check | Result |
+|---|---|
+| Tags | **Private 1.92.0**, Review 1.69.0, Public 1.69.0. |
+| Balance | 🔴 **The agent could not surface this and said so.** I ran it: fox-spam 35 · balanced 36 · miser 11 · pad0-rush 4 · maxed-meta 90 — **byte-identical to the baseline.** Gap closed; the report was right to flag it rather than assert it. |
+| Sealed files | `git diff --stat` across all seven — **zero**. Changed files are exactly the five named. |
+| Typecheck / build | `tsc --noEmit` exit 0, `npm run build` exit 0, `find public -name '*.json'` empty. |
+| Rails | All 22 parsed: **min 2, max 5**, every one of the eight targets at its specified count, `ooti` = `peas · onion · ginger · garlic · dried-red-chilli`, `coffee` = `coffee-extract · milk`. **`aubergine` at zero rail references** with its asset intact. Both header constraints gone. |
+| Zoom | `DISH_ICON_ZOOM = { chai: 204 / 75, coffee: 204 / 75 }` — written as the **formula**, not a baked 2.72, exactly as asked, so it cannot drift from the canonical bbox figure. |
+| Strings | 44 keys present; re-measured independently — **173 to 209**, none over 240. |
+| Label | `Coffee Decoction` at `en.ts:425` and `levels.ts:73`; the id `coffee-extract` still present across six files including the untouched `kitchenScene.ts`. |
+| Card | `34 * mu` banner, `26 * mu` medallion, `18 * mu` image, `1.5 * mu` `#7a4a24` ring, `background-size: '100% auto'`. |
+| Rail input | `addEventListener('wheel', …, { passive: false })`, `pointerType !== 'mouse'` guard, `setPointerCapture`, `scrollSnapType` toggled and restored, grab/grabbing, focus ring. |
+
+**The Tailwind bug is the round's best work.** `img { max-width: 100% }` in preflight was silently
+capping the zoomed image back to its container, so Part 3 would have shipped as a no-op that
+*measured* correct in the source and did nothing on screen. The agent found it, fixed it with an
+explicit `maxWidth: 'none'` at both call sites, and then measured chai against sambar — matching
+to rounding error rather than the ±1 px I asked for.
+
+**Two things it caught that are mine.**
+
+- 🔴 **A contradiction inside `docs/i18n/recipes.md`.** `recipe.upma.finish`'s Chars column says
+  **206**; the Notes cell in the *same row* says "The longest string in the set at 209 characters."
+  Confirmed, and the shipped lengths settle it: **upma.finish is 206, ooti.finish is 209** and is
+  the true longest. The agent trusted the string over the prose — correct. **My Sep 22 verification
+  of that doc compared every Chars figure to the real string and reported no mismatches, which was
+  true and insufficient: I never read the prose in the same table.** A table can be numerically
+  self-consistent and still contradict itself in words.
+- 🔴 **Part 6's acceptance number was impossible because Part 1 of the same brief made it so.**
+  I asked for "a click-drag of 120 px moves `scrollLeft` by ~120" on ooti — while Part 1 cut ooti
+  from 7 tiles to 5, leaving only ~30 px of overflow at 360. The agent's arithmetic checks out
+  (4 tiles + 4 gaps + a 52% peek = 209.8 mu visible against 230 mu of content = 30.3 px at mu 1.5,
+  exactly its reported ~30 px). It verified the mechanism at a range under the ceiling and said
+  why. → **Retro 119.**
+
+**The sheet-height finding is correct, and the criterion was the thing that was wrong.**
+idli 623.5 px vs ooti 640.5 px at 360, a consistent one-line gap at all three widths, caused by
+`recipe.ooti.finish` wrapping to five lines against idli's four. The agent isolated it to the
+prose and confirmed **the ingredient rail's own contribution is still constant** — which is the
+invariant Round 17's always-reserved dots row exists to protect, and it holds.
+
+⚠️ **"Sheet height identical for a 2- and a 5-ingredient dish" was inherited from Round 17 without
+re-examining it.** It passed there only because *no sheet had any step text*. Once Part 2 puts
+real prose of differing lengths on every sheet, two dishes with different recipes having
+different-height sheets is correct behaviour, not a defect — a modal that sizes to its content.
+The agent declined to force parity because forcing it meant clamping real content or padding dead
+space, both redesign that the same handover defers. **It resolved a conflict between two of my own
+instructions in favour of the one the user had stated.** Nothing to fix.
+
+**Still untested:** the rail's **touch** path, deliberately left alone and correctly excluded from
+scope. That remains the one thing in this build wanting a finger on glass.
+
+**Verdict: accepted.** Private 1.92.0.

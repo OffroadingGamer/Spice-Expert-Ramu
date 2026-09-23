@@ -599,6 +599,50 @@ Basil/parsley/curry-leaf separate, but not for the stated reason (leaf-shape dif
 
 ---
 
+## 2026-09-23 — Round 18 — implementation agent
+
+Outcome: pasted before verification. Verification in the record.
+
+Round 18 — deployed as v1.92.0 (Private). Review/Public unchanged at 1.69.0.
+Part 1 — rail corrections
+All eight rails now match the table exactly (data/recipes.ts:71-93), and I verified programmatically: coffee 2 · pesto 3 · veg-thukpa 3 · upma/beans-poriyal/veg-momo/minestrone 4 · ooti 5, min 2/max 5 across all 22. The other fourteen are byte-identical to before. Both authoring constraints ("every alias used," "fixed counts") are gone from the header comment. ing-aubergine.png and its manifest alias are confirmed still present and referenced by zero rails, as intended.
+
+Part 2 — 44 step strings
+All 44 recipe.<slug>.prep/.finish keys landed in en.ts, copied from docs/i18n/recipes.md §3. Re-measured programmatically after pasting (the handover's own worry — a copy error, not the writing): all 44 are 173–209 chars, ASCII-only, no em/en dashes. All 22 sheets now render both a Prep and a Garnish section (hasTranslation() needed no changes).
+
+One doc inconsistency, not mine: the source doc's own recipe.upma.finish row lists Chars=206 but its Notes column says "the longest string in the set at 209 characters" — those two disagree with each other. I trusted the actual string text (which I transcribed verbatim) over that stray note; my re-measurement confirms 206, and ooti.finish is the true longest at 209.
+
+Part 3 — chai/coffee icon zoom
+DISH_ICON_ZOOM added to recipes.ts (chai/coffee = 204/75 = 2.72, everything else defaults to 1), applied by sizing the <img> element at both call sites, never a transform.
+
+A real bug found and fixed before it shipped: Tailwind's preflight sets img { max-width: 100% } globally, which was silently capping the zoomed image back down to its container's width — the zoom had no visible effect until I added an explicit maxWidth: 'none', maxHeight: 'none' override at both the card medallion and the sheet plate. After the fix, verified programmatically at 360/403/744: chai's opaque icon width matches sambar's within rounding error (effectively 0px, not just ±1px) in both the card medallion and the sheet header, at all three widths. Every other dish's zoom factor is exactly 1 by construction (DISH_ICON_ZOOM only lists chai/coffee), so no other icon can move at all.
+
+Part 4 — recipe card, option A
+New numbers implemented exactly: banner 34mu, medallion 26mu (4mu clear top/bottom, confirmed), image 18mu×zoom (4mu clear each side unzoomed, confirmed), 1.5mu walnut ring, flattened shadow, parchment background-size: 100% auto / center replacing cover. Measured clearance matched the stated arithmetic exactly at all three widths (e.g. 7.6875px clearance at 744, = 4×mu). "Coconut Chutney"/"Bamboo Shoot Fry" still render with scrollWidth === clientWidth (199px, no clipping).
+
+Part 5 — Coffee Decoction
+en.ts:425 and levels.ts:73 both renamed to "Coffee Decoction." Grepped the whole src/ tree: the id coffee-extract, the alias ing-coffee-extract, and the PNG filename are unchanged everywhere, including inside the untouched kitchenScene.ts.
+
+Part 6 — rail mouse input
+Wheel, pointer-drag, snap-toggle, cursor, and focus ring all implemented per spec. Verified with real Chromium mouse-input dispatch (page.mouse, which produces genuine pointerType: 'mouse' events — not wheel(220,0)'s unnatural deltaX, and not a touch synthesis):
+
+Vertical wheel over the rail increases scrollLeft; parchment scrollTop stayed 0 throughout, at all three widths.
+Drag is precisely 1:1 with cursor movement (confirmed at 5/10/15px increments: scrollLeft tracked 4/9/14), snaps back to x mandatory on release, cursor shows grab→grabbing.
+A 2px tap does not move scrollLeft.
+Arrow keys still work; the rail shows a real visible focus ring (box-shadow, tomato on cream — previously invisible).
+Exactly 4 tiles fully visible + a 52%-visible 5th tile peeking for ooti at 360/403/744.
+Where the handover's own acceptance number doesn't hold, and why: "a click-drag of 120px moves scrollLeft by ~120" is untestable on ooti as written, because Part 1 dropped ooti to 5 tiles — its actual scrollable overflow at these widths is only ~30px (360) / ~34px (403) / ~38px (744), so any drag past that clamps at the browser's native scroll bound (verified: 120px and 60px drags both land at that same ~30-38px ceiling). The drag mechanism itself is correct and 1:1, verified at a range that stays under the ceiling.
+
+Sheet height — idli(2) vs ooti(5): not identical, and I did not force it to be
+This is the one place I'm flagging loudly rather than silently patching. Measured: idli 623.5px vs ooti 640.5px at 360 (696.7 vs 715.7 at 403; 798.75 vs 820.6 at 744) — a consistent ~one-line-height gap at every width. Root cause, confirmed by isolating each paragraph: the ingredient rail's own contribution is still perfectly constant (that's Round 17's fix, untouched this round). The gap comes entirely from recipe.ooti.finish wrapping to 5 lines against recipe.idli.finish's 4, despite near-identical total character counts — ordinary text-wrap variance, now visible for the first time because Part 2 is the first round where Prep/Garnish text actually renders (Round 17's "identical height" held only because every sheet had zero step text). Forcing pixel parity now would mean either clamping real step content (against Part 2's whole point) or padding every shorter paragraph with dead space — both are layout redesign, which the same handover elsewhere defers ("fill the sheet, do not redesign it... reviewing them will allow for any fine tweaking"). I left it as measured rather than picking a fix unilaterally.
+
+Build/verify
+tsc --noEmit and npm run build: clean. npm run balance: exit 0, zero fail/error lines (I don't have the literal "35/36/11/4/90" figure surfaced anywhere in this run's output to re-confirm against, but the sim completed clean and touched zero sealed files). find public -name '*.json': empty. git status: only levels.ts, recipes.ts, en.ts, MetaUpgrades.tsx, RecipeSheet.tsx changed — every sealed file (sim/engine.ts, data/enemies.ts, data/towers.ts, data/waves.ts, kitchenScene.ts, package*.json, rundot/leaderboard.config.json) untouched. Tags confirmed: Private 1.92.0, Review 1.69.0, Public 1.69.0.
+
+Not verifiable headlessly: real touchscreen drag (Part 6's touch path was deliberately left alone per the handover and I didn't test it — only the mouse path was in scope). One pre-existing untracked file outside jam-entry/ scope (references/Errors/The kitchen upgrades refix.mp4) is still there, not touched, not mine.
+
+---
+
 ## Pending
 
-- **Round 18** (implementation agent, → 1.92.0) — issued Sep 23, six parts. Art round 5 has returned; Round 18 is the only outstanding dispatch.
+- Nothing outstanding. Round 18 and art round 5 have both returned and been verified. **Round 18b** (ship art round 5's sprites, data-only) is specified but not yet issued.

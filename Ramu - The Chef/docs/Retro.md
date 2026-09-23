@@ -2793,3 +2793,17 @@ after **00:30 IST Sep 19**.
      quoted lesson 67 at myself, which is the actual warning: invoking one lesson is not evidence
      of having applied its siblings. **Before any brief that spends money, list the source folder
      first and paste the listing into the brief.**
+
+119. 🔴 **When one part of a brief changes the fixture, re-derive every other part's acceptance
+     numbers from the changed state.** Sep 23 2026. Round 18's Part 1 cut ooti from 7 ingredient
+     tiles to 5. Part 6 of the *same brief* then asked the agent to prove the rail's new drag
+     handler by dragging 120 px on ooti — but a 5-tile rail only overflows ~30 px, so the drag
+     clamps at the browser's scroll bound and the number can never be met. The agent did the
+     arithmetic, verified the mechanism under the ceiling, and said why. Two related misses in the
+     same round: **"sheet height identical for a 2- and a 5-ingredient dish" was inherited verbatim
+     from Round 17**, where it passed only because no sheet had any step text — Part 2 put real
+     prose on all 22 sheets and made the criterion wrong rather than failed. ✅ **Rule:** after
+     drafting a brief, walk each acceptance item and ask *which other part of this same brief
+     changes the thing I am measuring* — and never carry an acceptance line forward from a previous
+     round without re-deriving it against what this round changes. This is the acceptance-criteria
+     lesson (68) at a new scale: not task-versus-feature, but part-versus-part inside one document.

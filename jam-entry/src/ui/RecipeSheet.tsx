@@ -17,7 +17,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { MANIFEST } from '../assets/manifest.ts';
-import { ingredientNameKey, recipeIngredients, recipeNoteKey } from '../game/data/recipes.ts';
+import { dishIconZoom, ingredientNameKey, recipeIngredients, recipeNoteKey } from '../game/data/recipes.ts';
 import { hasTranslation, t } from '../i18n/index.ts';
 import { useMenuUnit } from './useMenuUnit.ts';
 
@@ -149,6 +149,12 @@ function StepRow({ mu, n, text }: { mu: number; n: number; text: string }) {
 function IngredientRail({ mu, ingredients }: { mu: number; ingredients: string[] }) {
     const railRef = useRef<HTMLDivElement>(null);
     const [scrollState, setScrollState] = useState({ canLeft: false, canRight: false, page: 0 });
+    const [dragging, setDragging] = useState(false);
+    // Round 18 Part 6: plain mutable drag bookkeeping, not React state — it's
+    // written on every pointermove and a re-render per pixel of drag would
+    // be wasteful (only `dragging` above, read for the grab/grabbing cursor,
+    // needs to trigger one).
+    const dragState = useRef({ dragging: false, pointerId: -1, startX: 0, startScrollLeft: 0, moved: false });
     const showAffordances = ingredients.length > TILES_PER_PAGE;
     const dotsCount = Math.ceil(ingredients.length / TILES_PER_PAGE);
 
@@ -171,6 +177,28 @@ function IngredientRail({ mu, ingredients }: { mu: number; ingredients: string[]
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ingredients, mu]);
 
+    // Round 18 Part 6 (bug found in Round 17's own surface): the rail was a
+    // native overflow-x-auto scroller with only ONE of four real input paths
+    // wired — arrow keys. There was no onWheel anywhere, a native scroller
+    // does not drag under a mouse without JS, and app.css hides the
+    // scrollbar entirely, so a desktop mouse (the user's own report) had no
+    // way to reach tiles the chevron/dots were advertising. Bound
+    // imperatively rather than JSX onWheel: React attaches its wheel
+    // listener passively at the document root, so preventDefault() from a
+    // JSX handler is silently ignored and the sheet behind would scroll
+    // vertically instead of the rail scrolling sideways.
+    useEffect(() => {
+        const el = railRef.current;
+        if (!el) return;
+        const onWheel = (e: WheelEvent) => {
+            if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+            el.scrollLeft += e.deltaY;
+            e.preventDefault();
+        };
+        el.addEventListener('wheel', onWheel, { passive: false });
+        return () => el.removeEventListener('wheel', onWheel);
+    }, []);
+
     const onKeyDown = (e: React.KeyboardEvent) => {
         if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
         e.preventDefault();
@@ -178,6 +206,54 @@ function IngredientRail({ mu, ingredients }: { mu: number; ingredients: string[]
         if (!el) return;
         const delta = (TILE_W_MU + TILE_GAP_MU) * mu * (e.key === 'ArrowRight' ? 1 : -1);
         el.scrollBy({ left: delta, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+    };
+
+    // Round 18 Part 6: mouse click-and-drag. Guarded to pointerType
+    // === 'mouse' so touch — which already scrolls natively via
+    // touch-action: pan-x — is left completely alone. Scroll-snap fights a
+    // drag mid-gesture (the rail would fight the cursor back toward a tile
+    // edge), so it's switched off for the duration and restored on release.
+    // A 4px movement threshold before a gesture counts as a "drag" is what
+    // keeps a plain tap on a tile from being swallowed by this handler.
+    const onPointerDown = (e: React.PointerEvent) => {
+        if (e.pointerType !== 'mouse') return;
+        const el = railRef.current;
+        if (!el) return;
+        el.setPointerCapture(e.pointerId);
+        dragState.current = { dragging: true, pointerId: e.pointerId, startX: e.clientX, startScrollLeft: el.scrollLeft, moved: false };
+        el.style.scrollSnapType = 'none';
+        setDragging(true);
+    };
+    const onPointerMove = (e: React.PointerEvent) => {
+        const d = dragState.current;
+        if (!d.dragging || e.pointerId !== d.pointerId) return;
+        const el = railRef.current;
+        if (!el) return;
+        const dx = e.clientX - d.startX;
+        if (Math.abs(dx) > 4) d.moved = true;
+        el.scrollLeft = d.startScrollLeft - dx;
+    };
+    const endDrag = (e: React.PointerEvent) => {
+        const d = dragState.current;
+        if (!d.dragging || e.pointerId !== d.pointerId) return;
+        d.dragging = false;
+        const el = railRef.current;
+        if (el) {
+            el.releasePointerCapture(e.pointerId);
+            el.style.scrollSnapType = '';
+        }
+        setDragging(false);
+    };
+    // A drag that crossed the 4px threshold suppresses its own trailing
+    // click (capture phase, so it never reaches a future per-tile handler);
+    // a plain tap — the common case, since tiles have no click behavior of
+    // their own today — passes through untouched.
+    const onClickCapture = (e: React.MouseEvent) => {
+        if (dragState.current.moved) {
+            e.preventDefault();
+            e.stopPropagation();
+            dragState.current.moved = false;
+        }
     };
 
     const activeDot = Math.min(dotsCount - 1, Math.max(0, scrollState.page));
@@ -192,8 +268,23 @@ function IngredientRail({ mu, ingredients }: { mu: number; ingredients: string[]
                     tabIndex={0}
                     onKeyDown={onKeyDown}
                     onScroll={updateScrollState}
-                    className="recipe-rail motion-safe:scroll-smooth flex snap-x snap-mandatory overflow-x-auto"
-                    style={{ gap: TILE_GAP_MU * mu, paddingBottom: 2 * mu, touchAction: 'pan-x' }}
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={endDrag}
+                    onPointerCancel={endDrag}
+                    onClickCapture={onClickCapture}
+                    className="recipe-rail motion-safe:scroll-smooth flex snap-x snap-mandatory overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                    style={{
+                        gap: TILE_GAP_MU * mu, paddingBottom: 2 * mu, touchAction: 'pan-x',
+                        cursor: dragging ? 'grabbing' : 'grab',
+                        // Tailwind's ring/offset color utilities need a real
+                        // token, not always available on an arbitrary hex —
+                        // set both directly so the focus ring is guaranteed
+                        // visible against the parchment (the previous state:
+                        // tabIndex={0} worked but rendered no ring at all).
+                        ['--tw-ring-color' as string]: '#c8401f',
+                        ['--tw-ring-offset-color' as string]: '#f0e0bc',
+                    }}
                 >
                     {ingredients.map((alias, i) => (
                         <div
@@ -213,6 +304,7 @@ function IngredientRail({ mu, ingredients }: { mu: number; ingredients: string[]
                                 src={ASSET_SRC.get(alias)}
                                 alt=""
                                 className="object-contain"
+                                draggable={false}
                                 style={{ width: 26 * mu, height: 26 * mu }}
                             />
                             <span
@@ -256,12 +348,13 @@ function IngredientRail({ mu, ingredients }: { mu: number; ingredients: string[]
                 dish's dots row and a <=4-ingredient dish's empty one must
                 take the same vertical space, or the sheet's overall height
                 would depend on ingredient count, exactly the thing the
-                sideways-scrolling rail exists to prevent (the handover's own
-                acceptance line: identical height for a 2- and a
-                7-ingredient dish). Caught by testing chai/ooti (7mu of dots
-                row) against idli (2 ingredients, no dots) at 360/403/744 —
-                first draft only rendered this div when showAffordances,
-                which broke exactly that check by ~9px. */}
+                sideways-scrolling rail exists to prevent (the acceptance
+                line: identical height for a 2- and a 5-ingredient dish —
+                idli/ooti as of Round 18's rail corrections, was idli/ooti-at-
+                7 under Round 17's shipped data). Caught by testing chai/ooti
+                against idli (2 ingredients, no dots) at 360/403/744 — first
+                draft only rendered this div when showAffordances, which
+                broke exactly that check by ~9px. */}
             <div className="flex justify-center" style={{ gap: 3 * mu, marginTop: 3 * mu, height: 3 * mu }}>
                 {showAffordances &&
                     Array.from({ length: dotsCount }).map((_, i) => (
@@ -320,13 +413,37 @@ export default function RecipeSheet({ slug, onClose }: { slug: string; onClose: 
                                 background: 'radial-gradient(circle at 38% 32%, #fffdf6, #efe3c8)',
                                 boxShadow: '0 2px 6px rgba(90,60,20,0.4), inset 0 0 0 1.5px rgba(122,74,36,0.25)',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                overflow: 'hidden',
                             }}
                         >
+                            {/* Round 18 Part 3: chai/coffee's dish-*.png carries
+                                only a 75px-wide opaque glyph on the shared
+                                212x141 canvas against every other dish's
+                                ~204px — dishIconZoom() sizes the <img>
+                                ELEMENT itself (never a transform, which would
+                                scale an already-rasterized layer and blur it)
+                                so the browser re-rasterizes at the larger
+                                size; the plate's own overflow:hidden crops
+                                the now-oversized padding the same way the
+                                26mu medallion in MetaUpgrades.tsx's
+                                RecipeCard does. */}
                             <img
                                 src={dishIcon}
                                 alt=""
                                 className="object-contain"
-                                style={{ width: DISH_FULL_W_MU * mu, height: DISH_FULL_H_MU * mu }}
+                                draggable={false}
+                                // maxWidth/maxHeight: none overrides Tailwind
+                                // preflight's `img { max-width: 100% }` reset
+                                // — without it a zoomed (chai/coffee) image
+                                // gets silently capped back to the plate's
+                                // own width, the same bug found and fixed in
+                                // MetaUpgrades.tsx's card medallion.
+                                style={{
+                                    width: DISH_FULL_W_MU * mu * dishIconZoom(slug),
+                                    height: DISH_FULL_H_MU * mu * dishIconZoom(slug),
+                                    maxWidth: 'none',
+                                    maxHeight: 'none',
+                                }}
                             />
                         </div>
                         <p className="font-serif font-black" style={{ fontSize: 15 * mu, marginTop: 5 * mu, letterSpacing: '0.01em' }}>
