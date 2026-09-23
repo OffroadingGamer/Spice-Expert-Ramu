@@ -345,6 +345,29 @@ export const MANIFEST: Manifest = {
                 { alias: 'ing-flour', src: 'images/ing-flour.png' },
                 { alias: 'ing-garlic', src: 'images/ing-garlic.png' },
                 { alias: 'ing-tomato', src: 'images/ing-tomato.png' },
+                // Round 18b Part 1: the finished (non-licensed) ingredient
+                // set — Art/_gen/ingredients-r7-final/'s 18 sprites (7 of
+                // which overwrote existing files above and need no new
+                // manifest row), plus ingredients-r5-final/spaghetti.png
+                // (r5's noodles.png was rejected — reads as soup) and
+                // ingredients-r6-final/noodles.png. All 128^2, alpha kept;
+                // the 5 non-square r7 sources (milk, the 3 non-olive oils at
+                // 71px, oil-sesame at 65px) were centre-padded to 128^2
+                // rather than resized, so their own alpha-bbox fill fraction
+                // (0.859 of the already-128 height) is untouched.
+                { alias: 'ing-semolina', src: 'images/ing-semolina.png' },
+                { alias: 'ing-tamarind', src: 'images/ing-tamarind.png' },
+                { alias: 'ing-basil', src: 'images/ing-basil.png' },
+                { alias: 'ing-green-beans', src: 'images/ing-green-beans.png' },
+                { alias: 'ing-spinach', src: 'images/ing-spinach.png' },
+                { alias: 'ing-cabbage', src: 'images/ing-cabbage.png' },
+                { alias: 'ing-bamboo-shoot', src: 'images/ing-bamboo-shoot.png' },
+                { alias: 'ing-oil-mustard', src: 'images/ing-oil-mustard.png' },
+                { alias: 'ing-oil-coconut', src: 'images/ing-oil-coconut.png' },
+                { alias: 'ing-oil-sesame', src: 'images/ing-oil-sesame.png' },
+                { alias: 'ing-oil-olive', src: 'images/ing-oil-olive.png' },
+                { alias: 'ing-spaghetti', src: 'images/ing-spaghetti.png' },
+                { alias: 'ing-noodles', src: 'images/ing-noodles.png' },
             ],
         },
     ],

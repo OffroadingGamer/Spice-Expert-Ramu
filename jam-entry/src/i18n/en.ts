@@ -452,6 +452,22 @@ export const en: Record<string, TranslationEntry> = {
     'ingredient.flour': 'Flour',
     'ingredient.garlic': 'Garlic',
     'ingredient.tomato': 'Tomato',
+    // Round 18b Part 3: names for the 13 ingredients that shipped as real
+    // sprites for the first time this round (Art/_gen/ingredients-r7-final/,
+    // plus spaghetti from r5-final and noodles from r6-final).
+    'ingredient.semolina': 'Semolina',
+    'ingredient.tamarind': 'Tamarind',
+    'ingredient.basil': 'Basil',
+    'ingredient.green-beans': 'Green Beans',
+    'ingredient.spinach': 'Spinach',
+    'ingredient.cabbage': 'Cabbage',
+    'ingredient.bamboo-shoot': 'Bamboo Shoot',
+    'ingredient.oil-mustard': 'Mustard Oil',
+    'ingredient.oil-coconut': 'Coconut Oil',
+    'ingredient.oil-sesame': 'Sesame Oil',
+    'ingredient.oil-olive': 'Olive Oil',
+    'ingredient.spaghetti': 'Spaghetti',
+    'ingredient.noodles': 'Noodles',
 
     // ---- 20. Recipe notes (game/data/recipes.ts) — keyed on dish slug, one
     // line of Ramu's voice, shown on an UNLOCKED scroll card only. ----------

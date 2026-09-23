@@ -685,6 +685,50 @@ What turned out wrong in the handover: it didn't mention a hard imagegen rate li
 
 ---
 
+## 2026-09-23 — Round 18b — implementation agent
+
+Outcome: pasted before verification. Verification in the record.
+
+Confirmed: Private 1.93.0, Review 1.69.0, Public 1.69.0 — exactly the required end state.
+
+Round 18b — deployed as v1.93.0 (Private). Review/Public unchanged at 1.69.0.
+Part 1 — sprites
+46 ing-*.png shipped, all 128², RGBA/alpha intact, no .json sidecars. 20 files touched (7 overwrites + 13 new) — confirmed exactly via git status, matching the handover's own count. Confirmed source, not by trust but by raw-pixel hash: all 11 colliding filenames (basil, cabbage, spinach, tamarind, semolina, green-beans, bamboo-shoot, the 4 oils) hash-match ingredients-r7-final/ and do not match ingredients-r5-final/; noodles matches r6-final, not r5-final; spaghetti matches its one authorized r5-final file.
+
+The 5 non-square sources (milk 76×128, oil-coconut/mustard 71×128, oil-olive 76×128, oil-sesame 65×128) were not resized — only padded, since their height was already 128. Measured their alpha-bbox fill fraction before and after: 0.859 exactly, for all five, unchanged.
+
+Not fully clean, flagged rather than fixed: public/images holds one pre-existing sprite, ing-tea-leaf.png, at 256×256 — not 128². It's outside every round's authorized touch-list (including Part 1's explicit "nowhere else"), so I didn't resize it, but it means the acceptance line "all 46 are 128²" doesn't literally hold today. Worth a decision on whether it should be normalized in a future round.
+
+Part 2 — rails
+All 22 verified programmatically against the table: exact ingredient lists, min 2/max 7, aubergine still referenced by zero rails with its asset intact.
+
+Part 3 — names
+All 13 new keys present and correct.
+
+Part 4 — pane drag: two real bugs found and fixed
+setPointerCapture on pointerdown broke every click in a draggable pane. Traced with live event logging: a plain, undragged tap's pointerup/click were retargeted by Chromium to the capturing container, not the button under the cursor — so wiring this up as specified would have silently broken every upgrade button and every recipe card. Fixed by deferring setPointerCapture until the 4px threshold is actually crossed (verified: after the fix, pointerup/click correctly target the tapped element again). Applied the same fix to Round 18's IngredientRail, which had the identical latent defect — invisible there only because no tile has a click handler yet.
+Recipes-pane scroll offset never actually survived a Kitchen close/reopen, contrary to what Round 17's own report claimed — that report tested the Stations pane specifically, which is always the visible tab at mount. Setting scrollTop on a still-display:none element (which Recipes always is at mount) is a silent no-op — confirmed by reading the value back immediately: it stayed 0. Fixed by restoring each pane's offset lazily, the first time it actually becomes the visible tab, instead of unconditionally at mount.
+Post-fix, at both 360 and 744: 100px drag → scrollTop +100 exactly · a drag released over a card does not open its sheet · a 2px click on a card does · wheel still moves it (+150) · tab switch and full Kitchen reopen both preserve the offset (123 in, 123 out).
+
+Rail affordances, 7-tile ooti
+Exactly 4 tiles fully visible + a 52%-visible 5th at all three widths, 2 page dots (⌈7/4⌉). Measured overflow: 171px (360) / 191px (403) / 219px (744) — 171/1.5mu = 114mu, matching the handover's own prediction almost exactly. A 120px drag now moves scrollLeft by exactly 120 and snaps (unlike Round 18's 5-tile ooti, where the same drag clamped at ~30px).
+
+Sheet height, rail-only
+Idli(2) vs ooti(7) rail-wrapper height: identical at all three widths (81/81, 90.53/90.53, 103.84/103.84).
+
+A third bug, found while checking Part 3's own acceptance line
+Checking "no tile label overflows two lines" turned up the opposite problem: every ingredient tile label had been silently clamped to 1 line, not 2, since Round 17. Root cause: the line-clamp-2 <span> was a direct child of the tile's flex flex-col container — a flex parent blockifies a display:-webkit-box child's outer display, which breaks the legacy box layout -webkit-line-clamp depends on (confirmed live: computed display read back as flow-root). It never showed up before because every ingredient name shipped before this round happened to fit on one line. Fixed by wrapping the clamped span in a plain, non-flex-item div. That then exposed a second-order fix: the tile's fixed height (44mu) had been implicitly calibrated around the broken 1-line behavior — once labels correctly render 2 lines, they overflowed the tile's bottom edge by ~1.3px at 360. Raised TILE_H_MU to 52 (arithmetic in the code comment); re-verified zero label overflow and identical rail height across ingredient counts at all three widths afterward.
+
+Part 5 — Close button
+Parchment gradient fill, #7a4a24 1.5mu walnut border, #33251a ink — confirmed via computed style at all three widths. Height 49.4/54.7/62.1px, all ≥44px. Still dismisses.
+
+Build/verify
+tsc --noEmit and npm run build: clean. npm run balance: exit 0, zero fail lines. find public -name '*.json': empty. git status: only manifest.ts, recipes.ts, en.ts, MetaUpgrades.tsx, RecipeSheet.tsx, and the 20 sprite files changed — every sealed file confirmed untouched (git diff --stat against all seven returned nothing). Tags: Private 1.93.0, Review 1.69.0, Public 1.69.0.
+
+Not verifiable headlessly: touch drag on either pane or the rail — out of scope per the handover and untested, same as prior rounds.
+
+---
+
 ## Pending
 
-- **Round 18b** (implementation agent) — unblocked now that art round 7 has returned. Ships the 22 rails, the 46-sprite set, drag-scroll on the Kitchen panes and the Close button restyle. Not yet issued.
+- Nothing outstanding. Round 18b and art round 7 have both returned and been verified. **Round 19 (Hindi)** is next and not yet issued.

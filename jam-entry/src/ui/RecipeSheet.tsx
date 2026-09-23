@@ -52,7 +52,14 @@ const DISH_FULL_W_MU = DISH_TARGET_OPAQUE_W_MU * (DISH_CANVAS_W / DISH_OPAQUE_W)
 const DISH_FULL_H_MU = DISH_FULL_W_MU * (DISH_CANVAS_H / DISH_CANVAS_W);
 
 const TILE_W_MU = 42;
-const TILE_H_MU = 44;
+// Round 18b: 44 was calibrated around the line-clamp bug above (which
+// silently rendered every label at 1 line, not 2) — content actually needs
+// padding-top(4) + image(26) + wrapper margin(2) + a REAL 2-line label +
+// padding-bottom(3). A genuine 2-line label needs ~51.7mu of that at 360
+// wide (mu=1.5, where the 11px font floor applies) — the binding case,
+// since the floor makes the label take proportionally more mu at small mu
+// than at large. 52 leaves a hair of margin above that measured minimum.
+const TILE_H_MU = 52;
 const TILE_GAP_MU = 5;
 const TILES_PER_PAGE = 4;
 
@@ -154,7 +161,7 @@ function IngredientRail({ mu, ingredients }: { mu: number; ingredients: string[]
     // written on every pointermove and a re-render per pixel of drag would
     // be wasteful (only `dragging` above, read for the grab/grabbing cursor,
     // needs to trigger one).
-    const dragState = useRef({ dragging: false, pointerId: -1, startX: 0, startScrollLeft: 0, moved: false });
+    const dragState = useRef({ dragging: false, pointerId: -1, startX: 0, startScrollLeft: 0, moved: false, captured: false });
     const showAffordances = ingredients.length > TILES_PER_PAGE;
     const dotsCount = Math.ceil(ingredients.length / TILES_PER_PAGE);
 
@@ -215,14 +222,22 @@ function IngredientRail({ mu, ingredients }: { mu: number; ingredients: string[]
     // edge), so it's switched off for the duration and restored on release.
     // A 4px movement threshold before a gesture counts as a "drag" is what
     // keeps a plain tap on a tile from being swallowed by this handler.
+    //
+    // setPointerCapture/scroll-snap toggling happen INSIDE onPointerMove,
+    // only once that threshold is actually crossed — not in onPointerDown.
+    // Round 18b Part 4 found (by tracing real event targets) that capturing
+    // the pointer on pointerdown makes Chromium retarget a plain tap's
+    // eventual pointerup/click to the CAPTURING element instead of whatever
+    // was under the cursor. Tiles have no click handler of their own today,
+    // so this couldn't yet break anything visible here — but it's the exact
+    // same landmine the Recipes pane's drag-scroll hit, left live in the
+    // first place this pattern shipped, so it's fixed here too rather than
+    // waiting for the day a tile gets one.
     const onPointerDown = (e: React.PointerEvent) => {
         if (e.pointerType !== 'mouse') return;
         const el = railRef.current;
         if (!el) return;
-        el.setPointerCapture(e.pointerId);
-        dragState.current = { dragging: true, pointerId: e.pointerId, startX: e.clientX, startScrollLeft: el.scrollLeft, moved: false };
-        el.style.scrollSnapType = 'none';
-        setDragging(true);
+        dragState.current = { dragging: true, pointerId: e.pointerId, startX: e.clientX, startScrollLeft: el.scrollLeft, moved: false, captured: false };
     };
     const onPointerMove = (e: React.PointerEvent) => {
         const d = dragState.current;
@@ -230,7 +245,14 @@ function IngredientRail({ mu, ingredients }: { mu: number; ingredients: string[]
         const el = railRef.current;
         if (!el) return;
         const dx = e.clientX - d.startX;
-        if (Math.abs(dx) > 4) d.moved = true;
+        if (!d.moved && Math.abs(dx) > 4) {
+            d.moved = true;
+            el.setPointerCapture(e.pointerId);
+            d.captured = true;
+            el.style.scrollSnapType = 'none';
+            setDragging(true);
+        }
+        if (!d.moved) return;
         el.scrollLeft = d.startScrollLeft - dx;
     };
     const endDrag = (e: React.PointerEvent) => {
@@ -238,7 +260,7 @@ function IngredientRail({ mu, ingredients }: { mu: number; ingredients: string[]
         if (!d.dragging || e.pointerId !== d.pointerId) return;
         d.dragging = false;
         const el = railRef.current;
-        if (el) {
+        if (el && d.captured) {
             el.releasePointerCapture(e.pointerId);
             el.style.scrollSnapType = '';
         }
@@ -307,12 +329,34 @@ function IngredientRail({ mu, ingredients }: { mu: number; ingredients: string[]
                                 draggable={false}
                                 style={{ width: 26 * mu, height: 26 * mu }}
                             />
-                            <span
-                                className="line-clamp-2 font-extrabold"
-                                style={{ fontSize: Math.max(11, 6.5 * mu), color: '#5a4630', marginTop: 2 * mu, lineHeight: 1.14 }}
-                            >
-                                {t(ingredientNameKey(alias))}
-                            </span>
+                            {/* Round 18b: found while checking the new,
+                                longer ingredient names ("Mustard Oil",
+                                "Bamboo Shoot", ...) for 2-line overflow —
+                                -webkit-line-clamp silently stopped clamping
+                                to 2 lines and instead cut every label to 1
+                                (the 2nd line fully hidden, not just visually
+                                truncated). Root cause: the clamped <span>
+                                was a direct child of this tile's own
+                                `flex flex-col` container, and a flex/grid
+                                parent BLOCKIFIES a `display: -webkit-box`
+                                child's outer display, which breaks the
+                                legacy box layout line-clamp depends on
+                                (confirmed live: the span's computed `display`
+                                read back as `flow-root`, not `-webkit-box`).
+                                This silently affected every ingredient tile
+                                since Round 17 — it only went unnoticed
+                                because every name shipped before this round
+                                happened to fit on one line already. Wrapping
+                                the clamped span in a plain, non-flex-item div
+                                is the standard fix. */}
+                            <div style={{ marginTop: 2 * mu }}>
+                                <span
+                                    className="line-clamp-2 font-extrabold"
+                                    style={{ fontSize: Math.max(11, 6.5 * mu), color: '#5a4630', lineHeight: 1.14 }}
+                                >
+                                    {t(ingredientNameKey(alias))}
+                                </span>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -477,6 +521,14 @@ export default function RecipeSheet({ slug, onClose }: { slug: string; onClose: 
                     )}
                 </div>
                 <Roller mu={mu} />
+                {/* Round 18b Part 5 ("feels a bit merged with the background"):
+                    was chocolate-on-chocolate-on-chocolate — this button, the
+                    40% chocolate scrim behind it, and the #2a1118 cards behind
+                    THAT are all one hue, separated only by a drop shadow
+                    invisible on a dark ground. Parchment fill + a walnut ring
+                    match the scroll's own material instead, so the button
+                    reads as the bottom roller's own continuation rather than
+                    a UI chrome element floating on top of it. */}
                 <button
                     type="button"
                     aria-label={t('recipe.sheet.closeAria')}
@@ -484,8 +536,9 @@ export default function RecipeSheet({ slug, onClose }: { slug: string; onClose: 
                     style={{
                         marginTop: 10 * mu,
                         borderRadius: 7 * mu,
-                        backgroundColor: 'var(--color-chocolate)',
-                        color: 'var(--color-cream)',
+                        background: 'linear-gradient(162deg, #f7efd8, #e9d7b0)',
+                        border: `${1.5 * mu}px solid #7a4a24`,
+                        color: '#33251a',
                         fontSize: Math.max(11, 9.5 * mu),
                         padding: `${8 * mu}px 0`,
                         boxShadow: '0 3px 8px rgba(0,0,0,0.45)',

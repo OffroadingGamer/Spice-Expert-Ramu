@@ -39,9 +39,9 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Private 1.92.0** (Rounds 0–18) — the first build whose recipe sheets carry real step text. Review and Public stay at **1.69.0**, the jam build. |
+| **Live version** | **Private 1.93.0** (Rounds 0–18b) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it. Review and Public stay at **1.69.0**. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Round 18b → Private 1.93.0** — issued Sep 23, five parts: the 46-sprite set, the 22 rails, 13 ingredient names, drag-scroll on both Kitchen panes, the Close button restyle. Then **Round 19, Hindi**. |
+| **In flight** | **Nothing.** Next is **Round 19, Hindi** — not yet issued. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the Devanagari name test, the touch-drag test, and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
 | **Repo** | `origin/main` = **`66c12c2`**, tree clean apart from Round 17's in-progress edits. Pushed continuously since Sep 18; `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is in the public repo. Every push preceded by the secret scan with its 3-line positive control. ⚠️ `references/Errors/The kitchen upgrades refix.mp4` (3 MB) is untracked and **not** committed — no other reference video is tracked; the user's call. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -4005,3 +4005,55 @@ asks for the measured overflow.
 
 Out of scope and stated: the recipe sheet's layout (user deferred until the text is judged in
 place), the plural key, Hindi, and the props and dish art the user parked until the game is public.
+
+---
+
+### 2026-09-23 — Round 18b verified — Private 1.93.0, and three bugs worth more than the round
+
+Return pasted verbatim into [Agent Returns.md](Agent%20Returns.md) before verification.
+
+| Check | Result |
+|---|---|
+| Tags | **Private 1.93.0**, Review 1.69.0, Public 1.69.0. |
+| Balance | The report said only "exit 0, zero fail lines". I ran it: **35 / 36 / 11 / 4 / 90**, byte-identical. Second round running this agent declined to assert a number it could not see — correct behaviour, and the gap is mine to close. |
+| Sealed / build | All seven sealed files zero changes. `tsc` and `build` clean, no `.json` in `public`. Changed files are exactly the five sources plus 7 modified and 13 new sprites. |
+| **The trap** | 🔒 Verified **by pixel hash, independently**, not from the report. All 11 colliding filenames (`basil`, `cabbage`, `spinach`, `tamarind`, `semolina`, `green-beans`, `bamboo-shoot`, four oils) match **r7-final** and not r5-final; `noodles` matches **r6-final**, not r5's rejected bowl; `spaghetti` matches its one authorised r5 file. **No pack art shipped.** |
+| Sprites | **46** `ing-*`, 45 at 128². |
+| Rails / names | 22 rails exact, min 2 max 7, `aubergine` at zero references. **46 `ingredient.*` keys**, all 13 new ones present once. |
+
+**`ing-tea-leaf.png` is 256×256 — confirmed, and the agent was right to flag rather than fix it.**
+It predates every authorised touch-list, so the acceptance line "all 46 are 128²" does not literally
+hold. No visual defect (`object-contain` just downsamples further), so it is a tidiness item for a
+future round, not a blocker. **Refusing to quietly widen its own scope was the right call.**
+
+**Three bugs, and two of them correct something of mine.**
+
+1. 🔴 **`setPointerCapture` on `pointerdown` breaks every click in the pane — and I wrote that
+   pattern into two briefs.** Traced with live event logging: an undragged tap's `pointerup` and
+   `click` get retargeted by Chromium to the *capturing container*, not the button under the
+   cursor. Wired as I specified, this would have silently broken **every upgrade button and every
+   recipe card**. Fixed by deferring the capture into `onPointerMove`, only once the 4 px threshold
+   is crossed — verified at `MetaUpgrades.tsx:132` and `RecipeSheet.tsx:250`. **The agent also went
+   back and fixed Round 18's rail**, which carried the identical latent defect, invisible there only
+   because no tile has a click handler yet. → **Retro 124.**
+2. 🔴 **Round 17's scroll-persistence claim was true and unrepresentative, and I verified it.**
+   Its report demonstrated the offset surviving a Kitchen close/reopen — **on the Stations pane**,
+   which is always the visible tab at mount. Recipes is *never* visible at mount, and
+   `scrollTop` on a `display: none` element is a silent no-op, so that pane never worked. Fixed
+   with a lazy per-pane restore keyed on `activeTab` (`MetaUpgrades.tsx:401–411`). → **Retro 123.**
+3. 🔴 **Every ingredient tile label had been clamped to one line since Round 17.** The
+   `line-clamp-2` span was a direct flex child, and a flex parent blockifies a
+   `display: -webkit-box` child, killing the legacy box layout `-webkit-line-clamp` depends on
+   (computed display read back as `flow-root`). **Latent until this round's data changed it** —
+   every previously shipped ingredient name happened to fit on one line, and "Bamboo Shoot",
+   "Green Beans" and "Mustard Oil" are the first that do not. Fixed by wrapping the span in a
+   plain div (`:352`), which then exposed that the 44 mu tile height had been calibrated around the
+   broken single-line behaviour; **`TILE_H_MU` raised to 52** (`:62`) with the arithmetic in the
+   comment.
+
+**The acceptance line Retro 119 repaired, paid off.** With ooti back at 7 tiles the rail carries
+~114 mu of overflow, so the 120 px drag that was impossible in Round 18 now moves `scrollLeft` by
+exactly 120 and snaps. Measured overflow 171 / 191 / 219 px against my predicted 114 mu — 171 ÷ 1.5
+= 114.0.
+
+**Verdict: accepted.** The Kitchen is feature-complete. **Still untested by anyone: touch.**

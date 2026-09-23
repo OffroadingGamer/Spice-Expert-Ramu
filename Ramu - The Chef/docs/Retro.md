@@ -2860,3 +2860,29 @@ after **00:30 IST Sep 19**.
      the retake had traded legibility for separation. Composited over the actual tile it measures
      **31.9** against shipped `flour`'s **30.1**. **Measure against the surface the thing will
      ship on, or the background becomes part of your result.**
+
+123. 🔴 **A test that passes on the favourable half of an asymmetric pair proves nothing about the
+     other half — and I accepted one.** Sep 23 2026. Round 17 added two Kitchen panes with
+     module-scope scroll persistence and demonstrated it surviving a full close/reopen: *"Stations
+     selected again and its scroll offset still 120."* True — and true only of **Stations**, which
+     is always the visible tab at mount. **Recipes is never visible at mount**, and setting
+     `scrollTop` on a `display: none` element is a silent no-op, so that pane never persisted
+     anything. Round 18b found it by reading the value straight back. I verified that report, saw
+     one pane named, and did not ask whether the two panes were symmetric with respect to the thing
+     being claimed. ✅ **Rule: when a report proves a behaviour on one member of a pair or set, ask
+     what makes the members differ before generalising — and if one of them is the easy case, the
+     evidence is about the easy case only.** Here the asymmetry was structural and visible in the
+     design: one tab is open at mount by deliberate choice, the other cannot be.
+
+124. 🔴 **A plausible-looking API pattern written into a brief is still a claim, and I shipped one
+     into two rounds.** Sep 23 2026. Both Round 18's rail spec and Round 18b's pane spec told the
+     agent to call `setPointerCapture` in `pointerdown` — the obvious place, and wrong. Chromium
+     retargets a subsequent `pointerup`/`click` to the **capturing container**, so an undragged tap
+     never reaches the button underneath. In Round 18 it shipped **latent**, invisible only because
+     no ingredient tile has a click handler; in Round 18b it would have broken every upgrade button
+     and every recipe card. The agent found it by logging real event targets and fixed both. ✅
+     **The correct pattern: capture inside `pointermove`, only once the movement threshold is
+     actually crossed.** And the general rule — **when a brief names a specific API call sequence,
+     that is engineering detail I am asserting, not a requirement I am stating.** Say what must be
+     true (a drag scrolls, a tap still activates what it hits) and leave the mechanism to the agent,
+     or verify the mechanism first.

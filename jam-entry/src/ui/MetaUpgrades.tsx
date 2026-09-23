@@ -16,9 +16,12 @@
  * outlive one open/close cycle can't live in local state). Both panes stay
  * mounted the whole time (toggled via inline `display`, not a conditional
  * render) so an in-session tab switch preserves scrollTop for free, the
- * same way any hidden-but-not-unmounted DOM element does; the mount effect
- * below additionally restores each pane's saved offset on a fresh open,
- * covering the close/reopen case the free case doesn't.
+ * same way any hidden-but-not-unmounted DOM element does. The close/reopen
+ * case the free case doesn't cover is handled by a separate effect (see
+ * `restoredRef` below) that restores each pane's saved offset the first
+ * time IT becomes the visible tab, not unconditionally at mount — setting
+ * scrollTop on a still-`display:none` element (which the Recipes pane
+ * always is at mount, since Stations opens first) is a silent no-op.
  */
 import { useEffect, useRef, useState } from 'react';
 import { MANIFEST } from '../assets/manifest.ts';
@@ -80,6 +83,80 @@ function uniqueValue(u: MetaUniqueDef, level: number): string {
 }
 
 type Tab = 'stations' | 'recipes';
+
+/**
+ * Round 18b Part 4 ("upgrades -> Recipes is only mouse scrollable, make it
+ * drag scrollable as well"): both panes are bare native vertical scrollers —
+ * a mouse wheel works because browsers scroll a vertical container natively,
+ * but a click-and-drag does not, same root cause Round 18 Part 6 fixed on
+ * the ingredient rail (ported here, vertically, for both panes rather than
+ * duplicated per pane). Guarded to pointerType === 'mouse'; touch already
+ * scrolls natively and is left alone. The 4px move threshold matters MORE
+ * here than it did on the rail: the Recipes pane is a grid of buttons that
+ * open a sheet, so a drag that crosses the threshold must suppress its own
+ * trailing click via onClickCapture, or dragging the pane open would also
+ * open whatever card the cursor happened to lift over.
+ *
+ * setPointerCapture is deliberately called INSIDE onPointerMove, only once
+ * the drag threshold is actually crossed — not in onPointerDown, which is
+ * the obvious-looking place and what Round 18 Part 6's rail version did.
+ * Found by testing: capturing the pointer on pointerdown makes Chromium
+ * retarget the eventual pointerup/click of a plain, undragged tap to the
+ * CAPTURING element (this pane's own div) instead of the button under the
+ * cursor — confirmed via a live event trace (pointerdown target: the card's
+ * <p>; pointerup and click targets: the pane div). That silently broke
+ * every card and every upgrade button the instant this hook was wired in,
+ * despite `d.moved` correctly staying false and onClickCapture doing
+ * nothing wrong — the click had already been redirected before it got
+ * there. Deferring the capture call until movement is confirmed leaves an
+ * un-dragged tap's pointerup/click targeted exactly as it always was.
+ */
+function usePaneDrag(ref: { current: HTMLDivElement | null }) {
+    const [dragging, setDragging] = useState(false);
+    const dragState = useRef({ dragging: false, pointerId: -1, startY: 0, startScrollTop: 0, moved: false, captured: false });
+
+    const onPointerDown = (e: React.PointerEvent) => {
+        if (e.pointerType !== 'mouse') return;
+        const el = ref.current;
+        if (!el) return;
+        dragState.current = { dragging: true, pointerId: e.pointerId, startY: e.clientY, startScrollTop: el.scrollTop, moved: false, captured: false };
+    };
+    const onPointerMove = (e: React.PointerEvent) => {
+        const d = dragState.current;
+        if (!d.dragging || e.pointerId !== d.pointerId) return;
+        const el = ref.current;
+        if (!el) return;
+        const dy = e.clientY - d.startY;
+        if (!d.moved && Math.abs(dy) > 4) {
+            d.moved = true;
+            el.setPointerCapture(e.pointerId);
+            d.captured = true;
+            setDragging(true);
+        }
+        if (!d.moved) return;
+        // Setting scrollTop fires the div's own native 'scroll' event, which
+        // is what already writes scrollOffsets (each pane's onScroll below)
+        // — a drag updates it exactly like a wheel scroll does, with no
+        // separate plumbing needed.
+        el.scrollTop = d.startScrollTop - dy;
+    };
+    const endDrag = (e: React.PointerEvent) => {
+        const d = dragState.current;
+        if (!d.dragging || e.pointerId !== d.pointerId) return;
+        d.dragging = false;
+        if (d.captured) ref.current?.releasePointerCapture(e.pointerId);
+        setDragging(false);
+    };
+    const onClickCapture = (e: React.MouseEvent) => {
+        if (dragState.current.moved) {
+            e.preventDefault();
+            e.stopPropagation();
+            dragState.current.moved = false;
+        }
+    };
+
+    return { onPointerDown, onPointerMove, onPointerUp: endDrag, onPointerCancel: endDrag, onClickCapture, dragging };
+}
 
 /** Module scope on purpose — see the file header. Mutated directly from
  *  each pane's onScroll (no re-render needed for a value nothing displays)
@@ -307,11 +384,31 @@ export default function MetaUpgrades() {
     const [openSlug, setOpenSlug] = useState<string | null>(null);
     const stationsRef = useRef<HTMLDivElement>(null);
     const recipesRef = useRef<HTMLDivElement>(null);
+    const stationsDrag = usePaneDrag(stationsRef);
+    const recipesDrag = usePaneDrag(recipesRef);
 
+    // A pane's scrollTop restore is a no-op on a `display:none` element — no
+    // layout box means no scrollable viewport to scroll into (found while
+    // verifying Round 18b Part 4's own "reopening the Kitchen preserves the
+    // scroll offset" line: it held for Stations, which is always the visible
+    // tab at mount, but silently never worked for Recipes, since Stations is
+    // ALWAYS the tab selected on open, making the Recipes pane hidden at the
+    // exact moment this used to run — a real bug since Round 17, just never
+    // exercised by that round's own tests, which only checked persistence on
+    // whichever tab happened to be active). Fixed by restoring each pane's
+    // offset lazily, the first time IT becomes the visible tab, rather than
+    // unconditionally at mount.
+    const restoredRef = useRef({ stations: false, recipes: false });
     useEffect(() => {
-        if (stationsRef.current) stationsRef.current.scrollTop = scrollOffsets.stations;
-        if (recipesRef.current) recipesRef.current.scrollTop = scrollOffsets.recipes;
-    }, []);
+        if (activeTab === 'stations' && !restoredRef.current.stations && stationsRef.current) {
+            stationsRef.current.scrollTop = scrollOffsets.stations;
+            restoredRef.current.stations = true;
+        }
+        if (activeTab === 'recipes' && !restoredRef.current.recipes && recipesRef.current) {
+            recipesRef.current.scrollTop = scrollOffsets.recipes;
+            restoredRef.current.recipes = true;
+        }
+    }, [activeTab]);
 
     const kitchenBadge = computeKitchenBadge(scrolls.length, scrollsSeenCount);
 
@@ -358,8 +455,13 @@ export default function MetaUpgrades() {
                 <div
                     ref={stationsRef}
                     onScroll={(e) => { scrollOffsets.stations = e.currentTarget.scrollTop; }}
+                    onPointerDown={stationsDrag.onPointerDown}
+                    onPointerMove={stationsDrag.onPointerMove}
+                    onPointerUp={stationsDrag.onPointerUp}
+                    onPointerCancel={stationsDrag.onPointerCancel}
+                    onClickCapture={stationsDrag.onClickCapture}
                     className="absolute inset-0 touch-pan-y overflow-y-auto pt-1"
-                    style={{ display: activeTab === 'stations' ? undefined : 'none' }}
+                    style={{ display: activeTab === 'stations' ? undefined : 'none', cursor: stationsDrag.dragging ? 'grabbing' : 'grab' }}
                 >
                     <div className="flex flex-col gap-4 pb-4">
                         {TOWERS.map((tower) => {
@@ -464,8 +566,13 @@ export default function MetaUpgrades() {
                 <div
                     ref={recipesRef}
                     onScroll={(e) => { scrollOffsets.recipes = e.currentTarget.scrollTop; }}
+                    onPointerDown={recipesDrag.onPointerDown}
+                    onPointerMove={recipesDrag.onPointerMove}
+                    onPointerUp={recipesDrag.onPointerUp}
+                    onPointerCancel={recipesDrag.onPointerCancel}
+                    onClickCapture={recipesDrag.onClickCapture}
                     className="absolute inset-0 touch-pan-y overflow-y-auto pt-1"
-                    style={{ display: activeTab === 'recipes' ? undefined : 'none' }}
+                    style={{ display: activeTab === 'recipes' ? undefined : 'none', cursor: recipesDrag.dragging ? 'grabbing' : 'grab' }}
                 >
                     <div className="pb-4">
                         <div className="flex items-center justify-between">
