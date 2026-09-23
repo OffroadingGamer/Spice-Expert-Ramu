@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.92.0** (Rounds 0–18) — the first build whose recipe sheets carry real step text. Review and Public stay at **1.69.0**, the jam build. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Nothing with an agent.** **Round 18b** is unblocked and is now the whole remaining Kitchen job: 22 rails, the 46-sprite set (18 of them replacements), drag-scroll on the Kitchen panes, the Close button restyle. Then **Round 19, Hindi**. |
+| **In flight** | **Round 18b → Private 1.93.0** — issued Sep 23, five parts: the 46-sprite set, the 22 rails, 13 ingredient names, drag-scroll on both Kitchen panes, the Close button restyle. Then **Round 19, Hindi**. |
 | **Repo** | `origin/main` = **`66c12c2`**, tree clean apart from Round 17's in-progress edits. Pushed continuously since Sep 18; `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is in the public repo. Every push preceded by the secret scan with its 3-line positive control. ⚠️ `references/Errors/The kitchen upgrades refix.mp4` (3 MB) is untracked and **not** committed — no other reference video is tracked; the user's call. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -3969,3 +3969,39 @@ more than about six sprites should state the expected wall-clock cost up front.*
 
 **Verdict: accepted.** All 46 ingredient and oil sprites are now RUN-generated; **zero pack art
 remains in the recipe rail.** Round 18b is unblocked.
+
+---
+
+### 2026-09-23 — Round 18b handover issued — Private 1.93.0
+
+Logged when issued. Five parts: ship the finished **46-sprite** ingredient set, rebuild all 22
+rails, add 13 `ingredient.*` names, drag-scroll both Kitchen panes, restyle the Close button.
+
+**The trap the brief leads with, because it would silently undo the whole round.**
+`ingredients-r5-final/` and `ingredients-r7-final/` share **eleven filenames** — basil, cabbage,
+spinach, tamarind, semolina, green-beans, bamboo-shoot and the four oils — and the r5 copies are
+the licensed pack art this round exists to remove. Both also hold `noodles.png`, and **r5's was
+rejected** for reading as a bowl of soup. A glob of r5-final would ship pack art under the right
+names and pass every other check. Sources are therefore named file by file: **18 from r7-final,
+`spaghetti.png` from r5-final alone, `noodles.png` from r6-final**, nothing else from r5.
+
+Of the 20 files, **7 overwrite existing sprites** (coffee-extract, cream, ghee, ginger, milk, rice,
+green-chilli) and **13 are new**, so only 13 manifest aliases are added. End state 46.
+
+**Retro 119 applied, and it pays off this round.** Round 18's Part 6 asked for a 120 px drag on
+ooti while Part 1 of the same brief had cut ooti to 5 tiles, leaving ~20 mu of overflow — the
+number was impossible by construction. Part 2 here puts ooti back to **7 tiles**, giving ~114 mu of
+overflow, so **the 120 px drag is genuinely testable now** and the acceptance line says why and
+asks for the measured overflow.
+
+**Two acceptance items are deliberately narrower than they look:**
+
+- **Sheet height** is tested as the **rail's own contribution only**, idli (2) against ooti (7).
+  Round 18 established that total sheet height varies legitimately with prose length, so the old
+  whole-sheet form of this check is retired rather than carried forward.
+- **Pane drag** carries a requirement the rail's version did not need: the Recipes pane is a grid
+  of buttons that open sheets, so a drag past the 4 px threshold **must suppress the trailing
+  click**, or dragging opens whatever card the cursor lifts over.
+
+Out of scope and stated: the recipe sheet's layout (user deferred until the text is judged in
+place), the plural key, Hindi, and the props and dish art the user parked until the game is public.
