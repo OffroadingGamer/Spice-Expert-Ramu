@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.92.0** (Rounds 0–18) — the first build whose recipe sheets carry real step text. Review and Public stay at **1.69.0**, the jam build. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Nothing with an agent.** Next: **Round 18b** — ship art round 5's 13 sprites and add them to the rails (data-only), gated on three user calls. Then **Round 19, Hindi**. The Public promotion and the Devanagari name test remain the user's. |
+| **In flight** | **Art round 6** — one sprite (`noodles`), 147 credits, issued Sep 23. **Round 18b** is fully specified in [Ideas.md](Ideas.md) §6d (all 22 rails, 13 sprites, manifest + data only) and goes out the moment that sprite returns. Then **Round 19, Hindi**. |
 | **Repo** | `origin/main` = **`66c12c2`**, tree clean apart from Round 17's in-progress edits. Pushed continuously since Sep 18; `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is in the public repo. Every push preceded by the secret scan with its 3-line positive control. ⚠️ `references/Errors/The kitchen upgrades refix.mp4` (3 MB) is untracked and **not** committed — no other reference video is tracked; the user's call. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -3748,3 +3748,27 @@ instructions in favour of the one the user had stated.** Nothing to fix.
 scope. That remains the one thing in this build wanting a finger on glass.
 
 **Verdict: accepted.** Private 1.92.0.
+
+---
+
+### 2026-09-23 — Art round 6 issued, and Round 18b's rail spec settled
+
+Three decisions closed, all recorded with their reasoning in [Ideas.md](Ideas.md) §6d:
+**noodles = proposal B** (generate, 147 credits), **all four oils ship** without recolour, and
+**the fat gets a tile on every dish RecipeList §7 assigns one to**.
+
+**Art round 6** is a single sprite. The brief names the failure it is replacing — round 5's export
+of the pack's `Final Recipe/01-Cooked Noodles.png`, which reads as a bowl of soup at 26 px — and
+specifies the separation from `spaghetti` as **silhouette, not colour**: spaghetti is tall,
+vertical and straight; noodles is round, horizontal and coiled. Round 5's spaghetti passed first
+take under the same kind of direction, so this repeats a method rather than gambling.
+
+**Sequencing, deliberately serial.** Round 18b could have been issued in parallel and told to
+expect the sprite, but a round that depends on an unreturned agent cannot be verified — the same
+rule that kept Round 18 and art round 5 independent. 18b waits, and loses nothing by waiting
+because its entire spec is already written down.
+
+**One number worth keeping.** RecipeList §7's Oil column independently produces **exactly 12
+dishes taking a bottled oil** — the same figure the writing pass's §4.6 arrived at from the other
+direction. Two documents written by different agents for different purposes agreeing to the dish
+is the strongest evidence yet that the oil gap was real.

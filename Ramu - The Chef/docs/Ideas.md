@@ -944,6 +944,60 @@ spaghetti for the simpler reason that it is one sprite matching the other genera
 
 ---
 
+**✏️ Amendment — Round 18b's rail spec settled, Sep 23 2026.** Three decisions closed.
+
+1. **Noodles — proposal B: generate a dried-noodle nest** (art round 6, one sprite, 147 credits).
+   A was to hold it, leaving thukpa's note naming an absent ingredient. C was to ship the
+   `spaghetti` art under a second alias — free, and defensible because a dry banded bundle really
+   is how dried wheat noodles come and the two never share a sheet (node 3 vs node 4) — but it
+   puts one picture under two names, and in Hindi under two more. B closes **the last
+   note-vs-rail contradiction in the game** for 0.07% of the balance.
+2. **All four oils ship**, no recolour. `oil-olive` (118, 79, 42) and `oil-sesame` (97, 55, 25)
+   collide at 26 px — measured distance 36.1 against 61–106 for every other pair — but RecipeList
+   §7 gives each cuisine node one oil, so **sesame (node 2) and olive (node 3) never appear in the
+   same rail.** The collision exists only on a contact sheet.
+3. **The fat gets a tile on every dish that has one**, taken from RecipeList §7's own Oil column.
+   That column names a **bottled oil for exactly 12 dishes** — the same figure the writing pass
+   gave — **ghee for five**, and a dash for five (chai, coffee, idli, sticky rice, veg momo:
+   beverages and steamed things). Ghee already ships, so this costs no new art beyond the oils.
+
+**The 22 rails as Round 18b must build them.** Sixteen change; `aubergine` stays at zero
+references by design.
+
+| Dish | Rail | n |
+|---|---|---|
+| Chai | tea-leaf · milk · ginger · cardamom · clove | 5 |
+| Coffee | coffee-extract · milk | 2 |
+| Naan | flour · ghee · cumin-seed | 3 |
+| Jeera Rice | rice · ghee · cumin-seed · bay-leaf | 4 |
+| Palak Aloo | potato · onion · garlic · turmeric · green-chilli · **spinach** · **ghee** | 7 |
+| Gobhi Masala | cauliflower · onion · tomato · turmeric · coriander-seed · **oil-mustard** | 6 |
+| Rajma | kidney-beans · onion · tomato · garlic · cumin-seed · **ghee** | 6 |
+| Coconut Chutney | coconut-half · green-chilli · curry-leaf · mustard-seed · urad-dal · **oil-sesame** | 6 |
+| Idli | rice · urad-dal | 2 |
+| Upma | onion · mustard-seed · curry-leaf · green-chilli · **semolina** · **ghee** | 6 |
+| Sambar | toor-dal · tomato · turmeric · curry-leaf · mustard-seed · **tamarind** · **oil-sesame** | 7 |
+| Beans Poriyal | coconut-half · mustard-seed · curry-leaf · green-chilli · **green-beans** · **oil-coconut** | 6 |
+| Pesto | pine-nut · garlic · parsley · **basil** · **oil-olive** | 5 |
+| Minestrone | tomato · onion · potato · peas · **oil-olive** | 5 |
+| Arrabbiata | tomato · garlic · dried-red-chilli · chilli-flakes · oregano · **oil-olive** | 6 |
+| Aglio e Olio | garlic · chilli-flakes · parsley · **spaghetti** · **oil-olive** | 5 |
+| Risotto | rice · onion · garlic · cream · **oil-olive** | 5 |
+| Veg Thukpa | onion · garlic · green-chilli · **cabbage** · **noodles** · **oil-mustard** | 6 |
+| Bamboo Shoot Fry | garlic · green-chilli · onion · turmeric · **bamboo-shoot** · **oil-mustard** | 6 |
+| Veg Momo | flour · potato · onion · garlic · **cabbage** | 5 |
+| Sticky Rice | rice · coconut-half | 2 |
+| Ooti | peas · onion · ginger · garlic · dried-red-chilli · **bamboo-shoot** · **oil-mustard** | 7 |
+
+**What this closes.** Every note-vs-rail contradiction: rava into upma, tamarind into sambar, basil
+into pesto, green beans into poriyal, spinach into palak aloo, noodles into thukpa. **Bamboo Shoot
+Fry finally shows bamboo shoot** — a dish named after an ingredient it has never been able to
+display. Range becomes **2 to 7**, so the rail's constant-height invariant gets its 2-vs-7 case
+back; note that after Round 18 the *sheet's* total height legitimately varies with prose length,
+so the test is the **rail's own contribution**, not the sheet's.
+
+---
+
 ## 7. Wave-intro scroll — proposed Sep 13 2026 — ✅ shipped as the wave bubble's scroll grid, 1.76.0
 
 **Trigger:** wave start, only when no dialogue box is queued. Dialogue wins; the scroll
