@@ -2823,3 +2823,19 @@ after **00:30 IST Sep 19**.
      single place in the code that owns it.** Retro 115 said to do the subtraction out loud
      between a container and its child; this is the same failure between a ratio and its
      complement, which is harder to see precisely because the two numbers look unrelated.
+
+121. 🟡 **A dashboard panel that is wrong about something you can check is not evidence about
+     anything you can't.** Sep 23 2026. The studio Finances page closed the +5,100 credit question
+     in one look — a new +5,000 grant, and the whole Sep 22→23 movement reconciles to the credit
+     (198,309 − 882 spent + 5,000 + 100 daily = 202,527). The same page also reported **"CLI credit
+     usage this month: 0 credits"** in a month where we had spent **882** through `rundot` and
+     watched the balance fall by exactly that, *and* attributed **108,429 credits of runtime AI**
+     to our game — which would have overturned the finding that the shipped build makes no runtime
+     AI calls, and with it the case that going public costs nothing per player. ✅ **What kept this
+     straight:** one card on a page being provably false doesn't make the next card false, but it
+     does strip it of authority — so re-derive the claim from a source you control. Source: three
+     `renderer.generateTexture` calls and no RUN AI SDK call anywhere. Ledger: the balance moved by
+     exactly the CLI art spend, which it could not have done if 113,202 credits of runtime AI had
+     been charged here. **Rule: grade each panel separately, keep "my finding stands" and "their
+     number is unexplained" as two statements, and name the one click that would settle it rather
+     than picking whichever reading is more convenient.**

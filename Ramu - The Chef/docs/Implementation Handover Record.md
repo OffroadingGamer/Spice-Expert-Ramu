@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.92.0** (Rounds 0–18) — the first build whose recipe sheets carry real step text. Review and Public stay at **1.69.0**, the jam build. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Nothing with an agent.** **Round 18b** is fully specified ([Ideas.md](Ideas.md) §6d — all 22 rails, 14 sprites, data + manifest only) and unblocked. Then **Round 19, Hindi**. ⚠️ **Credits rose +5,100 between art round 5 and art round 6 with no known cause** — balance now **202,527**; needs the studio Finances page to close. |
+| **In flight** | **Nothing with an agent.** **Round 18b** is fully specified ([Ideas.md](Ideas.md) §6d — all 22 rails, 14 sprites, data + manifest only) and unblocked. Then **Round 19, Hindi**. |
 | **Repo** | `origin/main` = **`66c12c2`**, tree clean apart from Round 17's in-progress edits. Pushed continuously since Sep 18; `backdrop-dawn.jpg` (Archita Sharma's painting, consented and credited) is in the public repo. Every push preceded by the secret scan with its 3-line positive control. ⚠️ `references/Errors/The kitchen upgrades refix.mp4` (3 MB) is untracked and **not** committed — no other reference video is tracked; the user's call. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -53,7 +53,7 @@ of the present.**
 | **FTUE opening pad** | **`FTUE_FIRST_PAD = 4`** (B3, `damage ×1.5`), then pads 3 and 2 |
 | **Sealed files** | `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` |
 | **`data/waves.ts`** | ⚠️ **RE-SEALED.** Unsealed for the v1.69.0 block-1 retune only |
-| **Credits (Sep 22)** | **197,868** after art round 4 (−441 = 3 × 147, verified against `rundot credits`). The 198,309 it came down from was fully reconciled from the studio Finances page: 25,000 starter + 616 + 1,500 quest rewards + grants 15,000 / 50,000 / 5,000 / 1,093 / **100,000** + 100 daily. The **+100,000** (expires Dec 18) is RUN's compensation for the broken marketing module; the old **+6,093** mystery was the 5,000 + 1,093 grants. ✅ **Both credit watch items closed — nothing unexplained.** 616 credits expire Dec 3; plan Free, 100/day, no rollover. |
+| **Credits (Sep 23)** | **202,527**, reconciled to the credit against the studio Finances page. The eight grant rows sum to exactly 202,527. The Sep 22→23 movement reconciles as **198,309 − 882 spent + 5,000 new grant + 100 daily = 202,527**, where the 882 is art rounds 4/5/6 (441 + 147 + 294). ✅ **Nothing unexplained.** ⚠️ The page's *usage* panels are a separate matter — see the Sep 23 entry. |
 | **Paid campaign** | ✅ **`kitchen-rush-meta` COMPLETE** (ended Sep 16). **$70.05 of $82 spent · 4,228 impr · 171 clicks · 4.04 % CTR · 18 installs · CPI $3.66.** Unspent remainder refunds on completion per RUN's rule — verify on the studio page. Paid is done for this jam (marketing agent's prior, Sep 14) |
 | **Art round 2 (Sep 17)** | ✅ **DONE** — `Art/_gen/pass-final/`: `pass-entry.png`, `pass-exit.png` (1024², take 1 each), `belt-tile.png` (128², procedural, `#3a3a44`, seamless both axes). **561 credits.** Awaiting the hatch-wiring implementation round |
 | **Art leg (Sep 14)** | ✅ **DONE** — `Art/_gen/chef-final/`: 9 bodies + 4 faces + scroll, **7,003 credits**, verified. Faces are aligned eyebrow-to-jaw bands. ⚠️ Expressions read at **≥ 160 px, not 96** — spec amended in Ideas.md §6b. Nothing ships before judging |
@@ -3826,3 +3826,58 @@ know of, during a period in which no round ran. Per Retro 114 the tool that answ
 the user; not guessed at here. The 294 spend itself reconciles exactly.
 
 **Verdict: accepted.** `noodles` ships in Round 18b, which is now unblocked.
+
+---
+
+### 2026-09-23 — Credits closed to the credit, and a page panel that cannot be trusted
+
+The +5,100 rise flagged on art round 6 is **fully explained**, from the studio Finances page — the
+tool Retro 114 says to reach for when the CLI gives a balance without a provenance.
+
+**A new grant: +5,000, expiring Dec 22.** The eight grant rows now read 25,000 starter · 1,434
+quest · 15,000 · 50,000 · 5,000 · 1,093 · 100,000 · **5,000 (new)** and **sum to exactly 202,527**,
+the stated balance.
+
+**The movement reconciles exactly, with no residue:**
+
+```
+198,309   (Sep 22, previously reconciled)
+  − 882   art rounds 4 + 5 + 6  (441 + 147 + 294)
++ 5,000   new grant, expires Dec 22
++   100   one day's daily credit
+= 202,527
+```
+
+Every intermediate I recorded also falls out of it: 197,868 after round 4, 197,721 after round 5,
+**202,821 as art round 6 opened** — which is the figure that agent reported and which I could not
+account for at the time. ✅ **Credit watch closed.**
+
+**⚠️ The page's usage panels contradict facts I can prove, so they are not evidence.**
+"CLI credit usage this month — **0 credits**" is demonstrably false: we spent **882 credits this
+month** through `rundot` image generation across three art rounds, and watched the balance fall by
+exactly that. A panel that reports zero for spend I verified myself cannot be used to argue
+anything.
+
+**That matters because the same card claims runtime AI on our game.** "Runtime AI usage this
+month" attributes **108,429 credits, 4 AI features, 154 calls** to `PpB5gECS0AMU49mGYAKM`, which
+would directly contradict the Sep 22 finding that **the shipped build makes no runtime AI calls**
+— one of the reasons the Public promotion was called low-risk.
+
+**Re-checked from source rather than from the earlier conclusion** (Retro 65: a carried claim is
+not a status):
+
+- The only `generate*` calls anywhere in `src/` are **three `renderer.generateTexture`** sites in
+  `game/textures.ts` — Pixi rasterising its own display objects.
+- **Zero** RUN AI SDK calls: no `RundotGameAPI` AI/LLM/image method anywhere.
+- The single `inference` hit is a comment about *type* inference in `sdk/leaderboard.ts`.
+
+**And the ledger itself is the strongest argument.** The balance moved by exactly our CLI art
+spend and nothing else. Had 113,202 credits of runtime AI been charged to this studio, the
+arithmetic above could not close to the credit — and it does.
+
+**Position: the no-runtime-AI finding stands, and the attribution is unexplained.** Those are two
+separate statements and the second is not resolved. 🔒 **Before the Public promotion, expand the
+"4 AI features · 154 calls" row on that card and read what it names.** If it lists real features,
+the finding is wrong and the promotion needs re-costing; if it lists our CLI generations
+misfiled under the game, the panel is simply mislabelled. One click settles it, and it is the last
+open question on the promotion.
