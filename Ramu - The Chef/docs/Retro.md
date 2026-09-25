@@ -2920,3 +2920,13 @@ after **00:30 IST Sep 19**.
      every number that touched the old assumption, not just the one the evidence names. A
      measurement that invalidates a premise invalidates everything standing on it — and be slowest
      to reverse a recommendation in the same message that introduces the new data.**
+
+128. **I sorted by a property the player cannot see, while the design was about to print one they
+     can.** §11.2c proposed re-ordering each cuisine by enemy toughness — defensible, and the
+     numbers came straight from `enemies.ts`. But the wave ladder *introduces* archetypes in a
+     different order (beetle, wasp, snail, hornet, stag), and the moment the card prints "Beat level
+     N", the grid must be sorted by N or it reads L12, L11, L15, L14, L17 and looks broken. The
+     shipped `RECIPE_SLUGS` order was already correct, so the reorder was pure risk for zero gain.
+     ✅ **Rule: when a design will surface a number to the player, sort by that number. And before
+     proposing to reorder existing data, check whether the current order already encodes the right
+     thing — the people who wrote it may have had the better reason.**

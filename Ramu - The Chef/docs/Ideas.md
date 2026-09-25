@@ -1577,6 +1577,76 @@ grind it. **Recommendation: keep badges as the real path and treat gems as a del
 skip** — and price the tier-5 gem cost above, not below, a meaningful upgrade step, so buying the
 scroll is never the efficient route to the scroll.
 
+### 11.2i ✅ DECIDED Sep 25 — option 1, with the unlock level named on the card
+
+*"The recipe shows 'Beat level n to unlock' where n is the first instance where that recipe shows
+up. For FTUE level recipes … 'Complete training to unlock'."* This is what makes option 1 work: the
+card stops showing a frozen `0 / 60` and states the one thing the player can act on.
+
+🔴 **It also proves Central's §11.2c reorder wrong, and it should not be built.** §11.2c proposed
+re-sorting each cuisine by enemy toughness (`wasp` 34 hp → `beetle` 46 → `hornet` 90 → `snail` 175
+→ `stag` 700). But the ladder **introduces** archetypes in a different order — `beetle` W1, `wasp`
+W2, `snail` W4, `hornet` W5, `stag` W7 — and the two disagree on two pairs (beetle/wasp,
+snail/hornet). A card that prints its unlock level **must** be sorted by that level, or the grid
+reads **L12, L11, L15, L14, L17** and looks broken. Sorting by a property the player cannot see,
+when the design is about to print a property they can, was the error. → **Retro 128.**
+
+✅ **And the order that is already shipped is exactly right.** `RECIPE_SLUGS` (`data/recipes.ts:10`)
+matches introduction order for all 22 entries — verified by direct comparison, `True`. **No reorder
+is needed; the file stays as it is.**
+
+### 11.2j The breakdown table — final
+
+Unlock level = first ladder position carrying that dish's archetype, plus its block offset.
+Strictly increasing down the grid, and so are both prices. Stock ceiling is level 45 (§11.2g).
+
+| # | Dish | Cuisine | Card says | Badges | Gems | Award | Stock build? |
+|---|---|---|---|---|---|---|---|
+| 1 | chai | Cafe | *Complete training to unlock* | 10 | 100 | +1 | ✅ |
+| 2 | coffee | Cafe | *Complete training to unlock* | 12 | 120 | +1 | ✅ |
+| 3 | naan | North Indian | Beat level **11** | 16 | 160 | +2 | ✅ |
+| 4 | jeera-rice | North Indian | Beat level **12** | 18 | 180 | +2 | ✅ |
+| 5 | palak-aloo | North Indian | Beat level **14** | 20 | 200 | +2 | ✅ |
+| 6 | gobhi-masala | North Indian | Beat level **15** | 22 | 220 | +2 | ✅ |
+| 7 | rajma | North Indian | Beat level **17** | 24 | 240 | +2 | ✅ |
+| 8 | coconut-chutney | South Indian | Beat level **21** | 26 | 260 | +3 | ✅ |
+| 9 | idli | South Indian | Beat level **22** | 28 | 280 | +3 | ✅ |
+| 10 | upma | South Indian | Beat level **24** | 30 | 300 | +3 | ✅ |
+| 11 | sambar | South Indian | Beat level **25** | 32 | 320 | +3 | ✅ |
+| 12 | beans-poriyal | South Indian | Beat level **27** | 34 | 340 | +3 | ✅ |
+| 13 | pesto | Italian | Beat level **31** | 38 | 380 | +4 | ✅ |
+| 14 | minestrone | Italian | Beat level **32** | 40 | 400 | +4 | ✅ |
+| 15 | arrabbiata | Italian | Beat level **34** | 42 | 420 | +4 | ✅ |
+| 16 | aglio-e-olio | Italian | Beat level **35** | 44 | 440 | +4 | ✅ |
+| 17 | risotto | Italian | Beat level **37** | 46 | 460 | +4 | ✅ |
+| 18 | veg-thukpa | North East | Beat level **41** | 52 | 520 | +5 | ✅ |
+| 19 | bamboo-shoot-fry | North East | Beat level **42** | 54 | 540 | +5 | ✅ |
+| 20 | veg-momo | North East | Beat level **44** | 56 | 560 | +5 | ✅ |
+| 21 | sticky-rice | North East | Beat level **45** | 58 | 580 | +5 | ⚠️ edge |
+| 22 | **ooti** | North East | Beat level **47** | 60 | 600 | +5 | ❌ |
+
+**Why each number is what it is.** The **level** is not invented — it is read straight out of
+`LADDER`: beetle opens a block, wasp is second, snail fourth, hornet fifth, and the stag boss holds
+position seven. So every cuisine hands out its five recipes on the same rhythm, ten levels later
+each time. The **badge price** rises 2 per card inside a cuisine and jumps at each new cuisine, so
+it tracks the unlock level without ever needing to mention it. The **award** is the cuisine's tier,
+which is what keeps the grind at 2–3 passes everywhere (§11.2f) instead of ballooning to six hours
+at the deep end (§11.2g).
+
+**⚠️ Card states — three, not two.** *Locked* (never beaten that level) shows the sentence.
+*Collecting* shows the badge bar. *Owned* shows Ramu's note, as today. Only the first is new.
+
+**⚠️ A wording question worth one minute.** Strictly, beating level 17 does not *unlock* rajma — it
+starts you **collecting** it. A player who beats 17, sees `0 / 24` appear and reads the earlier
+promise as broken is a small but real cost. *"Beat level 17 to start collecting"* is accurate;
+*"Beat level 17 to unlock"* is shorter and reads better. **User's call** — flagged, not decided.
+
+**🔴 Round 19 dependency.** This adds **two new display strings** (`Beat level {n} to unlock`,
+`Complete training to unlock`). Every display string belongs in `en.ts`, per `recipes.ts`'s own file
+header. **They should land before the Hindi pass, not after**, or they miss the translation round
+and Round 20 has to reopen it. Both are short and interpolation-safe; `{n}` is a numeral, which is
+the one part of a Devanagari string that needs no translator judgement.
+
 ### 11.3 🔴 "Chef hats" is already a live currency with that exact name and icon
 
 Belt mode already pays out **Chef Hats** and already ships the art:
