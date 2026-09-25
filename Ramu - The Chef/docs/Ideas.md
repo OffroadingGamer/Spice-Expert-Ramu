@@ -1551,6 +1551,25 @@ it must be chosen, not inherited from a ladder position. Three ways:
 3. **Pay on reach, not only on clear** — a badge for surviving to the wave, so a losing run at 47
    still advances ooti.
 
+**➕ Two facts about these options, checked Sep 25, that change how they compare:**
+
+- 🔴 **Option 2 touches a sealed file.** The ladder lives in `data/waves.ts`, which the record
+  (`:55`, `:466`) lists as 🛑 **RE-SEALED** — unsealed once, for the v1.69.0 block-1 retune, and
+  closed again. Moving stag earlier in block 5 therefore means an unseal, a balance re-run and a
+  fresh baseline, because wave composition is exactly what the `35 / 36 / 11 / 4 / 90` baseline
+  measures. **It is the cheapest-looking option and the most expensive one.**
+- ⚠️ **Option 3 is a partial fix, not a general one.** `awardShards` is called from
+  `towerScene.ts:1383` on wave clear — not a sealed file, so the change itself is cheap. But paying
+  on *reach* only lowers the bar from "clear L47" to "reach L47", and the measured stock run ends at
+  **45**. It closes a two-level gap, nothing more. Its real value is that progress becomes visible
+  as a player approaches the wall instead of the card sitting at a flat zero — worth having, but it
+  does not by itself make ooti earnable on a stock build.
+
+**✅ That leaves option 1 as the recommendation**, since option 2 is expensive and option 3 does not
+actually clear the wall on its own. Ooti as an explicit capstone costs no sealed-file risk and no
+new system — only an honest card state. **Options 1 and 3 also compose**: name it a capstone *and*
+pay on reach, so the player sees movement as they close in on it.
+
 ⚠️ **And the currency conflict is now concrete.** Reaching level 47 needs meta upgrades; meta
 upgrades are bought with **gems** (`metaUpgradeCost`); §11.2f prices an ooti scroll at **600 gems**.
 So the shortcut for the one recipe you cannot grind is also the thing that delays your ability to
