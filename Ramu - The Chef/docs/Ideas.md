@@ -1109,7 +1109,7 @@ expected.**
    **10, and as few as ~5 for a conjunct-heavy name**: श्रीकान्त is 9 units for 3 characters (3.00),
    कृष्णमूर्ति 11 for 4 (2.75), प्रियदर्शिनी 12 for 5 (2.40). Common Hindi names still fit, so nothing
    is *blocked* — but the penalty is up to 3× and it lands on exactly the players the Hindi build is
-   for. **Fix in Round 19: count grapheme clusters.** `maxLength` is a UTF-16 attribute and cannot
+   for. **Fix in Round 20: count grapheme clusters.** `maxLength` is a UTF-16 attribute and cannot
    express this, so the cap has to move into JS (`Intl.Segmenter`, or a `/\P{M}\p{M}*/gu` count).
    *Layout is not at risk either way* — 10 Devanagari characters are narrower than 16 Latin ones, and
    the bubble wrapped to two lines cleanly with no clipping or overflow.
@@ -1128,14 +1128,14 @@ expected.**
    mark, and in श्रीकान्त the virama is the *second* unit, so श survives alone cleanly), and
    `.toUpperCase()` is a harmless no-op on a script with no case. **Cosmetic and lossy, never broken.**
    Fix is one line — take the first grapheme cluster instead of the first code unit — and it belongs
-   in Round 19, where the rest of the script work lives.
+   in Round 20, where the rest of the script work lives.
 
-**Consequence for Round 19.** The font pipeline is cleared — the 90-odd Hindi strings can be
+**Consequence for Round 20 (Hindi).** The font pipeline is cleared — the 90-odd Hindi strings can be
 commissioned with no rendering risk hanging over them, because they run through the same single
 system-font stack that just drew पुनीत. The only script-aware code defect found is the avatar
 initial above.
 
-**Still open, and it gates nothing in Round 19:** play one wave under a Devanagari guest name so a
+**Still open, and it gates nothing in Round 20:** play one wave under a Devanagari guest name so a
 score is submitted, then read the board back with the CLI and check the name survived RUN's
 moderation intact rather than being rejected or masked. If it does not survive, §6d decision 5's
 fallback applies — the Hindi locale tells the player *"Leaderboard names use English letters"* and
@@ -1318,7 +1318,7 @@ Play/badge → IAP; all post-jam, Private first.
 
 **User, on an annotated 1.93.0 Recipes screenshot:** *"Shards for the recipe will be progressively
 difficult to attain!!"* and *"Each recipe's shard icon would be chef hats!!"* Captured on the
-agenda, not scheduled — Round 19 (Hindi) is still next.
+agenda, not scheduled. ✅ **Superseded by §11.2k:** this became **Round 19**, issued Sep 25, and Hindi moved to Round 20.
 
 ### 11.1 What ships today, verified from source
 
@@ -1667,7 +1667,7 @@ with four characters of headroom. *"Unlocks after wave 47"* is **21**, and keeps
 **Hindi, which will be longer**. The pair also reads in parallel, which the mixed
 *"Beat…"/"Complete…"* forms did not.
 
-**🔴 Round 19 dependency.** This adds **two new display strings** (`Beat level {n} to unlock`,
+**🔴 Round 20 dependency — resolved by §11.2k.** This adds **two new display strings** (`Beat level {n} to unlock`,
 `Complete training to unlock`). Every display string belongs in `en.ts`, per `recipes.ts`'s own file
 header. **They should land before the Hindi pass, not after**, or they miss the translation round
 and Round 20 has to reopen it. Both are short and interpolation-safe; `{n}` is a numeral, which is

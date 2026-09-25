@@ -41,8 +41,8 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.93.0** (Rounds 0–18b) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it. Review and Public stay at **1.69.0**. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Nothing.** Next is **Round 19, Hindi** — not yet issued. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the Devanagari **moderation** test (the rendering half passed Sep 23 — पुनीत draws correctly; what is left is a guest-session score submit plus a CLI readback), the touch-drag test, and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
-| **Repo** | `origin/main` = **`61a63bd`**, pushed. Tree clean; the only untracked item is `references/Errors/The kitchen upgrades refix.mp4` (3 MB), which is the user's call — no reference video is tracked today. |
+| **In flight** | ⏳ **Round 19 — the recipe shard economy.** Issued Sep 25 and handed to the implementation agent by the user; not yet returned. Per-recipe costs, tiered awards, locked cards, the Toque Badge. **Hindi moved to Round 20.** Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the Devanagari **moderation** test (the rendering half passed Sep 23 — पुनीत draws correctly; what is left is a guest-session score submit plus a CLI readback), the touch-drag test, and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **Repo** | `origin/main` = **`1a2da35`** at the time this row was written; the Round 19 issue entry lands on top of it. Pushed. Tree clean; the only untracked item is `references/Errors/The kitchen upgrades refix.mp4` (3 MB), which is the user's call — no reference video is tracked today. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
@@ -4057,3 +4057,56 @@ exactly 120 and snaps. Measured overflow 171 / 191 / 219 px against my predicted
 = 114.0.
 
 **Verdict: accepted.** The Kitchen is feature-complete. **Still untested by anyone: touch.**
+
+---
+
+### 2026-09-25 — Round 19 issued — the recipe shard economy, at zero art cost
+
+Handover written by Central in chat and **handed to the implementation agent by the user**. Private
+1.93.0 → target **1.94.0**. Full design in [Ideas.md](Ideas.md) §11.2f–§11.2l.
+
+**Scope.** Five parts: a per-recipe data table in `data/recipes.ts` (unlock wave, badge cost, gem
+price, award tier for all 22); per-slug economy in `save.ts` replacing `SHARDS_PER_SCROLL = 8` and
+`SCROLL_GEM_PRICE = 150`; a third **Locked** card state in `MetaUpgrades.tsx`; two new strings in
+`en.ts`; and the shard icon becoming the Toque Badge.
+
+**The numbers, and where they come from.** Badge costs run **10 → 60** and gem prices **100 → 600**,
+rising 2 per card inside a cuisine and jumping at each cuisine. Awards are the dish's cuisine tier,
+**+1 through +5**. Unlock waves are read out of `LADDER`'s fixed shape — beetle W1, wasp W2, snail
+W4, hornet W5, stag W7, plus the block offset — giving **11, 12, 14, 15, 17** and the same rhythm ten
+waves later for each cuisine. The tiered award is what holds the grind at **2–3 passes** across all
+22 instead of ballooning to six hours at the deep end; difficulty stays in depth, measured at
+**8.95 s/wave** from the user's own playtest.
+
+**Four traps written into the brief, each found by checking rather than assuming:**
+
+1. 🔴 **Do not reorder `RECIPE_SLUGS`.** An earlier draft of this design (§11.2c, Central's) proposed
+   re-sorting each cuisine by enemy toughness. The card prints its unlock wave, so the grid must sort
+   by *that*; under the toughness order it would read wave 12, 11, 15, 14, 17. The shipped order is
+   already correct for all 22 — verified by direct comparison. → Retro 128.
+2. 🔴 **Hardcode the unlock waves.** `LADDER` is `const`, not exported, and `waves.ts` is sealed.
+   The brief carries the derivation as a comment and forbids adding an export.
+3. 🔴 **The icon sizing helper is calibrated to the shard and will be wrong.** `shardImgSize()`
+   uses `SHARD_CANVAS = 128` / `SHARD_OPAQUE_H = 86`; the toque measures **256 canvas, 236×210
+   opaque**. Changing only the canvas leaves it ~22 % oversized; changing only the opaque height
+   makes it **2.4× too big**. Both numbers are given explicitly.
+4. ⚠️ **`ui-shard` has a second consumer** at `WaveBubble.tsx:556`, which shows the same currency
+   and must change with it.
+
+**✅ Zero credits.** The toque already exists — `public/images/ui-chef-hat.png`, alias registered at
+`manifest.ts:147`, generated Sep 8. Costed against `ls` before proposing to spend, per Retro 118;
+the 147 credits budgeted for it were not needed. Balance **199,687**.
+
+**Explicitly out of scope,** and named as such in the brief so the agent does not helpfully add it:
+"pay on reach" badge awards (discussed for ooti, **not selected** — ooti is a deliberate capstone),
+any change to `blocks.ts` or the ladder, renaming the belt-mode Chef Hats currency, and reordering
+`RECIPE_SLUGS`.
+
+**Gate.** Locked when `bestWave < unlockWave` — `bestWave` is persisted and maintained at
+`save.ts:327`. The brief also requires Collecting when `shards[slug] > 0` regardless, so a legacy
+save never regresses to Locked.
+
+**Acceptance** is nine checks, including that the agent **prints the balance numbers rather than
+reporting "exit 0"** — Round 18b declined to assert a number it could not see, which was correct
+behaviour and the gap was Central's to close. Return to be pasted verbatim into
+[Agent Returns.md](Agent%20Returns.md) before verification.

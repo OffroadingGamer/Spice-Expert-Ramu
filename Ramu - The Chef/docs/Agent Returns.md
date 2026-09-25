@@ -731,4 +731,4 @@ Not verifiable headlessly: touch drag on either pane or the rail — out of scop
 
 ## Pending
 
-- Nothing outstanding. Round 18b and art round 7 have both returned and been verified. **Round 19 (Hindi)** is next and not yet issued.
+- **Round 19 — the recipe shard economy** (implementation agent). Issued Sep 25, handed over by the user; awaiting its return. Per-recipe badge/gem costs, tiered awards, the locked card state, two new strings and the Toque Badge icon. Ideas.md §11. **Hindi is now Round 20** and is not yet issued.
