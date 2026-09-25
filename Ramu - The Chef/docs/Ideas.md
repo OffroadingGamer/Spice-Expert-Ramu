@@ -1673,6 +1673,40 @@ header. **They should land before the Hindi pass, not after**, or they miss the 
 and Round 20 has to reopen it. Both are short and interpolation-safe; `{n}` is a numeral, which is
 the one part of a Devanagari string that needs no translator judgement.
 
+### 11.2k ✅ SEQUENCING SET Sep 25 — shard pass is Round 19, Hindi becomes Round 20
+
+*"Fold the two strings into Round 19 as a small preamble, do the whole shard pass first."* Read as:
+**Round 19 is the shard pass**, with `Unlocks after wave {n}` / `Unlocks after training` added to
+`en.ts` early in it; **Round 20 is Hindi**, translating the complete table in one go. That ordering
+removes the dependency entirely — nothing has to be reopened later.
+
+### 11.2l 🔴 NO ART ROUND IS NEEDED — and this reverses Central's Sep 24 advice
+
+Costed against `ls`, per Retro 118, before proposing to spend anything:
+
+| Already on disk | |
+|---|---|
+| `jam-entry/public/images/ui-chef-hat.png` | 54 KB, Sep 8 — **already a clean toque**: cream body, dark-maroon outline, matches the UI |
+| `Art/_gen/ui-final/chef-hat.png` + 3 takes | the generation that produced it, retained |
+| `jam-entry/public/images/ui/shard.png` | 8.9 KB — the orange crystal it would replace |
+
+**The toque the design asks for already exists.** Cost to obtain it: **0 credits**, not the 147 that
+was budgeted. Balance is **199,687** (`rundot credits`, Sep 25 — up 100 from the 199,587 in the
+record).
+
+🔴 **And the naming collision is cheaper to fix than Central said.** §11.3 advised *"do not rename
+the belt currency — it is the older system and players have already banked it."* **That was wrong on
+the facts.** Belt mode sits behind `showTestMode = devModeEnabled()` (`MainMenu.tsx:176`, `:447`),
+and `devModeEnabled()` is gated on **`?test=1`** in the URL (`state/devMode.ts:14`). Its button is
+labelled *"Play Game"* (`en.ts:50`) and **no ordinary player has ever reached it, so no player has
+ever banked a single Chef Hat.** Central asserted a live currency from the presence of a payout
+table, without checking whether anything renders it to a player. → **Retro 129.**
+
+**Consequence:** both names are unreleased, so **now is the cheapest moment this will ever be to
+separate them.** Recommendation: **ship the existing toque as the Toque Badge in Round 19 at zero
+cost**, and rename the belt-side currency whenever belt mode goes player-facing — a rename that
+costs nothing today and would cost real goodwill after launch.
+
 ### 11.3 🔴 "Chef hats" is already a live currency with that exact name and icon
 
 Belt mode already pays out **Chef Hats** and already ships the art:

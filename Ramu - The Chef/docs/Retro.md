@@ -2930,3 +2930,13 @@ after **00:30 IST Sep 19**.
      ✅ **Rule: when a design will surface a number to the player, sort by that number. And before
      proposing to reorder existing data, check whether the current order already encodes the right
      thing — the people who wrote it may have had the better reason.**
+
+129. **I called a currency "live" because I found the code that pays it, not the screen that shows
+     it.** I advised against renaming the belt-mode Chef Hats on the grounds that "players have
+     already banked it." I had read the payout table, the save field and the end-screen markup — all
+     real. What I never checked was whether a player can reach that screen: it sits behind
+     `devModeEnabled()`, which requires `?test=1` in the URL. Nobody has ever earned one. The
+     recommendation I built on it — spend 147 credits on a second icon to avoid a collision — was
+     backwards; both names are unreleased, so separating them is free right now and expensive later.
+     ✅ **Rule: "this ships" is a claim about the path a player takes, not about code existing.
+     Before protecting something as live, trace it to the screen and check the flag that gates it.**
