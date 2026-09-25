@@ -1602,28 +1602,28 @@ Strictly increasing down the grid, and so are both prices. Stock ceiling is leve
 
 | # | Dish | Cuisine | Card says | Badges | Gems | Award | Stock build? |
 |---|---|---|---|---|---|---|---|
-| 1 | chai | Cafe | *Complete training to unlock* | 10 | 100 | +1 | ✅ |
-| 2 | coffee | Cafe | *Complete training to unlock* | 12 | 120 | +1 | ✅ |
-| 3 | naan | North Indian | Beat level **11** | 16 | 160 | +2 | ✅ |
-| 4 | jeera-rice | North Indian | Beat level **12** | 18 | 180 | +2 | ✅ |
-| 5 | palak-aloo | North Indian | Beat level **14** | 20 | 200 | +2 | ✅ |
-| 6 | gobhi-masala | North Indian | Beat level **15** | 22 | 220 | +2 | ✅ |
-| 7 | rajma | North Indian | Beat level **17** | 24 | 240 | +2 | ✅ |
-| 8 | coconut-chutney | South Indian | Beat level **21** | 26 | 260 | +3 | ✅ |
-| 9 | idli | South Indian | Beat level **22** | 28 | 280 | +3 | ✅ |
-| 10 | upma | South Indian | Beat level **24** | 30 | 300 | +3 | ✅ |
-| 11 | sambar | South Indian | Beat level **25** | 32 | 320 | +3 | ✅ |
-| 12 | beans-poriyal | South Indian | Beat level **27** | 34 | 340 | +3 | ✅ |
-| 13 | pesto | Italian | Beat level **31** | 38 | 380 | +4 | ✅ |
-| 14 | minestrone | Italian | Beat level **32** | 40 | 400 | +4 | ✅ |
-| 15 | arrabbiata | Italian | Beat level **34** | 42 | 420 | +4 | ✅ |
-| 16 | aglio-e-olio | Italian | Beat level **35** | 44 | 440 | +4 | ✅ |
-| 17 | risotto | Italian | Beat level **37** | 46 | 460 | +4 | ✅ |
-| 18 | veg-thukpa | North East | Beat level **41** | 52 | 520 | +5 | ✅ |
-| 19 | bamboo-shoot-fry | North East | Beat level **42** | 54 | 540 | +5 | ✅ |
-| 20 | veg-momo | North East | Beat level **44** | 56 | 560 | +5 | ✅ |
-| 21 | sticky-rice | North East | Beat level **45** | 58 | 580 | +5 | ⚠️ edge |
-| 22 | **ooti** | North East | Beat level **47** | 60 | 600 | +5 | ❌ |
+| 1 | chai | Cafe | *Unlocks after training* | 10 | 100 | +1 | ✅ |
+| 2 | coffee | Cafe | *Unlocks after training* | 12 | 120 | +1 | ✅ |
+| 3 | naan | North Indian | Unlocks after wave **11** | 16 | 160 | +2 | ✅ |
+| 4 | jeera-rice | North Indian | Unlocks after wave **12** | 18 | 180 | +2 | ✅ |
+| 5 | palak-aloo | North Indian | Unlocks after wave **14** | 20 | 200 | +2 | ✅ |
+| 6 | gobhi-masala | North Indian | Unlocks after wave **15** | 22 | 220 | +2 | ✅ |
+| 7 | rajma | North Indian | Unlocks after wave **17** | 24 | 240 | +2 | ✅ |
+| 8 | coconut-chutney | South Indian | Unlocks after wave **21** | 26 | 260 | +3 | ✅ |
+| 9 | idli | South Indian | Unlocks after wave **22** | 28 | 280 | +3 | ✅ |
+| 10 | upma | South Indian | Unlocks after wave **24** | 30 | 300 | +3 | ✅ |
+| 11 | sambar | South Indian | Unlocks after wave **25** | 32 | 320 | +3 | ✅ |
+| 12 | beans-poriyal | South Indian | Unlocks after wave **27** | 34 | 340 | +3 | ✅ |
+| 13 | pesto | Italian | Unlocks after wave **31** | 38 | 380 | +4 | ✅ |
+| 14 | minestrone | Italian | Unlocks after wave **32** | 40 | 400 | +4 | ✅ |
+| 15 | arrabbiata | Italian | Unlocks after wave **34** | 42 | 420 | +4 | ✅ |
+| 16 | aglio-e-olio | Italian | Unlocks after wave **35** | 44 | 440 | +4 | ✅ |
+| 17 | risotto | Italian | Unlocks after wave **37** | 46 | 460 | +4 | ✅ |
+| 18 | veg-thukpa | North East | Unlocks after wave **41** | 52 | 520 | +5 | ✅ |
+| 19 | bamboo-shoot-fry | North East | Unlocks after wave **42** | 54 | 540 | +5 | ✅ |
+| 20 | veg-momo | North East | Unlocks after wave **44** | 56 | 560 | +5 | ✅ |
+| 21 | sticky-rice | North East | Unlocks after wave **45** | 58 | 580 | +5 | ⚠️ edge |
+| 22 | **ooti** | North East | Unlocks after wave **47** | 60 | 600 | +5 | ❌ |
 
 **Why each number is what it is.** The **level** is not invented — it is read straight out of
 `LADDER`: beetle opens a block, wasp is second, snail fourth, hornet fifth, and the stag boss holds
@@ -1636,10 +1636,36 @@ at the deep end (§11.2g).
 **⚠️ Card states — three, not two.** *Locked* (never beaten that level) shows the sentence.
 *Collecting* shows the badge bar. *Owned* shows Ramu's note, as today. Only the first is new.
 
-**⚠️ A wording question worth one minute.** Strictly, beating level 17 does not *unlock* rajma — it
-starts you **collecting** it. A player who beats 17, sees `0 / 24` appear and reads the earlier
-promise as broken is a small but real cost. *"Beat level 17 to start collecting"* is accurate;
-*"Beat level 17 to unlock"* is shorter and reads better. **User's call** — flagged, not decided.
+**✅ Wording settled Sep 25 — and the user's instinct fixed a real defect, not just a long string.**
+The user proposed *"Unlocking access after wave n"*. Two checks say "wave" is not merely shorter, it
+is the only correct word:
+
+- **The HUD already prints `WAVE {n}`** (`en.ts:93`, `'hud.wave': 'WAVE {n}'`). That is the number
+  the player watches all game.
+- 🔴 **"Level" is already taken, one tab away.** `en.ts` uses it for tower upgrades —
+  `'meta.level': 'Level {n}/{max}'` and `'rail.level': 'Lv {n}'` — which render on the **Stations**
+  tab of this very screen. Central's *"Beat level 17"* would have put two unrelated meanings of
+  "level" on adjacent tabs of the same panel.
+- **And it is the same number.** `composeLevel(level)` (`waves.ts:475`) is what builds the authored
+  wave list, so waves.ts's internal `level` **is** the wave index the HUD prints. Wave 47 is wave 47.
+
+→ Internally the code says `level`; **player-facing copy says wave**, always. The §11.2j table's
+numbers are wave numbers.
+
+**Recommended exact strings — a parallel pair, slightly tighter than the proposal:**
+
+| Case | String |
+|---|---|
+| Normal | `Unlocks after wave {n}` |
+| FTUE (chai, coffee) | `Unlocks after training` |
+
+**Why tighter matters.** The label sits in a `line-clamp-2` span on a grid card. Measured from the
+layout: `gridCols` is 3 whenever `mu > 1.5`, and the **tightest real case is a 390–412 px phone — a
+~105–111 px tile at ~12.5 px type, about 34 characters across two lines** (rough, at 0.5 em average
+advance; worth confirming in the browser). *"Unlocking access after wave 47"* is **30** — it fits,
+with four characters of headroom. *"Unlocks after wave 47"* is **21**, and keeps that headroom for
+**Hindi, which will be longer**. The pair also reads in parallel, which the mixed
+*"Beat…"/"Complete…"* forms did not.
 
 **🔴 Round 19 dependency.** This adds **two new display strings** (`Beat level {n} to unlock`,
 `Complete training to unlock`). Every display string belongs in `en.ts`, per `recipes.ts`'s own file
