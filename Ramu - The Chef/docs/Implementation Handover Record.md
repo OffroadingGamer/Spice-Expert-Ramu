@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.95.0** (Rounds 0–20) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. Review and Public stay at **1.69.0**. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Nothing.** ✅ Round 20 returned and is **verified** (see the Sep 30 entry). **Round 21** — belt-mode removal plus housekeeping — is the last planned round and is not yet issued. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **In flight** | ⏳ **Round 21 — the final round.** Belt-mode removal, the Owned-card clipping fix (option **a**, the user's pick), and housekeeping. Handover written Sep 30 and delivered to the user for dispatch. After it returns the roadmap is complete and the work is polish. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
 | **Repo** | `origin/main` = **`0fc39de`** at the time this row was written; the Round 20 source changes and this verification entry land on top of it. Tree otherwise clean — reference videos are gitignored (`references/Errors/*.mp4`). |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -4347,3 +4347,76 @@ already written down rather than rediscovered: **does Public wait for the copy r
 "functional enough" too?**
 
 Nothing else changes. Round 20 stays accepted and verified; Round 21 is unaffected.
+
+---
+
+### 2026-09-30 — Round 21 issued — the FINAL round: belt-mode removal, the clipping fix, housekeeping
+
+Written when the handover was written, per this file's own rule. Private **1.95.0 → target 1.96.0**.
+Delivered to the user as chat text for dispatch to the implementation agent.
+
+**Why this round exists.** §13's scope cut: belt mode (Kitchen Mode, the `?test=1` conveyor) is
+retired for overscoping. One game, one mode. This round removes it and clears the small debts in
+§5 that were waiting for a round to ride on.
+
+**🔴 The single largest risk in this round, and it is a naming trap.** The word **"belt" means two
+different things** in this codebase:
+
+1. the **retired Kitchen Mode conveyor** — what this round deletes; and
+2. the **wave game's own enemy path**, which is called "belt" throughout live code.
+
+Central grepped it: `belt` appears in **16 files outside the deletion set**, including the sealed
+`sim/engine.ts` and `data/waves.ts`, plus `towerScene.ts`, `Hud.tsx`, `StationRail.tsx`,
+`WaveBubble.tsx` and `assets/manifest.ts`. `npm run balance` prints `pad N vs belt` — that is
+meaning (2), the shipping game. **An agent that deletes by grepping "belt" destroys the product.**
+Deletion is by the explicit file list below and nothing else. The same trap exists for the word
+"kitchen": `MetaUpgrades.tsx` (the Stations/Recipes screen), the `kitchen.scrolls.*` i18n keys and
+`save.ts`'s kitchen fields are all the **live** game and are **not** part of this.
+
+**Authorised task list** — verification will be against exactly this, not against a finished feature.
+
+**Part 1 — delete the belt cluster (7 files).** `ui/TestBelt.tsx`, `ui/PropPicker.tsx`,
+`game/kitchenScene.ts`, `game/kitchenStage.ts`, `game/kitchenConfig.ts`, `game/data/levels.ts`,
+`game/sim/kitchen.ts`. ⚠️ **`kitchenScene.ts` is a SEALED file, unsealed for DELETION IN THIS ROUND
+ONLY.** It may be deleted; it may not be edited. The other six sealed files stay sealed.
+
+Central verified the import graph from source: **every import of a belt file comes from another belt
+file, with exactly one external edge** — `ui/App.tsx:19`. The known edit points are
+`App.tsx` :19 and :53; `state/store.ts` :16 and :21 (drop `'testbelt'` from the phase union);
+`audio/audio.ts` :138 and :141; `ui/MainMenu.tsx` :44, :176, :448–449; and the `menu.testMode` key in
+both `en.ts` :50 and `hi.ts` :49. **Removing that key takes both tables 382 → 381, and they must
+still match.**
+
+**Part 2 — the clipping fix (the user picked option a).** `MetaUpgrades.tsx:329`, the Owned
+recipe card's note: `line-clamp-2 → line-clamp-3`, and let the card grow. Pre-existing, English as
+well as Hindi; measured at English avg 46 / max 56 characters, Hindi 44 / 60. The **locked** card's
+sentence shares the same clamp and must stay correct too.
+
+**Part 3 — housekeeping, each verified present by Central today.**
+
+| Debt | Verified |
+|---|---|
+| `registerEngine(null)` sits late in `towerScene.ts`'s `destroy()` — move to the top | **:2522**, after `store.patch`, `resetMusicDuck`, `ticker.remove`, `stage.off`, two resize-offs |
+| Dead `ui-shard` alias + its file | `manifest.ts:312 → images/ui/shard.png` (128², 8,875 B); replaced by `ui-chef-hat` in R19 |
+| `ing-tea-leaf.png` is the only non-128² ingredient sprite | **256²**, and the only one of **46** that is not 128². ⚠️ It **survives** the deletion — `recipes.ts:71` uses it for chai |
+| `en.ts` header says "the ten rows" | there are **eleven** — the source of Central's own wrong count, Retro 135 |
+| `pixi.preview.dmgFrom` / `rateFrom` trailing space | `'{a} → '` in `en.ts`, `'{a} →'` in `hi.ts` |
+| `store.ts`'s stale phase comment (§5) | still claims the build must stay private until Kitchen Mode is complete |
+
+**Report, do not act — two things Central deliberately did not authorise.** (1) `state/devMode.ts`
+becomes **orphaned**: `devModeEnabled()` has exactly two callers, both in `MainMenu.tsx`, both
+removed by Part 1. Report it; do not delete it unasked. (2) Some of the **44 `prop-*` aliases** in
+`manifest.ts` will become unreferenced — `prop-kettle-l1`, `prop-water-dispenser-l1` and
+`prop-fridge` appear only in belt files. **Report the exact orphan list; delete no art and no
+manifest entry in this round.**
+
+🔒 **Attribution is not in scope and not negotiable.** toxiccolors' credit for the Kitchen
+Essentials pack **stays**, and Archita Sharma's credit stays. The four towers' per-level art is
+`prop-*` (`textures.ts:290–293`), and the 30 `dish-*` trays came from a LoRA trained on that pack.
+**Retiring belt mode changes none of it.** Never prompt the user about attribution.
+
+**Acceptance criteria.** `tsc --noEmit` and `npm run build` clean · `npm run balance` still
+**35 / 36 / 11 / 4 / 90** · the six remaining sealed files byte-identical · no `*.json` sidecars under
+`public/` · `en.ts` and `hi.ts` both **381** keys with symmetric difference **0** · no dangling import
+of any deleted file · the main menu renders correctly **with `?test=1`** (the button must simply be
+gone, not broken) · Private only, **no `update-tag`, no `set-public`, no `set-private`**.

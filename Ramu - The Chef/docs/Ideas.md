@@ -252,6 +252,8 @@ cannot recover the jam's departed players.
   fit ≈ 40 characters, in both languages — most faithful to the current design, most work, and
   it spends the writing twice. **Central's recommendation: (a)**, as Round 21 housekeeping — the
   notes are flavour the player reads once, and truncating the joke is worse than a taller card.
+  ✅ **DECIDED Sep 30 2026 — the user chose (a).** `line-clamp-3`; the card grows. Folded into
+  Round 21.
 - **`en.ts`'s own header comment says "the ten rows strings.md flags `pl`" — there are eleven.**
   Harmless in itself, but it is the exact source of Central's wrong plural count in the Round 20
   handover (→ [Retro.md](Retro.md) lesson 135). Worth a one-word fix in Round 21 so the next
