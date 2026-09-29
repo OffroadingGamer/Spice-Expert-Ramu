@@ -233,6 +233,29 @@ cannot recover the jam's departed players.
 - **`store.ts`'s phase comment is stale** — it still claims the build must stay private until
   Kitchen Mode is complete. Round A2 gated that mode behind `devModeEnabled()` (`?test=1`),
   and the game shipped public on Sep 13 regardless.
+- 🔴 **Every Owned recipe card's note clips inside its `line-clamp-2` box — and it is an
+  ENGLISH bug, not a translation one.** Found by the Round 20 agent while sweeping Hindi for
+  clipping, and correctly **not** fixed in that round: it is layout, not translation.
+  [MetaUpgrades.tsx:329](../../jam-entry/src/ui/MetaUpgrades.tsx#L329) renders
+  `t(recipeNoteKey(slug))` into a two-line clamp at `fontSize: max(11, 7.5 * mu)`. The agent
+  reproduced the clip **in English** on the same cards at the same widths — 403 px and 744 px for
+  all of them, and 360 px for *"Cut small, cook fast…"* and *"Garlic gold, not garlic brown…"*.
+  Central's own measurement of the 22 notes, for sizing the fix: **English min 32 / avg 46 / max 56
+  characters; Hindi min 20 / avg 44 / max 60. 17 of 22 English notes exceed 40 characters.** So
+  Hindi is slightly *shorter* on average and slightly longer at the top end — shortening the Hindi
+  would not fix it, because the English original already overflows its own box. ⚠️ Note the
+  asymmetry that proves the diagnosis: the **locked** card's sentence shares the same
+  `line-clamp-2` and passed the sweep clean, because "Unlocking access after wave 12" is short.
+  **Three ways out:** (a) give the box a third line (`line-clamp-3`) and let the card grow — one
+  class, but it changes grid row height; (b) drop the note's font a step and keep two lines — no
+  layout change, less readable at 11 px which is already the floor; (c) rewrite all 22 notes to
+  fit ≈ 40 characters, in both languages — most faithful to the current design, most work, and
+  it spends the writing twice. **Central's recommendation: (a)**, as Round 21 housekeeping — the
+  notes are flavour the player reads once, and truncating the joke is worse than a taller card.
+- **`en.ts`'s own header comment says "the ten rows strings.md flags `pl`" — there are eleven.**
+  Harmless in itself, but it is the exact source of Central's wrong plural count in the Round 20
+  handover (→ [Retro.md](Retro.md) lesson 135). Worth a one-word fix in Round 21 so the next
+  reader does not inherit it.
 - ✅ **`67c5452`'s swept-in rename is CLOSED, no action.** The zero-content
   `BuildSheet → StationRail` rename riding in a docs commit was left as-is. Rewriting
   published history after launch has no upside, and `git log --follow` traverses it correctly.

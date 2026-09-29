@@ -2996,3 +2996,19 @@ after **00:30 IST Sep 19**.
      "nothing in this codebase does X", name the mechanisms X could use and check each one. One
      grep over one language proves one thing. And when a project doc has already flagged a risk in
      the area you are briefing, re-read it before writing the brief, not after.**
+
+135. **I asserted two counts as measurements when one was a grep and the other was prose.** The
+     Round 20 handover told the agent the table held **381 keys and 10 plural rows** and gave 381 as
+     the parity number to hit. Measured by executing the real module: `en.ts` at `0fc39de` held
+     **380 keys and 11 plural rows**. Both numbers were wrong, in different ways, and the second is
+     the worse of the two. The key count came from a regex over the file's text — the same class of
+     slip that produced three extractor errors in Round 19, in this very same file. The plural count
+     I never measured at all: `docs/i18n/strings.md` says "the ten rows", `en.ts`'s own header
+     comment repeats "the ten rows", and I passed that sentence along as though reading it were
+     counting. It had been stale for two rounds. The agent measured, corrected me, and was right;
+     verifying its correction took one command. ✅ **Rule: when a number IS the acceptance
+     criterion, produce it by executing the artefact, never by pattern-matching its text — for this
+     project that means bundling the real module with the project's own esbuild, the way
+     `npm run balance` already does, and reading `Object.keys()`. And a count quoted in prose is a
+     claim, including when the prose is the file's own header comment. If I am about to hand a
+     number to someone as their target, I measure it that turn.**

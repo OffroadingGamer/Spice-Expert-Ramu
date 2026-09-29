@@ -39,10 +39,10 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Private 1.94.0** (Rounds 0–19) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. Review and Public stay at **1.69.0**. |
+| **Live version** | **Private 1.95.0** (Rounds 0–20) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. Review and Public stay at **1.69.0**. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | ⏳ **Round 20 — Hindi.** Issued and handed to the implementation agent by the user Sep 30; not yet returned. Then **Round 21** — belt-mode removal plus housekeeping — and the roadmap is done. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), ✅ ~~the Devanagari moderation test~~ — **PASSED Sep 30, closed**, the touch-drag test, and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
-| **Repo** | `origin/main` = **`46e64f7`** at the time this row was written; the Round 19 verification entry lands on top of it. Pushed. Tree clean; the only untracked item is `references/Errors/The kitchen upgrades refix.mp4` (3 MB), which is the user's call — no reference video is tracked today. |
+| **In flight** | **Nothing.** ✅ Round 20 returned and is **verified** (see the Sep 30 entry). **Round 21** — belt-mode removal plus housekeeping — is the last planned round and is not yet issued. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, **the user's own read of the Hindi** (an agent cannot sign off its own translation), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **Repo** | `origin/main` = **`0fc39de`** at the time this row was written; the Round 20 source changes and this verification entry land on top of it. Tree otherwise clean — reference videos are gitignored (`references/Errors/*.mp4`). |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
@@ -51,7 +51,7 @@ of the present.**
 | **Early economy** | `startCoins 200` · `startLives 10` · `waveBonus 25` (levels 1–10) |
 | **Late economy** | from level 11: `waveBonus 6`, `bountyMult 0.55` |
 | **FTUE opening pad** | **`FTUE_FIRST_PAD = 4`** (B3, `damage ×1.5`), then pads 3 and 2 |
-| **Sealed files** | `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` |
+| **Sealed files** | `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` · `kitchenScene.ts` · `package*.json` · `rundot/leaderboard.config.json` — ⚠️ **`kitchenScene.ts` is unsealed for DELETION in Round 21 only**, nothing else. |
 | **`data/waves.ts`** | ⚠️ **RE-SEALED.** Unsealed for the v1.69.0 block-1 retune only |
 | **Credits (Sep 23)** | **199,587**, reconciled. Art round 7 spent **2,940** (20 calls × 147). Prior close was 202,527, itself reconciled to the grant list. |
 | **Paid campaign** | ✅ **`kitchen-rush-meta` COMPLETE** (ended Sep 16). **$80.96 of $82 spent · 22 installs · CPI $3.68 · ROAS 0.00x.** ⚠️ **Corrected Sep 22** from the $70.05 / 18-install figure carried since Sep 17; re-confirmed live on Sep 23 with `rundot marketing list`. `kitchen-rush-reddit` was rejected, $0.00. Paid is done for this jam, and attribution never credited it a single install. |
@@ -4231,3 +4231,98 @@ on the Pixi `TextStyle`s, **or** leave those three as Latin abbreviations in Hin
 grep was over CSS. **Pixi sets its font in JS, through `TextStyle`, which the same grep pattern
 never covers** — and `strings.md` had flagged the canvas-font risk on Sep 18, in a doc Central had
 read. The generalisation was true of the DOM and asserted of the product. → **Retro 134.**
+
+---
+
+### 2026-09-30 — Round 20 (Hindi) — ✅ RETURNED AND VERIFIED — Private 1.95.0
+
+Return pasted **verbatim** into [Agent Returns.md](Agent%20Returns.md) before any verification, per
+the gate. Everything below is Central's own measurement, from source, not the report's word.
+
+**Deploy.** `rundot whoami` → `offroadinggamedev@gmail.com`. `rundot game list-tags` → Private
+**1.95.0**, Review **1.69.0**, Public **1.69.0**. The freeze held; no tag was moved.
+
+**Gates, all re-run by Central.**
+
+| Gate | Result |
+|---|---|
+| `npm run build` (`tsc --noEmit && vite build`) | clean, **exit 0** |
+| `npm run balance` | **35 / 36 / 11 / 4 / 90** — unchanged |
+| All seven sealed files, `git diff --stat` | **empty** |
+| `find public -name '*.json'` | **empty** — no sidecars |
+| Files touched | exactly the 11 modified + 3 new the report lists |
+
+**Key parity, measured by executing the real modules** (bundled with the project's own esbuild, the
+`npm run balance` pattern — not a regex, because regexes over this very file produced three
+slips in Round 19):
+
+- `en.ts` **382** keys / 11 plural rows · `hi.ts` **382** / 11. **Symmetric difference: 0.**
+- **0** interpolation-token mismatches · **0** shape mismatches (string vs `{one,other}`) · **0**
+  malformed Hindi plural rows · **0** empty Hindi values.
+- Keys added this round: exactly `settings.language` and `name.language.title`. None removed.
+- **31 Hindi values are byte-identical to English** — the report did not mention this, so Central
+  classified all 31: **every one is format-only** (`+{n}`, `{pct}%`, `💎 {n}`, `←`, `▲{n}`) or one of
+  the three deliberately-Latin `pixi.*` abbreviations. **No untranslated prose.**
+
+🔴 **The agent corrected Central's numbers and was right.** The handover stated **381 keys / 10
+plural rows**; `en.ts` at `0fc39de` actually held **380 / 11**. Verified independently above. The key
+count was a bad grep; the plural count was never measured at all — it was copied from
+`strings.md`'s prose, which `en.ts`'s own header comment repeats and which had been stale for two
+rounds. → **Retro 135**, and the stale comment is logged in §5 for Round 21.
+
+**The addendum landed.** `pixi.lvUp`, `pixi.preview.dmgTo`, `pixi.preview.rateTo` are byte-identical
+to English (`Lv↑`, `{b} dmg`, `{b}/s`) — confirmed by value comparison, not by the report's claim.
+The draft `{b}/से` never shipped. ⚠️ One cosmetic residue: `pixi.preview.dmgFrom`/`rateFrom` are
+`'{a} → '` in English **with a trailing space** and `'{a} →'` in Hindi without — a canvas gap
+before the target value. Trivial; Round 21.
+
+**`shared/graphemes.ts`, tested by Central against its own strings**, not the agent's:
+
+- पुनीत = 5 UTF-16 units, **3 graphemes**. क्षत्रिय = 8 units, **3**. श्री = 4 units, **1**.
+- The report's boundary case reproduces exactly: 16 graphemes unchanged, 17 clamped back to the
+  identical 16-grapheme string.
+- **Zero stranded combining marks across every cut from 1 to 20** — the failure mode `.slice()` had.
+- `firstGrapheme` vs `.charAt(0)`: पुनीत → `पु` not `प`; श्री → `श्री` (the whole name is one cluster)
+  not `श`; क्षत्रिय → `क्ष` not `क`. Latin unaffected.
+- ZWJ emoji (👨‍👩‍👧‍👦 = 11 units) and a regional-indicator flag both count as **1**. Empty string,
+  `limit 0` and a lone matra all safe.
+- ⚠️ **The regex fallback is genuinely weaker, and its own comment says so** — with
+  `Intl.Segmenter` removed it counts क्षत्रिय as 5 and the ZWJ family as 7. It only fires on engines
+  older than 2021–2022, it still never strands a mark, and the failure is a slightly stingy cap,
+  not corruption. Accepted.
+
+**`maxLength` was removed, and that is the right call** — it is a UTF-16-code-unit attribute. Both
+dialogs now clamp by grapheme in `onChange`. `NAME_PATTERN` is `/^[\p{L}\p{M} .']*$/u`, which admits
+Devanagari (pre-existing, unchanged). All three `save.ts` sites converted, including the `parse()`
+load path.
+
+**Leaderboard row width — Central's own follow-up, not in the brief.** The cap changed from a
+*width proxy* (code units) to a *semantic count* (graphemes), so 16 Hindi graphemes can render much
+wider than 16 Latin characters — श्री alone is one grapheme and four code units. Checked: the name
+spans at [Leaderboard.tsx:229](../../jam-entry/src/ui/Leaderboard.tsx#L229) and
+[:353](../../jam-entry/src/ui/Leaderboard.tsx#L353) already carry `truncate`, so a long Devanagari
+name ellipsises instead of breaking the row. **No bug.** Residue is cosmetic: a Hindi name may show
+fewer characters before the ellipsis than a Latin one.
+
+**The bug the agent fixed is real and correctly fixed.** [MetaUpgrades.tsx:525](../../jam-entry/src/ui/MetaUpgrades.tsx#L525)
+read the sealed `towers.ts`'s English `.name` directly; it now calls `t(stationNameKey(tower.id))`,
+matching what `StationRail.tsx` always did and what `towerKeys.ts`'s own doc comment had already
+*claimed* this file did. The whole Stations tab translated except every station's own header.
+
+**The bug the agent flagged and did NOT fix is confirmed pre-existing.** `git diff -U0` on
+`MetaUpgrades.tsx` shows **exactly two hunks** this round — the import at :33 and the header at
+:525. The `line-clamp-2` at :329 is untouched, so Round 20 did not introduce it. Central measured
+the 22 notes to size the fix: **English min 32 / avg 46 / max 56 chars; Hindi min 20 / avg 44 /
+max 60; 17 of 22 English notes exceed 40.** Shortening the Hindi cannot fix an English overflow.
+Three options and a recommendation are in [Ideas.md](Ideas.md) §5.
+
+**Honestly scoped limits the agent declared, which Central accepts as declared:** the avatar initial
+is a pure-function proof, not a rendered row, because `leaderboardsAvailable()` is false with no RUN
+host; and the end screen was cleared by reading the source rather than rendering a loss, because
+triggering one would have meant faking a loss, which the brief forbids. It also retracted its own
+first reload-persistence result after finding its Playwright `addInitScript` re-fired on the
+navigation under test — caught and corrected by the agent, not by Central.
+
+✅ **Round 20 accepted.** **Round 21** — belt-mode removal plus housekeeping — is the last planned
+round. ⚠️ **Still open on the user, and an agent cannot close it: the user's own read of the
+Hindi**, especially the ten least-sure strings in `docs/i18n/recipes.md`.

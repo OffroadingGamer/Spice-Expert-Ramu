@@ -11,7 +11,7 @@ header mirrors it. ⚠️ It had been left on Sep 17 for six days and twelve rou
 disagree, the record wins and this header is the one that is wrong.
 
 **Live:** **Public 1.69.0** · Review 1.69.0 — the jam build, frozen since Sep 18 and never moved
-since. **Private 1.93.0** — Rounds 0–18b. 🔒 Private-only until the user plays end-to-end and
+since. **Private 1.95.0** — Rounds 0–20 (Hindi shipped Sep 30). 🔒 Private-only until the user plays end-to-end and
 decides public; promotion is the implementation agent's `update-tag`, never Central's.
 
 **Since the jam closed,** the whole line of work has been the Kitchen. Rounds 13–16 brought i18n,
@@ -21,10 +21,11 @@ rails, landed all 44 prep/garnish strings and repaired mouse input; **Round 18b*
 finished 46-sprite ingredient set, the 22 true rails, pane drag-scroll and the Close button.
 **The Kitchen is feature-complete at 1.93.0.**
 
-**In flight:** ⏳ **Round 20 — Hindi**, issued Sep 30 (381 keys, locale registration, the
-grapheme-cluster name cap, the avatar initial). **Then Round 21** — belt-mode removal plus
-housekeeping — and the roadmap is complete. **Superseded:** **Round 20 — Hindi**, which now has a stable English table *plus* Round 19's two strings to
-translate. Then IAP (Ideas.md §10.6 B, content-not-power).
+**In flight:** nothing — **Round 20 (Hindi) shipped as Private 1.95.0** and is verified (382 keys
+both tables, symmetric difference 0, balance baseline unchanged). **Next and last: Round 21** —
+belt-mode removal plus housekeeping, which now also carries the Owned-card clipping fix
+(Ideas.md §5). After that the roadmap is complete and the work is polish. **Deferred:** IAP
+(Ideas.md §10.6 B, content-not-power) until public, with retention data.
 
 **Open on the user:** the Public promotion call · a one-click check of the studio page's
 "4 AI features" row before promoting · ✅ ~~Devanagari~~ — **fully passed Sep 30, closed** · **touch-drag on the rail

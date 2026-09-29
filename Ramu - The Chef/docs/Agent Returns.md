@@ -794,6 +794,52 @@ Final state: Private 1.94.0, Review 1.69.0, Public 1.69.0.
 
 ---
 
+## 2026-09-30 — Round 20 (Hindi) — implementation agent
+
+Private v1.95.0 deployed. Review and Public untouched at 1.69.0 — confirmed via rundot game list-tags. Full report below.
+
+Round 20 — Hindi
+The count itself, corrected
+Measured directly from the live en.ts, not the stale doc: 380 keys, 11 plural rows — not the handover's stated 381/10. hi.ts was built key-for-key from that real 380, then Part 2's own required Settings language row added settings.language and the boot language-step added name.language.title, landing both files at 382 keys, 11 plural rows exactly. Verified programmatically: en.ts 382 / hi.ts 382, symmetric difference: 0, every interpolation token matches per key (0 mismatches), all 11 plural rows carry both one/other in Hindi.
+
+Part 1 — i18n/hi.ts
+237 of the pre-existing 380 keys reused docs/i18n/strings.md's own Hindi drafts verbatim after confirming their English column still matches en.ts (one drift found and fixed: hud.action.bought shortened from "✓ bought" to "✓" after that doc was written — the Hindi draft "✓ ले लिया" is now just "✓" to match). The other 143 — all 46 ingredient.*, all 22 recipe.*.note, all 44 recipe.*.prep/.finish, the 8 continue.* keys, and the Round 19 kitchen.scrolls.* additions — are new translations this round, in the kitchen register docs/i18n/recipes.md §6.9 asked for (जीरा, हल्दी, कढ़ी पत्ता, उड़द दाल, not the dictionary forms). Per docs/Ideas.md §12's own Sep 30 decision, the 13 recipes whose prose names an ingredient the rail doesn't carry (ginger in seven) were translated as-is, not reconciled.
+
+Addendum applied: pixi.lvUp, pixi.preview.dmgTo, pixi.preview.rateTo are kept as their English abbreviation (Lv↑, {b} dmg, {b}/s), not translated — towerScene.ts's TextStyle calls set no fontFamily anywhere in src/, so Pixi v8 falls back to Arial, which has no Devanagari glyphs. The other four pixi.* keys are numerals/symbols only, no risk.
+
+Part 2 — locale registration
+index.ts's Locale/TABLES/KNOWN_LOCALES all widened to include 'hi'. Settings gained a language row (English · हिन्दी). A first-ever guest boot whose RundotGameAPI.system.getEnvironment().browserInfo.language reads hi* or *-IN now sees a one-time "Which language for the kitchen?" step ahead of the name dialog (new file sdk/environment.ts, wired through main.tsx/App.tsx/NameDialog.tsx).
+
+Instant switch, measured live: clicking हिन्दी in Settings flips the card's own title to "सेटिंग्स" with no reload (localeImmediatelyAfterClick: "hi"), because store.ts gained a reactive locale mirror and App.tsx subscribes to it at the render root — no React.memo exists anywhere in src/ui/, so that one subscription cascades a full re-render through every screen. Survives reload, measured live: after a genuine reload (not a stale test artifact — see below), getLocale() reads back "hi" from localStorage, correctly.
+
+(One retraction against myself: my first pass at this test used Playwright's addInitScript to clear storage, not realizing it re-fires on every navigation including the reload I was testing — that gave a false "does not survive reload" result. Caught it by re-running with a one-shot page.evaluate(() => localStorage.clear()) instead, which showed the real behavior: it persists correctly.)
+
+Part 3 — the name cap
+slice(0, 16) (save.ts:249/397/410) and maxLength={16} (NameDialog.tsx, RenameDialog.tsx) replaced with grapheme-cluster counting (new shared/graphemes.ts, Intl.Segmenter with a regex fallback). Worked example, measured:
+
+पुनीतपुनीतपुनीतपुनीतपुनीतप — 26 UTF-16 units, 16 graphemes. clampToGraphemes(name, 16) returns it unchanged.
+Same string + one more consonant (त) — 27 units, 17 graphemes. Clamped back to exactly the original 16-grapheme string, boundary falling cleanly between complete clusters (no bare combining mark).
+Confirmed at the persistence layer too: calling the real, unmodified save.setPlayerName()/renamePlayer() with the 17-grapheme name stores exactly 16 graphemes.
+Part 4 — avatar initial
+Leaderboard.tsx:174's .charAt(0) → firstGrapheme() (new export). Measured: firstGrapheme('पुनीत').toUpperCase() → "पु". Old code's 'पुनीत'.charAt(0) → "प" (confirmed side by side, the exact bug). I could not render this inside an actual Leaderboard row locally — leaderboardsAvailable() returns false with no RUN host present, so no board rows exist outside a real session — so this is a pure-function proof of the exact call the component makes, not a full DOM screenshot.
+
+Out of scope, respected
+No touch to blocks.ts, the shard economy, leaderboard.config.json, sdk/leaderboard.ts, Tamil, or belt mode's code (menu.testMode's key was translated for parity only).
+
+Build / verify
+tsc --noEmit clean. npm run build clean. npm run balance → 35 / 36 / 11 / 4 / 90 — unchanged. find public -name '*.json': empty. All seven sealed files: git diff --stat empty. Touched: i18n/en.ts, i18n/index.ts, main.tsx, state/save.ts, state/store.ts, ui/App.tsx, ui/Leaderboard.tsx, ui/MetaUpgrades.tsx, ui/NameDialog.tsx, ui/RenameDialog.tsx, ui/Settings.tsx (modified), plus new i18n/hi.ts, sdk/environment.ts, shared/graphemes.ts.
+
+Clipping sweep at 360/403/744 (Hindi, live-measured)
+Settings, Kitchen Stations tab, Kitchen Recipes tab's Locked-card sentences, the wave bubble + HUD chips (including hud.escapesLeft, the one strings.md flagged as one-line-at-360), and the in-run dialogue box: zero clipped elements at any width. End screen: no line-clamp/truncate class exists on it at all, so there's no clamped-height surface to clip against — verified by reading the source, not by a live render, because a live loss couldn't be triggered without fighting towerScene.ts's own continuous engine→store sync (which overwrites a manually-patched tdPhase within a frame) — doing that would mean faking a loss, which the brief rules out.
+
+A bug found, fixed on the spot
+Sweeping the Stations tab in Hindi, every station's stat rows and signature-track name translated correctly, but the header — "Stock Pot", "Pressure Cooker", "Cooktop", "Sauce Pot" — stayed in English. MetaUpgrades.tsx:525 was reading tower.name (the sealed towers.ts's own English field) directly, instead of t(stationNameKey(tower.id)) the way StationRail.tsx already correctly does. i18n/towerKeys.ts's own doc comment claims this helper is "shared by StationRail.tsx... and MetaUpgrades.tsx" — it wasn't, for this one field. Fixed: now reads पतीला / प्रेशर कुकर / अँगीठी / सॉस पॉट, confirmed live.
+
+A bug found, NOT fixed — flagged for the user
+The same sweep found that every Owned recipe card's note clips inside its line-clamp-2 box at 403px and 744px, and two of them clip even at 360px — and this is not a Hindi problem: I reproduced the identical clipping in English, on the same cards, at the same widths (e.g. "Bitter first, sweet after. Like most mornings." clips at 403 and 744 in English too; "Cut small, cook fast. Nobody wants mushy beans." and "Garlic gold, not garlic brown. Watch it like a customer." clip even at 360 in English). This is a pre-existing CSS sizing bug in the Owned-card branch of MetaUpgrades.tsx's RecipeCard (Round 17/18 vintage), not something a translation round can fix by shortening text — the English original is already too long for its own box. I did not touch it: it's a layout bug, not a translation gap, and fixing card CSS is outside this round's brief.
+
+---
+
 ## Pending
 
-- **Round 20 — Hindi** (implementation agent). Issued and handed over by the user Sep 30; awaiting its return. `hi.ts` for all 381 keys, the locale registration, the grapheme-cluster name cap and the avatar initial. Ideas.md §10.2. ⚠️ **An addendum on Pixi canvas fonts was raised after dispatch — see the record's Sep 30 entry.**
+- Nothing outstanding. **Round 20 (Hindi) has returned** and is recorded above; verification by Central follows. **Round 21** — belt-mode removal plus housekeeping — is the last planned round and is not yet issued.
