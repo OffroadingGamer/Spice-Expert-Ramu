@@ -1388,7 +1388,7 @@ Six open decisions put to the user with three options each; all six answered.
 → **Remaining roadmap is now exactly two rounds: 20 (Hindi) and 21 (removal + housekeeping).**
 After that the product is feature-complete and the work is polish.
 
-## 15. 🔴 The daily leaderboard does not exist in production
+## 15. ~~The daily leaderboard does not exist in production~~ — 🔴 **WRONG, retracted same day**
 
 Found Sep 30 while reading board ids for the Devanagari test — not looked for.
 
@@ -1414,9 +1414,26 @@ is a *repo* artifact that must be pushed with `rundot game upload-server-config`
 finding. Uploading a server config is a write operation on the live game and is **not Central's to
 run.** Two live boards must not be disturbed.
 
-**Decision needed:** whether Round 21 provisions the daily period, drops `'daily'` from
-`BOARD_PERIODS` to match reality, or leaves it. 🔒 Either code path touches the sealed
-`leaderboard.config.json` or `sdk/leaderboard.ts`.
+### 🔴 RETRACTION, Sep 30 — the claim above is false. The daily board works.
+
+**The user's own screenshots refuted it minutes later:** the Ranks overlay's **Today** tab shows
+पुनीत at #1 with **413 dishes served / 36 waves held** and a live *"resets 4h 12m"* timer. A board
+that does not exist cannot rank today's run.
+
+**What actually happened.** `rundot leaderboard config` lists `alltime` instances only, and querying
+`PpB5gECS0AMU49mGYAKM_waves_daily` returns an empty table rather than an error — so the CLI looked
+like it was confirming absence when it was doing nothing of the kind. Daily instances are evidently
+not addressed by that id (most likely date-scoped) and simply are not enumerated by `config`.
+`ui/Leaderboard.tsx:36` states the real design plainly — *"Two boards (waves/kills) × two periods
+(alltime/daily) = four independent fetches"* — and `:461` calls `fetchBoard(mode, period)` through
+the SDK for `'daily'` like any other.
+
+**Central diagnosed a production defect from one CLI listing without once opening the feature in
+the product.** The evidence that it worked was a tab in a screen the user had already been sent.
+→ **Retro 132.**
+
+✅ **No decision needed. Nothing to fix. `BOARD_PERIODS` stays as it is**, and Round 21 must **not**
+touch `leaderboard.config.json` or `sdk/leaderboard.ts` on account of this.
 
 ---
 

@@ -2960,3 +2960,15 @@ after **00:30 IST Sep 19**.
      *shown*. ✅ **Rule: when a value stops being constant, grep for its old literal value as well
      as its name. A hardcoded "+1", "8" or "150" in a string table is a display of that constant
      that no rename will ever surface.**
+
+132. **I declared a production feature broken from one CLI listing, without opening the feature.**
+     `rundot leaderboard config` enumerated only `alltime` instances, and a query of the presumed
+     `..._waves_daily` id returned an empty table instead of an error — so the tool appeared to
+     confirm absence twice while actually confirming nothing. I wrote it up as "half of every
+     submission since Round 11 has gone to a period the server does not have," which is a serious
+     claim about live behaviour. The user's next screenshot showed the Today tab ranking that day's
+     run with a live reset timer. Two cheap checks would have stopped me: opening the Ranks overlay,
+     or reading `Leaderboard.tsx`, which states in its header that it fetches four (mode, period)
+     pairs through the SDK. ✅ **Rule: absence from a tool's listing is not absence from the system.
+     Before reporting that a shipped feature is broken, observe the feature — in the product, or in
+     the code path that serves it. A summary view is evidence about the summary, not the system.**
