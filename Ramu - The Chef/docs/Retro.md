@@ -3012,3 +3012,17 @@ after **00:30 IST Sep 19**.
      `npm run balance` already does, and reading `Object.keys()`. And a count quoted in prose is a
      claim, including when the prose is the file's own header comment. If I am about to hand a
      number to someone as their target, I measure it that turn.**
+
+136. **I sized a CSS fix from character counts and never looked at the box.** Reviewing the Owned
+     recipe card's clipping bug I measured all 22 notes — English min 32 / avg 46 / max 56
+     characters, Hindi 20 / 44 / 60 — and recommended `line-clamp-3` on the strength of it. The
+     agent measured the actual render and found **12 of 22 still overflowed three lines at 403 px**,
+     and shipped `line-clamp-4`. The character count was real data and it was the wrong data: a
+     character count knows nothing about column width, font size, or where words break, and 403 px
+     is a three-column breakpoint where each note gets roughly a third of the screen. I had the
+     widths in front of me — the agent's own report named 360 / 403 / 744 — and still reasoned
+     about text length instead of line count. ✅ **Rule: a layout fix is sized by measuring the
+     layout. Counting the content is evidence that a problem exists, never evidence of how much
+     room the fix needs. When I cannot render the thing, say the number is an estimate and hand the
+     measurement to whoever can — do not put an unmeasured constant in a handover as though it
+     were derived.**

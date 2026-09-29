@@ -39,10 +39,10 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Private 1.95.0** (Rounds 0–20) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. Review and Public stay at **1.69.0**. |
+| **Live version** | **Private 1.96.0** (Rounds 0–21 — **the planned roadmap is COMPLETE**) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. Review and Public stay at **1.69.0**. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | ⏳ **Round 21 — the final round.** Belt-mode removal, the Owned-card clipping fix (option **a**, the user's pick), and housekeeping. Handover written Sep 30 and delivered to the user for dispatch. After it returns the roadmap is complete and the work is polish. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
-| **Repo** | `origin/main` = **`0fc39de`** at the time this row was written; the Round 20 source changes and this verification entry land on top of it. Tree otherwise clean — reference videos are gitignored (`references/Errors/*.mp4`). |
+| **In flight** | **Nothing, and no further round is planned.** ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), the **touch-drag test** — still untested by anyone on any build — and the three residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **Repo** | `origin/main` = **`d648176`** at the time this row was written; the Round 21 source changes and this verification entry land on top of it. Tree otherwise clean — reference videos are gitignored (`references/Errors/*.mp4`). |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
@@ -51,7 +51,7 @@ of the present.**
 | **Early economy** | `startCoins 200` · `startLives 10` · `waveBonus 25` (levels 1–10) |
 | **Late economy** | from level 11: `waveBonus 6`, `bountyMult 0.55` |
 | **FTUE opening pad** | **`FTUE_FIRST_PAD = 4`** (B3, `damage ×1.5`), then pads 3 and 2 |
-| **Sealed files** | `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` · `kitchenScene.ts` · `package*.json` · `rundot/leaderboard.config.json` — ⚠️ **`kitchenScene.ts` is unsealed for DELETION in Round 21 only**, nothing else. |
+| **Sealed files** | **Six:** `sim/engine.ts` · `data/enemies.ts` · `data/towers.ts` · `data/waves.ts` · `package*.json` · `rundot/leaderboard.config.json`. ✅ `kitchenScene.ts` **no longer exists** — deleted in Round 21, which is the only thing its unsealing permitted. |
 | **`data/waves.ts`** | ⚠️ **RE-SEALED.** Unsealed for the v1.69.0 block-1 retune only |
 | **Credits (Sep 23)** | **199,587**, reconciled. Art round 7 spent **2,940** (20 calls × 147). Prior close was 202,527, itself reconciled to the grant list. |
 | **Paid campaign** | ✅ **`kitchen-rush-meta` COMPLETE** (ended Sep 16). **$80.96 of $82 spent · 22 installs · CPI $3.68 · ROAS 0.00x.** ⚠️ **Corrected Sep 22** from the $70.05 / 18-install figure carried since Sep 17; re-confirmed live on Sep 23 with `rundot marketing list`. `kitchen-rush-reddit` was rejected, $0.00. Paid is done for this jam, and attribution never credited it a single install. |
@@ -4420,3 +4420,70 @@ Essentials pack **stays**, and Archita Sharma's credit stays. The four towers' p
 `public/` · `en.ts` and `hi.ts` both **381** keys with symmetric difference **0** · no dangling import
 of any deleted file · the main menu renders correctly **with `?test=1`** (the button must simply be
 gone, not broken) · Private only, **no `update-tag`, no `set-public`, no `set-private`**.
+
+---
+
+### 2026-09-30 — Round 21 — ✅ RETURNED AND VERIFIED — Private 1.96.0 — **THE ROADMAP IS COMPLETE**
+
+Return pasted **verbatim** into [Agent Returns.md](Agent%20Returns.md) before verification, per the
+gate. Everything below is Central's own measurement.
+
+**Deploy.** `rundot whoami` → `offroadinggamedev@gmail.com`. Tags: Private **1.96.0**, Review
+**1.69.0**, Public **1.69.0**. The freeze has now held for **21 rounds**.
+
+| Gate | Result |
+|---|---|
+| `npm run build` (`tsc --noEmit && vite build`) | clean, **exit 0** — which is also the proof there is no dangling import of a deleted file |
+| `npm run balance` | **35 / 36 / 11 / 4 / 90** — exact baseline |
+| The six remaining sealed files | `git diff --stat` **empty** |
+| `find public -name '*.json'` | **empty** |
+| Working tree | **7 deletions + 1 deleted asset + 1 resized asset + 9 modified** — exactly the report's list, nothing else |
+
+**Belt mode is gone.** All seven files deleted, including `kitchenScene.ts`, whose unsealing
+permitted exactly this and nothing else. **The naming trap did not fire** — the wave game's own
+`belt` path survives untouched in all 16 files that reference it, `npm run balance` still prints its
+`pad N vs belt` geometry proof, and the sealed `engine.ts`/`waves.ts` are byte-identical.
+
+**Key parity, measured by executing both modules:** `en.ts` **381** / `hi.ts` **381**, symmetric
+difference **0**, zero token mismatches, zero shape mismatches, 11 well-formed plural rows, zero
+empty values. The only key removed is `menu.testMode`; **nothing was added**.
+
+**All six §5 debts verified closed**, each read from source rather than taken from the report:
+`registerEngine(null)` is the **first statement** of `destroy()` (`towerScene.ts:2514`) · `ui-shard`
+is gone from the manifest and from disk, every surviving mention being a comment ·
+`ing-tea-leaf.png` is **128²**, and it is now one of 46 that all match · `en.ts` says "the eleven
+rows" · `pixi.preview.dmgFrom`/`rateFrom` now carry the same trailing space in both tables (the
+count of byte-identical Hindi values rose 31 → 33 for exactly that reason, which is the fix, not a
+regression) · `store.ts`'s stale comment went with the phase type.
+
+**"Report, do not act" was respected, and both reports check out.** `devMode.ts` still exists and
+has zero callers. The `prop-*` split is **12 live / 32 orphaned** — Central recomputed it
+independently and got the same 12 and the same 32, and further confirmed `TOWER_PROP_LEVELS` is an
+explicit literal table with **no dynamic `prop-` alias construction anywhere**, so the number is
+exact rather than a grep artefact. No art and no manifest entry was deleted.
+
+⚠️ **One authorised deviation, accepted: the agent shipped `line-clamp-4`, not the `line-clamp-3`
+this handover specified.** It measured before trusting the instruction, found **12 of 22 notes still
+overflowed a 3-line clamp at 403 px** (the 3-column breakpoint), and extended by one line. It also
+**caught its own false negative first**: its initial `scrollHeight > clientHeight` test reported zero
+clipping, which is wrong for `-webkit-line-clamp` in Chromium — the property does not inflate
+`scrollHeight` past the clamp — so it re-measured by cloning each note off-DOM with the clamp
+removed and comparing natural heights. That reasoning is sound and the method is the correct one.
+
+🔴 **Central can verify the clamp VALUE from source but not the RENDER.** `MetaUpgrades.tsx:329`
+reads `line-clamp-4` and `:341` (the locked card) is still `line-clamp-2`, untouched as promised.
+The "12 of 22 at 403 px" measurement itself is the agent's, not reproduced here — it needs a live
+render. It is accepted because the deviation is *within* the authorised mechanism (the clamp value
+only; no font change, no text rewrite, card still grows) and strictly closer to the authorised
+**goal**, which was that the notes stop clipping. **The user should eyeball the Recipes tab once**;
+that is cheaper than rebuilding the harness, and taller cards are a visible change.
+
+🔴 **Central's own error, and it caused the deviation.** The handover said `line-clamp-3` because
+Central sized the fix from **character counts** — English avg 46 / max 56 — and never measured the
+rendered box at any width. A character count is not a line count: it knows nothing about the column
+width, the font size, or where words break. → **Retro 136.**
+
+✅ **Round 21 accepted. The planned roadmap is complete.** No further round is planned. What remains
+is polish plus the user's own calls: the **Public promotion**, the **touch-drag test** — still
+untested by anyone on any build, and now the oldest open item in the project — the deferred Hindi
+copy review, and the three residuals in §5.

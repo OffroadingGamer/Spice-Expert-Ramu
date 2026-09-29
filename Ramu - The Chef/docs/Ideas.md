@@ -222,7 +222,39 @@ have already left. A reminder shipped now reaches only players who open the new 
 only in the RUN app (web no-ops). Worth building post-jam for the campaign's installs; it
 cannot recover the jam's departed players.
 
-## 5. Small hardening debts — carried from the launch rounds
+## 5. Small hardening debts — ✅ ALL SIX CLOSED IN ROUND 21 (Sep 30 2026)
+
+✅ **Every debt in this section shipped in Private 1.96.0 and was verified from source by Central.**
+`registerEngine(null)` is now the **first statement** of `towerScene.ts`'s `destroy()`
+(`:2514`, ahead of `trackRunEnd` and everything else that could throw) · the dead `ui-shard` alias
+and `images/ui/shard.png` are gone from the manifest **and from disk**, with every surviving mention
+being a comment · `ing-tea-leaf.png` is **128²**, so all 46 ingredient sprites now match · `en.ts`'s
+header says "the eleven rows" · `pixi.preview.dmgFrom`/`rateFrom` carry the same trailing space in
+both tables · and `store.ts`'s stale phase comment went with the phase type itself.
+
+⚠️ **Three residuals were created or revealed by that round. None is urgent; all are recorded so
+they are not rediscovered.**
+
+- **`registerRunEndReArm(null)` is still late in the same `destroy()`** — `towerScene.ts:2527`, after
+  the ticker, the stage handler and both resize-offs. It has **exactly the failure mode that
+  justified moving `registerEngine(null)`**: `GameCanvas` wraps `destroy()` in try/catch, so
+  anything throwing above it leaves a destroyed scene's run-end closure armed. Central did not
+  authorise moving it in Round 21 and the agent correctly did not touch it. Same one-line fix.
+- **`state/devMode.ts` is orphaned.** `devModeEnabled()` had exactly two callers, both in
+  `MainMenu.tsx`, both removed with the belt button. The file still exists and nothing calls it.
+  Keeping it costs nothing (tree-shaken out of the bundle); it is only a tidiness question.
+- **32 of the 44 `prop-*` aliases are now unreferenced.** Verified independently by Central:
+  `textures.ts`'s `TOWER_PROP_LEVELS` is an explicit literal table of **12** — three tiers each for
+  fox/owl/bear/squirrel — and there is **no dynamic `prop-` alias construction anywhere**, so the
+  count is exact rather than a grep artefact. The other 32 were the belt's prop palette.
+  🔒 **This does NOT touch attribution.** toxiccolors' credit for the Kitchen Essentials pack
+  stands on the 12 that still ship **and** on the 30 `dish-*` trays, which came from a LoRA trained
+  on that pack. Whether the 32 orphaned PNGs are deleted from `public/` is a bundle-size question
+  and nothing more.
+
+---
+
+## 5a. The original debt list — kept for the record
 
 - 🔴 **`registerEngine(null)` sits late inside `towerScene.ts`'s `destroy()`** — after
   `trackRunEnd`, two `clearTimeout`s, a `store.patch` and `app.ticker.remove`. `GameCanvas`'s

@@ -21,8 +21,9 @@ rails, landed all 44 prep/garnish strings and repaired mouse input; **Round 18b*
 finished 46-sprite ingredient set, the 22 true rails, pane drag-scroll and the Close button.
 **The Kitchen is feature-complete at 1.93.0.**
 
-**In flight:** ⏳ **Round 21 — the last round** (belt-mode removal, the `line-clamp-3` clipping
-fix, housekeeping), written Sep 30. **Done:** **Round 20 (Hindi) shipped as Private 1.95.0** and is verified (382 keys
+**In flight:** nothing — ✅ **Round 21 shipped as Private 1.96.0 and is verified. The planned
+roadmap is COMPLETE.** Belt mode is gone, the clipping fix shipped (as `line-clamp-4`, see below),
+and all six §5 debts are closed. From here the work is polish. **Done:** **Round 20 (Hindi) shipped as Private 1.95.0** and is verified (382 keys
 both tables, symmetric difference 0, balance baseline unchanged). **Next and last: Round 21** —
 belt-mode removal plus housekeeping, which now also carries the Owned-card clipping fix
 (Ideas.md §5). ⏸️ **Hindi copy review deferred** by the user Sep 30 — functional enough; fine-tuning

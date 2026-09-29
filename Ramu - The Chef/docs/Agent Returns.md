@@ -840,6 +840,38 @@ The same sweep found that every Owned recipe card's note clips inside its line-c
 
 ---
 
+## 2026-09-30 — Round 21 (FINAL: belt-mode removal, clipping fix, housekeeping) — implementation agent
+
+Unambiguously confirmed: Private 1.96.0, Review 1.69.0, Public 1.69.0. Round 21 complete. Here's the report.
+
+Round 21 — belt-mode removal, the clipping fix, housekeeping
+Deployed v1.96.0 as Private. Review and Public confirmed untouched at 1.69.0 via rundot game list-tags.
+
+Part 1 — deleted the belt cluster
+Verified the import graph myself before touching anything (grepped TestBelt|PropPicker|kitchenScene|kitchenStage|kitchenConfig|game/data/levels|sim/kitchen across src/): every real import of the seven belt files came from another belt file, with exactly one external edge — App.tsx:19/:53 — matching your own reading exactly. Deleted the seven files, then the six edit points: App.tsx (import + render), store.ts (phase union + its stale comment), audio.ts (the 'testbelt' branch), MainMenu.tsx (devModeEnabled import, showTestMode, the button), and menu.testMode out of both en.ts and hi.ts.
+
+tsc --noEmit clean — no dangling import anywhere. en.ts and hi.ts both measure 381 keys, symmetric difference 0.
+
+Part 2 — the clipping fix, corrected
+line-clamp-2 → line-clamp-3 at MetaUpgrades.tsx:329, as specified — but I measured before trusting it and found it wasn't sufficient: at 403px specifically (the 3-column breakpoint, mu > 1.5), 12 of 22 notes still overflowed a 3-line clamp by about one line, identically in English and Hindi. (My first pass used scrollHeight > clientHeight and reported zero clipping — that's a false negative for -webkit-line-clamp in Chromium, which never inflates scrollHeight past the clamp; I caught it by cloning each note off-DOM with the clamp removed and comparing its natural height instead.) I extended to line-clamp-4 — same fix mechanism (clamp value only, no font or text changes, card still grows), and re-verified: zero clipped notes at 360/403/744px in both languages. The locked card's sentence at :341 is untouched and confirmed still clean at all three widths. Screenshot at 403px shows full card growth, no ellipsis, no truncation.
+
+Part 3 — housekeeping, all six
+registerEngine(null) moved to the first line of destroy(), ahead of everything that could throw.
+Dead ui-shard alias and images/ui/shard.png (128², 8,875 B) removed from manifest.ts and disk. No other reference existed outside comments — confirmed by grep.
+ing-tea-leaf.png resized 256²→128² via sharp (already a project dependency, no package.json touch) — confirmed 128×128 after.
+en.ts's header comment: "the ten rows" → "the eleven rows" (matches the actual measured plural-row count).
+pixi.preview.dmgFrom/rateFrom trailing space: hi.ts now matches en.ts's '{a} → ' — the visible gap on the Pixi canvas is fixed.
+store.ts's stale "must stay private until Kitchen Mode is complete" comment was removed along with the phase type it was attached to (same edit as Part 1).
+Report, not act — the two items you asked me not to touch
+state/devMode.ts is now orphaned. devModeEnabled() had exactly two callers, both in MainMenu.tsx, both removed in Part 1. Nothing else calls it.
+Orphaned prop-* aliases: of the 44 in manifest.ts, exactly 12 are live — textures.ts:290-293's four tower level-tracks (prop-stock-pot-l1/l2/l3, prop-pressure-cooker-l1/l2/l3, prop-cooktop-l2/l3/l5, prop-sauce-pot-l1/l2/l3). The other 32 are now unreferenced anywhere outside manifest.ts itself: prop-kettle-l1/l2/l3, prop-water-dispenser-l1/l2, prop-fridge, prop-beverage-dispenser-l1/l2, prop-brazier-l1, prop-cast-iron-skillet-l1/l2, prop-cooktop-l1/l4, prop-dough-counter-l1/l2/l3, prop-fry-pan-l1/l2/l3/l4/l5, prop-rice-cooker-l1/l2/l3, prop-sauce-pan-l1/l2/l3, prop-spice-grinder-l1/l2/l3/l4, prop-steam-cooktop-l1. I deleted no art and no manifest entry — confirmed by checking each for dynamic (template-literal) lookups too, so this isn't a false negative from grepping only literal strings.
+Build / verify
+tsc --noEmit clean · npm run build clean · npm run balance → 35 / 36 / 11 / 4 / 90, exact baseline · six remaining sealed files byte-identical (git diff --stat empty) · no *.json under public/ · main menu at ?test=1 renders with zero console/page errors and the button simply absent (screenshot confirmed) · rundot whoami read offroadinggamedev@gmail.com before deploy.
+
+Touched: 7 deletions (the belt cluster) + 1 deleted asset + 1 resized asset + 9 modified files (manifest.ts, audio.ts, towerScene.ts, en.ts, hi.ts, store.ts, App.tsx, MainMenu.tsx, MetaUpgrades.tsx). Nothing outside that list.
+
+---
+
 ## Pending
 
-- Nothing outstanding. **Round 20 (Hindi) has returned** and is recorded above; verification by Central follows. **Round 21** — belt-mode removal plus housekeeping — is the last planned round and is not yet issued.
+- Nothing outstanding. **Round 21 (the final round) has returned** and is recorded above; verification by Central follows. The planned roadmap is complete after it — remaining work is polish, plus the open items in the record's CURRENT STATE block.
