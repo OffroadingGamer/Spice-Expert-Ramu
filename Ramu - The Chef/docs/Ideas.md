@@ -1314,6 +1314,64 @@ Play/badge → IAP; all post-jam, Private first.
 
 ---
 
+## 13. 🛑 SCOPE CUT — belt mode is retired. One game, one mode. Sep 30 2026
+
+**User's decision, verbatim in effect:** *"We can get rid of the other hidden mode of the game.
+State reason being Overscoping. We will keep and refine this project solely for this hyper-casual
+approach of waves. No other mode will be developed henceforth. Only this mode will be the final
+output alongwith further polishing and refining."*
+
+This **reverses the Sep 8 restructure** (Kitchen Mode was to become "Play Game", the tower game
+demoted to "Challenge Mode"). The wave game is now the product. Belt mode is not paused — it is
+retired.
+
+### 13.1 The footprint, traced from real import edges
+
+Belt mode is **cleanly self-contained** — seven modules hanging off **one** import in `App.tsx`:
+
+| Module | Imported by |
+|---|---|
+| `ui/TestBelt.tsx` | **`ui/App.tsx` — the only external edge** |
+| `ui/PropPicker.tsx` | TestBelt |
+| `game/kitchenScene.ts` 🔒 **sealed** | TestBelt |
+| `game/kitchenStage.ts` | TestBelt, kitchenScene |
+| `game/kitchenConfig.ts` | TestBelt, kitchenScene, kitchenStage, sim/kitchen, PropPicker |
+| `game/data/levels.ts` | TestBelt, kitchenScene, sim/kitchen |
+| `game/sim/kitchen.ts` | TestBelt, kitchenScene |
+
+Plus `store.ts`'s `'testbelt'` phase, the `menu.testMode` button behind `devModeEnabled()`, the
+`kitchen` save block (`bestLevel`, `propsOwned`, `shiftsCompleted`, `hats`, `clears`) and
+`audio.ts`'s `phase === 'testbelt'` cue branch.
+
+⚠️ **Earlier greps suggested `recipes.ts` and `EndScreen.tsx` also depended on `levels.ts`. They do
+not** — those were comment mentions. Only real `import` statements were counted for the table above.
+
+### 13.2 🔴 What the cut does NOT change — the attribution obligation stands
+
+It would be easy to assume retiring "the kitchen" removes the licensed pack art. **It does not.**
+
+- **The four towers draw their per-level art from `prop-*` aliases** — `textures.ts:20`: *"each
+  draws from ITS OWN THREE per-level `prop-*` aliases … once the stations got real per-level
+  Kitchen Essentials art"*, and `towerScene.ts` imports `textures.ts`. **All 44 `prop-*` sprites are
+  wave-game art.**
+- **The 30 `dish-*` trays** — the LoRA output trained on that pack — are used by `towerScene.ts`,
+  `MetaUpgrades.tsx`, `PostBossPanel.tsx`, `blocks.ts` and `recipes.ts`.
+
+✅ **toxiccolors' credit for the Kitchen Essentials pack remains mandatory, unchanged.** Archita
+Sharma's backdrop credit is likewise untouched.
+
+### 13.3 Consequences to carry forward
+
+- **The "Chef Hats" naming collision dissolves.** It was the belt's currency; with belt gone there
+  is one currency named for a toque. §11.3's whole problem disappears rather than being solved.
+- **§10.6 IAP needs re-scoping.** Its costume SKUs (the nine block bodies) were pitched partly at a
+  mode that no longer exists; the recipe-scroll and badge-pack SKUs are unaffected.
+- **§4 progressive pad unlocking** should be re-examined under the same overscoping lens — it
+  changes the balance baseline and is the largest remaining unbuilt idea.
+- **§8's parked items** (wave roster panel, eight more backdrops) stay parked.
+
+---
+
 ## 12. Recipe prose vs the ingredient rail — checked Sep 30 2026, **decision: keep as is**
 
 **Found while the user was playtesting 1.94.0**, on the Upma scroll: the card header reads
