@@ -1372,6 +1372,54 @@ Sharma's backdrop credit is likewise untouched.
 
 ---
 
+## 14. ✅ Roadmap decisions — answered Sep 30 2026
+
+Six open decisions put to the user with three options each; all six answered.
+
+| # | Decision | Chosen |
+|---|---|---|
+| 1 | How to retire belt mode | **A — full removal.** All seven modules, the `'testbelt'` phase, the dev menu button, the audio cue branch. 🔓 **This unseals `kitchenScene.ts` for deletion.** The `kitchen` save block stays readable-but-unused so existing saves survive. |
+| 2 | Sequencing | **A — Hindi as Round 20, belt removal as Round 21.** |
+| 3 | Public promotion | **B — promote after Hindi (1.95.0).** ⚠️ Precondition: settle the Sep 9 note in the keys doc claiming the UI/prop/ingredient/dish licences were unread and *"a public deploy is not cleared until they are"* — Public 1.69.0 already ships that art, so the note is either resolved or stale, and it should be answered explicitly. |
+| 4 | IAP scope | **C — defer entirely** until the game is public with real retention data. |
+| 5 | §4 progressive pad unlocking | **A — dropped permanently.** Same overscoping test as belt mode. It changed the balance baseline that has held byte-identical for twenty rounds. |
+| 6 | Housekeeping | **A — folded into the Round 21 removal:** `ing-tea-leaf.png` to 128², the dead `ui-shard` alias and `images/ui/shard.png`, and §5's `registerEngine(null)` ordering in `towerScene.destroy()`. |
+
+→ **Remaining roadmap is now exactly two rounds: 20 (Hindi) and 21 (removal + housekeeping).**
+After that the product is feature-complete and the work is polish.
+
+## 15. 🔴 The daily leaderboard does not exist in production
+
+Found Sep 30 while reading board ids for the Devanagari test — not looked for.
+
+`rundot leaderboard config` returns, for the live game, **two instances only**:
+
+```
+PpB5gECS0AMU49mGYAKM_kills_alltime   (kills / alltime)
+PpB5gECS0AMU49mGYAKM_waves_alltime   (waves / alltime)
+```
+
+and its `periods` block contains **`alltime` alone**. But the repo's sealed
+`rundot/leaderboard.config.json` declares **both** `alltime` and `daily`, and
+`sdk/leaderboard.ts:24` submits to both on every run:
+`BOARD_PERIODS = ['alltime', 'daily']`.
+
+**So half of every submission since Round 11 has been going to a period the server does not have.**
+Submissions are fire-and-forget (`void spacedSubmitScore`), so nothing surfaces the failure, and the
+Leaderboard UI's "Today" tab can only ever have been empty.
+
+⚠️ **Not yet diagnosed, and deliberately not acted on.** The likely cause is that the config file
+is a *repo* artifact that must be pushed with `rundot game upload-server-config` (the CLI has
+`list-server-configs` / `upload-server-config`) and never was — but that is a hypothesis, not a
+finding. Uploading a server config is a write operation on the live game and is **not Central's to
+run.** Two live boards must not be disturbed.
+
+**Decision needed:** whether Round 21 provisions the daily period, drops `'daily'` from
+`BOARD_PERIODS` to match reality, or leaves it. 🔒 Either code path touches the sealed
+`leaderboard.config.json` or `sdk/leaderboard.ts`.
+
+---
+
 ## 12. Recipe prose vs the ingredient rail — checked Sep 30 2026, **decision: keep as is**
 
 **Found while the user was playtesting 1.94.0**, on the Upma scroll: the card header reads
