@@ -21,9 +21,9 @@ rails, landed all 44 prep/garnish strings and repaired mouse input; **Round 18b*
 finished 46-sprite ingredient set, the 22 true rails, pane drag-scroll and the Close button.
 **The Kitchen is feature-complete at 1.93.0.**
 
-**In flight:** nothing — ✅ **Round 22 shipped as Private 1.97.0 and is verified.** 🔴 One
-time-sensitive decision: **`recipe_completed` is misnamed and is only cheap to rename before the
-build goes Public** (Ideas.md §5). ✅ **Round 21 shipped as Private 1.96.0 and is verified. The planned
+**In flight:** ⏳ **Round 23 — the pre-launch tidy** (rename `recipe_completed` → `shards_awarded`,
+remove 44 orphaned assets / 906 kB), written Sep 30, and it must land **before** the tag moves.
+✅ **Round 22 shipped as Private 1.97.0 and is verified.** ✅ **Round 21 shipped as Private 1.96.0 and is verified. The planned
 roadmap is COMPLETE.** Belt mode is gone, the clipping fix shipped (as `line-clamp-4`, see below),
 and all six §5 debts are closed. From here the work is polish. ✅ **Touch-drag passed on device Sep 30** — the oldest open item in
 the project, closed. **Done:** **Round 20 (Hindi) shipped as Private 1.95.0** and is verified (382 keys

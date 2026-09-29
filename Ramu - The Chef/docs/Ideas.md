@@ -263,7 +263,13 @@ they are not rediscovered.**
   `playSample()` caller** since `kitchenScene.ts` went. That is **44 orphaned assets** still shipping
   in the bundle. 🔒 **None of this touches attribution** — toxiccolors' credit stands on the 12
   `prop-*` that still ship and on the `dish-*` trays' LoRA, and Archita Sharma's stands regardless.
-  It is purely a bundle-size question, and the bundle is already flagged at **920 kB** by Vite.
+  It is purely a download-size question. ⚠️ **Correcting Central's own first framing of this:** the
+  **920 kB** figure Vite warns about is the **JS chunk**, and these assets are separate files under
+  `public/` that are not in it — the two numbers are unrelated and it was misleading to put them in
+  one sentence. Measured properly: **44 files, 906 kB** (32 `prop-*` = 733 kB, 10 `ui-*` = 124 kB,
+  2 mp3 = 48 kB), and **every one is in the `deferred` bundle**, never `critical`. So removing them
+  does **not** improve time-to-first-interaction at all; it removes ≈906 kB of pointless background
+  download after boot, which matters for a phone audience on Indian mobile data and nothing else.
 - **20 comment references to deleted belt code survive, across 8 files.** Found by Central
   sweeping after the deletion. **Comments only — the build is clean and nothing behaves wrongly** —
   but they name files that no longer exist, so the next reader chases ghosts. `assets/manifest.ts`

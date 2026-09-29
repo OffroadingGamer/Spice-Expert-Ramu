@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.97.0** (Rounds 0–22 — roadmap complete; R22 was an added instrumentation round) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. Review and Public stay at **1.69.0**. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Nothing.** ✅ Round 22 returned and is **verified.** 🔴 **One decision is now time-sensitive: the `recipe_completed` event is misnamed, and renaming it is only cheap before the build goes Public** — see the Sep 30 R22 entry and §5. Otherwise: the **Public promotion sequence** (tag → `rundot-game-coach` → announcement). Previously: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **In flight** | ⏳ **Round 23 — the pre-launch tidy**, written Sep 30. Renames `recipe_completed` → `shards_awarded` while that is still free, and removes **44 orphaned assets (906 kB)**. Must land **before** the tag moves. Then the **Public promotion sequence** (tag → `rundot-game-coach` → announcement). Previously: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
 | **Repo** | `origin/main` = **`d648176`** at the time this row was written; the Round 21 source changes and this verification entry land on top of it. Tree otherwise clean — reference videos are gitignored (`references/Errors/*.mp4`). |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -4642,3 +4642,58 @@ guide every post-launch decision. → **Retro 137.** Recorded as a decision in �
 ✅ **Round 22 accepted.** No further round is planned. Next is the **Public promotion sequence** —
 move the tag, run `rundot-game-coach`, then the announcement — with the event rename and the
 44-orphaned-asset question as the two things worth folding in before the tag moves.
+
+---
+
+### 2026-09-30 — Round 23 issued — the pre-launch tidy, and a mistake Central made while sizing it
+
+Written when the handover was written. Private **1.97.0 → target 1.98.0**. **This round must land
+before the public tag moves**, because half of it is only cheap until then.
+
+**Part 1 — rename `recipe_completed` → `shards_awarded`.** Central's naming error from Round 22
+(→ Retro 137). The event fires on every `awardShards()` call with `completed: 0` in most firings, so
+the name reads as a milestone while the data is a heartbeat. It has fired only on Private builds, so
+today it is one string literal; after the promotion it is a permanent dashboard discontinuity.
+
+**Part 2 — remove 44 orphaned assets, 906 kB.** 32 `prop-*` (733 kB) + 10 `ui-*` (124 kB) + the
+`kettle-boil` / `water-pour` mp3s (48 kB), with their manifest entries and, for the audio, their
+`SampleId` union members and sample-table rows.
+
+🔴 **THE TRAP IN THIS ROUND, AND CENTRAL WALKED INTO IT FIRST.** Sizing Part 2, Central ran a
+literal-string scan over `src/` and got **62** orphaned images. That number is **wrong and acting on
+it would have been destructive.** It swept in all nine `bg-block-*`, every `chef-body-*` and every
+`chef-face-*` — i.e. **all nine level backdrops and the entire Chef Ramu portrait system** — because
+those aliases are never written as literals. They are built by template literal at run time:
+
+| Pattern | Site |
+|---|---|
+| `` `bg-block-${blockId}` `` | `game/towerScene.ts:80` |
+| `` `chef-body-${block.label…}` `` | `game/data/blocks.ts:167` |
+| `` `chef-face-${faceLetter}` `` | `ui/ChefPortrait.tsx:301` |
+| `` `dish-${slug}` `` | seven sites, incl. `textures.ts:148`, `towerScene.ts:96` |
+| `` `district-${blockId}` `` | `game/data/dialogue.ts:154` |
+
+Re-measured with those five families excluded, the count is **exactly the 44 the Round 22 agent
+reported** — which is the number to use. ⚠️ **The agent had already said it checked for
+template-literal lookups and was not relying on literal greps. Central then re-derived the figure
+carelessly and got a destructive answer. The agent's caution was the correct posture and Central's
+double-check was the sloppy one.** Both `prop-*` and `ui-*` are safe to reason about literally, and
+only because that was verified: `textures.ts`'s `TOWER_PROP_LEVELS` is an explicit literal table, and
+no `ui-${…}` construction exists anywhere.
+
+⚠️ **And a correction to Central's stated justification.** Central first tied this to Vite's
+**920 kB** chunk warning. That warning is about the **JS bundle**; these are separate files under
+`public/` and are not in it. The two are unrelated. Measured properly, **all 44 are in the `deferred`
+bundle, none in `critical`** — so this does **not** improve time-to-first-interaction. It removes
+≈906 kB of pointless background download, which is worth doing for a phone audience on Indian mobile
+data, and is not worth overstating.
+
+🔒 **Attribution is unchanged and out of scope.** toxiccolors' credit stands on the 12 `prop-*`
+that still ship **and** on the 30 `dish-*` trays' LoRA; Archita Sharma's credit stands regardless.
+Removing unused files changes nothing about either, and the user is never to be prompted about it.
+Originals are safe twice over: in git history, and in the gitignored `Art/` source tree.
+
+**The acceptance criterion that actually matters** is not a count but a negative: **zero 404s and
+zero missing-texture placeholders**, on boot and across a run long enough to cross a block boundary —
+which is what exercises `bg-block-*`, the chef costume swap and the dish trays, i.e. precisely the
+families a careless deletion would break.
