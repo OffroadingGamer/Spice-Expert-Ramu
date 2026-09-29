@@ -796,4 +796,4 @@ Final state: Private 1.94.0, Review 1.69.0, Public 1.69.0.
 
 ## Pending
 
-- Nothing outstanding. Round 19 has returned and been verified. **Round 20 (Hindi)** is next and not yet issued.
+- **Round 20 — Hindi** (implementation agent). Issued and handed over by the user Sep 30; awaiting its return. `hi.ts` for all 381 keys, the locale registration, the grapheme-cluster name cap and the avatar initial. Ideas.md §10.2. ⚠️ **An addendum on Pixi canvas fonts was raised after dispatch — see the record's Sep 30 entry.**

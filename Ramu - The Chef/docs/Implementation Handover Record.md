@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.94.0** (Rounds 0–19) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. Review and Public stay at **1.69.0**. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Nothing.** Round 19 verified and accepted. Next is **Round 20, Hindi** — not yet issued. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), ✅ ~~the Devanagari moderation test~~ — **PASSED Sep 30, closed**, the touch-drag test, and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **In flight** | ⏳ **Round 20 — Hindi.** Issued and handed to the implementation agent by the user Sep 30; not yet returned. Then **Round 21** — belt-mode removal plus housekeeping — and the roadmap is done. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), ✅ ~~the Devanagari moderation test~~ — **PASSED Sep 30, closed**, the touch-drag test, and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
 | **Repo** | `origin/main` = **`46e64f7`** at the time this row was written; the Round 19 verification entry lands on top of it. Pushed. Tree clean; the only untracked item is `references/Errors/The kitchen upgrades refix.mp4` (3 MB), which is the user's call — no reference video is tracked today. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -4184,3 +4184,50 @@ player's best — so "zero rows today" is the keep-best rule working, not a fail
 
 ✅ **Round 20 (Hindi) is unblocked with no leaderboard caveat.** §6d decision 5's fallback — telling
 Hindi players *"Leaderboard names use English letters"* — **is not needed and should not be built.**
+
+---
+
+### 2026-09-30 — Round 20 issued (Hindi) — and a gap in Central's own brief, found after dispatch
+
+Handover written in chat, reissued after the Devanagari result, and **handed to the implementation
+agent by the user**. Private 1.94.0 → target **1.95.0**.
+
+**Scope.** Create `i18n/hi.ts` (it does not exist); register `'hi'` in the three places
+`i18n/index.ts` hardcodes English (`type Locale`, `TABLES`, `KNOWN_LOCALES`); a Settings language
+row; first-launch locale detection; the grapheme-cluster name cap; the leaderboard avatar initial.
+
+**🔴 The inventory doc is 136 keys stale, and the brief says so.** `docs/i18n/strings.md` reports
+**245** live rows from its Sep 18 snapshot. Measured against `en.ts` today: **381 unique keys** — 22
+`dish.*`, 46 `ingredient.*`, 22 `recipe.*.prep` + 22 `.finish`, 10 plural rows. Rounds 17–19 added
+the rest. The brief instructs the agent to work from `en.ts`, not from the doc, and gives 381 as the
+expected parity number.
+
+### ⚠️ Addendum raised AFTER the handover went out — Pixi canvas fonts
+
+**The project declares no `fontFamily` anywhere — zero occurrences in the whole of `src/`.** On the
+React side that is fine and proven: the system stack rendered पुनीत correctly on Sep 23. **But Pixi
+is a second renderer.** `towerScene.ts:35` imports `t`, and renders through `new Text({ style: new
+TextStyle({ fontSize, fontWeight, fill }) })` — **no family**, so Pixi v8 falls back to its default
+`Arial`, which has **no Devanagari glyphs**.
+
+Seven `pixi.*` keys reach the canvas. Four are numerals and symbols and are safe. **Three carry
+translatable letters:**
+
+| Key | English |
+|---|---|
+| `pixi.lvUp` | `Lv↑` |
+| `pixi.preview.dmgTo` | `{b} dmg` |
+| `pixi.preview.rateTo` | `{b}/s` |
+
+🔴 **And the existing draft already puts Devanagari into one of them** — `strings.md` row 244 drafts
+`{b}/से`. So this is not hypothetical.
+
+**Two ways out, either acceptable:** set an explicit `fontFamily` with a Devanagari-capable fallback
+on the Pixi `TextStyle`s, **or** leave those three as Latin abbreviations in Hindi (they are `Lv`,
+`dmg`, `/s` — abbreviations, not prose). The second costs nothing and is the safer default.
+
+⚠️ **Why this was missed.** On Sep 23 Central wrote that *"the project declares no custom
+`font-family` anywhere … so there is only one font stack and the single pass generalises."* That
+grep was over CSS. **Pixi sets its font in JS, through `TextStyle`, which the same grep pattern
+never covers** — and `strings.md` had flagged the canvas-font risk on Sep 18, in a doc Central had
+read. The generalisation was true of the DOM and asserted of the product. → **Retro 134.**

@@ -2984,3 +2984,15 @@ after **00:30 IST Sep 19**.
      because it exercises the read path other players actually use. ✅ **Rule: before asking someone
      to generate data for a test, confirm the read-back tool actually surfaces the field under test.
      And prefer a check that observes the real consumer over one that queries a side channel.**
+
+134. **I proved something about the DOM and asserted it about the product.** On Sep 23 I wrote that
+     the project "declares no custom font-family anywhere, so there is only one font stack and the
+     single Devanagari pass generalises." The grep behind that was over CSS. Pixi sets its font in
+     JavaScript, through `TextStyle`, so the same pattern never covered the canvas — where Pixi v8
+     falls back to Arial, which has no Devanagari glyphs. Three translated strings render there, and
+     the existing Hindi draft already puts Devanagari into one of them. Worse, `docs/i18n/strings.md`
+     had flagged exactly this on Sep 18, in a document I had read and quoted from. I found it only
+     while sweeping before compaction — after the handover had gone out. ✅ **Rule: when a claim is
+     "nothing in this codebase does X", name the mechanisms X could use and check each one. One
+     grep over one language proves one thing. And when a project doc has already flagged a risk in
+     the area you are briefing, re-read it before writing the brief, not after.**

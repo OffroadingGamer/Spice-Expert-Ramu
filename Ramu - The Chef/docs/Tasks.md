@@ -21,8 +21,9 @@ rails, landed all 44 prep/garnish strings and repaired mouse input; **Round 18b*
 finished 46-sprite ingredient set, the 22 true rails, pane drag-scroll and the Close button.
 **The Kitchen is feature-complete at 1.93.0.**
 
-**In flight:** nothing — **Round 19 (the recipe shard economy) shipped as Private 1.94.0** and is
-verified. **Next:** **Round 20 — Hindi**, which now has a stable English table *plus* Round 19's two strings to
+**In flight:** ⏳ **Round 20 — Hindi**, issued Sep 30 (381 keys, locale registration, the
+grapheme-cluster name cap, the avatar initial). **Then Round 21** — belt-mode removal plus
+housekeeping — and the roadmap is complete. **Superseded:** **Round 20 — Hindi**, which now has a stable English table *plus* Round 19's two strings to
 translate. Then IAP (Ideas.md §10.6 B, content-not-power).
 
 **Open on the user:** the Public promotion call · a one-click check of the studio page's
