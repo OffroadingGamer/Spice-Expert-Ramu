@@ -30,7 +30,7 @@ import { CONFIG } from '../game/config.ts';
 import { dishIconZoom, RECIPE_SLUGS, recipeGemPrice, recipeNoteKey, recipeShardsNeeded, recipeUnlockWave } from '../game/data/recipes.ts';
 import { TOWERS, type MetaUniqueDef } from '../game/data/towers.ts';
 import { t } from '../i18n/index.ts';
-import { stationUniqueDescKey, stationUniqueNameKey } from '../i18n/towerKeys.ts';
+import { stationNameKey, stationUniqueDescKey, stationUniqueNameKey } from '../i18n/towerKeys.ts';
 import {
     buyMetaUpgrade,
     buyScroll,
@@ -522,7 +522,14 @@ export default function MetaUpgrades() {
                                                 className="h-14 w-14"
                                             />
                                         )}
-                                        <p className="text-xl font-bold">{tower.name}</p>
+                                        {/* Round 20: this header rendered the sealed towers.ts's own
+                                            English `.name` directly — towerKeys.ts's own doc comment
+                                            already claimed this file used stationNameKey() "shared"
+                                            with StationRail.tsx, but it never actually did (only the
+                                            signature-track name/desc below did). Found while sweeping
+                                            the Stations tab in Hindi for clipping — the whole tab
+                                            translated except every station's own header. */}
+                                        <p className="text-xl font-bold">{t(stationNameKey(tower.id))}</p>
                                     </div>
                                     <div className="mt-2 flex flex-col gap-2">
                                         {STATS.map((stat) => {

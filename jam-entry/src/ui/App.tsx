@@ -28,7 +28,15 @@ export default function App() {
     const ranksOpen = useStore((s) => s.ranksOpen);
     const settingsOpen = useStore((s) => s.settingsOpen);
     const bootNameDialogOpen = useStore((s) => s.bootNameDialogOpen);
+    const bootAskLanguage = useStore((s) => s.bootAskLanguage);
     const renameOpen = useStore((s) => s.renameOpen);
+    // Round 20 (docs/Ideas.md §10.2 pick A): subscribing here — the render
+    // root, nothing below uses React.memo — is what makes a language switch
+    // instant everywhere. t()/tn() already read the live table on every
+    // call; without SOME subscribed field changing, nothing tells React to
+    // run those calls again. The value itself is unused, only the
+    // subscription (and the resulting whole-tree re-render) matters.
+    useStore((s) => s.locale);
     return (
         <div id="app-frame" className="bg-surface text-white">
             {phase === 'loading' && <LoadingScreen />}
@@ -58,7 +66,10 @@ export default function App() {
                 scriptedRunStart), so it's simply the next thing the
                 (now-unpaused) run reveals. */}
             {bootNameDialogOpen && (
-                <NameDialog onDone={() => store.patch({ bootNameDialogOpen: false, paused: false })} />
+                <NameDialog
+                    askLanguage={bootAskLanguage}
+                    onDone={() => store.patch({ bootNameDialogOpen: false, bootAskLanguage: false, paused: false })}
+                />
             )}
             {/* Round 10 Part 6: opened from the menu's greeting bubble or
                 Settings' Name row (guests only) — an overlay, same posture

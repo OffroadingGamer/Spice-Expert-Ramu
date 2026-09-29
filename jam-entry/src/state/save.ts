@@ -11,6 +11,7 @@ import { CONFIG } from '../game/config.ts';
 import { recipeGemPrice, recipeShardAward, recipeShardsNeeded } from '../game/data/recipes.ts';
 import { TOWERS } from '../game/data/towers.ts';
 import { sdkReady } from '../sdk/runSdk.ts';
+import { clampToGraphemes } from '../shared/graphemes.ts';
 import type { AdsState } from '../systems/ads.ts';
 
 // Bump the suffix if the shape ever changes incompatibly (new optional
@@ -246,7 +247,7 @@ function parse(raw: string | null): SaveData | null {
             kitchen,
             dialogueMuted: parsed.dialogueMuted === true,
             playerName: typeof parsed.playerName === 'string' && parsed.playerName.trim().length > 0
-                ? parsed.playerName.trim().slice(0, 16)
+                ? clampToGraphemes(parsed.playerName.trim(), 16)
                 : null,
             seenBeats: Array.isArray(parsed.seenBeats)
                 ? parsed.seenBeats.filter((s): s is string => typeof s === 'string')
@@ -394,7 +395,7 @@ export function markBeatSeenOnce(id: string): void {
  *  mistake. */
 export function setPlayerName(name: string): void {
     if (data.playerName !== null) return;
-    const trimmed = name.trim().slice(0, 16);
+    const trimmed = clampToGraphemes(name.trim(), 16);
     if (trimmed.length === 0) return;
     data = { ...data, playerName: trimmed };
     flushSave();
@@ -407,7 +408,7 @@ export function setPlayerName(name: string): void {
  *  empty/whitespace-only name so the caller can treat that as Cancel rather
  *  than silently clearing a real name. */
 export function renamePlayer(name: string): boolean {
-    const trimmed = name.trim().slice(0, 16);
+    const trimmed = clampToGraphemes(name.trim(), 16);
     if (trimmed.length === 0) return false;
     data = { ...data, playerName: trimmed };
     flushSave();

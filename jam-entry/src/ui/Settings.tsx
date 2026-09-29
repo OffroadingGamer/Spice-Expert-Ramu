@@ -17,7 +17,7 @@
  * only ever opened from the menu, unchanged this round.
  */
 import { setMusicVolume, setSfxVolume, sfx } from '../audio/audio.ts';
-import { t } from '../i18n/index.ts';
+import { getLocale, setLocale, t, type Locale } from '../i18n/index.ts';
 import { setAudioVolumes } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import { Card, CardCredit, CardDivider, CardGhostButton, CardScrim, CardTitle } from './SettingsCard.tsx';
@@ -30,6 +30,11 @@ export default function Settings() {
     const isGuest = useStore((s) => s.isGuest);
     const runUsername = useStore((s) => s.runUsername);
     const playerName = useStore((s) => s.playerName);
+    // Round 20 (docs/Ideas.md §10.2 pick A): re-read on every render, which
+    // happens whenever App.tsx's own locale subscription re-renders the
+    // tree (see that file's comment) — a plain read is enough here, this
+    // component doesn't need its own store subscription for it.
+    const locale = getLocale();
     const mu = useMenuUnit();
 
     const apply = (music: number, sound: number) => {
@@ -40,6 +45,8 @@ export default function Settings() {
     };
 
     const close = () => { sfx.click(); store.patch({ settingsOpen: false }); };
+
+    const chooseLocale = (l: Locale) => { if (l !== locale) { sfx.click(); setLocale(l); } };
 
     /** Round 10 Part 6: the Name row's own tap — same guest/RUN split as
      *  the menu's greeting bubble (MainMenu.tsx's handleBubbleTap), but a
@@ -110,6 +117,33 @@ export default function Settings() {
                         </span>
                     </div>
                 )}
+                <CardDivider />
+                {/* Round 20 (docs/Ideas.md §10.2 pick A): the language row —
+                    two pills, English/हिन्दी, the active one filled. Tamil
+                    waits for a native reader (out of scope this round). */}
+                <div className="flex items-center justify-between">
+                    <span style={{ fontSize: 12 * mu, fontWeight: 700 }}>{t('settings.language')}</span>
+                    <div className="flex" style={{ gap: 6 * mu }}>
+                        {(['en', 'hi'] as const).map((l) => (
+                            <button
+                                key={l}
+                                type="button"
+                                onClick={() => chooseLocale(l)}
+                                className="font-bold transition-transform active:scale-95"
+                                style={{
+                                    padding: `${4 * mu}px ${9 * mu}px`,
+                                    borderRadius: 8 * mu,
+                                    border: `${1 * mu}px solid var(--color-chocolate)`,
+                                    backgroundColor: locale === l ? '#f97316' : 'transparent',
+                                    color: 'var(--color-chocolate)',
+                                    fontSize: 11 * mu,
+                                }}
+                            >
+                                {l === 'en' ? 'English' : 'हिन्दी'}
+                            </button>
+                        ))}
+                    </div>
+                </div>
                 <CardDivider />
                 {/* Round 8 (docs/Ideas.md §9): mandatory backdrop-art credit.
                     Every label in this card must stay >= 11px at 360 wide

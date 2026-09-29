@@ -25,6 +25,7 @@ import { useState } from 'react';
 import { sfx } from '../audio/audio.ts';
 import { t } from '../i18n/index.ts';
 import { resubmitBestWithName } from '../sdk/leaderboard.ts';
+import { clampToGraphemes } from '../shared/graphemes.ts';
 import { renamePlayer } from '../state/save.ts';
 import { store } from '../state/store.ts';
 import { Card, CardGhostButton, CardScrim, CardTitle } from './SettingsCard.tsx';
@@ -46,7 +47,7 @@ export default function RenameDialog() {
 
     const save = () => {
         sfx.click();
-        const trimmed = value.trim().slice(0, 16);
+        const trimmed = clampToGraphemes(value.trim(), 16);
         if (trimmed.length === 0 || trimmed === currentName) { close(); return; }
         if (!renamePlayer(trimmed)) { close(); return; }
         store.patch({ playerName: trimmed });
@@ -63,11 +64,12 @@ export default function RenameDialog() {
                 <input
                     type="text"
                     value={value}
-                    maxLength={16}
                     autoFocus
                     onChange={(e) => {
                         const v = e.target.value;
-                        if (NAME_PATTERN.test(v)) setValue(v);
+                        // Round 20 Part 3: see NameDialog.tsx's own comment —
+                        // maxLength counts UTF-16 code units, not characters.
+                        if (NAME_PATTERN.test(v)) setValue(clampToGraphemes(v, 16));
                     }}
                     style={{
                         fontSize: 13 * mu,

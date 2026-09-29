@@ -67,6 +67,13 @@ export const en: Record<string, TranslationEntry> = {
     'menu.greeting.rewardsWaiting': 'Rewards are waiting in the kitchen.',
 
     // ---- 3. Name dialogs ------------------------------------------------
+    // Round 20 Part 2 (docs/Ideas.md §10.2 pick A): the one-time language
+    // step shown BEFORE the name step, only on a first-ever guest boot whose
+    // browser/host locale suggests Hindi (sdk/environment.ts's
+    // suggestsHindi()). Shown in English (the locale hasn't been chosen
+    // yet) with each option labelled in its own script, the same convention
+    // most apps' first-run language pickers use.
+    'name.language.title': 'Which language for the kitchen?',
     'name.title': 'What do they call you?',
     'name.placeholder': 'Type your name',
     'name.skip': 'Skip',
@@ -84,6 +91,11 @@ export const en: Record<string, TranslationEntry> = {
     'settings.nameEdit': '{name} ✎',
     'settings.credit': 'Backdrop art — Archita Sharma (@arc_inmotion)',
     'settings.back': 'Back',
+    // Round 20 (docs/Ideas.md §10.2 pick A): the language row's own label
+    // (Settings.tsx) — "English"/"हिन्दी" themselves are literal pill labels,
+    // not translated (a language's own name, shown in its own script,
+    // regardless of which language is currently active).
+    'settings.language': 'Language',
 
     // ---- 5. HUD (in-run) --------------------------------------------------
     'hud.escapesLeft': '❤️🏃 Escapes left',

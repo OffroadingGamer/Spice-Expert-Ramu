@@ -48,6 +48,7 @@ import { sfx } from '../audio/audio.ts';
 import { scriptedRunStart } from '../game/actions.ts';
 import { MANIFEST } from '../assets/manifest.ts';
 import { t, tn } from '../i18n/index.ts';
+import { firstGrapheme } from '../shared/graphemes.ts';
 import { diffAndRecordRank } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import {
@@ -171,7 +172,13 @@ function Avatar({ entry, size, bg, color }: { entry: BoardEntry; size: number; b
             className="flex shrink-0 items-center justify-center rounded-full font-black"
             style={{ ...style, backgroundColor: bg, color }}
         >
-            {(entry.displayName || '?').charAt(0).toUpperCase()}
+            {/* Round 20 Part 4: first grapheme cluster, not charAt(0) — a
+                Devanagari base+matra (पु) is 2 UTF-16 units; charAt(0) took
+                just the base (प), dropping the matra and misreading the
+                initial. toUpperCase() is a no-op on Devanagari and is kept
+                only for the Latin-name case, applied to the whole cluster so
+                it can never split one. */}
+            {firstGrapheme(entry.displayName || '?').toUpperCase()}
         </div>
     );
 }

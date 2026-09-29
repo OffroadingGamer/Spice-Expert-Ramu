@@ -7,6 +7,7 @@ import { loadSave, flushSave } from './state/save.ts';
 import { initLocaleFromSave } from './i18n/index.ts';
 import { initSdk, registerLifecycles, sdkReady } from './sdk/runSdk.ts';
 import { readIdentity } from './sdk/profile.ts';
+import { suggestsHindi } from './sdk/environment.ts';
 import { track } from './sdk/analytics.ts';
 import { refreshEngagement } from './sdk/engagement.ts';
 import { generateTowerIconsWhenSafe } from './game/towerIcons.ts';
@@ -107,10 +108,18 @@ async function boot() {
     //    own Start-shift guard is untouched — a guest who somehow still has
     //    no name after this gets asked there too.
     const needsBootNameDialog = identity.isGuest && save.playerName === null;
+    // Round 20 Part 2 (docs/Ideas.md §10.2 pick A): only worth checking (and
+    // only ever true) on the SAME first-ever session the name dialog is
+    // about to open — suggestsHindi() reads a live SDK call, no reason to
+    // pay for it on every boot. A returning guest whose name is already set
+    // never sees this again, which is exactly "first launch", not "every
+    // launch until the player picks one".
+    const askLanguage = needsBootNameDialog && suggestsHindi();
     store.patch({
         phase: 'playing',
         ...scriptedRunStart(),
         bootNameDialogOpen: needsBootNameDialog,
+        bootAskLanguage: askLanguage,
         paused: needsBootNameDialog,
     });
 

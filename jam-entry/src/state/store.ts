@@ -205,6 +205,15 @@ export interface AppState {
      *  dismissed without resolving, not currently possible but defensive)
      *  still gets asked there. */
     bootNameDialogOpen: boolean;
+    /** Round 20 Part 2 (docs/Ideas.md §10.2 pick A): true only alongside
+     *  bootNameDialogOpen's own first-ever-session case, AND only when
+     *  sdk/environment.ts's suggestsHindi() read true at that exact boot
+     *  (main.tsx step 6) — NameDialog.tsx shows one extra "which language"
+     *  step before the name step when this is true. Never re-armed after
+     *  that boot; a returning guest who already has a name never triggers
+     *  bootNameDialogOpen again either, so this needs no separate
+     *  "already asked" flag of its own. */
+    bootAskLanguage: boolean;
     /** Round 10 Part 6: the rename dialog (Settings-card styled, "Your
      *  name") — opened by tapping the menu's greeting bubble or Settings'
      *  Name row, guests only, never during a run (both call sites already
@@ -266,6 +275,18 @@ export interface AppState {
      *  (continuedThisRun already true is checkEnd()'s other, immediate,
      *  finalize condition). Reset false by scriptedRunStart every run. */
     runEndDecided: boolean;
+    /** Round 20 (docs/Ideas.md §10.2 pick A, second half): a reactive mirror
+     *  of i18n/index.ts's own module-private `currentLocale` — same class of
+     *  problem engineReady/dialogueMuted above exist to solve: t()/tn() read
+     *  a plain module variable, invisible to React, so nothing re-rendered
+     *  on a language switch without this. setLocale() patches this field on
+     *  every call (never patched anywhere else), which is what makes the
+     *  Settings language row and the boot language step take effect
+     *  instantly with no reload. Typed as `string`, not i18n's own `Locale`
+     *  union, so this file need not import i18n/index.ts — that file
+     *  imports `store` instead (a new edge this round), so there is no
+     *  cycle either way. */
+    locale: string;
 }
 
 const INITIAL: AppState = {
@@ -319,6 +340,7 @@ const INITIAL: AppState = {
     runUsername: null,
     playerName: null,
     bootNameDialogOpen: false,
+    bootAskLanguage: false,
     renameOpen: false,
     hudTopPx: 96,
     hudBottomPx: 240,
@@ -329,6 +351,10 @@ const INITIAL: AppState = {
     shardAward: { wave: 0, slugs: [], scrolledSlugs: [], nonce: 0 },
     continuedThisRun: false,
     runEndDecided: false,
+    // Pre-load placeholder, same posture as musicVol/sfxVol above —
+    // main.tsx's initLocaleFromSave() (boot step 2) patches the real,
+    // persisted value before first paint.
+    locale: 'en',
 };
 
 /**
