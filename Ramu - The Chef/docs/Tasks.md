@@ -21,7 +21,8 @@ rails, landed all 44 prep/garnish strings and repaired mouse input; **Round 18b*
 finished 46-sprite ingredient set, the 22 true rails, pane drag-scroll and the Close button.
 **The Kitchen is feature-complete at 1.93.0.**
 
-**In flight:** nothing — ✅ **Round 21 shipped as Private 1.96.0 and is verified. The planned
+**In flight:** ⏳ **Round 22 — meta-layer instrumentation** (5 events + the §5 comment sweep),
+written Sep 30, ahead of the Public promotion. ✅ **Round 21 shipped as Private 1.96.0 and is verified. The planned
 roadmap is COMPLETE.** Belt mode is gone, the clipping fix shipped (as `line-clamp-4`, see below),
 and all six §5 debts are closed. From here the work is polish. ✅ **Touch-drag passed on device Sep 30** — the oldest open item in
 the project, closed. **Done:** **Round 20 (Hindi) shipped as Private 1.95.0** and is verified (382 keys

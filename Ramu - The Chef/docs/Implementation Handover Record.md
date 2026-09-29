@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.96.0** (Rounds 0–21 — **the planned roadmap is COMPLETE**) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. Review and Public stay at **1.69.0**. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Nothing, and no further round is planned.** ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **In flight** | ⏳ **Round 22 — meta-layer instrumentation**, written Sep 30, ahead of the Public promotion. Five events plus the §5 comment sweep. **Not part of the original roadmap** — added because the launch burst is one-shot and the Rounds 13–21 meta layer has no telemetry at all. Was: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
 | **Repo** | `origin/main` = **`d648176`** at the time this row was written; the Round 21 source changes and this verification entry land on top of it. Tree otherwise clean — reference videos are gitignored (`references/Errors/*.mp4`). |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -4523,3 +4523,58 @@ not a drag. **Worth a ten-second check the next time Settings is open on a phone
 ✅ **Nothing now blocks the Public promotion on technical grounds.** What remains under it is
 judgement, not testing: the Sep 9 licence note, the "4 AI features" row, and whether unreviewed
 Hindi ships to real players.
+
+---
+
+### 2026-09-30 — Round 22 issued — meta-layer instrumentation, ahead of the Public promotion
+
+Written when the handover was written, per this file's own rule. Private **1.96.0 → target 1.97.0**.
+**Not part of the original roadmap** — this round exists because of a finding, below.
+
+🔴 **First, a correction Central owes the record.** On Sep 30 Central told the user the game had
+"no analytics" and that "every pacing number traces back to a single 45-level playtest". **That was
+wrong, and it was said from memory rather than checked.** `sdk/analytics.ts` exists and is a proper
+wrapper (`sdkReady()`-guarded, fire-and-forget, swallowed on failure), and the game fires **27
+distinct events** — a boot funnel, `run_start`/`run_end`, `first_tower_placed`, `level_start`/
+`level_complete`, `ticket_leaked`, the whole rewarded-continue funnel, `error_occurred`, and
+`session_end` batched on `onSleep`.
+
+**What checking properly actually found, which is the real point.** The **core loop** is well
+instrumented. The **meta layer built across Rounds 13–21 has no telemetry whatsoever**:
+
+| File | `track()` calls |
+|---|---|
+| `ui/MetaUpgrades.tsx` | **0** |
+| `state/save.ts` | **0** |
+| `i18n/index.ts` | **0** |
+| `ui/Settings.tsx` | **0** |
+
+⚠️ **`kitchen_action_bought` is a false friend** — it lives at `game/actions.ts:375` and fires on a
+**mid-run** purchase. It has nothing to do with the Kitchen upgrades screen. So station upgrades,
+recipe unlocks, shard awards, gem spending **and which language a player chose** are all invisible.
+
+**Why it must precede the promotion.** A launch produces its traffic burst **once**, and telemetry
+cannot be backfilled. The two most speculative systems in the game are exactly the two that would
+produce nothing: the per-recipe shard economy (designed off a **single** 45-level playtest, with
+award rates never validated against a real player) and **Hindi**, whose entire business case is the
+Indian audience — and today a launch cannot report how many players chose it.
+
+**A gift found while checking the call sites.** `setLocale()` is called **only** by deliberate player
+action — `ui/Settings.tsx:49` (guarded by `if (l !== locale)`, so no-op reselects do not fire) and
+`ui/NameDialog.tsx:63` (the one-time first-boot picker). Boot restore uses a **separate**
+`initLocaleFromSave()`. So a single event inside `setLocale()` captures real choices and can never be
+polluted by a restore. And because the first-boot picker only appears for `hi*` / `*-IN` browsers, an
+event from that source means *an Indian-locale player made an explicit choice* — including choosing
+**English**, which is the more valuable half of that signal.
+
+**Authorised scope: five events, one payload addition, and the comment sweep.** All five sites already
+have an early-return guard, so each event fires only on a real success. Numeric payload values must
+be **top-level, never nested** (`analytics.ts`'s own rule, which is what makes them readable as
+percentiles), and **no existing event or funnel may be renamed or renumbered.**
+
+✅ **The §5 comment sweep rides along** — 20 stale references to deleted belt code across 8 files,
+because this round opens several of them anyway.
+
+**Explicitly out of scope:** no new funnels, no A/B experiments, no changes to any of the 27 existing
+events, nothing touching the shard economy's own numbers. Instrumentation only — this round must not
+change a single thing the player experiences.
