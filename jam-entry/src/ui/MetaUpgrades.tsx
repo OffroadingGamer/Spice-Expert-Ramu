@@ -27,7 +27,7 @@ import { useEffect, useRef, useState } from 'react';
 import { MANIFEST } from '../assets/manifest.ts';
 import { sfx } from '../audio/audio.ts';
 import { CONFIG } from '../game/config.ts';
-import { dishIconZoom, RECIPE_SLUGS, recipeNoteKey } from '../game/data/recipes.ts';
+import { dishIconZoom, RECIPE_SLUGS, recipeGemPrice, recipeNoteKey, recipeShardsNeeded, recipeUnlockWave } from '../game/data/recipes.ts';
 import { TOWERS, type MetaUniqueDef } from '../game/data/towers.ts';
 import { t } from '../i18n/index.ts';
 import { stationUniqueDescKey, stationUniqueNameKey } from '../i18n/towerKeys.ts';
@@ -37,8 +37,6 @@ import {
     computeKitchenBadge,
     markScrollsSeen,
     metaUpgradeCost,
-    SCROLL_GEM_PRICE,
-    SHARDS_PER_SCROLL,
     type MetaStat,
 } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
@@ -53,13 +51,24 @@ const ASSET_SRC = new Map(
     MANIFEST.bundles.flatMap((b) => b.assets).map((a) => [a.alias as string, a.src as string])
 );
 
-/** Round 14 Part 4: ui-shard's own opaque bbox on its 128^2 canvas (measured
- *  offline off the shipped PNG, same posture as Leaderboard.tsx's laurel
- *  constants) — opaque content spans ~37% of the canvas width, ~67% of its
- *  height. Rendering the full (padded) image at CANVAS*(target/OPAQUE_H)
- *  tall makes the OPAQUE glyph itself exactly `target`px tall. */
-const SHARD_CANVAS = 128;
-const SHARD_OPAQUE_H = 86;
+/** Round 14 Part 4, values replaced Round 19 Part 5 (docs/Ideas.md §11.2l):
+ *  the currency icon is now the toque (ui-chef-hat), not the old orange
+ *  shard crystal (ui-shard) — its own opaque bbox on its 256^2 canvas,
+ *  measured directly off the shipped PNG's alpha channel (alpha>10 per
+ *  pixel — the same threshold that reproduces this file's own pre-existing
+ *  SHARD_OPAQUE_H=86 for ui-shard.png exactly), is 232x206, not the 236x210
+ *  the handover's own measurement table gave (off by 4px each axis — this
+ *  round's own report flags the discrepancy; 206 is what's used here, read
+ *  straight off the pixels). Both numbers had to change together: changing
+ *  only the canvas (128->256) would leave the icon ~22% oversized, changing
+ *  only the opaque height alone would make it ~2.4x too big. Names kept as
+ *  SHARD_* / shardImgSize for minimal diff — the sizing math is identical,
+ *  only the sprite and its measurements changed. Rendering the full
+ *  (padded) image at CANVAS*(target/OPAQUE_H) tall makes the OPAQUE glyph
+ *  itself exactly `target`px tall (both dimensions, since the source canvas
+ *  is square). */
+const SHARD_CANVAS = 256;
+const SHARD_OPAQUE_H = 206;
 function shardImgSize(targetOpaqueH: number): number {
     return SHARD_CANVAS * (targetOpaqueH / SHARD_OPAQUE_H);
 }
@@ -242,17 +251,24 @@ function TabSegment({ mu, active, badge, onClick, children }: {
  * cover-clipped strip at an arbitrary offset (the stray diagonal edge in the
  * user's screenshot).
  */
-function RecipeCard({ mu, slug, unlocked, count, gems, onOpen, onBuy }: {
+function RecipeCard({ mu, slug, unlocked, locked, unlockWave, count, gems, onOpen, onBuy }: {
     mu: number;
     slug: string;
     unlocked: boolean;
+    /** Round 19 Part 3: the new third state — bestWave hasn't reached this
+     *  recipe's own unlockWave yet, and no legacy shard progress exists
+     *  either (see MetaUpgrades()'s own gate computation for why the latter
+     *  matters). Mutually exclusive with `unlocked` by construction at the
+     *  call site. */
+    locked: boolean;
+    unlockWave: number | null;
     count: number;
     gems: number;
     onOpen: () => void;
     onBuy: () => void;
 }) {
     const dishIcon = ASSET_SRC.get(`dish-${slug}`);
-    const buyDisabled = gems < SCROLL_GEM_PRICE;
+    const buyDisabled = gems < recipeGemPrice(slug);
     const zoom = dishIconZoom(slug);
 
     const banner = (
@@ -315,20 +331,45 @@ function RecipeCard({ mu, slug, unlocked, count, gems, onOpen, onBuy }: {
                 >
                     {t(recipeNoteKey(slug))}
                 </p>
+            ) : locked ? (
+                <>
+                    {/* Round 19 Part 3: the unlock sentence replaces the
+                        progress bar + badge row entirely — a locked recipe
+                        has no meaningful shard count to show yet. Buy button
+                        unchanged: buying is the whole point of this state. */}
+                    <p
+                        className="line-clamp-2"
+                        style={{ fontSize: Math.max(11, 7.5 * mu), color: 'rgba(255,255,255,0.75)', marginTop: 2 * mu }}
+                    >
+                        {unlockWave === null ? t('kitchen.scrolls.locked.training') : t('kitchen.scrolls.locked.wave', { n: unlockWave })}
+                    </p>
+                    <button
+                        type="button"
+                        disabled={buyDisabled}
+                        className={
+                            'mt-2 w-full rounded-lg font-bold transition-transform active:scale-95 ' +
+                            (buyDisabled ? 'bg-white/10 text-white/40' : 'bg-primary text-black')
+                        }
+                        style={{ minHeight: 44, fontSize: Math.max(11, 8 * mu) }}
+                        onClick={(e) => { e.stopPropagation(); onBuy(); }}
+                    >
+                        {t('kitchen.scrolls.buy', { n: recipeGemPrice(slug) })}
+                    </button>
+                </>
             ) : (
                 <>
                     <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/15">
                         <div
                             className="h-full rounded-full bg-primary"
-                            style={{ width: `${(count / SHARDS_PER_SCROLL) * 100}%` }}
+                            style={{ width: `${(count / recipeShardsNeeded(slug)) * 100}%` }}
                         />
                     </div>
                     <span
                         className="flex items-center gap-1"
                         style={{ fontSize: Math.max(11, 7.5 * mu), color: 'rgba(255,255,255,0.7)', marginTop: 4 * mu }}
                     >
-                        {t('kitchen.scrolls.progress', { n: count, max: SHARDS_PER_SCROLL })}
-                        <img src={ASSET_SRC.get('ui-shard')} alt="" style={{ height: shardImgSize(12), width: shardImgSize(12) }} />
+                        {t('kitchen.scrolls.progress', { n: count, max: recipeShardsNeeded(slug) })}
+                        <img src={ASSET_SRC.get('ui-chef-hat')} alt="" style={{ height: shardImgSize(12), width: shardImgSize(12) }} />
                     </span>
                     <button
                         type="button"
@@ -340,17 +381,17 @@ function RecipeCard({ mu, slug, unlocked, count, gems, onOpen, onBuy }: {
                         style={{ minHeight: 44, fontSize: Math.max(11, 8 * mu) }}
                         onClick={(e) => { e.stopPropagation(); onBuy(); }}
                     >
-                        {t('kitchen.scrolls.buy', { n: SCROLL_GEM_PRICE })}
+                        {t('kitchen.scrolls.buy', { n: recipeGemPrice(slug) })}
                     </button>
                 </>
             )}
         </div>
     );
 
-    // "One tap target >= 44 px": unlocked cards are themselves the tap
-    // target (opens the sheet) and are always well over 44px tall; locked
-    // cards are never tappable themselves ("locked cards buy, never open")
-    // — only the >=44px buy button inside is.
+    // "One tap target >= 44 px": Owned cards are themselves the tap target
+    // (opens the sheet) and are always well over 44px tall; Locked and
+    // Collecting cards are never tappable themselves ("a not-yet-owned card
+    // buys, it never opens") — only the >=44px buy button inside is.
     if (unlocked) {
         return (
             <button
@@ -379,6 +420,7 @@ export default function MetaUpgrades() {
     const shards = useStore((s) => s.shards);
     const scrolls = useStore((s) => s.scrolls);
     const scrollsSeenCount = useStore((s) => s.scrollsSeenCount);
+    const bestWave = useStore((s) => s.bestWave);
     const mu = useMenuUnit();
     const [activeTab, setActiveTab] = useState<Tab>('stations');
     const [openSlug, setOpenSlug] = useState<string | null>(null);
@@ -587,13 +629,28 @@ export default function MetaUpgrades() {
                         >
                             {sortedSlugs.map((slug) => {
                                 const unlocked = scrolls.includes(slug);
-                                const count = Math.min(SHARDS_PER_SCROLL, shards[slug] ?? 0);
+                                const unlockWave = recipeUnlockWave(slug);
+                                const shardCount = shards[slug] ?? 0;
+                                // Round 19 Part 3: Locked only when NEITHER
+                                // gate is satisfied — chai/coffee have
+                                // unlockWave === null, so they're always
+                                // "collecting eligible" and never Locked.
+                                // The `shardCount > 0` half is the handover's
+                                // own explicit regression guard: a legacy
+                                // save that already earned shards toward a
+                                // recipe (under the old flat rules) must not
+                                // suddenly show as Locked once this ships.
+                                const collectingEligible = unlockWave === null || bestWave >= unlockWave || shardCount > 0;
+                                const locked = !unlocked && !collectingEligible;
+                                const count = Math.min(recipeShardsNeeded(slug), shardCount);
                                 return (
                                     <RecipeCard
                                         key={slug}
                                         mu={mu}
                                         slug={slug}
                                         unlocked={unlocked}
+                                        locked={locked}
+                                        unlockWave={unlockWave}
                                         count={count}
                                         gems={gems}
                                         onOpen={() => setOpenSlug(slug)}

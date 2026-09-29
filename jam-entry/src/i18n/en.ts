@@ -202,11 +202,17 @@ export const en: Record<string, TranslationEntry> = {
     // Round 14 Part 3 (docs/Ideas.md §10.4): the shard-award toast on a
     // full-service (zero-leak) wave clear — see WaveBubble.tsx's
     // ShardAwardToast. 'bubble.scroll' replaces 'bubble.shard' for whichever
-    // slugs crossed 8 shards on THIS clear. No ✦ glyph baked into the string
-    // — Part 4's ui-shard PNG renders as its own <img> beside this text (the
-    // handover's own "the shard renders at 14px tall in the bubble"), not a
-    // unicode character.
-    'bubble.shard': '+1',
+    // slugs crossed their own recipeShardsNeeded on THIS clear. No ✦ glyph
+    // baked into the string — Part 4's ui-chef-hat "Toque Badge" PNG (Round
+    // 19 Part 5, was ui-shard) renders as its own <img> beside this text,
+    // not a unicode character.
+    // Round 19 Part 2: interpolated ('+{n}', was the literal '+1') — once
+    // awardShards pays each recipe's own shardAward tier (1-5, not a flat
+    // 1), a hardcoded '+1' silently lied for 21 of the 22 dishes. Found
+    // while wiring the icon swap below; not asked for in the handover, but
+    // directly caused by Part 2's own change on a surface Part 5 already
+    // touches — see this round's own report.
+    'bubble.shard': '+{n}',
     'bubble.scroll': 'Scroll!',
 
     // ---- 10. Post-boss panel (ui/PostBossPanel.tsx) ------------------------
@@ -399,9 +405,20 @@ export const en: Record<string, TranslationEntry> = {
     'kitchen.scrolls.title': 'Recipe scrolls',
     'kitchen.scrolls.count': '{n} / {max} scrolls',
     // No ✦ glyph baked in — same reasoning as bubble.shard above, the
-    // ui-shard PNG renders beside this text at 12px (the progress-bar size).
+    // ui-chef-hat "Toque Badge" PNG (Round 19 Part 5, was ui-shard) renders
+    // beside this text at 12px (the progress-bar size).
     'kitchen.scrolls.progress': '{n} / {max}',
     'kitchen.scrolls.buy': '💎 {n}',
+    // Round 19 Part 3/4 (docs/Ideas.md §11.2j): the Locked card state's own
+    // sentence, shown in place of the progress bar + badge row for a recipe
+    // not yet reachable — 'wave' not 'level': en.ts already uses 'level' for
+    // tower upgrades on the Stations tab of this same screen ('meta.level',
+    // 'rail.level'), and the HUD's own 'hud.wave' is the number this counts
+    // against (composeLevel's `level` IS the wave index the HUD prints).
+    // Kept short for the grid card's line-clamp-2 — measured no clipping at
+    // 360/403/744 with these exact strings (Round 19's own report).
+    'kitchen.scrolls.locked.wave': 'Unlocks after wave {n}',
+    'kitchen.scrolls.locked.training': 'Unlocks after training',
 
     // ---- 19b. Kitchen tabs + recipe sheet (Round 17, docs/Ideas.md §6d
     // "Kitchen relayout + recipe sheet") -------------------------------------

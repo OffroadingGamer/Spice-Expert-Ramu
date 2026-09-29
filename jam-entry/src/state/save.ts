@@ -8,6 +8,7 @@
  */
 import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
 import { CONFIG } from '../game/config.ts';
+import { recipeGemPrice, recipeShardAward, recipeShardsNeeded } from '../game/data/recipes.ts';
 import { TOWERS } from '../game/data/towers.ts';
 import { sdkReady } from '../sdk/runSdk.ts';
 import type { AdsState } from '../systems/ads.ts';
@@ -475,19 +476,32 @@ export function setAudioVolumes(music: number, sfxVol: number): void {
     }, 400);
 }
 
-/** Round 14 Part 3 (docs/Ideas.md §10.4 pick B): shards needed to unlock one
- *  recipe scroll, and the gem price to buy one outright. */
-export const SHARDS_PER_SCROLL = 8;
-export const SCROLL_GEM_PRICE = 150;
+/**
+ * Round 19 Part 2 (docs/Ideas.md §11.2j): replaced by recipes.ts's
+ * per-recipe RECIPE_ECONOMY table — SHARDS_PER_SCROLL=8 and
+ * SCROLL_GEM_PRICE=150 were a single flat value for all 22 dishes; every
+ * dish now carries its own (recipeShardsNeeded/recipeGemPrice/
+ * recipeShardAward, imported above). Grepped: nothing outside save.ts and
+ * ui/MetaUpgrades.tsx (SHARDS_PER_SCROLL) or ui/WaveBubble.tsx (ui-shard,
+ * Part 5) read the old exports, so they are removed outright rather than
+ * kept as a stale, now-unused 8/150.
+ */
 
 /**
- * Award +1 shard to each of `slugs` (a full-service wave clear's distinct
+ * Award badges to each of `slugs` (a full-service wave clear's distinct
  * recipes — towerScene.ts's trackWaveClears computes the set, this function
- * never re-derives it). A slug already in `scrolls` is skipped entirely —
- * "shards keep accumulating only until the scroll exists." Returns the new
- * save plus which slugs (if any) crossed the threshold THIS call, so the
- * caller can fire the "Scroll!" cell animation / sfx exactly once per
- * newly-completed recipe.
+ * never re-derives it), at THAT recipe's own shardAward tier (Round 19 Part
+ * 2 — was a flat +1 for every dish). A slug already in `scrolls` is skipped
+ * entirely — "shards keep accumulating only until the scroll exists."
+ * Returns the new save plus which slugs (if any) crossed their OWN
+ * shardsNeeded threshold this call, so the caller can fire the "Scroll!"
+ * cell animation / sfx exactly once per newly-completed recipe.
+ *
+ * Migration note: an old save's `shards[slug]` value (earned under the flat
+ * 8-badge threshold) is read as-is and compared against the NEW per-recipe
+ * threshold here — e.g. a legacy `shards: { rajma: 8 }` now reads as 8/24,
+ * not an instant unlock, since the scroll grant only ever happens inside
+ * THIS function crossing THIS call's threshold, never at load/parse time.
  */
 export function awardShards(slugs: string[]): { newlyCompleted: string[]; save: SaveData } {
     const shards = { ...data.shards };
@@ -495,9 +509,9 @@ export function awardShards(slugs: string[]): { newlyCompleted: string[]; save: 
     const newlyCompleted: string[] = [];
     for (const slug of slugs) {
         if (scrolls.includes(slug)) continue;
-        const count = (shards[slug] ?? 0) + 1;
+        const count = (shards[slug] ?? 0) + recipeShardAward(slug);
         shards[slug] = count;
-        if (count >= SHARDS_PER_SCROLL) {
+        if (count >= recipeShardsNeeded(slug)) {
             scrolls.push(slug);
             newlyCompleted.push(slug);
         }
@@ -520,16 +534,21 @@ export function awardShards(slugs: string[]): { newlyCompleted: string[]; save: 
     return { newlyCompleted, save: data };
 }
 
-/** Buy a recipe scroll outright for SCROLL_GEM_PRICE gems. Returns null if
+/** Buy a recipe scroll outright for this slug's own gem price (Round 19
+ *  Part 2 — was a flat SCROLL_GEM_PRICE for every dish). Returns null if
  *  already unlocked or unaffordable (MetaUpgrades.tsx disables the button,
- *  but never trusts the UI — same posture as buyMetaUpgrade below). */
+ *  but never trusts the UI — same posture as buyMetaUpgrade below). Not
+ *  gated on unlockWave/bestWave — a Locked card's whole point (Round 19
+ *  Part 3) is that buying still works, so this function is unchanged in
+ *  that respect. */
 export function buyScroll(slug: string): SaveData | null {
     if (data.scrolls.includes(slug)) return null;
-    if (data.gems < SCROLL_GEM_PRICE) return null;
+    const price = recipeGemPrice(slug);
+    if (data.gems < price) return null;
     const scrolls = [...data.scrolls, slug];
     data = {
         ...data,
-        gems: data.gems - SCROLL_GEM_PRICE,
+        gems: data.gems - price,
         scrolls,
         scrollsBought: [...data.scrollsBought, slug],
         // Round 16 Part 3: a purchase happens INSIDE the Kitchen — the
@@ -559,10 +578,11 @@ function countClaimableRewards(): number {
  * store.ts's own doc on the shards/scrolls mirror).
  *
  * The handover's own formula is "dishes at >=8 shards and not yet in
- * save.scrolls" — but awardShards (above) grants the scroll in the SAME
- * call that crosses the threshold, so that raw state can never be observed:
- * shards[slug] >= SHARDS_PER_SCROLL implies slug is already in scrolls,
- * always (barring a corrupt save). A badge built from that literal
+ * save.scrolls" (now each dish's own recipeShardsNeeded, Round 19 Part 2) —
+ * but awardShards (above) grants the scroll in the SAME call that crosses
+ * the threshold, so that raw state can never be observed: shards[slug] >=
+ * recipeShardsNeeded(slug) implies slug is already in scrolls, always
+ * (barring a corrupt save). A badge built from that literal
  * condition would therefore never show in real play. What actually makes
  * "+n, cleared when the Kitchen opens (not when the scroll is claimed)" a
  * real, testable feature is this seen-count diff: `scrollsSeenCount` is a

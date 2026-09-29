@@ -76,6 +76,7 @@ import { MANIFEST } from '../assets/manifest.ts';
 import { CONFIG } from '../game/config.ts';
 import { blockForLevel } from '../game/data/blocks.ts';
 import { enemyDef } from '../game/data/enemies.ts';
+import { recipeShardAward } from '../game/data/recipes.ts';
 import { waveAt, type WaveEntry } from '../game/data/waves.ts';
 import { queueDialogueOnce } from '../game/dialogueController.ts';
 import { t, tn } from '../i18n/index.ts';
@@ -542,20 +543,25 @@ export function ShardAwardToast() {
                             t('bubble.scroll')
                         ) : (
                             <>
-                                {t('bubble.shard')}
-                                {/* Part 4: ui-shard PNG, 128^2 canvas, opaque
-                                    content spans ~37% of its own width x ~67%
-                                    of its own height (measured offline, same
-                                    "shipped PNG's own opaque bbox" posture
-                                    Leaderboard.tsx's laurel constants use) —
-                                    rendering the full (padded) image at
-                                    128*(14/86) tall makes the OPAQUE glyph
-                                    itself exactly 14px tall, the handover's
-                                    own "renders at 14px in the bubble". */}
+                                {t('bubble.shard', { n: recipeShardAward(slug) })}
+                                {/* Round 19 Part 5 (docs/Ideas.md §11.2l): the
+                                    toque (ui-chef-hat), not the old orange
+                                    shard crystal (ui-shard) — same currency,
+                                    same icon everywhere it's shown. 256^2
+                                    canvas, opaque bbox 232x206 (measured
+                                    directly off the shipped PNG's alpha
+                                    channel, alpha>10 — see MetaUpgrades.tsx's
+                                    SHARD_CANVAS/SHARD_OPAQUE_H doc for the
+                                    full measurement and its 4px discrepancy
+                                    against the handover's own table).
+                                    Rendering the full (padded) image at
+                                    256*(14/206) tall makes the OPAQUE glyph
+                                    itself exactly 14px tall, same target the
+                                    old shard render used. */}
                                 <img
-                                    src={ASSET_SRC.get('ui-shard')}
+                                    src={ASSET_SRC.get('ui-chef-hat')}
                                     alt=""
-                                    style={{ height: 128 * (14 / 86), width: 128 * (14 / 86) }}
+                                    style={{ height: 256 * (14 / 206), width: 256 * (14 / 206) }}
                                 />
                             </>
                         )}

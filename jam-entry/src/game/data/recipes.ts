@@ -108,6 +108,105 @@ export function ingredientNameKey(ingredientAlias: string): string {
 }
 
 /**
+ * Round 19 Part 1/2 (docs/Ideas.md §11.2j): per-recipe shard economy,
+ * replacing the old flat SHARDS_PER_SCROLL=8 / SCROLL_GEM_PRICE=150
+ * constants (save.ts) and the flat +1-per-clear award (awardShards). Four
+ * values per dish: the wave that must be beaten once before the recipe can
+ * be collected at all (null for chai/coffee — gated on FTUE completion, not
+ * a wave number, see recipeUnlockWave), the toque-badge count needed to
+ * complete the scroll, the gem price to buy it outright, and the badges
+ * paid per zero-leak clear of a wave that serves this dish.
+ *
+ * unlockWave is HARDCODED, not derived at runtime — data/waves.ts's LADDER
+ * (which archetype opens each of a block's ten wave positions) is
+ * unexported and waves.ts is sealed this round, so this is a one-time
+ * read-and-check, re-derivable by hand from blocks.ts + waves.ts's own
+ * LADDER whenever either changes:
+ *
+ *   unlockWave = 10 * (block.id - 1) + ladderPositionOf(archetype)
+ *
+ * where a dish's (block, archetype) is its entry in blocks.ts's own
+ * BLOCKS[n].dishes, and ladderPositionOf is {beetle:1, wasp:2, snail:4,
+ * hornet:5, stag:7} (waves.ts's LADDER array — positions 3/6/8/9/10 never
+ * OPEN a new archetype, so they never gate a recipe). E.g. rajma is block
+ * 2's stag (offset 10, stag position 7) -> wave 17; sambar is block 3's
+ * hornet (offset 20, hornet position 5) -> wave 25. Verified this way for
+ * all 20 gated dishes against docs/Ideas.md §11.2j's own table. Fusion
+ * blocks 6-9 reuse an earlier block's dish on a LATER position (e.g. block
+ * 6's beetle also carries pesto, block 4's own beetle dish) — that later
+ * position is never the dish's gate, its ORIGINAL (lowest-block) position
+ * always is, since a player reaches the earlier block first.
+ */
+export interface RecipeEconomy {
+    /** Wave that must be beaten once before this recipe can be collected —
+     *  null for chai/coffee, which gate on FTUE completion instead (see
+     *  RecipeCard's own `unlockWave === null` branch, ui/MetaUpgrades.tsx). */
+    unlockWave: number | null;
+    /** Toque badges needed to complete the scroll. Was flat 8 for every dish. */
+    shardsNeeded: number;
+    /** Gem price to buy the scroll outright. Was flat 150 for every dish. */
+    gemPrice: number;
+    /** Badges paid per zero-leak wave clear serving this dish. Was flat +1. */
+    shardAward: number;
+}
+
+export const RECIPE_ECONOMY: Record<string, RecipeEconomy> = {
+    // Cafe (block 1) — FTUE, no wave gate.
+    chai: { unlockWave: null, shardsNeeded: 10, gemPrice: 100, shardAward: 1 },
+    coffee: { unlockWave: null, shardsNeeded: 12, gemPrice: 120, shardAward: 1 },
+    // North Indian (block 2, offset 10).
+    naan: { unlockWave: 11, shardsNeeded: 16, gemPrice: 160, shardAward: 2 },
+    'jeera-rice': { unlockWave: 12, shardsNeeded: 18, gemPrice: 180, shardAward: 2 },
+    'palak-aloo': { unlockWave: 14, shardsNeeded: 20, gemPrice: 200, shardAward: 2 },
+    'gobhi-masala': { unlockWave: 15, shardsNeeded: 22, gemPrice: 220, shardAward: 2 },
+    rajma: { unlockWave: 17, shardsNeeded: 24, gemPrice: 240, shardAward: 2 },
+    // South Indian (block 3, offset 20).
+    'coconut-chutney': { unlockWave: 21, shardsNeeded: 26, gemPrice: 260, shardAward: 3 },
+    idli: { unlockWave: 22, shardsNeeded: 28, gemPrice: 280, shardAward: 3 },
+    upma: { unlockWave: 24, shardsNeeded: 30, gemPrice: 300, shardAward: 3 },
+    sambar: { unlockWave: 25, shardsNeeded: 32, gemPrice: 320, shardAward: 3 },
+    'beans-poriyal': { unlockWave: 27, shardsNeeded: 34, gemPrice: 340, shardAward: 3 },
+    // Italian (block 4, offset 30).
+    pesto: { unlockWave: 31, shardsNeeded: 38, gemPrice: 380, shardAward: 4 },
+    minestrone: { unlockWave: 32, shardsNeeded: 40, gemPrice: 400, shardAward: 4 },
+    arrabbiata: { unlockWave: 34, shardsNeeded: 42, gemPrice: 420, shardAward: 4 },
+    'aglio-e-olio': { unlockWave: 35, shardsNeeded: 44, gemPrice: 440, shardAward: 4 },
+    risotto: { unlockWave: 37, shardsNeeded: 46, gemPrice: 460, shardAward: 4 },
+    // North East (block 5, offset 40) — ooti is the deliberate capstone.
+    'veg-thukpa': { unlockWave: 41, shardsNeeded: 52, gemPrice: 520, shardAward: 5 },
+    'bamboo-shoot-fry': { unlockWave: 42, shardsNeeded: 54, gemPrice: 540, shardAward: 5 },
+    'veg-momo': { unlockWave: 44, shardsNeeded: 56, gemPrice: 560, shardAward: 5 },
+    'sticky-rice': { unlockWave: 45, shardsNeeded: 58, gemPrice: 580, shardAward: 5 },
+    ooti: { unlockWave: 47, shardsNeeded: 60, gemPrice: 600, shardAward: 5 },
+};
+
+/** Wave that must be beaten once before this recipe can be collected, or
+ *  null for chai/coffee (FTUE-gated, not wave-gated). Defensive fallback
+ *  (null) for an unknown slug — every RECIPE_SLUGS entry has a real row
+ *  above, this never actually falls through. */
+export function recipeUnlockWave(slug: string): number | null {
+    return RECIPE_ECONOMY[slug]?.unlockWave ?? null;
+}
+
+/** Toque badges needed to complete this recipe's scroll. Defensive fallback
+ *  (the old flat value) for an unknown slug — never actually hit. */
+export function recipeShardsNeeded(slug: string): number {
+    return RECIPE_ECONOMY[slug]?.shardsNeeded ?? 8;
+}
+
+/** Gem price to buy this recipe's scroll outright. Defensive fallback (the
+ *  old flat value) for an unknown slug — never actually hit. */
+export function recipeGemPrice(slug: string): number {
+    return RECIPE_ECONOMY[slug]?.gemPrice ?? 150;
+}
+
+/** Badges awarded per zero-leak wave clear serving this dish. Defensive
+ *  fallback (the old flat value) for an unknown slug — never actually hit. */
+export function recipeShardAward(slug: string): number {
+    return RECIPE_ECONOMY[slug]?.shardAward ?? 1;
+}
+
+/**
  * Round 18 Part 3: how much larger than every other dish's icon chai and
  * coffee need to render at, in the two recipe-only surfaces (card medallion,
  * sheet header plate) — every dish not listed here defaults to 1 (no zoom).
