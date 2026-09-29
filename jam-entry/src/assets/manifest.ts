@@ -122,111 +122,41 @@ export const MANIFEST: Manifest = {
         {
             name: 'deferred',
             assets: [
-                // Kitchen Mode's belt-mode UI (slots/hotbar/container/
-                // billboard) — demo tier of a commercial pack; licence terms
-                // at KitchenMode.md §2.6 still apply to the files on disk.
-                // Kitchen Mode itself was retired Round 21 (src/ui/
-                // TestBelt.tsx deleted); these five assets are no longer
-                // referenced by any code.
-                { alias: 'ui-slot-empty', src: 'images/ui-slot-empty.png' },
-                { alias: 'ui-slot-filled', src: 'images/ui-slot-filled.png' },
-                { alias: 'ui-hotbar', src: 'images/ui-hotbar.png' },
-                { alias: 'ui-container', src: 'images/ui-container.png' },
-                { alias: 'ui-billboard', src: 'images/ui-billboard.png' },
-                // Round 8, task 1: badge counter sprite for the billboard
-                // recipe row — derived from UI/Icons (gitignored source), the
-                // plus glyph filled solid so a digit can be drawn over it.
-                { alias: 'ui-badge-count', src: 'images/ui-badge-count.png' },
-                // Round 11: Chef Hat + Coin icons — our own generated assets
-                // (Art/_gen/ui-final/), not the demo pack above, so no
-                // licence comment applies. Baked from 1024x1024 sources:
-                // alpha-trimmed, padded to a square canvas (content height
-                // 80%), downscaled to 256x256. ui-chef-hat is live (the
-                // shard currency icon — MetaUpgrades.tsx/WaveBubble.tsx, see
-                // this file's own ui-shard note below); ui-coin backed
-                // Kitchen Mode's HUD readout and is unreferenced by any
-                // code since that mode's Round 21 removal.
-                // Round 21: Exit Sign icon added to the same set (still our
-                // own generated art, still no licence comment) — drawn as
-                // geometry to the palette and metrics sampled off the two
-                // above: outline #500C23, stroke 8px at 256, content bbox
-                // inset 25px. Backed Kitchen Mode's walkouts-left group;
-                // unreferenced by any code since that mode's removal the
-                // same round it shipped.
+                // Round 11: the Chef Hat icon — our own generated asset
+                // (Art/_gen/ui-final/), not the demo pack that used to sit
+                // above it, so no licence comment applies. Baked from a
+                // 1024x1024 source: alpha-trimmed, padded to a square canvas
+                // (content height 80%), downscaled to 256x256. Live — the
+                // shard currency icon (MetaUpgrades.tsx/WaveBubble.tsx, see
+                // this file's own ui-shard note below).
+                // Round 23: removed 10 orphaned ui-* assets (124 kB) — the
+                // Kitchen Mode demo-pack UI (ui-slot-empty/-filled, ui-hotbar,
+                // ui-container, ui-billboard, ui-badge-count), the Coin and
+                // Exit Sign icons baked alongside this one (Round 11/21), and
+                // the end-screen card backdrops (ui-card-wood/-red, Round 25)
+                // — all unreferenced by any code since Kitchen Mode's Round
+                // 21 retirement (or, for the cards, since that same round).
                 { alias: 'ui-chef-hat', src: 'images/ui-chef-hat.png' },
-                { alias: 'ui-coin', src: 'images/ui-coin.png' },
-                { alias: 'ui-exit-sign', src: 'images/ui-exit-sign.png' },
-                // Round 25, task 2: end-screen card backdrop, baked from
-                // Ramu - The Chef/UI/Cards/CardRegular/ (gitignored source,
-                // same demo pack as ui-billboard/ui-hotbar/ui-container
-                // above) — wood on a clear ('won'), red on a loss ('lost').
-                // Was 9-sliced in Kitchen Mode's end screen (src/ui/
-                // TestBelt.tsx); unreferenced by any code since that file's
-                // Round 21 removal.
-                { alias: 'ui-card-wood', src: 'images/ui-card-wood.png' },
-                { alias: 'ui-card-red', src: 'images/ui-card-red.png' },
                 // Round 3: station props + belt ingredients + final dishes.
                 // ing-sugar / ing-chai-masala still have no manifest line
                 // (§2.6 — procedural placeholder until art exists);
                 // ing-tea-leaf got its line in round 26, below.
-                { alias: 'prop-kettle-l1', src: 'images/prop-kettle-l1.png' },
-                { alias: 'prop-water-dispenser-l1', src: 'images/prop-water-dispenser-l1.png' },
                 { alias: 'ing-milk', src: 'images/ing-milk.png' },
                 { alias: 'ing-ginger', src: 'images/ing-ginger.png' },
                 { alias: 'dish-chai', src: 'images/dish-chai.png' },
                 { alias: 'dish-coffee', src: 'images/dish-coffee.png' },
-                // Round 4: fridge anchoring both ends of Kitchen Mode's
-                // conveyor (src/game/kitchenConfig.ts, deleted Round 21).
-                // Kitchen Props furniture sprite (kp1, NOT kp2), knowingly
-                // upscaled ~5.8x as a temporary placeholder; unreferenced by
-                // any code (see Round 21's prop-* orphan list).
-                { alias: 'prop-fridge', src: 'images/prop-fridge.png' },
-                // Round 26: the rest of the prop catalogue (PropList.md §8.1),
-                // baked as plain copies from Art/_sliced/01 - Kitchen
-                // Essentials/props/ — same treatment as prop-kettle-l1 /
-                // prop-water-dispenser-l1 above, no compression benefit on
-                // these small sprite-sheet crops. 22-Masala container.png is
-                // excluded (PropList §7.3 — it's an ingredient, not a station).
-                { alias: 'prop-beverage-dispenser-l1', src: 'images/prop-beverage-dispenser-l1.png' },
-                { alias: 'prop-beverage-dispenser-l2', src: 'images/prop-beverage-dispenser-l2.png' },
-                { alias: 'prop-brazier-l1', src: 'images/prop-brazier-l1.png' },
-                { alias: 'prop-cast-iron-skillet-l1', src: 'images/prop-cast-iron-skillet-l1.png' },
-                { alias: 'prop-cast-iron-skillet-l2', src: 'images/prop-cast-iron-skillet-l2.png' },
-                { alias: 'prop-cooktop-l1', src: 'images/prop-cooktop-l1.png' },
-                // prop-cooktop-l2/l3/l5 moved to 'critical' (Visual round,
-                // task 2 — the Tandoor tower's three levels).
-                { alias: 'prop-cooktop-l4', src: 'images/prop-cooktop-l4.png' },
-                { alias: 'prop-dough-counter-l1', src: 'images/prop-dough-counter-l1.png' },
-                { alias: 'prop-dough-counter-l2', src: 'images/prop-dough-counter-l2.png' },
-                { alias: 'prop-dough-counter-l3', src: 'images/prop-dough-counter-l3.png' },
-                { alias: 'prop-fry-pan-l1', src: 'images/prop-fry-pan-l1.png' },
-                // Visual round part 2: fry-pan-l2/l3/l4 moved back here from
-                // 'critical' — the Fryer no longer uses this family (§10,
-                // "REMAPPED Sep 11": the art renders bowls of food, not a
-                // pan). Ordinary unused-by-a-tower catalogue entries again,
-                // same as l1/l5 always were.
-                { alias: 'prop-fry-pan-l2', src: 'images/prop-fry-pan-l2.png' },
-                { alias: 'prop-fry-pan-l3', src: 'images/prop-fry-pan-l3.png' },
-                { alias: 'prop-fry-pan-l4', src: 'images/prop-fry-pan-l4.png' },
-                { alias: 'prop-fry-pan-l5', src: 'images/prop-fry-pan-l5.png' },
-                { alias: 'prop-kettle-l2', src: 'images/prop-kettle-l2.png' },
-                { alias: 'prop-kettle-l3', src: 'images/prop-kettle-l3.png' },
-                // prop-pressure-cooker-l1/l2/l3 moved to 'critical' (the Prep Board tower's three levels).
-                { alias: 'prop-rice-cooker-l1', src: 'images/prop-rice-cooker-l1.png' },
-                { alias: 'prop-rice-cooker-l2', src: 'images/prop-rice-cooker-l2.png' },
-                { alias: 'prop-rice-cooker-l3', src: 'images/prop-rice-cooker-l3.png' },
-                { alias: 'prop-sauce-pan-l1', src: 'images/prop-sauce-pan-l1.png' },
-                { alias: 'prop-sauce-pan-l2', src: 'images/prop-sauce-pan-l2.png' },
-                { alias: 'prop-sauce-pan-l3', src: 'images/prop-sauce-pan-l3.png' },
-                // prop-sauce-pot-l1/l2/l3 moved to 'critical' (Visual round
-                // part 2 — the Fryer tower's three levels, replacing fry-pan).
-                { alias: 'prop-spice-grinder-l1', src: 'images/prop-spice-grinder-l1.png' },
-                { alias: 'prop-spice-grinder-l2', src: 'images/prop-spice-grinder-l2.png' },
-                { alias: 'prop-spice-grinder-l3', src: 'images/prop-spice-grinder-l3.png' },
-                { alias: 'prop-spice-grinder-l4', src: 'images/prop-spice-grinder-l4.png' },
-                { alias: 'prop-steam-cooktop-l1', src: 'images/prop-steam-cooktop-l1.png' },
-                // prop-stock-pot-l1/l2/l3 moved to 'critical' (the Grill tower's three levels).
-                { alias: 'prop-water-dispenser-l2', src: 'images/prop-water-dispenser-l2.png' },
+                // Round 23: removed 32 orphaned prop-* assets (733 kB) — the
+                // rest of the belt-mode prop catalogue that Round 4/26 baked
+                // here (prop-kettle-l1/l2/l3, prop-water-dispenser-l1/l2,
+                // prop-fridge, prop-beverage-dispenser-l1/l2, prop-brazier-l1,
+                // prop-cast-iron-skillet-l1/l2, prop-cooktop-l1/l4,
+                // prop-dough-counter-l1/l2/l3, prop-fry-pan-l1/l2/l3/l4/l5,
+                // prop-rice-cooker-l1/l2/l3, prop-sauce-pan-l1/l2/l3,
+                // prop-spice-grinder-l1/l2/l3/l4, prop-steam-cooktop-l1) —
+                // all unreferenced by any code since Kitchen Mode's Round 21
+                // retirement. The 12 prop-* that ship (stock-pot, pressure-
+                // cooker, cooktop-l2/l3/l5, sauce-pot — each tower's own
+                // three level tiers) live in 'critical' above, unaffected.
                 // Round 26: dish trays (Art/_gen/dishes-final/), palette-
                 // quantized via sharp/imagequant (quality:40) — same
                 // technique dish-chai/dish-coffee already proved, matched

@@ -539,8 +539,11 @@ export function awardShards(slugs: string[]): { newlyCompleted: string[]; save: 
     // non-empty), not per slug — `dishes` is how many actually received a
     // shard award this call (excludes any already-scrolled slug the loop
     // above skipped), `completed` is how many of those crossed their own
-    // threshold just now.
-    track('recipe_completed', { dishes: awarded, completed: newlyCompleted.length });
+    // threshold just now. Round 23: renamed from its Round 22 name — this
+    // fires on every call with completed:0 most of the time, so it's a
+    // heartbeat, not a completion milestone; the old name overstated
+    // completions in the dashboard. Payload unchanged.
+    track('shards_awarded', { dishes: awarded, completed: newlyCompleted.length });
     return { newlyCompleted, save: data };
 }
 

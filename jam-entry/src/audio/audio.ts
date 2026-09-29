@@ -151,7 +151,7 @@ export function initAudio(volumes: { music: number; sfx: number }): void {
 // as before.
 // ---------------------------------------------------------------------------
 
-type SampleId = 'lose' | 'upgrade' | 'wave-clear' | 'kettle-boil' | 'water-pour' | 'block-transition' | 'scroll-unlock' | 'continue';
+type SampleId = 'lose' | 'upgrade' | 'wave-clear' | 'block-transition' | 'scroll-unlock' | 'continue';
 
 /** Playback gain per sample — peak-matched to the synth cues they replace
  * (MP3s normalise to -3dBFS ~= 0.708 peak; the synth peaks at 0.30-0.35),
@@ -160,15 +160,9 @@ type SampleId = 'lose' | 'upgrade' | 'wave-clear' | 'kettle-boil' | 'water-pour'
 const SAMPLES: Record<SampleId, { url: string; gain: number }> = {
     lose: { url: 'audio/ah.mp3', gain: 0.5 },
     upgrade: { url: 'audio/level-up.mp3', gain: 0.35 },
-    // Round 11: a Kettle/Water Dispenser grab from Kitchen Mode (retired
-    // Round 21 — the only caller, kitchenScene.ts's attemptUseOrSell, is
-    // gone, so these two samples are now unreferenced). Measured peaks
-    // -6.78dBFS (kettle) / -5.53dBFS (water), already quieter than the
-    // -3dBFS the rest of this table normalises to — 0.65 is a human retune
-    // by ear, not derived from that measurement, same as every other gain
-    // here.
-    'kettle-boil': { url: 'audio/kettle-boil.mp3', gain: 0.65 },
-    'water-pour': { url: 'audio/water-pour.mp3', gain: 0.65 },
+    // Round 23: removed the Kettle/Water Dispenser grab samples (48 kB) —
+    // Kitchen Mode's only caller (kitchenScene.ts's attemptUseOrSell) was
+    // deleted Round 21, and nothing else ever called playSample() with them.
     // Delivered-audio round: a real bell replaces the old synth-derived
     // level-complete.mp3; 1.0 is the delivered gain (no clip — worst
     // post-gain music peak measured at -1.39dBFS, SFX_BASE 0.6 covers it).
@@ -234,11 +228,7 @@ function loadSamples(): void {
 }
 
 /** Returns false (and plays nothing) if the sample isn't ready — the
- * caller is expected to fall through to its synth in that case.
- * Round 11: exported for Kitchen Mode's attemptUseOrSell (kitchenScene.ts,
- * deleted Round 21) to play 'kettle-boil'/'water-pour' directly — those
- * two have no sfx.* wrapper of their own, unlike lose/upgrade/wave-clear
- * above, and are unreferenced by any code since that deletion. */
+ * caller is expected to fall through to its synth in that case. */
 export function playSample(id: SampleId): boolean {
     const c = ctx;
     const buffer = sampleBuffers.get(id);
