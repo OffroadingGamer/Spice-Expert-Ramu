@@ -2,13 +2,13 @@ import type { CSSProperties } from 'react';
 import { t } from '../i18n/index.ts';
 
 /**
- * Round A2, task 3: shared by Settings.tsx, Hud.tsx and TestBelt.tsx's pause
- * menus. This is a named exception to KitchenMode.md §2.5's accepted-
- * duplication rule (explicit user ruling) — §2.5 still stands everywhere
- * else. `compact` only changes sizing; TestBelt.tsx's own pause menu
- * (untouched this round, out of scope) keeps calling this with neither
- * `compact` nor `theme`, so its plain dark/native-range look is unaffected
- * by anything below.
+ * Round A2, task 3: shared by Settings.tsx and Hud.tsx's pause menu. This
+ * was a named exception to KitchenMode.md §2.5's accepted-duplication rule
+ * (explicit user ruling), back when a third caller — Kitchen Mode's own
+ * pause menu, src/ui/TestBelt.tsx — also existed; that caller is gone as of
+ * Round 21's belt-mode removal, so this file now has exactly the two
+ * callers §2.5 already expects. `compact` only changes sizing, independent
+ * of `theme`.
  *
  * Round 9 Part 2: `theme` added — the percentage readout was hardcoded
  * `text-white/60`, invisible against Settings.tsx's new cream dialog card.
@@ -23,8 +23,8 @@ import { t } from '../i18n/index.ts';
  * app.css block. Sizing rides `mu` (the same unit as the rest of the "look
  * A" card) via CSS custom properties set inline here, not hardcoded in
  * app.css, so the skin scales with the card exactly like every other
- * dimension in it. `mu` defaults to 1 for TestBelt/Hud's plain 'dark' theme,
- * which never reads it. The percentage moves into a small pill ("value
+ * dimension in it. `mu` defaults to 1 for Hud's plain 'dark' theme, which
+ * never reads it. The percentage moves into a small pill ("value
  * chip") for theme="cream", replacing the old plain text-only readout.
  * Native drag/keyboard behaviour is untouched — only ::pseudo-element
  * *appearance* is overridden, never the underlying input's own interaction

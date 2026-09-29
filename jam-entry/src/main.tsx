@@ -4,7 +4,7 @@ import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
 import App from './ui/App.tsx';
 import { store } from './state/store.ts';
 import { loadSave, flushSave } from './state/save.ts';
-import { initLocaleFromSave } from './i18n/index.ts';
+import { getLocale, initLocaleFromSave } from './i18n/index.ts';
 import { initSdk, registerLifecycles, sdkReady } from './sdk/runSdk.ts';
 import { readIdentity } from './sdk/profile.ts';
 import { suggestsHindi } from './sdk/environment.ts';
@@ -179,7 +179,12 @@ async function boot() {
         });
     if (sdkReady()) {
         try {
-            RundotGameAPI.analytics.recordCustomEvent('game_loaded').catch(() => {});
+            // Round 22: `locale` added as a top-level payload field — same
+            // event, same funnel step, nothing renamed/renumbered. Fires on
+            // every boot (unlike locale_selected, which only fires on a
+            // deliberate change), so this is the passive distribution across
+            // ALL players, not just the ones who ever opened Settings.
+            RundotGameAPI.analytics.recordCustomEvent('game_loaded', { locale: getLocale() }).catch(() => {});
             RundotGameAPI.analytics.trackFunnelStep(1, 'game_loaded', 'boot', 1).catch(() => {});
         } catch (err) {
             console.warn('[Main] boot analytics failed', err);

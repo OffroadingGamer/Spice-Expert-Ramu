@@ -49,9 +49,7 @@ export function recipeNoteKey(slug: string): string {
  * below).
  *
  * Content, not simulation: this is flavor text for the unlocked-scroll
- * sheet, entirely independent of game/data/levels.ts's own INGREDIENT_
- * CATALOG (a different, unrelated "Kitchen Mode" sim this round's handover
- * explicitly keeps out of scope — kitchenScene.ts is untouched).
+ * sheet.
  *
  * Sixteen of the 22 rails changed from Round 18's data — each dish's own
  * genuine primary (rava for upma, green beans for beans-poriyal, basil for
@@ -100,9 +98,7 @@ export function recipeIngredients(slug: string): string[] {
 }
 
 /** en.ts key for one ingredient's display name — keyed on the bare
- *  ingredient key (alias minus its `ing-` prefix), same as game/data/
- *  levels.ts's own IngredientKind.key, so a future merge of the two
- *  ingredient lists doesn't have to rename anything. */
+ *  ingredient key (alias minus its `ing-` prefix). */
 export function ingredientNameKey(ingredientAlias: string): string {
     return `ingredient.${ingredientAlias.replace(/^ing-/, '')}`;
 }

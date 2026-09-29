@@ -122,8 +122,12 @@ export const MANIFEST: Manifest = {
         {
             name: 'deferred',
             assets: [
-                // TEST MODE ONLY (src/ui/TestBelt.tsx) — demo tier of a
-                // commercial pack, private-build only; see KitchenMode.md §2.6.
+                // Kitchen Mode's belt-mode UI (slots/hotbar/container/
+                // billboard) — demo tier of a commercial pack; licence terms
+                // at KitchenMode.md §2.6 still apply to the files on disk.
+                // Kitchen Mode itself was retired Round 21 (src/ui/
+                // TestBelt.tsx deleted); these five assets are no longer
+                // referenced by any code.
                 { alias: 'ui-slot-empty', src: 'images/ui-slot-empty.png' },
                 { alias: 'ui-slot-filled', src: 'images/ui-slot-filled.png' },
                 { alias: 'ui-hotbar', src: 'images/ui-hotbar.png' },
@@ -137,13 +141,18 @@ export const MANIFEST: Manifest = {
                 // (Art/_gen/ui-final/), not the demo pack above, so no
                 // licence comment applies. Baked from 1024x1024 sources:
                 // alpha-trimmed, padded to a square canvas (content height
-                // 80%), downscaled to 256x256 — see kitchenScene.ts's HUD
-                // coin readout and TestBelt.tsx's end screen.
+                // 80%), downscaled to 256x256. ui-chef-hat is live (the
+                // shard currency icon — MetaUpgrades.tsx/WaveBubble.tsx, see
+                // this file's own ui-shard note below); ui-coin backed
+                // Kitchen Mode's HUD readout and is unreferenced by any
+                // code since that mode's Round 21 removal.
                 // Round 21: Exit Sign icon added to the same set (still our
                 // own generated art, still no licence comment) — drawn as
                 // geometry to the palette and metrics sampled off the two
                 // above: outline #500C23, stroke 8px at 256, content bbox
-                // inset 25px. Used by kitchenScene.ts's walkouts-left group.
+                // inset 25px. Backed Kitchen Mode's walkouts-left group;
+                // unreferenced by any code since that mode's removal the
+                // same round it shipped.
                 { alias: 'ui-chef-hat', src: 'images/ui-chef-hat.png' },
                 { alias: 'ui-coin', src: 'images/ui-coin.png' },
                 { alias: 'ui-exit-sign', src: 'images/ui-exit-sign.png' },
@@ -151,7 +160,9 @@ export const MANIFEST: Manifest = {
                 // Ramu - The Chef/UI/Cards/CardRegular/ (gitignored source,
                 // same demo pack as ui-billboard/ui-hotbar/ui-container
                 // above) — wood on a clear ('won'), red on a loss ('lost').
-                // 9-sliced in TestBelt.tsx, never uniform-scaled.
+                // Was 9-sliced in Kitchen Mode's end screen (src/ui/
+                // TestBelt.tsx); unreferenced by any code since that file's
+                // Round 21 removal.
                 { alias: 'ui-card-wood', src: 'images/ui-card-wood.png' },
                 { alias: 'ui-card-red', src: 'images/ui-card-red.png' },
                 // Round 3: station props + belt ingredients + final dishes.
@@ -164,9 +175,11 @@ export const MANIFEST: Manifest = {
                 { alias: 'ing-ginger', src: 'images/ing-ginger.png' },
                 { alias: 'dish-chai', src: 'images/dish-chai.png' },
                 { alias: 'dish-coffee', src: 'images/dish-coffee.png' },
-                // Round 4: fridge anchoring both belt ends. Kitchen Props
-                // furniture sprite (kp1, NOT kp2 — see kitchenConfig.ts),
-                // knowingly upscaled ~5.8x as a temporary placeholder.
+                // Round 4: fridge anchoring both ends of Kitchen Mode's
+                // conveyor (src/game/kitchenConfig.ts, deleted Round 21).
+                // Kitchen Props furniture sprite (kp1, NOT kp2), knowingly
+                // upscaled ~5.8x as a temporary placeholder; unreferenced by
+                // any code (see Round 21's prop-* orphan list).
                 { alias: 'prop-fridge', src: 'images/prop-fridge.png' },
                 // Round 26: the rest of the prop catalogue (PropList.md §8.1),
                 // baked as plain copies from Art/_sliced/01 - Kitchen

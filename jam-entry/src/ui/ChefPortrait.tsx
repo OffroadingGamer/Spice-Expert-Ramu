@@ -46,8 +46,9 @@ import { unmuteDialogue } from '../game/dialogueController.ts';
 import { sfx } from '../audio/audio.ts';
 import { useStore } from '../state/store.ts';
 
-// Reuses the manifest's own alias->src entries (PropPicker.tsx/TestBelt.tsx's
-// own pattern) rather than hard-coding image paths a second time here.
+// Reuses the manifest's own alias->src entries (same pattern as
+// WaveBubble.tsx's own ASSET_SRC) rather than hard-coding image paths a
+// second time here.
 const ASSET_SRC = new Map(
     MANIFEST.bundles.flatMap((b) => b.assets).map((a) => [a.alias as string, a.src as string])
 );

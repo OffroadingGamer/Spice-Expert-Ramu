@@ -160,11 +160,13 @@ type SampleId = 'lose' | 'upgrade' | 'wave-clear' | 'kettle-boil' | 'water-pour'
 const SAMPLES: Record<SampleId, { url: string; gain: number }> = {
     lose: { url: 'audio/ah.mp3', gain: 0.5 },
     upgrade: { url: 'audio/level-up.mp3', gain: 0.35 },
-    // Round 11 (TEST MODE): a Kettle/Water Dispenser grab, kitchenScene.ts's
-    // attemptUseOrSell. Measured peaks -6.78dBFS (kettle) / -5.53dBFS
-    // (water), already quieter than the -3dBFS the rest of this table
-    // normalises to — 0.65 is a human retune by ear, not derived from that
-    // measurement, same as every other gain here.
+    // Round 11: a Kettle/Water Dispenser grab from Kitchen Mode (retired
+    // Round 21 — the only caller, kitchenScene.ts's attemptUseOrSell, is
+    // gone, so these two samples are now unreferenced). Measured peaks
+    // -6.78dBFS (kettle) / -5.53dBFS (water), already quieter than the
+    // -3dBFS the rest of this table normalises to — 0.65 is a human retune
+    // by ear, not derived from that measurement, same as every other gain
+    // here.
     'kettle-boil': { url: 'audio/kettle-boil.mp3', gain: 0.65 },
     'water-pour': { url: 'audio/water-pour.mp3', gain: 0.65 },
     // Delivered-audio round: a real bell replaces the old synth-derived
@@ -233,9 +235,10 @@ function loadSamples(): void {
 
 /** Returns false (and plays nothing) if the sample isn't ready — the
  * caller is expected to fall through to its synth in that case.
- * Round 11 (TEST MODE): exported so kitchenScene.ts's attemptUseOrSell can
- * play 'kettle-boil'/'water-pour' directly — those two have no sfx.*
- * wrapper of their own, unlike lose/upgrade/wave-clear above. */
+ * Round 11: exported for Kitchen Mode's attemptUseOrSell (kitchenScene.ts,
+ * deleted Round 21) to play 'kettle-boil'/'water-pour' directly — those
+ * two have no sfx.* wrapper of their own, unlike lose/upgrade/wave-clear
+ * above, and are unreferenced by any code since that deletion. */
 export function playSample(id: SampleId): boolean {
     const c = ctx;
     const buffer = sampleBuffers.get(id);

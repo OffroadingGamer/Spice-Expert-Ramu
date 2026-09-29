@@ -60,7 +60,7 @@ function assignName(): string {
  * no second scrim flash.
  */
 function LanguageStep({ mu, onPicked }: { mu: number; onPicked: () => void }) {
-    const pick = (l: Locale) => { sfx.click(); setLocale(l); onPicked(); };
+    const pick = (l: Locale) => { sfx.click(); setLocale(l, 'first_boot'); onPicked(); };
     return (
         <>
             <h2 className="text-center font-black" style={{ fontSize: 15 * mu }}>

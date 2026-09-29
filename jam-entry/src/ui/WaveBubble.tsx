@@ -82,11 +82,11 @@ import { queueDialogueOnce } from '../game/dialogueController.ts';
 import { t, tn } from '../i18n/index.ts';
 import { useStore } from '../state/store.ts';
 
-// Reuses the manifest's own alias->src entries (ChefPortrait.tsx/
-// PropPicker.tsx/TestBelt.tsx's own pattern) rather than hard-coding image
-// paths a second time here. Plain <img>/background-image consumers, so —
-// unlike ChefPortrait's Pixi-cache-gated layers — no readiness check is
-// needed: the browser loads the URL on its own schedule.
+// Reuses the manifest's own alias->src entries (ChefPortrait.tsx's own
+// pattern) rather than hard-coding image paths a second time here. Plain
+// <img>/background-image consumers, so — unlike ChefPortrait's
+// Pixi-cache-gated layers — no readiness check is needed: the browser loads
+// the URL on its own schedule.
 const ASSET_SRC = new Map(
     MANIFEST.bundles.flatMap((b) => b.assets).map((a) => [a.alias as string, a.src as string])
 );

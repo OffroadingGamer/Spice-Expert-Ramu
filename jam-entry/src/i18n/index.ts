@@ -17,6 +17,7 @@
  */
 import { en, type TranslationEntry } from './en.ts';
 import { hi } from './hi.ts';
+import { track } from '../sdk/analytics.ts';
 import { getSave, setSaveLocale } from '../state/save.ts';
 import { store } from '../state/store.ts';
 
@@ -40,11 +41,18 @@ export function getLocale(): Locale {
  *  Round 20: also patches store.locale (a reactive mirror, see that field's
  *  own doc in state/store.ts) so React actually RE-RENDERS off the switch —
  *  every t()/tn() call already picks up the new table on its next
- *  invocation regardless, but nothing invoked React again without this. */
-export function setLocale(locale: Locale): void {
+ *  invocation regardless, but nothing invoked React again without this.
+ *  Round 22: the only two callers (Settings.tsx, NameDialog.tsx) are both
+ *  deliberate player choices — Settings guards out a reselect of the
+ *  current locale before calling this at all, so `source` distinguishes
+ *  the first-boot picker from a later Settings change without either site
+ *  needing its own track() call, and a restore (initLocaleFromSave, a
+ *  separate function this one never touches) can never fire it. */
+export function setLocale(locale: Locale, source: 'first_boot' | 'settings'): void {
     currentLocale = coerceLocale(locale);
     setSaveLocale(currentLocale);
     store.patch({ locale: currentLocale });
+    track('locale_selected', { locale: currentLocale, source });
 }
 
 /** Call once at boot, after loadSave() resolves (main.tsx step 2) — restores

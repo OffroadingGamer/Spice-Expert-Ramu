@@ -46,7 +46,7 @@ export default function Settings() {
 
     const close = () => { sfx.click(); store.patch({ settingsOpen: false }); };
 
-    const chooseLocale = (l: Locale) => { if (l !== locale) { sfx.click(); setLocale(l); } };
+    const chooseLocale = (l: Locale) => { if (l !== locale) { sfx.click(); setLocale(l, 'settings'); } };
 
     /** Round 10 Part 6: the Name row's own tap — same guest/RUN split as
      *  the menu's greeting bubble (MainMenu.tsx's handleBubbleTap), but a

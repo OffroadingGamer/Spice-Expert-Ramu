@@ -301,7 +301,8 @@ export default function EndScreen() {
             </div>
 
             {/* Order ticket — cream card, the ticket idiom's own colour
-                (data/levels.ts's ing-cream: #f3ead2). WaveBubbleSubmenu's
+                (#f3ead2, the same cream shade Kitchen Mode's now-deleted
+                ingredient palette used). WaveBubbleSubmenu's
                 3-sliced ui-scroll border-image was tried here first and
                 dropped: border-image's `fill` slice does not reliably
                 stretch to a THREE-row box's full height in this browser

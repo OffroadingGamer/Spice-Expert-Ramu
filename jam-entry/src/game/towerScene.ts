@@ -66,7 +66,6 @@ export interface Scene {
 
 // Dish-art race fix: which aliases the manifest actually registers — an
 // alias with no manifest entry must never reach Assets.load (it throws).
-// Same rule/pattern as kitchenScene.ts's MANIFEST_ALIASES.
 const MANIFEST_ALIASES = new Set(MANIFEST.bundles.flatMap((b) => b.assets).map((a) => a.alias as string));
 
 /** How long a REAL block-to-block backdrop crossfade takes (see
@@ -247,8 +246,8 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
      * (background-loaded on its own schedule), so a cold cache could always
      * lose the race against wave 1's first spawn.
      *
-     * Mirrors kitchenScene.ts:374's fix: Assets.load() the current block's
-     * dishes on demand rather than trust background-load timing.
+     * Fix: Assets.load() the current block's dishes on demand rather than
+     * trust background-load timing.
      * `readyBlocks` gates the engine stepping loop below (tick()) so no
      * enemy of a not-yet-loaded block can spawn; `ensureBlockAssets` also
      * kicks off the NEXT block's load a block early (called with `+1` at
@@ -564,9 +563,8 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     // Entry/exit hatches at both ends of the road, so bugs appear and vanish
     // INTO something no matter where the board sits vertically.
     // Delivered-audio round, task 5: a round line cap extends a stroke by
-    // half its own width BEYOND each endpoint (same reasoning kitchenScene.ts's
-    // round-12a comment already documents for its own belt-cap fix) — here
-    // that's (SZ.pathWidth + 14) / 2 = 43 units past both (170,90) and
+    // half its own width BEYOND each endpoint — here that's
+    // (SZ.pathWidth + 14) / 2 = 43 units past both (170,90) and
     // (540,1300), each approached on a vertical path segment, so the decal's
     // opaque extent must be >= 2*capRadius = 86 tall, centred on the
     // endpoint, to fully cover it.

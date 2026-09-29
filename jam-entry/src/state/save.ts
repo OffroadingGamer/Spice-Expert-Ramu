@@ -10,6 +10,7 @@ import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
 import { CONFIG } from '../game/config.ts';
 import { recipeGemPrice, recipeShardAward, recipeShardsNeeded } from '../game/data/recipes.ts';
 import { TOWERS } from '../game/data/towers.ts';
+import { track } from '../sdk/analytics.ts';
 import { sdkReady } from '../sdk/runSdk.ts';
 import { clampToGraphemes } from '../shared/graphemes.ts';
 import type { AdsState } from '../systems/ads.ts';
@@ -508,8 +509,10 @@ export function awardShards(slugs: string[]): { newlyCompleted: string[]; save: 
     const shards = { ...data.shards };
     const scrolls = [...data.scrolls];
     const newlyCompleted: string[] = [];
+    let awarded = 0;
     for (const slug of slugs) {
         if (scrolls.includes(slug)) continue;
+        awarded++;
         const count = (shards[slug] ?? 0) + recipeShardAward(slug);
         shards[slug] = count;
         if (count >= recipeShardsNeeded(slug)) {
@@ -532,6 +535,12 @@ export function awardShards(slugs: string[]): { newlyCompleted: string[]; save: 
             : data.lastUnlockedScrollSlug,
     };
     flushSave();
+    // Round 22: one event per call (the caller only calls this when slugs is
+    // non-empty), not per slug — `dishes` is how many actually received a
+    // shard award this call (excludes any already-scrolled slug the loop
+    // above skipped), `completed` is how many of those crossed their own
+    // threshold just now.
+    track('recipe_completed', { dishes: awarded, completed: newlyCompleted.length });
     return { newlyCompleted, save: data };
 }
 
@@ -559,6 +568,7 @@ export function buyScroll(slug: string): SaveData | null {
         scrollsSeenCount: scrolls.length,
     };
     flushSave();
+    track('recipe_bought', { slug, price });
     return data;
 }
 
@@ -639,5 +649,6 @@ export function buyMetaUpgrade(towerId: string, stat: MetaStat): SaveData | null
         },
     };
     flushSave();
+    track('station_upgraded', { towerId, stat, level: level + 1, cost });
     return data;
 }

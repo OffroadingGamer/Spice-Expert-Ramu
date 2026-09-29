@@ -272,13 +272,14 @@ const STATION_FALLBACK: Record<string, (g: Graphics) => void> = {
 
 /**
  * Visual round, task 2 (docs/LevelBlocks.md §10): each station's three tower
- * LEVELS are now real kitchen-prop art (Kitchen Essentials pack, already
- * deployed for Kitchen Mode), one alias per level, replacing the single
- * fixed tower-*.png silhouette Round G drew at every level. The mapping is
- * set by the user, not derived: Grill/fox -> stock pot, Prep Board/owl ->
- * pressure cooker, Tandoor/bear -> cooktop (indices 2/3/5, deliberately
- * skipping 1 and 4), Fryer/squirrel -> sauce pot (indices 1/2/3) — §10's
- * own table is the source of truth if this ever needs re-deriving.
+ * LEVELS are now real kitchen-prop art (Kitchen Essentials pack, also used
+ * by the now-retired Kitchen Mode, Round 21), one alias per level, replacing
+ * the single fixed tower-*.png silhouette Round G drew at every level. The
+ * mapping is set by the user, not derived: Grill/fox -> stock pot, Prep
+ * Board/owl -> pressure cooker, Tandoor/bear -> cooktop (indices 2/3/5,
+ * deliberately skipping 1 and 4), Fryer/squirrel -> sauce pot (indices
+ * 1/2/3) — §10's own table is the source of truth if this ever needs
+ * re-deriving.
  *
  * Fryer/squirrel was REMAPPED in visual round part 2: the original choice,
  * fry pan (indices 2/3/4), isn't fry-pan art at all — every fry-pan tier
