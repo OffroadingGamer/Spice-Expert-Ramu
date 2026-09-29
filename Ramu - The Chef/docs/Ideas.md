@@ -243,6 +243,14 @@ they are not rediscovered.**
 - **`state/devMode.ts` is orphaned.** `devModeEnabled()` had exactly two callers, both in
   `MainMenu.tsx`, both removed with the belt button. The file still exists and nothing calls it.
   Keeping it costs nothing (tree-shaken out of the bundle); it is only a tidiness question.
+- **20 comment references to deleted belt code survive, across 8 files.** Found by Central
+  sweeping after the deletion. **Comments only — the build is clean and nothing behaves wrongly** —
+  but they name files that no longer exist, so the next reader chases ghosts. `assets/manifest.ts`
+  (6, including the `// TEST MODE ONLY (src/ui/TestBelt.tsx)` block that labels the now-orphaned
+  prop set) · `audio/audio.ts` (2) · `game/towerScene.ts` (3, all "same pattern as kitchenScene.ts")
+  · `ui/Slider.tsx` (3, describing a TestBelt pause menu that no longer exists) ·
+  `game/data/recipes.ts` (3) · `game/textures.ts`, `ui/ChefPortrait.tsx`, `ui/EndScreen.tsx`,
+  `ui/WaveBubble.tsx` (1 each). A comment pass, whenever something else is being done in those files.
 - **32 of the 44 `prop-*` aliases are now unreferenced.** Verified independently by Central:
   `textures.ts`'s `TOWER_PROP_LEVELS` is an explicit literal table of **12** — three tiers each for
   fox/owl/bear/squirrel — and there is **no dynamic `prop-` alias construction anywhere**, so the

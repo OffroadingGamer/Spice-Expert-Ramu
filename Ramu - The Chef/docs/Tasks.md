@@ -23,7 +23,8 @@ finished 46-sprite ingredient set, the 22 true rails, pane drag-scroll and the C
 
 **In flight:** nothing — ✅ **Round 21 shipped as Private 1.96.0 and is verified. The planned
 roadmap is COMPLETE.** Belt mode is gone, the clipping fix shipped (as `line-clamp-4`, see below),
-and all six §5 debts are closed. From here the work is polish. **Done:** **Round 20 (Hindi) shipped as Private 1.95.0** and is verified (382 keys
+and all six §5 debts are closed. From here the work is polish. ✅ **Touch-drag passed on device Sep 30** — the oldest open item in
+the project, closed. **Done:** **Round 20 (Hindi) shipped as Private 1.95.0** and is verified (382 keys
 both tables, symmetric difference 0, balance baseline unchanged). **Next and last: Round 21** —
 belt-mode removal plus housekeeping, which now also carries the Owned-card clipping fix
 (Ideas.md §5). ⏸️ **Hindi copy review deferred** by the user Sep 30 — functional enough; fine-tuning

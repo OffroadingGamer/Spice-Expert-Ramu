@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.96.0** (Rounds 0–21 — **the planned roadmap is COMPLETE**) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. Review and Public stay at **1.69.0**. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Nothing, and no further round is planned.** ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), the **touch-drag test** — still untested by anyone on any build — and the three residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **In flight** | **Nothing, and no further round is planned.** ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
 | **Repo** | `origin/main` = **`d648176`** at the time this row was written; the Round 21 source changes and this verification entry land on top of it. Tree otherwise clean — reference videos are gitignored (`references/Errors/*.mp4`). |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -4487,3 +4487,39 @@ width, the font size, or where words break. → **Retro 136.**
 is polish plus the user's own calls: the **Public promotion**, the **touch-drag test** — still
 untested by anyone on any build, and now the oldest open item in the project — the deferred Hindi
 copy review, and the three residuals in §5.
+
+---
+
+### 2026-09-30 — Touch-drag: ✅ PASSED ON DEVICE — the project's oldest open item, closed
+
+The user tested on a real device against Private 1.96.0: **"touch drag works on ingredients, recipe
+and kitchen upgrades."** This item had been open since the jam and had never been tested by anyone,
+on any build, in any round.
+
+**What those three cover — mapped by Central to the actual drag surfaces, so the coverage claim is
+precise rather than a paraphrase.** They are exactly the **custom pointer-drag code**, which is the
+part that carried risk:
+
+| Surface | Code | Covered |
+|---|---|---|
+| Ingredients / recipe rail | `ui/RecipeSheet.tsx` | ✅ |
+| Kitchen → Recipes pane | `ui/MetaUpgrades.tsx:618–620` | ✅ |
+| Kitchen → Stations pane | `ui/MetaUpgrades.tsx:500–502` | ✅ |
+
+That is the whole of the hand-written drag implementation — including the deliberate
+`setPointerCapture`-inside-`onPointerMove` workaround at `MetaUpgrades.tsx:109–141`, which exists
+because capturing on `pointerdown` made Chromium retarget an undragged tap. **That workaround is now
+confirmed correct on real hardware, not just in a desktop emulator.**
+
+**The one drag surface those three do not cover, and why it is a much smaller risk.** The volume
+controls in Settings and the HUD pause menu (`ui/Slider.tsx`, used by `Settings.tsx:65–66` and
+`Hud.tsx:775–776`) are a **native `<input type="range">`** — only the pseudo-element *appearance* is
+re-skinned, and the file says so in its own header: *"Native drag/keyboard behaviour is untouched."*
+So it is the browser's drag, not ours, and it cannot share the custom-pointer failure modes. Its
+44 px touch target is already handled in code (`Slider.tsx:45–50`, vertical padding on the input
+rather than a taller track). `ui/Leaderboard.tsx:637` is likewise native `touch-pan-y` scrolling,
+not a drag. **Worth a ten-second check the next time Settings is open on a phone; not worth a round.**
+
+✅ **Nothing now blocks the Public promotion on technical grounds.** What remains under it is
+judgement, not testing: the Sep 9 licence note, the "4 AI features" row, and whether unreviewed
+Hindi ships to real players.
