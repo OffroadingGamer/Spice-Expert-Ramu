@@ -3039,3 +3039,18 @@ after **00:30 IST Sep 19**.
      whenever X happens, its name is X. Put the interesting-but-rare thing in the payload, which is
      exactly where `completed` already was. And when a value is immutable after release, the moment
      to get it right is before the release that freezes it, not the review after.**
+
+138. **My scaffolding scan passed for the wrong reason — it could not match the idiom this project
+     actually uses.** Verifying Round 22 I grepped `src/` for `spy`, `__test`, `stub`, `window.__`,
+     `globalThis.__`, `debugger` and stray `console.log`, found one pre-existing hit, and reported
+     that no test scaffolding survived. The report was true, but the scan did not establish it:
+     this codebase writes its globals as `(globalThis as typeof globalThis & { __name__?: T })
+     .__name__`, so the literal sequences `window.__` and `globalThis.__` **never appear**, and my
+     pattern was blind to all three of the real hooks — `__spice_ramu_engine__`,
+     `__spice_ramu_store__`, `__spice_ramu_app__`. I only found out in Round 23, when an agent cited
+     one of them and I had to check whether it had added it. Had a round genuinely left a global
+     behind in the project's own house style, I would have cleared it. ✅ **Rule: before trusting a
+     negative result, prove the scan can find a positive — the same discipline the secret scan's
+     three control lines already enforce, applied to every other scan I run. A clean result from an
+     unvalidated pattern is not evidence of absence; write the pattern against a known instance in
+     THIS codebase first.**

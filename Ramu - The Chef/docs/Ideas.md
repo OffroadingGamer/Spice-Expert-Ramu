@@ -254,6 +254,22 @@ they are not rediscovered.**
   — the user's own plays — so nothing depends on it yet, and a rename now costs one string literal.
   After the Public promotion, a rename means a permanent discontinuity in the one dashboard that will
   guide every post-launch decision. → [Retro.md](Retro.md) lesson 137.
+- ✅ **CLOSED in Round 23 — all 44 orphaned assets removed** (32 `prop-*`, 10 `ui-*`, 2 mp3;
+  906 kB), manifest entries and files together. Manifest is **165 → 123 entries**, and **every
+  remaining entry resolves to a file on disk** (checked). All 12 `prop-*` and 4 `ui-*` keepers are
+  present, and the five dynamically-addressed families are fully intact: **bg-block 9, chef-body 9,
+  chef-face 4, dish 31**. Original item kept below for the reasoning.
+- ⚠️ **Three `globalThis` handles ship in the production build — and they are architectural, not
+  debug leftovers.** `__spice_ramu_engine__` (`game/actions.ts:27`), `__spice_ramu_store__`
+  (`state/store.ts:369`) and `__spice_ramu_app__` (`game/pixiApp.ts:37`). Each exists so its
+  singleton survives **duplicate module copies after a hot reload** — the reasoning is in
+  `actions.ts`'s own header — so they are a deliberate design choice, all three pre-date Round 23,
+  and none was added by any recent round. **But they do ship**, and they make console manipulation
+  of a live run *easy* rather than merely *possible*: `__spice_ramu_store__` exposes the whole app
+  state object. ⚠️ Worth one thought before Public, and **no more than one** — any browser game is
+  manipulable from devtools, the leaderboard has RUN-side anti-cheat
+  (`minTimeBetweenSubmissionsSec: 5`), and scores only submit through `recordRunEnd` at a real run
+  end. Central is **not** proposing a round for this; it is recorded so the decision is conscious.
 - **The orphaned-asset list grew, and it is now worth one decision rather than three.** Verified
   independently by Central: **32 of 44 `prop-*`** aliases (Round 21), **10 of 14 `ui-*`** aliases
   — `ui-slot-empty`, `ui-slot-filled`, `ui-hotbar`, `ui-container`, `ui-billboard`, `ui-badge-count`,

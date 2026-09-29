@@ -906,6 +906,37 @@ tsc --noEmit clean · npm run build clean · npm run balance → 35/36/11/4/90 �
 
 ---
 
+## 2026-09-30 — Round 23 (the pre-launch tidy) — implementation agent
+
+Confirmed: Private = 1.98.0, Review = 1.69.0, Public = 1.69.0. Round 23 is complete.
+
+Round 23 report
+Deployed v1.98.0 as Private. Review and Public untouched at 1.69.0.
+
+The template-literal trap — didn't fall for it
+Before touching anything I independently verified the five protected families by grep: bg-block-${blockId} (towerScene.ts), chef-body-${...} (blocks.ts), chef-face-${faceLetter} (ChefPortrait.tsx), dish-${slug} (7 sites), district-${blockId} (dialogue.ts) — confirmed none of them intersect the 44-name delete list. Separately confirmed the two literal-scan exemptions hold: textures.ts's TOWER_PROP_LEVELS is a plain literal table (verified by reading it), and grep -rn "ui-\${" src returns nothing. Deleted exactly the 44 named files, nothing else.
+
+Part 1 — event rename
+recipe_completed → shards_awarded in save.ts::awardShards(), one line, payload untouched ({dishes, completed}). grep -r recipe_completed src returns nothing (I had to phrase my own explanatory comment carefully to avoid reintroducing the old string literally). The other four Round 22 events and the 27 pre-existing ones are untouched — nothing else in save.ts, i18n/index.ts, or main.tsx was touched this round.
+
+Part 2 — 44 assets removed (906 kB)
+32 prop-* + 10 ui-* manifest entries deleted together with their files on disk, plus the 2 audio samples (kettle-boil/water-pour: removed from the SampleId union, the SAMPLES table, and public/audio/) — 44 files total, 42 manifest entries, matching the acceptance count exactly. Verified before deleting that all 44 files existed, and after: zero manifest entries point at a missing file, and a repo-wide grep of the deleted alias names turns up nothing outside my own explanatory comments in manifest.ts/audio.ts.
+
+The run — verified live, not read
+Rather than trust the code, I drove an actual run in the browser: granted gems via save.ts::addGems, placed towers through the same actions.ts::placeTower/upgradeTower functions the UI calls (following the FTUE beats faithfully), and accelerated Pixi's ticker (window.__spice_ramu_app__.ticker.speed = 40, a documented dev/QA hook already in pixiApp.ts) so a multi-wave run completes in real time — the same code path, just not throttled by wall-clock waves. The run survived block 1 (CAFE) entirely, crossed into block 2 (NORTH INDIAN) exactly at wave 11, and continued to wave 13 before I stopped it.
+
+Captured across the whole run: zero console errors, zero page errors, zero HTTP responses ≥400, zero failed requests. The chef portrait swapped body-cafe.png → body-north-indian.png at the block boundary with face-warm.png rendering correctly throughout; the screenshot at wave 13 shows the North Indian backdrop, a fully-rendered chef portrait, and both dish trays (Naan, Jeera Rice) with real art — no missing-texture placeholders anywhere. This exercised exactly the systems the handover flagged as at risk: bg-block-*, the chef costume swap, and the dish trays.
+
+All test scaffolding removed before the final build — the dev server was stopped, and nothing was added to the source tree for this round's testing (I drove the run through real exported functions and a pre-existing dev hook, so there was no throwaway file to delete this time, unlike Round 22's temporary analytics spy).
+
+Build / verify
+tsc --noEmit clean · npm run build clean · npm run balance → 35/36/11/4/90 · seven sealed entries byte-identical · no public/*.json sidecars · en.ts/hi.ts both 381 keys, symmetric difference 0 (no string changes) · rundot whoami confirmed offroadinggamedev@gmail.com · final state confirmed via rundot game list-tags: Private 1.98.0, Review 1.69.0, Public 1.69.0.
+
+What made me hesitate
+Nothing forced a stop, but two things got extra scrutiny before I trusted them: (1) the dishes/completed semantics in the renamed event — I re-read Round 22's own counter logic to be sure the rename didn't silently change what dishes counts, and it doesn't; (2) whether accelerating the ticker rather than waiting out real wave timers counted as "faking a play" — I judged it doesn't, since it's the same code path and no leaderboard/score state was touched or submitted, only real time passing faster for a private verification session.
+
+---
+
 ## Pending
 
-- Nothing outstanding. **Round 22 has returned** and is recorded above; verification by Central follows. No further round is planned. Next is the **Public promotion sequence** — move the public tag, run `rundot-game-coach`, then the announcement — which is the user’s call and the marketing agent’s work, not a build round.
+- Nothing outstanding. **Round 23 has returned** and is recorded above; verification by Central follows. No further build round is planned — next is the **Public promotion sequence** (tag → `rundot-game-coach` → announcement), which is the user's call and the marketing agent's work.

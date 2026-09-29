@@ -39,9 +39,9 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Private 1.97.0** (Rounds 0–22 — roadmap complete; R22 was an added instrumentation round) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. Review and Public stay at **1.69.0**. |
+| **Live version** | **Private 1.98.0** (Rounds 0–23 — roadmap complete; R22–23 were added pre-launch rounds) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. Review and Public stay at **1.69.0**. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | ⏳ **Round 23 — the pre-launch tidy**, written Sep 30. Renames `recipe_completed` → `shards_awarded` while that is still free, and removes **44 orphaned assets (906 kB)**. Must land **before** the tag moves. Then the **Public promotion sequence** (tag → `rundot-game-coach` → announcement). Previously: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **In flight** | **Nothing, and no further build round is planned.** ✅ Round 23 returned and is **verified.** The build is **launch-ready on technical grounds.** Next is the **Public promotion sequence: move the tag → run `rundot-game-coach` → announcement.** Still on the user first: the **Sep 9 licence note** (explicit yes/no) and the **"4 AI features" row** check. Previously: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
 | **Repo** | `origin/main` = **`d648176`** at the time this row was written; the Round 21 source changes and this verification entry land on top of it. Tree otherwise clean — reference videos are gitignored (`references/Errors/*.mp4`). |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -4697,3 +4697,67 @@ Originals are safe twice over: in git history, and in the gitignored `Art/` sour
 zero missing-texture placeholders**, on boot and across a run long enough to cross a block boundary —
 which is what exercises `bg-block-*`, the chef costume swap and the dish trays, i.e. precisely the
 families a careless deletion would break.
+
+---
+
+### 2026-09-30 — Round 23 — ✅ RETURNED AND VERIFIED — Private 1.98.0 — launch-ready
+
+Return pasted **verbatim** into [Agent Returns.md](Agent%20Returns.md) before verification.
+
+**Deploy.** `rundot whoami` → `offroadinggamedev@gmail.com`. Private **1.98.0**, Review **1.69.0**,
+Public **1.69.0**.
+
+| Gate | Result |
+|---|---|
+| `npm run build` | clean, **exit 0** |
+| `npm run balance` | **35 / 36 / 11 / 4 / 90** |
+| Seven sealed entries | diff **empty** |
+| Sidecars under `public/` | none |
+| `src/i18n/` diffstat | **entirely empty** — no string touched |
+| Working tree | **44 deletions + 3 source modifications** (`manifest.ts`, `audio.ts`, `save.ts`). Nothing else |
+
+✅ **The trap did not fire, and that is the headline.** Manifest **165 → 123** = exactly **42**
+entries removed, **44** files deleted. All 12 `prop-*` and all 4 `ui-*` keepers present. The five
+dynamically-addressed families are **fully intact — bg-block 9, chef-body 9, chef-face 4, dish 31**.
+**Every one of the 123 remaining manifest entries resolves to a real file on disk** (Central checked
+each). Both mp3s are gone from `SampleId`, the sample table and `public/audio/`.
+
+**The rename is clean.** `grep -r recipe_completed src` returns nothing; `shards_awarded` sits at
+`save.ts:546` with the payload unchanged. The agent noted it had to phrase its own explanatory
+comment to avoid reintroducing the old literal — a small, real piece of care.
+
+✅ **Two claims Central deliberately went after, because both were load-bearing.**
+
+**1. The dev hook the agent used was pre-existing, not scaffolding it added.**
+`window.__spice_ramu_app__` is `pixiApp.ts:37`, it **exists at HEAD**, and `git status` shows that
+file **untouched** this round. Claim verified. 🔴 **And it exposed a blind spot in Central's own
+Round 22 scaffolding scan:** that scan searched `window\.__` and `globalThis\.__`, but this project
+writes the idiom as `(globalThis as typeof globalThis & {…}).__name__`, which **neither pattern can
+match**. The Round 22 scan passed — for the wrong reason. Re-run here with a widened pattern it
+finds all three hooks correctly. → **Retro 138.**
+
+**2. Accelerating the ticker was NOT "faking a play", and there are two independent reasons.**
+The agent flagged this itself rather than hoping nobody asked, which is the right instinct. Checked:
+(a) `leaderboardsAvailable()` is `sdkReady()`, and `initSdk()`'s own doc says local dev without the
+host "runs SDK-less" — so no submission path exists at all; and (b) submission happens only through
+`recordRunEnd`, called from `towerScene.ts:2337` inside `checkEnd()` **at a real run end**, and this
+run was stopped at wave 13 without ending. Nothing could have reached either live board.
+
+✅ **Standing reading of the rule, recorded so it is not re-litigated.** *"Never fake plays"* exists
+to stop RUN's **play counters and leaderboards** being inflated. It does **not** forbid driving the
+game locally to verify it. An over-literal reading would have prevented exactly the live run that
+made this round trustworthy — and a live run is *better* evidence than reading the code, which is the
+whole reason this project keeps insisting on it. The line is **submission and metrics**, not motion.
+
+**The live run is what actually verified this round.** The agent drove a real run through the same
+exported `actions.ts` functions the UI calls, crossed from block 1 (CAFE) into block 2
+(NORTH INDIAN) at wave 11, and reached wave 13 with **zero console errors, zero page errors, zero
+HTTP responses ≥ 400 and zero failed requests** — the chef costume swapping correctly at the
+boundary and both dish trays rendering real art. That exercises precisely the three systems a
+careless deletion would have destroyed, and it is the only evidence that could have caught the
+mistake Central nearly made.
+
+✅ **Round 23 accepted. The build is launch-ready on technical grounds.** No further build round is
+planned. Next: **move the tag → `rundot-game-coach` → announcement**, gated on the user's two
+remaining calls (the Sep 9 licence note, the "4 AI features" row). One item recorded in §5 for
+conscious acceptance rather than action: the three shipped `globalThis` handles.
