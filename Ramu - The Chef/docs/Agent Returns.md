@@ -872,6 +872,40 @@ Touched: 7 deletions (the belt cluster) + 1 deleted asset + 1 resized asset + 9 
 
 ---
 
+## 2026-09-30 — Round 22 (meta-layer instrumentation) — implementation agent
+
+Confirmed: Private = 1.97.0, Review = 1.69.0, Public = 1.69.0 — exactly the required final state. Round 22 is complete.
+
+Round 22 report
+Deployed v1.97.0 as Private. Review and Public untouched at 1.69.0.
+
+Part 1 — five events, all verified live (not just read)
+I ran the actual code paths in the browser through a temporary spy on the RUN SDK singleton (deleted before the final build — confirmed absent from git status and from the deployed build), so every number below is an observed call, not an inference:
+
+locale_selected — placed inside setLocale() itself (i18n/index.ts), which now takes a source: 'first_boot' | 'settings' param; both call sites (Settings.tsx:49, NameDialog.tsx:63) updated to pass it. Observed: reselecting the current locale in Settings → zero events; switching to Hindi → one {locale:'hi', source:'settings'}; switching back → one {locale:'en', source:'settings'}; calling the first-boot path directly → one {locale:'hi', source:'first_boot'}. Zero fired during boot restore (initLocaleFromSave never calls setLocale).
+recipe_completed (save.ts::awardShards) — fires once per call, payload {dishes, completed}. I added an awarded counter so dishes only counts slugs that weren't already scrolled (excludes the skip branch), distinct from completed (threshold crossings). Verified: 1 already-owned + 1 fresh dish → {dishes:1, completed:0} (the owned one correctly excluded); repeating on the fresh dish 7 times until its threshold → 6× {dishes:1, completed:0} then {dishes:1, completed:1} on the crossing call.
+recipe_bought (buyScroll) — {slug, price}. Verified: unaffordable → null, zero events; real purchase → one event with correct price; re-buying the same now-owned slug → null, zero events.
+station_upgraded (buyMetaUpgrade) — {towerId, stat, level, cost}, level is the new level. Verified: success → {towerId:'fox', stat:'damage', level:1, cost:4}; at cap → null, zero events.
+Fifth item — locale added to the existing game_loaded event (main.tsx, after initLocaleFromSave() has run, well before the event fires at boot step 8). Chose this over a new event because it's the one boot event every session fires unconditionally, giving the passive locale distribution across all players, not just Settings-openers — and the handover explicitly allows adding a top-level key to an existing event. Observed in the boot capture: {locale:'en'}, same funnel step 1, name and funnel untouched.
+The 27 pre-existing events fired unchanged in the same boot capture (game_loaded, run_start ×2, dialogue_shown/dialogue_skipped, music_track_loaded) — nothing renamed or renumbered.
+
+Volume check: all five are per-action (menu interaction or one save-mutation call), never per-frame or per-wave-spam — confirmed by the test-10 loop firing exactly once per awardShards() call, not per slug.
+
+kitchen_action_bought (actions.ts:375) confirmed as the false friend described — mid-run purchase, untouched, not counted as meta-layer coverage.
+
+Part 2 — comment sweep
+Fixed 21 stale references (handover estimated 20 — I verified by direct grep of each file rather than trusting the estimate; the one-off is immaterial) across the 8 named files: manifest.ts (6), towerScene.ts (3), Slider.tsx (3), recipes.ts (3), audio.ts (2), textures.ts/ChefPortrait.tsx/EndScreen.tsx/WaveBubble.tsx (1 each). Where a comment only existed to explain belt behavior I deleted it; where it also carried real information (licensing provenance, gain measurements, technique rationale), I kept that and only removed the dead file pointer. Re-swept all of src/ afterward — no stray references remain outside intentional "deleted Round 21" notes.
+
+Found, not fixed (comments only this round)
+ui-coin and ui-exit-sign (manifest.ts) are now unreferenced by any code — same situation as ui-chef-hat's sibling before it, except these two never got a Round 19-style replacement. ui-slot-empty, ui-slot-filled, ui-hotbar, ui-container, ui-billboard, ui-badge-count, ui-card-wood, ui-card-red are also orphaned (only referenced within manifest.ts itself).
+playSample('kettle-boil')/'water-pour' (audio.ts) are never called anywhere now — their only caller was kitchenScene.ts's attemptUseOrSell, deleted Round 21.
+No art, no manifest entries, no audio samples deleted — flagged for your call, same posture as Round 21's prop-* orphan list.
+
+Build / verify
+tsc --noEmit clean · npm run build clean · npm run balance → 35/36/11/4/90 · seven sealed files (sim/engine.ts, data/enemies.ts, data/towers.ts, data/waves.ts, package.json, package-lock.json, rundot/leaderboard.config.json) byte-identical · no public/*.json sidecars · en.ts/hi.ts both 381 keys, symmetric difference 0 (this round touched no strings) · rundot whoami confirmed offroadinggamedev@gmail.com before deploy · final state confirmed via rundot game list-tags: Private 1.97.0, Review 1.69.0, Public 1.69.0.
+
+---
+
 ## Pending
 
-- Nothing outstanding. **Round 21 (the final round) has returned** and is recorded above; verification by Central follows. The planned roadmap is complete after it — remaining work is polish, plus the open items in the record's CURRENT STATE block.
+- Nothing outstanding. **Round 22 has returned** and is recorded above; verification by Central follows. No further round is planned. Next is the **Public promotion sequence** — move the public tag, run `rundot-game-coach`, then the announcement — which is the user’s call and the marketing agent’s work, not a build round.

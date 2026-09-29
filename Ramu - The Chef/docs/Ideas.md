@@ -243,6 +243,27 @@ they are not rediscovered.**
 - **`state/devMode.ts` is orphaned.** `devModeEnabled()` had exactly two callers, both in
   `MainMenu.tsx`, both removed with the belt button. The file still exists and nothing calls it.
   Keeping it costs nothing (tree-shaken out of the bundle); it is only a tidiness question.
+- 🔴 **`recipe_completed` is misnamed, and the name is Central's. Renaming it is cheap ONLY until
+  the build goes Public.** The event fires on **every** `awardShards()` call — i.e. every run that
+  awards a shard — and carries `{ dishes, completed }`, where `completed` is **0** in the large
+  majority of firings. In a dashboard it will read as "recipe completed" and overstate completions by
+  roughly the ratio of runs to unlocks. **The honest name is `shards_awarded`**, with `completed` kept
+  as the payload field that counts the rare threshold crossings. The agent implemented exactly what
+  the handover specified; the specification was wrong. ⚠️ **Why the timing matters:** this project's
+  own rule is that event names are fixed once shipped. It has so far fired only on **Private** builds
+  — the user's own plays — so nothing depends on it yet, and a rename now costs one string literal.
+  After the Public promotion, a rename means a permanent discontinuity in the one dashboard that will
+  guide every post-launch decision. → [Retro.md](Retro.md) lesson 137.
+- **The orphaned-asset list grew, and it is now worth one decision rather than three.** Verified
+  independently by Central: **32 of 44 `prop-*`** aliases (Round 21), **10 of 14 `ui-*`** aliases
+  — `ui-slot-empty`, `ui-slot-filled`, `ui-hotbar`, `ui-container`, `ui-billboard`, `ui-badge-count`,
+  `ui-coin`, `ui-exit-sign`, `ui-card-wood`, `ui-card-red`; only `ui-chef-hat`, `ui-scroll`,
+  `ui-laurel` and `ui-recipe-scroll` are live — and **two audio samples**, `kettle-boil` and
+  `water-pour`, still declared in `audio.ts`'s `SampleId` type and sample table with **no
+  `playSample()` caller** since `kitchenScene.ts` went. That is **44 orphaned assets** still shipping
+  in the bundle. 🔒 **None of this touches attribution** — toxiccolors' credit stands on the 12
+  `prop-*` that still ship and on the `dish-*` trays' LoRA, and Archita Sharma's stands regardless.
+  It is purely a bundle-size question, and the bundle is already flagged at **920 kB** by Vite.
 - **20 comment references to deleted belt code survive, across 8 files.** Found by Central
   sweeping after the deletion. **Comments only — the build is clean and nothing behaves wrongly** —
   but they name files that no longer exist, so the next reader chases ghosts. `assets/manifest.ts`

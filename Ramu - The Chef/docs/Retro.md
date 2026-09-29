@@ -3026,3 +3026,16 @@ after **00:30 IST Sep 19**.
      room the fix needs. When I cannot render the thing, say the number is an estimate and hand the
      measurement to whoever can — do not put an unmeasured constant in a handover as though it
      were derived.**
+
+137. **I named a telemetry event after its rare case instead of the thing it measures.** Round 22's
+     handover specified `recipe_completed`, fired inside `awardShards()` with a `completed` payload
+     field. But `awardShards()` runs on **every** shard award, so the event fires constantly with
+     `completed: 0`, and the name promises a milestone while the data is a heartbeat. Anyone reading
+     that dashboard — including a future me, or `rundot-game-coach` — would read completions off a
+     number inflated by roughly the ratio of runs to unlocks. The agent implemented the
+     specification faithfully; the specification was the defect, and I wrote it in the same handover
+     where I told the agent that event names are fixed once shipped. ✅ **Rule: name an event for the
+     call site that fires it, not for the outcome you hope to read out of it — if the event fires
+     whenever X happens, its name is X. Put the interesting-but-rare thing in the payload, which is
+     exactly where `completed` already was. And when a value is immutable after release, the moment
+     to get it right is before the release that freezes it, not the review after.**

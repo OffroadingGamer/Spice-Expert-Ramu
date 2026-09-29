@@ -39,9 +39,9 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Private 1.96.0** (Rounds 0–21 — **the planned roadmap is COMPLETE**) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. Review and Public stay at **1.69.0**. |
+| **Live version** | **Private 1.97.0** (Rounds 0–22 — roadmap complete; R22 was an added instrumentation round) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. Review and Public stay at **1.69.0**. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | ⏳ **Round 22 — meta-layer instrumentation**, written Sep 30, ahead of the Public promotion. Five events plus the §5 comment sweep. **Not part of the original roadmap** — added because the launch burst is one-shot and the Rounds 13–21 meta layer has no telemetry at all. Was: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **In flight** | **Nothing.** ✅ Round 22 returned and is **verified.** 🔴 **One decision is now time-sensitive: the `recipe_completed` event is misnamed, and renaming it is only cheap before the build goes Public** — see the Sep 30 R22 entry and §5. Otherwise: the **Public promotion sequence** (tag → `rundot-game-coach` → announcement). Previously: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
 | **Repo** | `origin/main` = **`d648176`** at the time this row was written; the Round 21 source changes and this verification entry land on top of it. Tree otherwise clean — reference videos are gitignored (`references/Errors/*.mp4`). |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -4578,3 +4578,67 @@ because this round opens several of them anyway.
 **Explicitly out of scope:** no new funnels, no A/B experiments, no changes to any of the 27 existing
 events, nothing touching the shard economy's own numbers. Instrumentation only — this round must not
 change a single thing the player experiences.
+
+---
+
+### 2026-09-30 — Round 22 — ✅ RETURNED AND VERIFIED — Private 1.97.0
+
+Return pasted **verbatim** into [Agent Returns.md](Agent%20Returns.md) before verification. Everything
+below is Central's own measurement.
+
+**Deploy.** `rundot whoami` → `offroadinggamedev@gmail.com`. Private **1.97.0**, Review **1.69.0**,
+Public **1.69.0**.
+
+| Gate | Result |
+|---|---|
+| `npm run build` | clean, **exit 0** |
+| `npm run balance` | **35 / 36 / 11 / 4 / 90** |
+| All seven sealed entries | `git diff --stat` **empty** |
+| Sidecars under `public/` | none |
+| `en.ts` / `hi.ts` | **381 / 381**, symmetric difference 0, and their `git diff --stat` is **entirely empty** — the round touched no strings, as required |
+| Files modified | **14** = 9 comment-sweep + 5 event sites. Exactly the claim; nothing unexpected |
+
+✅ **The temporary SDK spy really is gone.** Central scanned `src/` for `spy`, `__test`, `stub`,
+`window.__`, `globalThis.__`, `debugger` and stray `console.log` and found **one** hit —
+`sdk/engagement.ts:28` — which this round **did not modify** and which therefore predates it. No
+scaffolding survived into the build.
+
+**All five events verified at source, each placed AFTER its guard so it cannot fire on a failure:**
+
+- `locale_selected` in `setLocale()`. ✅ **The signature change is better than what the handover
+  asked for:** `source` is a **required** parameter, not optional, so TypeScript forces every future
+  caller to declare intent rather than silently defaulting. Both call sites updated; `Settings.tsx`'s
+  `if (l !== locale)` guard still means a reselect fires nothing; `initLocaleFromSave()` untouched, so
+  a restore cannot fire it.
+- `recipe_completed` in `awardShards()` — with a new `awarded` counter so `dishes` excludes slugs the
+  loop skipped as already-scrolled. Correct as specified. **The specification was wrong — see below.**
+- `recipe_bought` in `buyScroll()` — `{ slug, price }`, after the affordability and already-owned
+  guards.
+- `station_upgraded` in `buyMetaUpgrade()` — `{ towerId, stat, level: level + 1, cost }`, the **new**
+  level, after the cap and affordability guards.
+- `locale` on the existing `game_loaded`. Ordering checked independently: `initLocaleFromSave()` runs
+  at **boot step 2** (`main.tsx:44`), the event fires at **step 8** (`:187`). The funnel call beside it
+  is untouched — still `trackFunnelStep(1, 'game_loaded', 'boot', 1)`. Nothing renamed or renumbered.
+
+**Both "found, not fixed" lists recomputed independently and both match exactly.** The `ui-*` split
+is **4 live / 10 orphaned**, the same ten the agent named. `kettle-boil` and `water-pour` remain in
+`audio.ts`'s `SampleId` type and sample table with no `playSample()` caller. Nothing was deleted.
+
+**The comment sweep is right, including the part that looks wrong.** Six references to deleted files
+still appear in `src/` — but every one now reads as history (*"TestBelt.tsx deleted"*, *"deleted
+Round 21"*, *"that caller is gone as of Round 21"*) rather than as a live pointer. That is exactly
+what the agent said it left, and it is the correct outcome: a note recording that something was
+removed is useful; a comment claiming it still exists is not. The agent also corrected the
+handover's count from 20 to **21** by grepping each file instead of trusting the estimate.
+
+🔴 **Central's error, and it is time-sensitive.** `recipe_completed` is a **bad name and Central
+chose it.** The event fires on every `awardShards()` call, with `completed: 0` in the large majority
+of firings, so in a dashboard it will read as a completion metric and overstate completions badly.
+The honest name is **`shards_awarded`**. This matters *now* because event names are fixed once
+shipped, and the event has so far fired only on **Private** builds — so a rename today is one string
+literal, while a rename after the promotion is a permanent discontinuity in the dashboard that will
+guide every post-launch decision. → **Retro 137.** Recorded as a decision in §5.
+
+✅ **Round 22 accepted.** No further round is planned. Next is the **Public promotion sequence** —
+move the tag, run `rundot-game-coach`, then the announcement — with the event rename and the
+44-orphaned-asset question as the two things worth folding in before the tag moves.
