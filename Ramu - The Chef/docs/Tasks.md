@@ -24,7 +24,8 @@ finished 46-sprite ingredient set, the 22 true rails, pane drag-scroll and the C
 **In flight:** nothing — **Round 20 (Hindi) shipped as Private 1.95.0** and is verified (382 keys
 both tables, symmetric difference 0, balance baseline unchanged). **Next and last: Round 21** —
 belt-mode removal plus housekeeping, which now also carries the Owned-card clipping fix
-(Ideas.md §5). After that the roadmap is complete and the work is polish. **Deferred:** IAP
+(Ideas.md §5). ⏸️ **Hindi copy review deferred** by the user Sep 30 — functional enough; fine-tuning
+later, and it does not block Round 21. After that the roadmap is complete and the work is polish. **Deferred:** IAP
 (Ideas.md §10.6 B, content-not-power) until public, with retention data.
 
 **Open on the user:** the Public promotion call · a one-click check of the studio page's

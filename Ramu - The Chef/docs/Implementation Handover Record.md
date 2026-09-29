@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.95.0** (Rounds 0–20) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. Review and Public stay at **1.69.0**. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Nothing.** ✅ Round 20 returned and is **verified** (see the Sep 30 entry). **Round 21** — belt-mode removal plus housekeeping — is the last planned round and is not yet issued. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, **the user's own read of the Hindi** (an agent cannot sign off its own translation), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **In flight** | **Nothing.** ✅ Round 20 returned and is **verified** (see the Sep 30 entry). **Round 21** — belt-mode removal plus housekeeping — is the last planned round and is not yet issued. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
 | **Repo** | `origin/main` = **`0fc39de`** at the time this row was written; the Round 20 source changes and this verification entry land on top of it. Tree otherwise clean — reference videos are gitignored (`references/Errors/*.mp4`). |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -4326,3 +4326,24 @@ navigation under test — caught and corrected by the agent, not by Central.
 ✅ **Round 20 accepted.** **Round 21** — belt-mode removal plus housekeeping — is the last planned
 round. ⚠️ **Still open on the user, and an agent cannot close it: the user's own read of the
 Hindi**, especially the ten least-sure strings in `docs/i18n/recipes.md`.
+
+---
+
+### 2026-09-30 — Hindi copy review: ⏸️ DEFERRED by the user — "functional enough"
+
+The user's call, verbatim in effect: *"I will review fine tuned corrections for hindi later, for now
+its functional enough."* So the translation review is **deferred, not cancelled**, and it **does not
+block Round 21**. The ten least-sure strings in `docs/i18n/recipes.md` stay as the checklist for
+whenever it happens.
+
+⚠️ **One consequence worth keeping visible, because it crosses two decisions.** §14 decision 3B is
+*"promote to Public after Hindi"*. "Functional enough" is an easy standard for a **Private** build
+that only the user opens — a rough string costs nothing there. The **Public** promotion is different
+in kind: it puts unreviewed Hindi in front of real players, in the language the game is being
+localised *for*, and RUN's discovery surfaces it to an Indian audience first. Central is **not**
+raising this as a blocker and is not asking again — the user has answered the question that was on
+the table. It is recorded here so that when the Public promotion comes up, the open question is
+already written down rather than rediscovered: **does Public wait for the copy review, or ship on
+"functional enough" too?**
+
+Nothing else changes. Round 20 stays accepted and verified; Round 21 is unaffected.
