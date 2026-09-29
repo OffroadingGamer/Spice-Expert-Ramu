@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.94.0** (Rounds 0–19) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. Review and Public stay at **1.69.0**. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Nothing.** Round 19 verified and accepted. Next is **Round 20, Hindi** — not yet issued. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the Devanagari **moderation** test (the rendering half passed Sep 23 — पुनीत draws correctly; what is left is a guest-session score submit plus a CLI readback), the touch-drag test, and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **In flight** | **Nothing.** Round 19 verified and accepted. Next is **Round 20, Hindi** — not yet issued. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), ✅ ~~the Devanagari moderation test~~ — **PASSED Sep 30, closed**, the touch-drag test, and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
 | **Repo** | `origin/main` = **`46e64f7`** at the time this row was written; the Round 19 verification entry lands on top of it. Pushed. Tree clean; the only untracked item is `references/Errors/The kitchen upgrades refix.mp4` (3 MB), which is the user's call — no reference video is tracked today. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -4155,3 +4155,32 @@ otherwise.**
 
 **Verdict: accepted.** The Kitchen's recipe economy is complete. **Still untested by anyone: touch,**
 and no run has been played on 1.94.0 end to end.
+
+---
+
+### 2026-09-30 — Devanagari moderation test — ✅ PASSED, closing an item open since Round 13
+
+**Result: RUN accepts and serves a Devanagari `metadata.displayName` intact.** The user opened the
+private build on a **second instance holding no local state** — both Ranks footers read
+*"Unranked · play a shift"* / *"No shift yet today — start one"*, and no row carries a "you" tag.
+That instance renders **पुनीत at #6 all-time (44 waves)** and **#1 on both Today boards** (413
+dishes, 36 waves). A client that has never seen the name, rendering it from the server's response,
+is the whole proof: the string round-trips through RUN unmodified.
+
+⚠️ **Central's stated test method could not have worked.** The instruction was to submit a run and
+*"read the board back with the CLI"*. `rundot leaderboard scores --save` exports exactly
+`profileId, username, score, duration, submittedAt` — **there is no `metadata` in the export**, and a
+guest's chosen name lives nowhere else; on the CLI they are only `anonymous_bYgKZfQ…`. I specified a
+verification against a field the tool does not expose, and found out only by running it — after the
+user had already spent a run on my instructions. → **Retro 133.**
+
+**A second thing the CLI made me get wrong today, now retracted:** §15's claim that the daily board
+did not exist. The same second instance fetched and displayed both Today boards with no local cache
+— independent confirmation on top of the user's earlier screenshots. → Retro 132.
+
+**Incidental, and correct behaviour:** no all-time row was submitted today. Today's run was 36 waves
+against a standing best of 44 (`anonymous_bYgKZfQXNVRNT1`, 2026-09-23), and the boards keep each
+player's best — so "zero rows today" is the keep-best rule working, not a failed submission.
+
+✅ **Round 20 (Hindi) is unblocked with no leaderboard caveat.** §6d decision 5's fallback — telling
+Hindi players *"Leaderboard names use English letters"* — **is not needed and should not be built.**

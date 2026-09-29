@@ -1135,11 +1135,22 @@ commissioned with no rendering risk hanging over them, because they run through 
 system-font stack that just drew पुनीत. The only script-aware code defect found is the avatar
 initial above.
 
-**Still open, and it gates nothing in Round 20:** play one wave under a Devanagari guest name so a
-score is submitted, then read the board back with the CLI and check the name survived RUN's
-moderation intact rather than being rejected or masked. If it does not survive, §6d decision 5's
-fallback applies — the Hindi locale tells the player *"Leaderboard names use English letters"* and
-lets them choose their own spelling.
+✅ **CLOSED Sep 30 2026 — the moderation half passed, and §6d decision 5's fallback is not needed.**
+The user opened the private build on a **second instance with no local state** — both Ranks footers
+read *"Unranked · play a shift"* and *"No shift yet today — start one"*, and no row carries a "you"
+tag. That instance renders **पुनीत at #6 all-time (44 waves)** and **#1 on both Today boards
+(413 dishes / 36 waves)**. A name that client has never seen, rendered from the server's own
+response: **RUN stores the Devanagari `metadata.displayName` and serves it to other players intact.**
+
+⚠️ **Note on method — Central's original test design was unrunnable.** The brief said "read the
+board back with the CLI". `rundot leaderboard scores --save` exports
+`profileId, username, score, duration, submittedAt` and **no `metadata` field at all**, so the one
+value under test is the one the CLI cannot show; on it a guest is only `anonymous_…`. The
+second-instance check replaced it and is strictly better evidence anyway — it exercises the real
+read path other players use. → **Retro 133.**
+
+**Consequence:** Hindi ships with **no leaderboard caveat**, and the guest display-name pipeline is
+proven end to end for non-Latin scripts.
 
 ---
 

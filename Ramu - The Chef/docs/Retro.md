@@ -2972,3 +2972,15 @@ after **00:30 IST Sep 19**.
      pairs through the SDK. ✅ **Rule: absence from a tool's listing is not absence from the system.
      Before reporting that a shipped feature is broken, observe the feature — in the product, or in
      the code path that serves it. A summary view is evidence about the summary, not the system.**
+
+133. **I specified a verification against a field the tool does not expose.** The Devanagari
+     moderation test told the user to play a run, and said I would read the board back with the
+     CLI. `rundot leaderboard scores --save` exports profileId, username, score, duration and
+     submittedAt — and no metadata. A guest's chosen name lives only in `metadata.displayName`, so
+     the single value the test existed to check is the one value the CLI cannot show; on it the
+     player is just `anonymous_bYgKZfQ…`. I found out only by running it, after the user had already
+     spent a run on my instructions. The check that did work — open the build on a second instance
+     with no local state and see whether the name renders — was also strictly better evidence,
+     because it exercises the read path other players actually use. ✅ **Rule: before asking someone
+     to generate data for a test, confirm the read-back tool actually surfaces the field under test.
+     And prefer a check that observes the real consumer over one that queries a side channel.**
