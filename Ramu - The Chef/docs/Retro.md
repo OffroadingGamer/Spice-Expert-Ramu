@@ -2940,3 +2940,23 @@ after **00:30 IST Sep 19**.
      backwards; both names are unreleased, so separating them is free right now and expensive later.
      ✅ **Rule: "this ships" is a claim about the path a player takes, not about code existing.
      Before protecting something as live, trace it to the screen and check the flag that gates it.**
+
+130. **I handed over a measurement without first reproducing the number it was replacing.** The
+     brief told the agent to set the toque's opaque height to 210, measured with
+     `Image.getbbox()`. The agent measured 206, said so instead of complying, and shipped its own
+     figure. It was right: `getbbox()` is `alpha > 0` and counts the antialiased fringe, while the
+     constant already in the file — 86 for the shard — is only reproduced at `alpha > 10`. The
+     agent validated its method against the existing constant before trusting it. I never did, so I
+     silently changed convention mid-file while believing I was matching it. ✅ **Rule: when
+     supplying a number to replace an existing one, first re-derive the existing one with your own
+     method. If it doesn't come out, your method is not the file's method — that is the same
+     positive-control discipline the secret scan uses, applied to measurement.**
+
+131. **I turned a constant into a variable and never asked what displays it.** Round 19 changed the
+     shard award from a flat +1 to 1–5 per dish. `bubble.shard` was the literal string `'+1'`, so
+     from that change on the wave-clear toast would have lied for 21 of 22 dishes. The agent caught
+     it and fixed it outside the authorised scope, correctly. Nothing in my brief pointed at it,
+     because I had reasoned about where the number is *computed* and never about where it is
+     *shown*. ✅ **Rule: when a value stops being constant, grep for its old literal value as well
+     as its name. A hardcoded "+1", "8" or "150" in a string table is a display of that constant
+     that no rename will ever surface.**

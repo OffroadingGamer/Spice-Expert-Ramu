@@ -21,9 +21,8 @@ rails, landed all 44 prep/garnish strings and repaired mouse input; **Round 18b*
 finished 46-sprite ingredient set, the 22 true rails, pane drag-scroll and the Close button.
 **The Kitchen is feature-complete at 1.93.0.**
 
-**In flight:** ⏳ **Round 19 — the recipe shard economy** (Ideas.md §11): per-recipe badge and gem
-costs, tiered awards, the locked card state, two new strings, the Toque Badge icon. **Next:**
-**Round 20 — Hindi**, which now has a stable English table *plus* Round 19's two strings to
+**In flight:** nothing — **Round 19 (the recipe shard economy) shipped as Private 1.94.0** and is
+verified. **Next:** **Round 20 — Hindi**, which now has a stable English table *plus* Round 19's two strings to
 translate. Then IAP (Ideas.md §10.6 B, content-not-power).
 
 **Open on the user:** the Public promotion call · a one-click check of the studio page's

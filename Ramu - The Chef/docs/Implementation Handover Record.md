@@ -39,10 +39,10 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Private 1.93.0** (Rounds 0–18b) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it. Review and Public stay at **1.69.0**. |
+| **Live version** | **Private 1.94.0** (Rounds 0–19) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. Review and Public stay at **1.69.0**. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | ⏳ **Round 19 — the recipe shard economy.** Issued Sep 25 and handed to the implementation agent by the user; not yet returned. Per-recipe costs, tiered awards, locked cards, the Toque Badge. **Hindi moved to Round 20.** Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the Devanagari **moderation** test (the rendering half passed Sep 23 — पुनीत draws correctly; what is left is a guest-session score submit plus a CLI readback), the touch-drag test, and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
-| **Repo** | `origin/main` = **`1a2da35`** at the time this row was written; the Round 19 issue entry lands on top of it. Pushed. Tree clean; the only untracked item is `references/Errors/The kitchen upgrades refix.mp4` (3 MB), which is the user's call — no reference video is tracked today. |
+| **In flight** | **Nothing.** Round 19 verified and accepted. Next is **Round 20, Hindi** — not yet issued. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the Devanagari **moderation** test (the rendering half passed Sep 23 — पुनीत draws correctly; what is left is a guest-session score submit plus a CLI readback), the touch-drag test, and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **Repo** | `origin/main` = **`46e64f7`** at the time this row was written; the Round 19 verification entry lands on top of it. Pushed. Tree clean; the only untracked item is `references/Errors/The kitchen upgrades refix.mp4` (3 MB), which is the user's call — no reference video is tracked today. |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
 | **Block-1 criterion** | `balanced` must show `lives 10 (leaked 0)` on **every level 1–12** |
@@ -4110,3 +4110,48 @@ save never regresses to Locked.
 reporting "exit 0"** — Round 18b declined to assert a number it could not see, which was correct
 behaviour and the gap was Central's to close. Return to be pasted verbatim into
 [Agent Returns.md](Agent%20Returns.md) before verification.
+
+---
+
+### 2026-09-30 — Round 19 verified — Private 1.94.0, and the agent corrected my own measurement
+
+Return pasted verbatim into [Agent Returns.md](Agent%20Returns.md) before verification.
+
+| Check | Result |
+|---|---|
+| Tags | **Private 1.94.0**, Review 1.69.0, Public 1.69.0. |
+| Balance | Ran it: **35 / 36 / 11 / 4 / 90**, exit 0 — byte-identical to the frozen baseline. The agent printed the numbers this time rather than reporting only "exit 0"; that gap from Round 18b is closed. |
+| Sealed | All seven, **zero diff**. |
+| Build | `tsc --noEmit` exit 0, `npm run build` clean, `find public -name '*.json'` empty. |
+| Files | Exactly the five: `recipes.ts`, `save.ts`, `en.ts`, `MetaUpgrades.tsx`, `WaveBubble.tsx`. |
+| **The table** | Parsed `RECIPE_ECONOMY` out of the shipped file and compared **all 22 rows × 4 fields** against the spec retyped independently from Ideas §11.2j: **zero mismatches.** Unlock waves and badge costs both strictly increasing down the grid; `gemPrice == 10 × shardsNeeded` on every row; `RECIPE_SLUGS` order untouched. |
+| Gate | `collectingEligible = unlockWave === null \|\| bestWave >= unlockWave \|\| shardCount > 0` — exactly as briefed, legacy-save guard included. |
+
+**🔴 The agent measured the toque against my brief and found my number wrong. It was right.**
+I specified opaque **210**; it shipped **206**, and said so explicitly rather than quietly complying.
+Re-measured independently: at `alpha>0` the shard is 90 tall and the toque 210 — my figures. At
+**`alpha>10` the shard is exactly 86**, which is *the constant already in the file*, and the toque is
+**206**. The file's own author used a threshold that discards the antialiased fringe; I used
+`Image.getbbox()`, which does not. **The agent reproduced the existing constant with its method as a
+control before trusting it, and I never did.** → **Retro 130.**
+
+**✅ A scope expansion I should have authorised myself.** `bubble.shard` was a hardcoded literal
+`'+1'` in the wave-bubble toast. Part 2 makes the award 1–5 by dish, so from this round on that
+string would have **silently lied for 21 of the 22 dishes** — a genuine +5 clear still reading "+1".
+The agent fixed it to `'+{n}'`, interpolated with `recipeShardAward(slug)`, on a file Part 5 already
+opened. Verified in the diff. **This is my miss, not theirs:** I changed a quantity from a constant
+to a variable and never asked what renders it. → **Retro 131.**
+
+⚠️ **Now dead, deliberately left in place:** the `ui-shard` manifest entry and
+`public/images/ui/shard.png` have zero code references. The agent flagged rather than removed them,
+correctly — they were outside the authorised touch list. **Open item for a future round.**
+
+**Process note.** My first extractor reported 12 of 22 rows "MISSING". That was my regex requiring
+quoted keys when 12 slugs are unquoted TS identifiers — the same class of error as the recipe-note
+extractor that once produced five false mismatches. The tell was that the failure was implausible
+(chai "missing" from a table the agent had just printed), so it was checked against the file before
+being reported. **A verification tool that disagrees with reality is the tool's bug until proven
+otherwise.**
+
+**Verdict: accepted.** The Kitchen's recipe economy is complete. **Still untested by anyone: touch,**
+and no run has been played on 1.94.0 end to end.

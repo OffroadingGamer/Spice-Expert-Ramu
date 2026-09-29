@@ -729,6 +729,71 @@ Not verifiable headlessly: touch drag on either pane or the rail — out of scop
 
 ---
 
+## 2026-09-30 — Round 19 (recipe shard economy) — implementation agent
+
+Outcome: pasted before verification. Verification in the record.
+
+Confirmed: Private 1.94.0, Review 1.69.0, Public 1.69.0 — the required end state. Here's the full report.
+
+Round 19 — Recipe shards → Private v1.94.0. Review/Public untouched at 1.69.0.
+Part 1 — the data table
+All 22 recipes carry the four values, read back programmatically from the shipped code (not re-typed by hand):
+
+slug	unlockWave	shardsNeeded	gemPrice	shardAward
+chai	null	10	100	1
+coffee	null	12	120	1
+naan	11	16	160	2
+jeera-rice	12	18	180	2
+palak-aloo	14	20	200	2
+gobhi-masala	15	22	220	2
+rajma	17	24	240	2
+coconut-chutney	21	26	260	3
+idli	22	28	280	3
+upma	24	30	300	3
+sambar	25	32	320	3
+beans-poriyal	27	34	340	3
+pesto	31	38	380	4
+minestrone	32	40	400	4
+arrabbiata	34	42	420	4
+aglio-e-olio	35	44	440	4
+risotto	37	46	460	4
+veg-thukpa	41	52	520	5
+bamboo-shoot-fry	42	54	540	5
+veg-momo	44	56	560	5
+sticky-rice	45	58	580	5
+ooti	47	60	600	5
+Min 10/max 60 (shardsNeeded), min 100/max 600 (gemPrice), min 1/max 5 (award) — gemPrice = 10× shardsNeeded for every row, both strictly increasing down RECIPE_SLUGS' own order, confirmed programmatically, not by eyeballing. RECIPE_SLUGS itself untouched. Unlock waves are hardcoded with the derivation in a comment above the table (no import from waves.ts); I re-derived and checked all 20 gated dishes by hand against blocks.ts + the block-offset arithmetic before writing them in.
+
+Part 2 — economy
+SHARDS_PER_SCROLL/SCROLL_GEM_PRICE removed outright (grepped — nothing outside save.ts/MetaUpgrades.tsx/WaveBubble.tsx read them). awardShards() now pays recipeShardAward(slug) per clear and grants at recipeShardsNeeded(slug); buyScroll() charges recipeGemPrice(slug), with no unlock-wave gate (unchanged — buying works regardless of Locked state).
+
+Fusion-block payout, measured live by calling the real awardShards(['veg-thukpa', 'pesto']) — the exact call shape towerScene.ts constructs for block 6/7's beetle entry — inside a live page's own module graph: veg-thukpa (North East) paid +5, pesto (Italian) paid +4, same call, same wave.
+
+Legacy-save migration, measured live: seeded rajma up to 8 shards (its old threshold) via real awardShards calls — shards.rajma: 8, scrolls.includes('rajma'): false. Continued to 24 (its new threshold) — shards.rajma: 24, scrolls.includes('rajma'): true. No crash, no silent grant.
+
+buyScroll, measured live: bought ooti (gemPrice 600) — gems 5000 → 4400, delta exactly 600, granted immediately, with bestWave still 0 (no wave gate).
+
+Part 3 — card states
+Seeded bestWave: 20, shards: { pesto: 3 }. Measured, in the real UI: chai/coffee — collecting (never locked, confirmed). naan (unlockWave 11) — collecting. idli (unlockWave 22, no shards) — locked, showing "Unlocks after wave 22" with no progress bar. pesto (unlockWave 31, but 3 legacy shards) — collecting, not locked — the regression guard holds. Clicked idli's Buy button while Locked → card flipped to owned, exactly as required.
+
+Part 4 — strings
+kitchen.scrolls.locked.wave: 'Unlocks after wave {n}', kitchen.scrolls.locked.training: 'Unlocks after training' — both added to en.ts. No label clipping (scrollHeight vs clientHeight on every .line-clamp-2 element, all 22 cards) at 360, 403, or 744px — measured empty each time, not assumed.
+
+Part 5 — the toque
+My own pixel measurement disagrees with the handover's table. Alpha-channel bbox (alpha>10, the same threshold that reproduces this file's pre-existing shard constant of 86 exactly) gives the toque's opaque bbox as 232×206 on its 256² canvas, not the handover's stated 236×210 — off by 4px each axis. I used my measured 206, not 210. SHARD_CANVAS/SHARD_OPAQUE_H → 256/206; names kept for minimal diff. Both MetaUpgrades.tsx and WaveBubble.tsx's icon swapped to ui-chef-hat. Measured rendered heights: 14.91px in the Recipes card (target opaque 12px), 17.39px in the wave bubble toast (target opaque 14px) — both match 256*(target/206) exactly. Grepped for a third consumer: none. ui-shard's manifest entry and images/ui/shard.png are now dead (zero code references) — left in place, flagged, not removed (outside this round's authorized touch list).
+
+A bug found on this round's own surface, fixed
+'bubble.shard' was a hardcoded literal '+1' in the wave-bubble toast — never interpolated. Once Part 2 makes the award 1–5 depending on dish, that string silently lied for 21 of 22 dishes (e.g. a real +5 toast would still read "+1"). Not asked for in the handover, but a direct, visible consequence of Part 2's own change, on a file (WaveBubble.tsx) Part 5 already touches. Fixed: '+{n}', now interpolated with recipeShardAward(slug) at the call site.
+
+Build/verify
+tsc --noEmit clean. npm run build clean. npm run balance → 35 / 36 / 11 / 4 / 90 (fox-spam/balanced/miser/pad0-rush/maxed-meta), exit 0 — identical to the frozen baseline. find public -name '*.json': empty. git diff --stat on all seven sealed files: empty. Only the five expected files changed: recipes.ts, save.ts, en.ts, MetaUpgrades.tsx, WaveBubble.tsx. No git commits made (Central's job). rundot whoami: offroadinggamedev@gmail.com, confirmed before deploy.
+
+Not verifiable headlessly: I did not play a real run to wave 41+ to trigger a genuine in-gameplay fusion-block clear (per "never fake plays," and it'd take a very long time via automated input) — the fusion-payout and migration numbers above are instead measured by calling the actual, unmodified save.ts functions with real inputs inside a live browser page (same module, same window/SDK environment the app itself runs in), not by reading the code and asserting.
+
+Final state: Private 1.94.0, Review 1.69.0, Public 1.69.0.
+
+---
+
 ## Pending
 
-- **Round 19 — the recipe shard economy** (implementation agent). Issued Sep 25, handed over by the user; awaiting its return. Per-recipe badge/gem costs, tiered awards, the locked card state, two new strings and the Toque Badge icon. Ideas.md §11. **Hindi is now Round 20** and is not yet issued.
+- Nothing outstanding. Round 19 has returned and been verified. **Round 20 (Hindi)** is next and not yet issued.
