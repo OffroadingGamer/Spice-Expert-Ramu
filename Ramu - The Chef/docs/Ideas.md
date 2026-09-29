@@ -222,6 +222,61 @@ have already left. A reminder shipped now reaches only players who open the new 
 only in the RUN app (web no-ops). Worth building post-jam for the campaign's installs; it
 cannot recover the jam's departed players.
 
+## 5b. 🔴 The `daily` leaderboard has never existed on the service — found Sep 30 2026
+
+Found while verifying the go-live, by reading RUN rather than the repo. **This is a live defect on
+the build that just shipped, and it is not fixed by a rebuild.**
+
+**What the code believes.** `sdk/leaderboard.ts:23-24` declares
+`BoardPeriod = 'alltime' | 'daily'` and `BOARD_PERIODS = ['alltime', 'daily']`, and `:128` fans
+every score submission out over **both** periods. Its own header says the daily period was *"added
+to rundot/leaderboard.config.json alongside the existing 'alltime' — the service board now has a
+Today tab"*, and `en.ts:354` / `hi.ts:273` ship the `ranks.period.today` label. That was **Round 11,
+Sep 17**.
+
+**What RUN actually has.** Read from the CLI today:
+
+| Check | Result |
+|---|---|
+| `rundot leaderboard config` | `"periods":{"alltime":{...}}` — **`daily` is absent** |
+| Instances listed | **only** `PpB5gECS0AMU49mGYAKM_kills_alltime` and `..._waves_alltime` |
+| Same, `--date 2026-09-22` | **identical** — no daily instance existed then either |
+| `leaderboard stats ..._waves_daily` | **0 players, 0 entries, last submission `-`** |
+
+⚠️ **So the Today tab has had no board behind it for thirteen days, on every tag.** It fails
+soft — submissions are fire-and-forget inside the SDK's try/catch posture, so nothing crashes; the
+tab simply renders empty.
+
+🔴 **The cause is a server config that was never pointed at.** `rundot game
+list-server-configs` returns three, and the tags split across them:
+
+- **Public** and **Review** → `CIeaUvw4tkvtyxDBAZW5`, created **Sep 5** — predates the daily period
+  by twelve days.
+- **Private** → `fj1uetjE9PFQ8f7bBK9v`, created **Sep 17 23:35:53**, thirteen seconds after
+  v1.83.0 — i.e. uploaded by Round 11's own deploy.
+
+**The repo file is sealed and correct; it was simply never the config in force.** Every round since
+has verified `rundot/leaderboard.config.json` as byte-identical — which proves the file did not
+change, and says nothing about whether RUN is running it. → **Retro 139.**
+
+⚠️ **Do not "just fix it" on launch day.** The apparent one-liner — repoint Public's
+`--server-config-id` at the Sep 17 config — is **not verified safe**, for two reasons:
+
+1. **The two configs have not been diffed, and cannot be from the CLI.** `list-server-configs`
+   returns ids and dates only; there is no download or show command. A server config may carry more
+   than leaderboard periods, and swapping it blind on a live game is exactly the class of change
+   this project does not make.
+2. 🔴 **The two live boards carry 111 and 105 real players.** Instance ids are
+   `<gameId>_<mode>_<period>` and the game id does not change, so the `*_alltime` boards *should*
+   survive — but "should" is not the standard for the one thing in this project that cannot be
+   restored.
+
+**Recommended shape:** treat it as its own small round with the leaderboards read before and after,
+or accept the empty Today tab and remove the tab from the UI instead. **The user's call, and not
+urgent** — nothing is broken for players who never open it.
+
+---
+
 ## 5. Small hardening debts — ✅ ALL SIX CLOSED IN ROUND 21 (Sep 30 2026)
 
 ✅ **Every debt in this section shipped in Private 1.96.0 and was verified from source by Central.**

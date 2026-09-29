@@ -937,6 +937,28 @@ Nothing forced a stop, but two things got extra scrutiny before I trusted them: 
 
 ---
 
+## 2026-09-30 — GO-LIVE step 3 (Review tag moved, stopped as instructed) — implementation agent
+
+Outcome: the instructed stop. Review moved 1.69.0 → 1.98.0; Public untouched at 1.69.0.
+
+🛑 Stopping here, as instructed.
+
+Before state (all three, verbatim):
+
+Private — Version 1.98.0
+Review (Approved) — Version 1.69.0
+Public — Version 1.69.0
+After moving Review to 1.98.0 (rundot game update-tag review --version 1.98.0 → reported "Updated 'Review' tag successfully."), list-tags and game info both now show:
+
+Review — Version 1.98.0, label reads bare "Review" with no parenthetical status at all
+That's the exact text change: it went from Review (Approved) to plain Review — not (Approved), not (Pending), not (Rejected), nothing in parentheses. The version moved immediately (1.98.0 shows right away), but no re-approval annotation appeared with it. I checked rundot game info too in case it carried a moderation field list-tags didn't — same output, no additional status field either.
+
+Per your instructions, I'm not polling or waiting for a parenthetical to appear, and I have not touched Public. Private, Review's version, and the two leaderboards are otherwise untouched by anything I've done.
+
+This is the answer you asked me to get, and I don't have a confident read on what a bare, un-annotated "Review" means — whether it's "re-queued for moderation and the label just hasn't caught up yet," "passed through without needing re-review since the tag pointer itself isn't new content," or something else. I'm stopping at step 3 exactly as instructed and handing this back to you rather than guessing.
+
+---
+
 ## Pending
 
-- Nothing outstanding. **Round 23 has returned** and is recorded above; verification by Central follows. No further build round is planned — next is the **Public promotion sequence** (tag → `rundot-game-coach` → announcement), which is the user's call and the marketing agent's work.
+- ⏳ **The GO-LIVE handover is mid-sequence and deliberately paused at its step 3.** Review now serves **1.98.0**; **Public is still 1.69.0**. The agent stopped because the tag label went from `Review (Approved)` to a bare `Review` with no parenthetical, and it would not guess what that means. Central's reading is in the record. Steps 4–5 (move Public, then verify on a clean instance including both leaderboards) are still to run.

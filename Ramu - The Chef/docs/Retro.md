@@ -3054,3 +3054,18 @@ after **00:30 IST Sep 19**.
      three control lines already enforce, applied to every other scan I run. A clean result from an
      unvalidated pattern is not evidence of absence; write the pattern against a known instance in
      THIS codebase first.**
+
+139. **I verified a config file's seal for thirteen days and never checked whether the service was
+     running it.** `rundot/leaderboard.config.json` is a sealed file, and every round I confirmed it
+     byte-identical and moved on. Round 11 added a `daily` period to it, the client has submitted
+     scores to that period ever since, and the Ranks UI shipped a **"Today"** tab in two languages.
+     None of it ever existed: RUN's active config has only `alltime`, no daily instance has ever
+     been created, and the daily board shows **zero submissions in thirteen days**. The cause was a
+     pointer, not a file — Public and Review were still on the **Sep 5** server config while the
+     daily period went up in the **Sep 17** one that only Private used. ⚠️ **A seal check proves
+     a file did not change. It says nothing about whether the file is in force.** Those are
+     different claims and I collapsed them, then repeated "two live leaderboards" all session
+     without ever asking why it was two and not four. ✅ **Rule: for anything that is uploaded to a
+     service rather than bundled — server configs, runtime configs, leaderboard and tag pointers —
+     verify it by reading it back FROM the service, and check which artefact each tag actually
+     points at. The repo is the intent; the service is the fact.**

@@ -39,9 +39,9 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Private 1.98.0** (Rounds 0–23 — roadmap complete; R22–23 were added pre-launch rounds) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. Review and Public stay at **1.69.0**. |
+| **Live version** | **Private 1.98.0** (Rounds 0–23 — roadmap complete; R22–23 were added pre-launch rounds) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. 🚀 **LIVE — Sep 30 2026, all three tags now serve 1.98.0.** Public was frozen at 1.69.0 for twelve days; it is now the current build, **verified by SHA256 against the local `dist/`, not by report** (`index-BZ2Qgy9f.js`, 871,216 bytes, identical hash). |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | 🚀 **GO-LIVE — authorised by the user Sep 30 2026** (*"let's go live with this build"*). Handover written and delivered for dispatch: **move the public tag from 1.69.0 to 1.98.0.** 🔒 This is the **single narrow exception** to the standing Private-only rule, and it covers `update-tag` **only** — never `set-public`/`set-private`. The changelog and announcement are **not** in it: they are the marketing agent's, under separate approval. No further build round is planned. ✅ **The Sep 9 licence note is SUPERSEDED** — stale on every clause, and Round 23 removed the dobo_ui assets outright; see the Sep 30 entry. **No technical or licence gate remains on the promotion.** ✅ **The "4 AI features" row is now all but resolved from the CLI** — `rundot credits` reports exactly **four service rows**, and the no-runtime-AI finding was re-verified at 1.98.0; see the Sep 30 entry. The one-click confirmation is now optional rather than gating. Previously: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **In flight** | ✅ **GO-LIVE DONE — Sep 30 2026. 1.98.0 is serving on Public**, and the two live leaderboards are **intact and confirmed** (waves 111 players / range 1–106 · kills 105 / 1–6,231 · 0 shadow-banned · last submission 2026-09-29T21:05Z, i.e. before the move). ⚠️ **Two things came out of the move and are open.** (1) **How Public moved is unattributed** — the agent stopped at step 3 and reported it had not touched Public, yet Public reads 1.98.0; either RUN promoted it on approval or the agent ran step 4 unreported, and **the CLI exposes no audit trail to tell them apart**. Ask the agent; do not assume. (2) 🔴 **The `daily` leaderboard has never existed on the service** — see the Sep 30 entry; the Ranks "Today" tab has no board behind it. Next is **`rundot-game-coach`**, then the **announcement** (marketing agent, separate approval). ✅ **The Sep 9 licence note is SUPERSEDED** — stale on every clause, and Round 23 removed the dobo_ui assets outright; see the Sep 30 entry. **No technical or licence gate remains on the promotion.** ✅ **The "4 AI features" row is now all but resolved from the CLI** — `rundot credits` reports exactly **four service rows**, and the no-runtime-AI finding was re-verified at 1.98.0; see the Sep 30 entry. The one-click confirmation is now optional rather than gating. Previously: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
 | **Repo** | `origin/main` = **`d648176`** at the time this row was written; the Round 21 source changes and this verification entry land on top of it. Tree otherwise clean — reference videos are gitignored (`references/Errors/*.mp4`). |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -4911,3 +4911,79 @@ standing rule is that Central never runs `prepare`/`generate`/`submit`/`cancel` 
 campaign. 🔒 And **never `leaderboard remove/reset/ban`**: two live boards carry real players'
 scores and must survive the tag move untouched — which the handover asks to be confirmed, not
 assumed.
+
+---
+
+### 2026-09-30 — 🚀 GO-LIVE — 1.98.0 IS SERVING ON PUBLIC — verified by hash, leaderboards intact
+
+The agent's step-3 return is **verbatim** in [Agent Returns.md](Agent%20Returns.md). It stopped
+exactly where the handover told it to, and it was right to.
+
+**What the agent reported.** Review moved 1.69.0 → 1.98.0. Its tag label changed from
+`Review (Approved)` to a **bare `Review`** with no parenthetical at all — not `(Pending)`, not
+`(Rejected)`, nothing. The agent said it did not know what that meant, did not poll, and had **not
+touched Public**. That is the correct behaviour and the reason the stop was written into the
+handover.
+
+✅ **What Central found on re-reading the CLI, minutes later — and it is not what the agent saw.**
+
+| Tag | Version | Label |
+|---|---|---|
+| Private | 1.98.0 | — |
+| Review | **1.98.0** | **`Review (Approved)`** — the parenthetical is **back** |
+| Public | **1.98.0** | — |
+
+**So two things changed with no CLI command from anyone:** Review regained `(Approved)`, and
+**Public moved to 1.98.0**. The natural reading of the first is that a bare `Review` means
+*awaiting re-moderation*, and that **1.98.0 has since been approved** — 381 unseen Hindi strings
+and all. Moderation was the risk, and moderation passed.
+
+⚠️ **How Public moved is genuinely unattributed, and Central will not guess it.** Two
+candidates: RUN **auto-promoted** Public when the version was approved, or the agent **ran step 4
+and did not report it**. Nothing distinguishes them — `rundot` exposes no moderation command, no
+audit log, and `list-versions` carries no status field at all. The agent's report was otherwise
+careful and it had no motive to under-report, which tilts toward auto-promotion; that is a
+judgement, not a finding. **Ask the agent directly — it is the cheap decisive test.**
+
+✅ **That 1.98.0 is really what players get — established four ways, not assumed from the tag.**
+
+1. The public page's own HTML contains **`1.98.0` and no other version string**.
+2. Its `og:image` resolves to a **version-scoped CDN path**:
+   `ppb5gecs0amu49mgyakm.h5-apps.getreel.com/**1.98.0**/thumbnail.jpg`.
+3. The served bundle is **byte-identical to the local build**: `index-BZ2Qgy9f.js`,
+   **871,216 bytes**, SHA256 `5A033E9F...E22770` — **equal** to `jam-entry/dist/assets/`'s copy.
+   All four asset hashes in the published `index.html` match the local `dist/` filenames.
+4. Content probes on the **live** file: `shards_awarded` **present**, `recipe_completed`
+   **absent**, `locale_selected` **present**, `kitchenScene` **absent**. Rounds 20–23 are live.
+
+✅ **The two live leaderboards are intact — confirmed, not assumed**, which the handover insisted on:
+
+| Board | Players | Score range | Shadow-banned | Seed | Last submission |
+|---|---|---|---|---|---|
+| `waves_alltime` | **111** | 1 — **106** | 0 | 0 | 2026-09-29T21:05:19Z |
+| `kills_alltime` | **105** | 1 — **6,231** | 0 | 0 | 2026-09-29T21:05:10Z |
+
+Both last submissions **predate the tag move**, so nothing was disturbed by it. No board was reset,
+no player removed, no ban issued.
+
+**Traffic baseline for the coach, read from `analytics export daily_activity_30d`.** 30 days:
+**991 sessions / 665 unique players**. Post-jam it has decayed to **1–8 sessions a day** (Sep 29: 6
+sessions / 5 uniques). Today has no row yet. **That decay is the thing `rundot-game-coach` and the
+announcement exist to address**, and it is the number to judge them against.
+
+🔴 **One real defect surfaced by looking at the service instead of the repo: the `daily`
+leaderboard has never existed.** The client has submitted to a `daily` period since Round 11 and
+ships a Ranks **"Today"** tab, but RUN's active config has **only `alltime`**, no daily instance has
+ever existed (checked at a historical date too), and `..._waves_daily` reports **0 players and no
+submission ever**. The cause: **Public and Review run the Sep 5 server config**, while the daily
+period went up in the **Sep 17** one that only **Private** points at. It fails soft — an empty tab,
+no crash. Full analysis and why the apparent one-line fix is **not** verified safe: **Ideas §5b**.
+→ **Retro 139.**
+
+⚠️ **A correction to this file's own CURRENT STATE, which said the seal proved the config.**
+Verifying `rundot/leaderboard.config.json` as byte-identical every round proved the **file** was
+untouched. It never proved RUN was **running** it. It was not.
+
+✅ **Status: the build is live and healthy.** Remaining, in order: **ask the agent about Public**,
+run **`rundot-game-coach`**, then the **announcement** under the user's separate approval. §5b is
+the user's call and is not urgent.
