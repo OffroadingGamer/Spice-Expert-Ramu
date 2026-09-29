@@ -1314,6 +1314,39 @@ Play/badge → IAP; all post-jam, Private first.
 
 ---
 
+## 12. Recipe prose vs the ingredient rail — checked Sep 30 2026, **decision: keep as is**
+
+**Found while the user was playtesting 1.94.0**, on the Upma scroll: the card header reads
+*"INGREDIENTS · 6"* above six tiles, and the method underneath names **eight** — it adds urad dal
+and ginger. Swept across all 22 recipes by matching every `ingredient.*` display name against each
+recipe's own `.prep`/`.finish` text:
+
+**13 of 22 recipes name an ingredient their rail does not carry.**
+
+| Off-rail ingredient | Recipes |
+|---|---|
+| **Ginger** | upma, rajma, gobhi-masala, coconut-chutney, bamboo-shoot-fry, veg-momo, veg-thukpa |
+| **Urad Dal** | upma, beans-poriyal |
+| Peas | veg-momo, veg-thukpa |
+| Parsley · Green Chilli · Garlic + Oregano · Milk · Onion · Tomato | arrabbiata · jeera-rice · minestrone · naan · sambar · veg-thukpa |
+
+✅ **Decision: this is not a defect and is not being changed.** The pattern is systematic, not
+sporadic, which is the tell: **the scroll prose is real cooking and the rail is the game's
+abstraction.** A real upma tadka does take ginger and urad dal. Flattening the method to exactly the
+six tiles would produce worse writing *and* worse cooking, and the alternative — widening the rails
+— is a gameplay change: Round 18b set those counts (2–7) deliberately and the rail's drag geometry
+and tile height were verified against them.
+
+⚠️ **Recorded here so a later reader does not "fix" it.** A future sweep will find the same 13
+mismatches and they will look like a bug. They are not.
+
+🔴 **Why this was raised before Round 20 rather than after.** The 44 `.prep`/`.finish` strings are
+the bulk of the Hindi round. Reconciling the prose costs **13 English edits today** or **13 edits in
+two languages** once translated. The cost is asymmetric, so the decision belonged before the
+handover went out, not after — even though the decision turned out to be "change nothing".
+
+---
+
 ## 11. Recipe shards — progressive difficulty + chef-hat icon — proposed Sep 23 2026
 
 **User, on an annotated 1.93.0 Recipes screenshot:** *"Shards for the recipe will be progressively
