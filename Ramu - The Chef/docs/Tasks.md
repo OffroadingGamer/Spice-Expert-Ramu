@@ -21,8 +21,9 @@ rails, landed all 44 prep/garnish strings and repaired mouse input; **Round 18b*
 finished 46-sprite ingredient set, the 22 true rails, pane drag-scroll and the Close button.
 **The Kitchen is feature-complete at 1.93.0.**
 
-**In flight:** nothing — ✅ **Round 23 shipped as Private 1.98.0 and is verified.** The build is
-**launch-ready on technical grounds**; next is the promotion sequence, which is the user's call.
+**In flight:** 🚀 **GO-LIVE authorised Sep 30** — handover written to move the **public tag 1.69.0
+→ 1.98.0**. `update-tag` only; the changelog/announcement is the marketing agent's, separately
+approved. ✅ **Round 23 shipped as Private 1.98.0 and is verified.**
 ✅ **Round 22 shipped as Private 1.97.0 and is verified.** ✅ **Round 21 shipped as Private 1.96.0 and is verified. The planned
 roadmap is COMPLETE.** Belt mode is gone, the clipping fix shipped (as `line-clamp-4`, see below),
 and all six §5 debts are closed. From here the work is polish. ✅ **Touch-drag passed on device Sep 30** — the oldest open item in

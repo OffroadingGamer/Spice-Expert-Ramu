@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.98.0** (Rounds 0–23 — roadmap complete; R22–23 were added pre-launch rounds) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. Review and Public stay at **1.69.0**. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Nothing, and no further build round is planned.** ✅ Round 23 returned and is **verified.** The build is **launch-ready on technical grounds.** Next is the **Public promotion sequence: move the tag → run `rundot-game-coach` → announcement.** ✅ **The Sep 9 licence note is SUPERSEDED** — stale on every clause, and Round 23 removed the dobo_ui assets outright; see the Sep 30 entry. **No technical or licence gate remains on the promotion.** ✅ **The "4 AI features" row is now all but resolved from the CLI** — `rundot credits` reports exactly **four service rows**, and the no-runtime-AI finding was re-verified at 1.98.0; see the Sep 30 entry. The one-click confirmation is now optional rather than gating. Previously: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **In flight** | 🚀 **GO-LIVE — authorised by the user Sep 30 2026** (*"let's go live with this build"*). Handover written and delivered for dispatch: **move the public tag from 1.69.0 to 1.98.0.** 🔒 This is the **single narrow exception** to the standing Private-only rule, and it covers `update-tag` **only** — never `set-public`/`set-private`. The changelog and announcement are **not** in it: they are the marketing agent's, under separate approval. No further build round is planned. ✅ **The Sep 9 licence note is SUPERSEDED** — stale on every clause, and Round 23 removed the dobo_ui assets outright; see the Sep 30 entry. **No technical or licence gate remains on the promotion.** ✅ **The "4 AI features" row is now all but resolved from the CLI** — `rundot credits` reports exactly **four service rows**, and the no-runtime-AI finding was re-verified at 1.98.0; see the Sep 30 entry. The one-click confirmation is now optional rather than gating. Previously: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
 | **Repo** | `origin/main` = **`d648176`** at the time this row was written; the Round 21 source changes and this verification entry land on top of it. Tree otherwise clean — reference videos are gitignored (`references/Errors/*.mp4`). |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -4860,3 +4860,54 @@ here, in a file that is.
 ✅ **No technical gate and no licence gate now stands between this build and the Public
 promotion.** What remains is entirely the user's judgement: whether to ship unreviewed Hindi, and
 when to move the tag.
+
+---
+
+### 2026-09-30 — 🚀 GO-LIVE AUTHORISED — the public tag moves 1.69.0 → 1.98.0
+
+The user's instruction: *"let's go live with this build."* Entry written when the handover was
+written, per this file's own rule. **Public and Review have been frozen at 1.69.0 since Sep 18 —
+twelve days and twenty-three rounds.**
+
+**The mechanics, established from the CLI rather than assumed.** `rundot game --help` distinguishes
+two things Central had been treating loosely:
+
+- **`update-tag <tag> --version <v>`** — moves which build a tag serves. **This is what "going live"
+  means here.**
+- **`set-public` / `set-private`** — controls only whether the game appears on RUN's **explore**
+  page; a private game *"will still be accessible via its share link."*
+
+🔴 **So `set-public` must NOT be run, and `set-private` must never be.** The game is **already
+listed** — it took **942 plays and 638 daily uniques** through the jam and carries two live
+leaderboards, which is only possible for a listed game. Running `set-private` on it would **delist a
+live game**. The job is one `update-tag`, nothing more.
+
+⚠️ **One thing Central does not know, and has written the handover to discover rather than guess.**
+Review sits at **1.69.0 and reads "(Approved)"**. Whether Public may be moved ahead of an approved
+Review, or whether 1.98.0 must pass Review first, **is not visible from the CLI**. RUN moderation is
+demonstrably real — it has previously rejected the standalone word *"Pot"* and a changelog containing
+the artist's surname — and this build adds **381 Hindi strings** it has never seen. So the handover
+moves **Review first, reports, and stops**; Public is only touched once Review's state is known. The
+cost is a possible wait; the alternative is publishing text moderation has not seen.
+
+✅ **The biggest launch risk Central could identify, checked from source and clear: old saves load.**
+Jam players hold saves written by **1.69.0**, and the schema has moved across 29 versions. Verified
+in `state/save.ts`:
+
+- `SAVE_KEY` is **unchanged** (`spice-expert-ramu:save:v1`), so an existing save is still found.
+- `parse()` **never inspects `parsed.v`** — there is no version gate that could reject an old save
+  and silently fall back to defaults.
+- Every field is read through a typed guard with its own default: `locale` → `'en'`, `shards` → `{}`,
+  `scrollsBought` → `[]`, and `scrollsSeenCount` carries an explicit comment that a **pre-1.90.0**
+  save defaults to that save's own `scrolls.length` rather than 0 — proof old-save migration was
+  deliberately considered, not merely survived.
+
+**So a returning jam player keeps their gems, best wave, upgrade levels and name**, and simply gains
+the new systems. Nothing wipes.
+
+**Out of scope, deliberately.** The **changelog and the announcement** are the marketing agent's
+work under the user's separate approval — `rundot`'s marketing commands are beta and hidden, and the
+standing rule is that Central never runs `prepare`/`generate`/`submit`/`cancel` and never funds a
+campaign. 🔒 And **never `leaderboard remove/reset/ban`**: two live boards carry real players'
+scores and must survive the tag move untouched — which the handover asks to be confirmed, not
+assumed.
