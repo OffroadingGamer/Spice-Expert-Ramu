@@ -326,7 +326,7 @@ function RecipeCard({ mu, slug, unlocked, locked, unlockWave, count, gems, onOpe
             </p>
             {unlocked ? (
                 <p
-                    className="line-clamp-2"
+                    className="line-clamp-4"
                     style={{ fontSize: Math.max(11, 7.5 * mu), color: 'rgba(255,255,255,0.75)', marginTop: 2 * mu }}
                 >
                     {t(recipeNoteKey(slug))}

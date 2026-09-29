@@ -11,7 +11,7 @@
  *
  * Two value shapes:
  *   - a plain string — the common case.
- *   - `{ one, other }` — the ten rows strings.md flags `pl` (a bare count
+ *   - `{ one, other }` — the eleven rows strings.md flags `pl` (a bare count
  *     with no plural branching today, e.g. "1 rushes held"). Both forms are
  *     IDENTICAL to the current source text this round, on purpose: the
  *     handover's own acceptance is pixel parity against 1.86.0, so tn()'s
@@ -47,7 +47,6 @@ export const en: Record<string, TranslationEntry> = {
     'menu.greeting': 'Welcome, {name}',
     'menu.greeting.fallback': 'chef',
     'menu.runNameToast': 'Your name comes from your RUN profile.',
-    'menu.testMode': 'Play Game',
     'menu.best': 'Best · Rush {n}',
     // Round 16 Part 2 (docs/Ideas.md §10.5 pick "Play"): was menu.startShift
     // = "Start shift" — renamed key and value together since "Play" is a

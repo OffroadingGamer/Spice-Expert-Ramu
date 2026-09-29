@@ -16,7 +16,6 @@ import MetaUpgrades from './MetaUpgrades.tsx';
 import Leaderboard from './Leaderboard.tsx';
 import Settings from './Settings.tsx';
 import GameCanvas from '../game/GameCanvas.tsx';
-import TestBelt from './TestBelt.tsx';
 import NameDialog from './NameDialog.tsx';
 import RenameDialog from './RenameDialog.tsx';
 import { store } from '../state/store.ts';
@@ -50,7 +49,6 @@ export default function App() {
                     <EndScreen />
                 </div>
             )}
-            {phase === 'testbelt' && <TestBelt />}
             {/* overlays, not phases, so nothing unmounts underneath */}
             {metaOpen && <MetaUpgrades />}
             {ranksOpen && <Leaderboard />}

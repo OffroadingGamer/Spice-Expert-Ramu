@@ -135,10 +135,9 @@ export function initAudio(volumes: { music: number; sfx: number }): void {
         // already scored to 'service_low' by registerEngine() (actions.ts)
         // — a hard-coded switchCue('menu') here would override it out from
         // under the game with menu music. Ask the store what's actually on
-        // screen instead. 'testbelt' (Kitchen Mode) starts its own
-        // 'service_low' the same way (kitchenScene.ts) — same fix applies.
+        // screen instead.
         const phase = store.get().phase;
-        switchCue(phase === 'playing' || phase === 'testbelt' ? 'service_low' : 'menu');
+        switchCue(phase === 'playing' ? 'service_low' : 'menu');
     };
     window.addEventListener('pointerdown', unlock);
     window.addEventListener('keydown', unlock);

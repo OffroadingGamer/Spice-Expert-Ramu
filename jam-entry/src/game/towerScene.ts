@@ -2507,6 +2507,11 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
 
     return {
         destroy() {
+            // Round 21 housekeeping: first, unconditionally — GameCanvas
+            // wraps this whole destroy() in try/catch, so anything below
+            // that throws must not leave engineReady stuck true (the
+            // v1.62.0 blocker this call exists to prevent).
+            registerEngine(null);
             if (!ended) {
                 ended = true;
                 trackRunEnd('quit');
@@ -2519,7 +2524,6 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             app.stage.off('pointertap', onTap);
             offResize();
             offGaugeResize();
-            registerEngine(null);
             registerRunEndReArm(null); // never let a destroyed scene's closure fire
             // Sprite.destroy() (default options) never touches the texture
             // itself — safe for both the Assets-cache-owned backdrop

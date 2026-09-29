@@ -41,7 +41,6 @@ import { blockForLevel } from '../game/data/blocks.ts';
 import { openComments, promptLike } from '../sdk/engagement.ts';
 import { trackFunnelStep } from '../sdk/analytics.ts';
 import { computeKitchenBadge } from '../state/save.ts';
-import { devModeEnabled } from '../state/devMode.ts';
 import { t } from '../i18n/index.ts';
 import { store, useStore } from '../state/store.ts';
 import ChefPortrait from './ChefPortrait.tsx';
@@ -169,11 +168,6 @@ export default function MainMenu() {
     const scrollsSeenCount = useStore((s) => s.scrollsSeenCount);
     const lastUnlockedScrollSlug = useStore((s) => s.lastUnlockedScrollSlug);
     const kitchenBadge = computeKitchenBadge(scrolls.length, scrollsSeenCount);
-    // Round A2, task 4: Test Mode is unfinished — gated behind ?test=1
-    // (devMode.ts). Styled as a ghost, ABOVE Play — the spec's "only filled
-    // button" rule applies regardless of dev flags, and this is a QA
-    // affordance nobody outside the team ever sees.
-    const showTestMode = devModeEnabled();
     const backdropSrc = ASSET_SRC.get('menu-backdrop');
     const costumeBlock = blockForLevel(Math.max(1, bestWave));
     const mu = useMenuUnit();
@@ -444,12 +438,6 @@ export default function MainMenu() {
                     gap: 7 * mu,
                 }}
             >
-                {showTestMode && (
-                    <GhostButton mu={mu} onClick={() => { sfx.click(); store.patch({ phase: 'testbelt' }); }}>
-                        {t('menu.testMode')}
-                    </GhostButton>
-                )}
-
                 <p
                     className="text-center uppercase"
                     style={{

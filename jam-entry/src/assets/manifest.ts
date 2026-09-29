@@ -300,16 +300,16 @@ export const MANIFEST: Manifest = {
                 // finishes either.
                 { alias: 'ui-laurel', src: 'images/ui/laurel.png' },
                 // Round 14 Part 4 (docs/Ideas.md §10.4): recipe scrolls.
-                // Art/_gen/ranks-kitchen-final/{recipe-scroll,shard}.png,
-                // both 1024^2 sources — resized Lanczos, alpha kept, same
-                // treatment as ui-laurel above. recipe-scroll -> 256^2 (the
-                // Kitchen's unlocked-card ground); shard -> 128^2 (the "+1 ✦"
-                // glyph, wave bubble + progress bar). Deferred: neither
-                // shows before the Kitchen or a wave clear, both well after
-                // boot. Opaque-bbox measurements (ui/MetaUpgrades.tsx,
-                // ui/WaveBubble.tsx) are in each render site's own doc.
+                // Art/_gen/ranks-kitchen-final/recipe-scroll.png, a 1024^2
+                // source — resized Lanczos, alpha kept, same treatment as
+                // ui-laurel above. recipe-scroll -> 256^2 (the Kitchen's
+                // unlocked-card ground). Deferred: it doesn't show before
+                // the Kitchen opens, well after boot. Opaque-bbox
+                // measurements are in ui/MetaUpgrades.tsx's own doc.
+                // (ui-shard, the sibling "+1 ✦" glyph, was removed Round 21
+                // — ui-chef-hat replaced it in Round 19 and nothing had
+                // referenced this alias since.)
                 { alias: 'ui-recipe-scroll', src: 'images/ui/recipe-scroll.png' },
-                { alias: 'ui-shard', src: 'images/ui/shard.png' },
                 // Round 17 Part 4 (docs/Ideas.md §6d item 4): the 23
                 // Art/_gen/ingredients/ renders (skip _style-check.png,
                 // skip tea-leaf.png — already shipped above as
