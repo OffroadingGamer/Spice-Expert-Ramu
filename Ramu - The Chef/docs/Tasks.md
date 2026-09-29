@@ -34,7 +34,7 @@ later, and it does not block Round 21. After that the roadmap is complete and th
 (Ideas.md §10.6 B, content-not-power) until public, with retention data.
 
 **Open on the user:** the Public promotion call · a one-click check of the studio page's
-✅ ~~"4 AI features" row~~ — all but resolved Sep 30 from `rundot credits` (four service rows; no-runtime-AI re-verified at 1.98.0); confirmation now optional, not gating · ✅ ~~Devanagari~~ — **fully passed Sep 30, closed** · **touch-drag on the rail
+✅ ~~Sep 9 licence note~~ — **superseded Sep 30 on every clause; Round 23 removed the dobo_ui assets outright** · ✅ ~~"4 AI features" row~~ — all but resolved Sep 30 from `rundot credits` (four service rows; no-runtime-AI re-verified at 1.98.0); confirmation now optional, not gating · ✅ ~~Devanagari~~ — **fully passed Sep 30, closed** · **touch-drag on the rail
 and both Kitchen panes, which no one has tested on any build** · whether `ing-tea-leaf.png` (256²,
 the only non-128² sprite) gets normalised.
 

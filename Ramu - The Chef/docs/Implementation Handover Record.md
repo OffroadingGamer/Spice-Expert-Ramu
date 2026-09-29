@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.98.0** (Rounds 0–23 — roadmap complete; R22–23 were added pre-launch rounds) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. Review and Public stay at **1.69.0**. |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | **Nothing, and no further build round is planned.** ✅ Round 23 returned and is **verified.** The build is **launch-ready on technical grounds.** Next is the **Public promotion sequence: move the tag → run `rundot-game-coach` → announcement.** Still on the user first: the **Sep 9 licence note** (explicit yes/no). ✅ **The "4 AI features" row is now all but resolved from the CLI** — `rundot credits` reports exactly **four service rows**, and the no-runtime-AI finding was re-verified at 1.98.0; see the Sep 30 entry. The one-click confirmation is now optional rather than gating. Previously: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **In flight** | **Nothing, and no further build round is planned.** ✅ Round 23 returned and is **verified.** The build is **launch-ready on technical grounds.** Next is the **Public promotion sequence: move the tag → run `rundot-game-coach` → announcement.** ✅ **The Sep 9 licence note is SUPERSEDED** — stale on every clause, and Round 23 removed the dobo_ui assets outright; see the Sep 30 entry. **No technical or licence gate remains on the promotion.** ✅ **The "4 AI features" row is now all but resolved from the CLI** — `rundot credits` reports exactly **four service rows**, and the no-runtime-AI finding was re-verified at 1.98.0; see the Sep 30 entry. The one-click confirmation is now optional rather than gating. Previously: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
 | **Repo** | `origin/main` = **`d648176`** at the time this row was written; the Round 21 source changes and this verification entry land on top of it. Tree otherwise clean — reference videos are gitignored (`references/Errors/*.mp4`). |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -4812,3 +4812,51 @@ leg, agent-reported at ≈43k and noted at the time as *"not visible in `rundot 
 simply have been landing in this unlabelled row all along). It is not a problem, and no credits are
 missing: the balance stands at **199,587**. But the single largest line of spend on this account is
 **unlabelled**, and it is worth knowing what it is before any future budgeting decision.
+
+---
+
+### 2026-09-30 — The Sep 9 licence note — superseded on every clause, and Round 23 settled the biggest one
+
+The last item Central was listing as gating the Public promotion. Read properly, it does not gate
+it, and part of it stopped being true two days ago.
+
+**What the note says.** `docs/private build keys.md` (gitignored) carries, under *Deploy
+discipline*: *"⚠️ The UI pack (dobo_ui demo tier), prop, ingredient and dish-sprite **licences are
+unread**. Private-only is acceptable; **a public deploy is not cleared** until they are."*
+
+⚠️ **The note is dated Sep 8 — one day before the ruling that cleared its main clause.** It was
+never revised, and Central went on quoting it for weeks as a live blocker without re-reading it.
+
+**Clause by clause, re-derived from source:**
+
+| Clause | Position |
+|---|---|
+| **dobo_ui demo tier** | ✅ Cleared **twice over** — see below |
+| **prop sprites** | ✅ toxiccolors *01 - Kitchen Essentials*, **purchased**, written consent for genAI use conditional on credit. Settled Sep 6; Retro says *"do not raise again."* |
+| **ingredient sprites** | ✅ **All 46 are in-house** since art round 7 (Sep 23). No third-party licence applies |
+| **dish sprites** | ✅ LoRA outputs trained on Kitchen Essentials — the same written consent |
+| hoshiixs *02 - Kitchen Props* | ✅ Recorded Sep 6 as **moot, out of scope** — nothing is generated from it |
+
+✅ **dobo_ui is not merely permitted now — it is gone.** The Sep 9 Retro entry names the dependency
+precisely: *"`ui-billboard`, `ui-hotbar`, `ui-container` and both round-25 cards are dobo_ui — the
+entire belt HUD."* And `manifest.ts`'s own comment (`:133–138`) names the full demo-pack set:
+`ui-slot-empty`, `ui-slot-filled`, `ui-hotbar`, `ui-container`, `ui-billboard`, `ui-badge-count`,
+the Coin and Exit Sign icons, and `ui-card-wood`/`ui-card-red`.
+
+**That is exactly the ten `ui-*` aliases Round 23 deleted** — file and manifest entry together.
+`grep -rni dobo jam-entry/src` returns **nothing**. The four surviving `ui-*` are all own or
+RUN-generated work out of `Art/_gen/`: `ui-chef-hat` (R19), `ui-scroll`
+(`Art/_gen/chef-final/scroll.png`), `ui-laurel` (`Art/_gen/ranks-kitchen-final/laurel.png`) and
+`ui-recipe-scroll`.
+
+So the free demo pack that once *"gated a five-node game mode"* left the build as a side effect of
+a round written for bundle size. Round 23 was not scoped as a licence fix and nobody noticed at the
+time — including Central, who wrote the brief.
+
+**The gitignored keys doc has been updated** so the stale line cannot be re-read as current. That
+file is not tracked, so the correction lives only on this machine — which is why it is also recorded
+here, in a file that is.
+
+✅ **No technical gate and no licence gate now stands between this build and the Public
+promotion.** What remains is entirely the user's judgement: whether to ship unreviewed Hindi, and
+when to move the tag.
