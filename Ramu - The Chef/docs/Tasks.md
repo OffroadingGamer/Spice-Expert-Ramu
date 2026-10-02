@@ -26,9 +26,10 @@ local build; both leaderboards confirmed intact. ⚠️ Open: **how Public moved
 agent stopped at step 3 and says it did not touch Public), and 🔴 **the `daily` leaderboard has
 never existed on the service** — the Ranks "Today" tab has no board behind it. ✅ **`rundot-game-coach` run Oct 2** — earliest unmet stage is
 **3, Retention** (D1 ≈ 1.5%, and **zero** return mechanisms in the codebase). ✅ **Round 24 shipped as Private 1.99.0 and is verified** — return
-notifications, a 7-day gem reward track, a Settings opt-out. ⏳ **Next: the socials path**
-(marketing agent, separate approval) — `profile set` → changelog → `prepare --update` → edit
-captions → post + #showcase, never bare `prepare`. 🔴 **Ambition set Oct 2: portfolio/learning — paid UA ruled out, business
+notifications, a 7-day gem reward track, a Settings opt-out. ⏳ **The socials handover is ISSUED** (marketing agent,
+Oct 2) — organic only, stops before posting. 🔴 Blocked on two user calls: **Public must move
+1.98.0 → 1.99.0**, and **1.99.0 has no changelog** (deploy-time only, not retroactive). Paid UA is
+ruled out. 🔴 **Ambition set Oct 2: portfolio/learning — paid UA ruled out, business
 nudge declined, neither to be raised again.**
 ✅ **Round 23 shipped as Private 1.98.0 and is verified.**
 ✅ **Round 22 shipped as Private 1.97.0 and is verified.** ✅ **Round 21 shipped as Private 1.96.0 and is verified. The planned

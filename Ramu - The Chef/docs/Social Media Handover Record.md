@@ -1495,3 +1495,63 @@ resting on a confirmed (not suspected) zero-attribution finding.
 No further campaign, post, or spend proposed — §20 is a recommendation
 for a future 1.89.0 public launch, not a plan in motion. This agent holds
 for a new handover.
+
+---
+
+### 2026-10-02 — Handover ISSUED to the marketing agent: the organic socials path for 1.99.0
+
+Written by Central and delivered to the user as chat text for dispatch. Entry written **when the
+handover was written**, not when it returns.
+
+**Scope: organic only, and it stops before posting.** `rundot socials` — voice, `profile set`,
+changelog drafting, `prepare --update`, caption editing, then **stop and report**. 🔴 **No
+`rundot marketing` command at all**: paid UA was ruled out Oct 2 when the user set the ambition to
+**portfolio/learning**, and that is a standing decision, not a deferral.
+
+🔴 **Two prerequisites that are the USER's calls, not the agent's — both flagged in the
+handover rather than assumed.**
+
+1. **Public must move 1.98.0 → 1.99.0 before anything is posted.** The whole reason the user chose
+   "retention round first, then announce" was so the announcement lands on a build that can hold
+   the players it brings — and the daily reward and return reminders are in **1.99.0, which is
+   Private**. Announcing today would promote 1.98.0, which has neither. 🔒 **Central did not
+   authorise this**: the Sep 30 `update-tag` was a one-time exception and it is spent. It needs the
+   user's word, and 1.98.0's move suggests approving a Review version may propagate to Public on
+   its own — that mechanism is still unattributed (see the Sep 30 entry).
+2. ⚠️ **1.99.0 has no changelog and one cannot be added retroactively.** Verified from the CLI:
+   `--changelog` / `--changelog-file` exist **only on `rundot deploy`**, and `rundot game configure`
+   exposes only build-path, orientation and the deprecated preloader flag. So the options are
+   **redeploy the same build with `--changelog-file`** (which mints a new version number) or
+   **accept no About-tab release notes** and write every caption from the hook. The socials skill's
+   own position: *"redeploy or accept that you'll rewrite captions entirely from the hook — don't
+   trust the drafts."*
+
+**The hook Central handed over, because it is bigger than the round that triggered it.** ⚠️
+**The public has effectively never seen Rounds 0–24.** Public served **1.69.0** from Sep 18 to
+Sep 30, and since the move **1.98.0 has four players**. So the thing to announce is not the daily
+reward — it is that **the jam build people played in September is not this game any more**:
+**Hindi** throughout (395 keys), the entire **Kitchen progression layer** (stations, recipes,
+shards, Toque Badges), **one mode instead of two**, and **906 kB lighter**. Credibility line:
+**6th of 100**. Concrete challenge hook: the live board's **best wave is 106**.
+
+⚠️ **A trap named explicitly in the handover: the stale packet.** `socials status` returns
+packet **`cabeeb7e-ad5c-4b69-bfc1-0458e145b0a3`** with **x** and **reddit** placements marked
+`ready` and never posted, carrying live tracked links from the jam era. `socials` has no `cancel`
+verb (`prepare`/`status`/`open`/`next`/`promo`/`mark-posted`/`verify`/`profile`), so a fresh
+`prepare` supersedes rather than replaces it — and the agent must confirm it is editing the **new**
+packet's captions, not the old one's.
+
+✅ **One thing the agent does NOT need to fix.** The socials skill says to confirm `rundot game
+info` carries a specific, loop-forward description. It does, and it is good: *"Tickets crawl down
+the rail toward the pass. Set your grill, tandoor and fryer along it and finish every dish before
+it gets there, because anything that reaches the pass is a walkout."* **No `set-description`
+needed.**
+
+🔒 **Constraints restated in the handover:** never post the **Private or Review** share URL
+(both carry a `?k=<32-hex>` secret — only the bare public URL and `prepare`'s tracked `?s=` links
+are safe); RUN moderation rejects the standalone word **"Pot"** and changelogs containing the
+artist's surname; **never** `leaderboard remove/reset/ban` — two live boards hold 111 and 105 real
+players; writes limited to **this file and `Marketing Strategy.md`**; **no git**; and 🔴 **no
+posting without the user's separate approval.** ⚠️ Also: **no Hindi captions**, because the user
+has **deferred** the Hindi copy review and unreviewed Hindi should not be the first thing a new
+audience reads.
