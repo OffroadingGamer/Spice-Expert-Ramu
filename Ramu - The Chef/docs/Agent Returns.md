@@ -959,6 +959,58 @@ This is the answer you asked me to get, and I don't have a confident read on wha
 
 ---
 
+## 2026-10-02 — Round 24 (the reminder half of retention) — implementation agent
+
+Outcome: deployed Private **1.99.0**; Review and Public untouched at 1.98.0.
+
+All of Round 24 is deployed and verified. Here's the report:
+
+What shipped (Private 1.99.0)
+Tags confirmed: Private 1.99.0, Review (Approved) 1.98.0, Public 1.98.0 — only Private moved.
+
+Reminders chosen, and why
+Grepped the game for return-trigger moments before picking anything — there were exactly two, and I didn't add a third:
+
+re-engagement — the generic "come back and keep cooking" nudge, 24h sliding window. Every game gets one.
+daily_reward — the new daily reward's own come-back-tomorrow nudge, scheduled by the daily-rewards system itself (per its skill's own pattern, outside the notifications factory, same settings gate).
+I deliberately did not add a third reminder for the rewarded-ads daily cap resetting — it's a soft throttle the player never explicitly "consumes," not a concrete reward waiting for them, so a reminder for it would be inventing a mechanic rather than deriving one.
+
+Where I schedule from
+Boot (main.tsx): ensureEnabled() then rescheduleReEngagement(); cancels the stale daily_reward reminder if the player's already back with something claimable.
+onResume: re-arms re-engagement, alongside the existing refreshServerTime() call.
+towerScene.ts's trackRunEnd() (inside checkEnd(), called once a run is finally over — losses that might still be continued are already gated out by runEndDecided/continuedThisRun): re-arms re-engagement. This is the handover's own suggested point — a run just ended and the player's still there, app alive.
+Never from onSleep/onQuit — only cancel/persist happen there, unchanged.
+Daily reward
+Plain gems only, no new currency/bonus type (deliberately — there's no global-multiplier system here to hook a "permanent" milestone into, and inventing one would be the progression system the brief warned against): 8/10/12/15/18/22/40 gems over 7 days, day 7 marked as the milestone tile. Scaled off gemsPerWave (4) so a week's worth is on the order of one good run, never more. No unlock gate — the game has no "games played" counter to gate on, so per the skill's own guidance it's always unlocked rather than inventing a stat. Opt-out in Settings (new pill row, same shape as the language row) cancels both reminder ids immediately, verified by observation, not just future scheduling.
+
+New events (numeric values top-level, as required)
+daily_reward_shown { day, claimable: 0|1 } — popup open
+daily_reward_claimed { day, amount } — successful claim
+notifications_toggled { enabled: 0|1 } — Settings toggle
+No funnel: the reward flow is only 2 natural steps (shown → claimed), below the "≥3 or don't bother" threshold, so raw events only. All 27 pre-existing events plus the 5 Round 22 ones fired unchanged in testing (confirmed via a boot-to-claim spy log, not by reading code).
+
+Task 5: the menu_shown drop
+It's not attrition — it's a funnel-ordering artifact, not a bug to fix. I pulled funnel_steps_30d directly:
+
+step	sessions
+boot: game_loaded	826
+run: menu_shown (step 1)	542
+run: run_start (step 2)	672
+Step 2 has more sessions than step 1 — impossible for a real funnel, and exactly the anti-pattern the analytics skill flags ("if step N+1 has more sessions than step N, the ordering is wrong"). The cause: main.tsx's boot sends every session straight into 'playing' via a scripted run, never through 'menu' (a deliberate earlier-round decision to cut FTUE friction) — so run_start fires on literally every boot. menu_shown only fires when a player explicitly taps the secondary "Main Menu" button (EndScreen's Retry is the sole primary, emphasized button) or backs out via the pause menu. So menu_shown measures "how many sessions ever visited the menu," not "session start" — it was never supposed to be step 1 of a top-of-funnel measure. Not a one-liner fix (would mean either renumbering frozen funnel steps or changing the boot flow), so I'm reporting rather than touching it.
+
+What made me hesitate
+Nothing structural — the two systems' templates were a clean fit. The one thing I double-checked rather than assumed: systems/dailyRewards.ts's claimNext() mutates its state object in place, so I had to confirm addGems() (used as applyReward) preserves that nested object reference through its own {...data, gems: ...} spread rather than silently detaching it — verified by testing, not just reading.
+
+---
+
 ## Pending
 
-- ⏳ **The GO-LIVE handover is mid-sequence and deliberately paused at its step 3.** Review now serves **1.98.0**; **Public is still 1.69.0**. The agent stopped because the tag label went from `Review (Approved)` to a bare `Review` with no parenthetical, and it would not guess what that means. Central's reading is in the record. Steps 4–5 (move Public, then verify on a clean instance including both leaderboards) are still to run.
+- Nothing outstanding. **Round 24 has returned** and is recorded above; verification by Central
+  follows. Next is the **socials path** (marketing agent, under the user's separate approval):
+  `profile set` → changelog → `prepare --update` → **edit captions** → post + #showcase. Never
+  bare `prepare`.
+
+### Superseded pending notes
+
+- ✅ **The GO-LIVE sequence completed Sep 30** — all three tags reached 1.98.0 and Public is
+  serving it, verified by SHA256. Previously recorded here as paused at step 3.

@@ -25,9 +25,10 @@ finished 46-sprite ingredient set, the 22 true rails, pane drag-scroll and the C
 local build; both leaderboards confirmed intact. ⚠️ Open: **how Public moved is unattributed** (the
 agent stopped at step 3 and says it did not touch Public), and 🔴 **the `daily` leaderboard has
 never existed on the service** — the Ranks "Today" tab has no board behind it. ✅ **`rundot-game-coach` run Oct 2** — earliest unmet stage is
-**3, Retention** (D1 ≈ 1.5%, and **zero** return mechanisms in the codebase). ⏳ **Round 24 — return
-notifications + daily reward** is the agreed next round, then the announcement (marketing agent,
-separate approval). 🔴 **Ambition set Oct 2: portfolio/learning — paid UA ruled out, business
+**3, Retention** (D1 ≈ 1.5%, and **zero** return mechanisms in the codebase). ✅ **Round 24 shipped as Private 1.99.0 and is verified** — return
+notifications, a 7-day gem reward track, a Settings opt-out. ⏳ **Next: the socials path**
+(marketing agent, separate approval) — `profile set` → changelog → `prepare --update` → edit
+captions → post + #showcase, never bare `prepare`. 🔴 **Ambition set Oct 2: portfolio/learning — paid UA ruled out, business
 nudge declined, neither to be raised again.**
 ✅ **Round 23 shipped as Private 1.98.0 and is verified.**
 ✅ **Round 22 shipped as Private 1.97.0 and is verified.** ✅ **Round 21 shipped as Private 1.96.0 and is verified. The planned

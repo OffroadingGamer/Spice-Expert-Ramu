@@ -15,6 +15,7 @@ import EndScreen from './EndScreen.tsx';
 import MetaUpgrades from './MetaUpgrades.tsx';
 import Leaderboard from './Leaderboard.tsx';
 import Settings from './Settings.tsx';
+import DailyRewards from './DailyRewards.tsx';
 import GameCanvas from '../game/GameCanvas.tsx';
 import NameDialog from './NameDialog.tsx';
 import RenameDialog from './RenameDialog.tsx';
@@ -26,6 +27,7 @@ export default function App() {
     const metaOpen = useStore((s) => s.metaOpen);
     const ranksOpen = useStore((s) => s.ranksOpen);
     const settingsOpen = useStore((s) => s.settingsOpen);
+    const dailyRewardsOpen = useStore((s) => s.dailyRewardsOpen);
     const bootNameDialogOpen = useStore((s) => s.bootNameDialogOpen);
     const bootAskLanguage = useStore((s) => s.bootAskLanguage);
     const renameOpen = useStore((s) => s.renameOpen);
@@ -53,6 +55,7 @@ export default function App() {
             {metaOpen && <MetaUpgrades />}
             {ranksOpen && <Leaderboard />}
             {settingsOpen && <Settings />}
+            {dailyRewardsOpen && <DailyRewards />}
             {/* Round 10 Part 3: the guest name dialog now opens at the START
                 of the scripted run (main.tsx step 6 sets both this flag and
                 paused:true in the same patch) rather than being gated on

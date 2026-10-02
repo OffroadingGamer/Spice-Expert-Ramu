@@ -3069,3 +3069,18 @@ after **00:30 IST Sep 19**.
      service rather than bundled — server configs, runtime configs, leaderboard and tag pointers —
      verify it by reading it back FROM the service, and check which artefact each tag actually
      points at. The repo is the intent; the service is the fact.**
+
+140. **I reported a 34% drop between two steps that belong to different funnels.** Briefing Round
+     24 I compared `game_loaded` (824 sessions) with `menu_shown` (542) and called the gap *"the
+     largest single drop anywhere in the funnel"*, handing it to the agent as the headline FTUE
+     question. They are **not consecutive steps**: `game_loaded` is step 1 of the **`boot`** funnel
+     and `menu_shown` is step 1 of the **`run`** funnel — two separate registered funnels, which
+     `funnel_steps_30d` prints in one table under a `funnel_name` column I read straight past. The
+     agent checked the boot flow, found `main.tsx:121` goes directly to `phase: 'playing'` and that
+     `'menu'` is only ever reached *after* a run, and showed the ordering was the artifact. ⚠️
+     **The subtler cost: my wrong comparison hid a real one.** The true pre-run drop is
+     `game_loaded` 824 → `run_start` 670, about **19%** — smaller than my 34%, genuinely
+     unexplained, and I would have found it by staying inside one funnel. ✅ **Rule: before
+     treating two analytics rows as consecutive steps, check they share a funnel. A table that
+     prints several funnels together will happily let me subtract across them, and the arithmetic
+     works perfectly while meaning nothing.**

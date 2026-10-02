@@ -585,4 +585,20 @@ export const en: Record<string, TranslationEntry> = {
     'continue.loading': 'Loading…',
     'continue.adName': 'Continue the shift',
     'continue.adDescription': 'One rewarded continue',
+
+    // ---- 22. Daily rewards & notifications (Round 24) ----------------------
+    'menu.dailyReward': 'Daily Reward',
+    'dailyRewards.title': 'Daily Reward',
+    'dailyRewards.day': 'Day {n}',
+    'dailyRewards.claim': 'Claim',
+    'dailyRewards.claimed': 'Claimed',
+    'dailyRewards.nextIn': 'Next reward in {time}',
+    'dailyRewards.complete': 'Every reward claimed. Thanks for coming back!',
+    'settings.notifications': 'Notifications',
+    'settings.notifications.on': 'On',
+    'settings.notifications.off': 'Off',
+    'notif.reengagement.title': 'The line is quiet without you',
+    'notif.reengagement.body': "Ramu's holding your station. Come finish a shift!",
+    'notif.dailyReward.title': 'Your daily reward is ready',
+    'notif.dailyReward.body': "Today's gems are waiting at the pass. Come claim them!",
 };

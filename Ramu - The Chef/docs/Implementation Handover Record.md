@@ -39,9 +39,9 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Private 1.98.0** (Rounds 0–23 — roadmap complete; R22–23 were added pre-launch rounds) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. 🚀 **LIVE — Sep 30 2026, all three tags now serve 1.98.0.** Public was frozen at 1.69.0 for twelve days; it is now the current build, **verified by SHA256 against the local `dist/`, not by report** (`index-BZ2Qgy9f.js`, 871,216 bytes, identical hash). |
+| **Live version** | **Private 1.99.0** (Rounds 0–24 — roadmap complete; R22–24 were added post-roadmap rounds) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. 🚀 **LIVE — Sep 30 2026, all three tags now serve 1.98.0.** Public was frozen at 1.69.0 for twelve days; it is now the current build, **verified by SHA256 against the local `dist/`, not by report** (`index-BZ2Qgy9f.js`, 871,216 bytes, identical hash). |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | ✅ **GO-LIVE DONE — Sep 30 2026. 1.98.0 is serving on Public**, and the two live leaderboards are **intact and confirmed** (waves 111 players / range 1–106 · kills 105 / 1–6,231 · 0 shadow-banned · last submission 2026-09-29T21:05Z, i.e. before the move). ⚠️ **Two things came out of the move and are open.** (1) **How Public moved is unattributed** — the agent stopped at step 3 and reported it had not touched Public, yet Public reads 1.98.0; either RUN promoted it on approval or the agent ran step 4 unreported, and **the CLI exposes no audit trail to tell them apart**. Ask the agent; do not assume. (2) 🔴 **The `daily` leaderboard has never existed on the service** — see the Sep 30 entry; the Ranks "Today" tab has no board behind it. ✅ **`rundot-game-coach` was run Oct 2** — earliest unmet stage is **3, Retention**; see that entry. ⏳ **Round 24 (return notifications + daily reward) is the agreed next round**, then the announcement (marketing agent, separate approval). 🔴 **Ambition is set: portfolio/learning. Paid UA is ruled out and the business nudge is declined — do not raise either again.** ✅ **The Sep 9 licence note is SUPERSEDED** — stale on every clause, and Round 23 removed the dobo_ui assets outright; see the Sep 30 entry. **No technical or licence gate remains on the promotion.** ✅ **The "4 AI features" row is now all but resolved from the CLI** — `rundot credits` reports exactly **four service rows**, and the no-runtime-AI finding was re-verified at 1.98.0; see the Sep 30 entry. The one-click confirmation is now optional rather than gating. Previously: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **In flight** | ✅ **GO-LIVE DONE — Sep 30 2026. 1.98.0 is serving on Public**, and the two live leaderboards are **intact and confirmed** (waves 111 players / range 1–106 · kills 105 / 1–6,231 · 0 shadow-banned · last submission 2026-09-29T21:05Z, i.e. before the move). ⚠️ **Two things came out of the move and are open.** (1) **How Public moved is unattributed** — the agent stopped at step 3 and reported it had not touched Public, yet Public reads 1.98.0; either RUN promoted it on approval or the agent ran step 4 unreported, and **the CLI exposes no audit trail to tell them apart**. Ask the agent; do not assume. (2) 🔴 **The `daily` leaderboard has never existed on the service** — see the Sep 30 entry; the Ranks "Today" tab has no board behind it. ✅ **`rundot-game-coach` was run Oct 2** — earliest unmet stage is **3, Retention**; see that entry. ✅ **Round 24 returned and is VERIFIED — Private 1.99.0.** Return notifications, a 7-day gem reward track and a Settings opt-out all ship; balance baseline and all eight funnel steps unchanged. ⏳ **Next is the socials path** (marketing agent, under the user's separate approval): `profile set` → changelog → `prepare --update` → **edit captions** → post + #showcase. 🔴 Never bare `prepare`. 🔴 **Ambition is set: portfolio/learning. Paid UA is ruled out and the business nudge is declined — do not raise either again.** ✅ **The Sep 9 licence note is SUPERSEDED** — stale on every clause, and Round 23 removed the dobo_ui assets outright; see the Sep 30 entry. **No technical or licence gate remains on the promotion.** ✅ **The "4 AI features" row is now all but resolved from the CLI** — `rundot credits` reports exactly **four service rows**, and the no-runtime-AI finding was re-verified at 1.98.0; see the Sep 30 entry. The one-click confirmation is now optional rather than gating. Previously: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
 | **Repo** | `origin/main` = **`d648176`** at the time this row was written; the Round 21 source changes and this verification entry land on top of it. Tree otherwise clean — reference videos are gitignored (`references/Errors/*.mp4`). |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -5065,3 +5065,84 @@ distribution. State today: `socials profile show` → **none configured**; `soci
 **never posted**, carrying live tracked links from the jam era. That is the marketing agent's work
 under the user's separate approval, after Round 24. 🔴 Never bare `prepare`: the path is
 **profile set → changelog → `prepare --update 1.98.0` → edit captions → post + #showcase.**
+
+---
+
+### 2026-10-02 — Round 24 — ✅ RETURNED AND VERIFIED — Private 1.99.0 — the reminder half of retention
+
+Return pasted **verbatim** into [Agent Returns.md](Agent%20Returns.md) before verification.
+
+**Deploy.** Private **1.99.0**; Review **(Approved) 1.98.0**; Public **1.98.0**. ✅ Only Private
+moved — the Sep 30 `update-tag` exception stayed spent, as the brief required.
+
+| Gate | Result |
+|---|---|
+| `tsc --noEmit` | **clean, exit 0** |
+| `npm run balance` | **35 / 36 / 11 / 4 / 90** — unchanged |
+| Seven sealed entries | diff **empty** |
+| Sidecars under `public/` | none |
+| `en.ts` / `hi.ts` | **395 / 395**, symmetric difference **0**, 11 plural rows each, **0 token mismatches** |
+| All eight funnel steps | **unchanged** — no `trackFunnelStep` line added or removed anywhere in the diff |
+| Working tree | **188 insertions / 1 deletion** across 9 files, plus **782 lines** of new modules. Additive |
+
+✅ **Verified by execution, not regex** (Retro 135): the i18n parity numbers come from an
+esbuild-bundled checker reading real `Object.keys()` over the actual modules
+(`node_modules/.cache/parity/r24.*`), the same pattern as `npm run balance`. **381 → 395 keys**, and
+all **14** new keys are genuinely translated into Devanagari — none left sitting in English.
+The copy is localised rather than transliterated: *"The line is quiet without you"* became
+*"रसोई में आपकी कमी है"* ("the kitchen misses you").
+
+✅ **The rule the brief singled out was honoured, and provably.** `main.tsx`'s step-7 block now
+schedules from **`onResume`**; `onSleep` does `flushSave()` + `fireSessionEnd('sleep')` and `onQuit`
+does `flushSave()`, both unchanged. **No SDK RPC is fired from either.** Scheduling also happens at
+boot and from `towerScene.ts`'s run-end path — all three are "app is alive" moments.
+
+✅ **The opt-out really does cancel both ids, which was the easy thing to get wrong.**
+`Settings.tsx:68-78`'s `toggleNotifications(false)` calls **both**
+`notificationsSystem().cancelAll()` **and** `dailyRewardsSystem().cancelReminder()` — the
+daily-reward nudge is scheduled outside the notifications factory, so a single `cancelAll()` would
+have left it armed. Opting back in deliberately does nothing eager.
+
+✅ **Old saves load.** `save.ts:306` guards `dailyRewards` with `parsed.dailyRewards ?? {}` and
+`:193` supplies the default `{ claimed: 0, lastClaimDay: null }`. A 1.98.0 save gains the system
+without losing anything. `notificationsEnabled` defaults via `!== false`, so existing players are
+opted **in** — an opt-out model, which is the right default for a reminder nobody has refused yet.
+
+✅ **The reward track is restrained, and the arithmetic checks out.** 8/10/12/15/18/22/40 gems,
+day 7 flagged `milestone`. That is **125 gems a week** against `CONFIG.meta.gemsPerWave: 4`, i.e.
+**about one 31-wave run** — comfortably inside normal play (the live board's best wave is 106) and
+nowhere near a shortcut. Gems only, no new currency, no unlock gate. The agent's stated reason for
+each of those three choices was *"inventing one would be the progression system the brief warned
+against"* — which is the brief read correctly rather than minimally.
+
+✅ **Events are clean.** `daily_reward_shown { day, claimable }`, `daily_reward_claimed
+{ day, amount }`, `notifications_toggled { enabled }` — every numeric **top-level**, none nested.
+And each is named for its **common** case: `notifications_toggled` carries direction in `enabled`
+rather than shipping a `notifications_disabled` named after the rarer event. That is **Retro 137
+applied without being told**.
+
+✅ **Task 5 — the agent was right and Central was wrong.** The claim was that the
+`game_loaded` → `menu_shown` gap is a funnel-ordering artifact, not attrition. Verified from source:
+`main.tsx:121` is the **only** phase-setter at boot and it goes straight to **`'playing'`**;
+`phase: 'menu'` is assigned in exactly **two** places, `EndScreen.tsx:369` (the end screen's
+secondary "Main Menu" button) and `Hud.tsx:817` (backing out of the pause menu) — **both after a
+run**. `MainMenu.tsx:233` fires `menu_shown` on mount. So `menu_shown` measures *"sessions that ever
+visited the menu"*, and numbering it step 1 of the `run` funnel was always wrong. Reported, not
+"fixed" — correct, since the alternatives are renumbering frozen steps or changing the boot flow.
+
+⚠️ **One overstatement in the return, corrected.** The agent wrote that `run_start` *"fires on
+literally every boot."* It does not: `game_loaded` has **824** unique sessions against `run_start`'s
+**670** — **81%**, not 100%. That leaves a **real ~19% pre-run drop** (154 sessions) hiding behind
+the artifact the agent correctly dismantled. So the honest top-of-funnel is **824 loaded → 670
+started a run → 449 cleared wave 1 (54% of boots)**. Smaller than the 34% Central flagged, but not
+zero, and now the only unexplained number in the funnel. **Logged, not actioned** — it is an FTUE
+question and this is a portfolio project.
+
+⚠️ **One coupling recorded rather than changed:** the daily-reward claim persists only because
+`addGems()` uses a **shallow** spread, so `dailyRewards` carries over by reference and
+`claimNext()`'s in-place mutation survives. A future deep-clone in `addGems()` would break claims
+**silently**. The agent found this itself and verified it by testing. → **Ideas §5c.**
+
+✅ **Round 24 accepted.** Stage 3's missing half now exists. ⚠️ **It is not yet measurable** —
+1.99.0 is Private, and 1.98.0 has four players. The reminder only begins to pay once the socials
+path puts people on the build. **Next: socials** (marketing agent, separate approval).

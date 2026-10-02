@@ -10,6 +10,8 @@ import { readIdentity } from './sdk/profile.ts';
 import { suggestsHindi } from './sdk/environment.ts';
 import { track } from './sdk/analytics.ts';
 import { refreshEngagement } from './sdk/engagement.ts';
+import { notificationsSystem } from './sdk/notifications.ts';
+import { dailyRewardsSystem } from './sdk/dailyRewards.ts';
 import { generateTowerIconsWhenSafe } from './game/towerIcons.ts';
 import { scriptedRunStart } from './game/actions.ts';
 import { initAudio, resumeAudio, suspendAudio } from './audio/audio.ts';
@@ -138,6 +140,12 @@ async function boot() {
             store.patch({ paused: false });
             resumeAudio();
             void refreshServerTime(); // keep the trusted clock fresh
+            // Round 24: another "player is active" moment — slide the
+            // re-engagement reminder forward (notifications.ts's README:
+            // "boot, resume, and every end-of-run"). Scheduling here, not in
+            // onSleep/onQuit, is exactly the rule main.tsx's own step-7
+            // comment already states.
+            void notificationsSystem().rescheduleReEngagement();
         },
         onSleep: () => {
             flushSave();
@@ -167,6 +175,21 @@ async function boot() {
     //    refresh. None of it should block or throw into this function.
     void refreshServerTime(); // trusted clock for the daily ad cap
     refreshEngagement(); // Like/Comments availability for the menu buttons
+    // Round 24: bootstrap the platform permission ONCE here, then arm the
+    // sliding re-engagement reminder — both happen while the app is alive,
+    // never from onSleep/onQuit (this file's own step-7 rule). ensureEnabled
+    // already respects the settings opt-out, so an opted-out player is never
+    // prompted.
+    notificationsSystem().ensureEnabled().then(() => {
+        void notificationsSystem().rescheduleReEngagement();
+    });
+    // The daily-reward reminder is stale noise if the player is already back
+    // with a claimable (or finished) calendar — clear it, same as the
+    // skill's own boot-wiring example. Opt-out doesn't need checking here:
+    // cancel() is never gated on it (systems/notifications.ts's own posture).
+    if (dailyRewardsSystem().canClaimNow() || dailyRewardsSystem().isComplete()) {
+        void dailyRewardsSystem().cancelReminder();
+    }
     // WebGLRenderer race round: generateTowerIconsWhenSafe() itself waits
     // for GameCanvas's app.init() to have already claimed the renderer
     // chunk (see towerIcons.ts) before touching it a second time — this is

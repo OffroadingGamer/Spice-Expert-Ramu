@@ -16,9 +16,13 @@
  * mounted unconditionally by App.tsx whenever store.settingsOpen is true —
  * only ever opened from the menu, unchanged this round.
  */
+import { useState } from 'react';
 import { setMusicVolume, setSfxVolume, sfx } from '../audio/audio.ts';
 import { getLocale, setLocale, t, type Locale } from '../i18n/index.ts';
-import { setAudioVolumes } from '../state/save.ts';
+import { track } from '../sdk/analytics.ts';
+import { dailyRewardsSystem } from '../sdk/dailyRewards.ts';
+import { notificationsSystem } from '../sdk/notifications.ts';
+import { getSave, setAudioVolumes, setNotificationsEnabled } from '../state/save.ts';
 import { store, useStore } from '../state/store.ts';
 import { Card, CardCredit, CardDivider, CardGhostButton, CardScrim, CardTitle } from './SettingsCard.tsx';
 import Slider from './Slider.tsx';
@@ -36,6 +40,10 @@ export default function Settings() {
     // component doesn't need its own store subscription for it.
     const locale = getLocale();
     const mu = useMenuUnit();
+    // Round 24: local state, same posture as `locale` above (a plain save
+    // read, re-driven by this component's own setter rather than a store
+    // subscription — nothing else in the app needs to react to this toggle).
+    const [notificationsEnabled, setNotificationsEnabledLocal] = useState(() => getSave().notificationsEnabled);
 
     const apply = (music: number, sound: number) => {
         setMusicVolume(music);
@@ -47,6 +55,27 @@ export default function Settings() {
     const close = () => { sfx.click(); store.patch({ settingsOpen: false }); };
 
     const chooseLocale = (l: Locale) => { if (l !== locale) { sfx.click(); setLocale(l, 'settings'); } };
+
+    /** Round 24: opting out cancels everything ALREADY scheduled (both
+     *  reminder ids — re-engagement via the factory's cancelAll(), and the
+     *  daily-reward come-back nudge, which schedules outside that factory —
+     *  see sdk/notifications.ts's header doc for why these are separate
+     *  ids), not just future scheduling (isOptedIn already gates that).
+     *  Opting back IN deliberately does nothing eager — the next alive
+     *  moment (boot/resume/end-of-run) re-arms re-engagement, and the next
+     *  claim re-arms the daily reminder — same "don't re-prompt, just stop
+     *  blocking" posture the notifications README specifies. */
+    const toggleNotifications = (enabled: boolean) => {
+        if (enabled === notificationsEnabled) return;
+        sfx.click();
+        setNotificationsEnabled(enabled);
+        setNotificationsEnabledLocal(enabled);
+        track('notifications_toggled', { enabled: enabled ? 1 : 0 });
+        if (!enabled) {
+            void notificationsSystem().cancelAll();
+            void dailyRewardsSystem().cancelReminder();
+        }
+    };
 
     /** Round 10 Part 6: the Name row's own tap — same guest/RUN split as
      *  the menu's greeting bubble (MainMenu.tsx's handleBubbleTap), but a
@@ -140,6 +169,32 @@ export default function Settings() {
                                 }}
                             >
                                 {l === 'en' ? 'English' : 'हिन्दी'}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+                <CardDivider />
+                {/* Round 24: the notifications opt-out — same two-pill shape
+                    as the language row above, for visual consistency. */}
+                <div className="flex items-center justify-between">
+                    <span style={{ fontSize: 12 * mu, fontWeight: 700 }}>{t('settings.notifications')}</span>
+                    <div className="flex" style={{ gap: 6 * mu }}>
+                        {([true, false] as const).map((on) => (
+                            <button
+                                key={String(on)}
+                                type="button"
+                                onClick={() => toggleNotifications(on)}
+                                className="font-bold transition-transform active:scale-95"
+                                style={{
+                                    padding: `${4 * mu}px ${9 * mu}px`,
+                                    borderRadius: 8 * mu,
+                                    border: `${1 * mu}px solid var(--color-chocolate)`,
+                                    backgroundColor: notificationsEnabled === on ? '#f97316' : 'transparent',
+                                    color: 'var(--color-chocolate)',
+                                    fontSize: 11 * mu,
+                                }}
+                            >
+                                {on ? t('settings.notifications.on') : t('settings.notifications.off')}
                             </button>
                         ))}
                     </div>

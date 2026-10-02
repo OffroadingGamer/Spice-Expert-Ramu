@@ -41,6 +41,7 @@ import { blockForLevel } from '../game/data/blocks.ts';
 import { openComments, promptLike } from '../sdk/engagement.ts';
 import { trackFunnelStep } from '../sdk/analytics.ts';
 import { computeKitchenBadge } from '../state/save.ts';
+import { dailyRewardsSystem } from '../sdk/dailyRewards.ts';
 import { t } from '../i18n/index.ts';
 import { store, useStore } from '../state/store.ts';
 import ChefPortrait from './ChefPortrait.tsx';
@@ -168,6 +169,11 @@ export default function MainMenu() {
     const scrollsSeenCount = useStore((s) => s.scrollsSeenCount);
     const lastUnlockedScrollSlug = useStore((s) => s.lastUnlockedScrollSlug);
     const kitchenBadge = computeKitchenBadge(scrolls.length, scrollsSeenCount);
+    // Round 24: re-read on every render (same posture as kitchenBadge above,
+    // not a store field) — canClaimNow() depends on the trusted clock, not
+    // React state, so there's nothing to subscribe to; MainMenu already
+    // re-renders often enough (gems, scrolls, locale) for this to stay fresh.
+    const dailyRewardBadge = dailyRewardsSystem().canClaimNow() ? 1 : 0;
     const backdropSrc = ASSET_SRC.get('menu-backdrop');
     const costumeBlock = blockForLevel(Math.max(1, bestWave));
     const mu = useMenuUnit();
@@ -487,6 +493,14 @@ export default function MainMenu() {
                     }}
                 >
                     {t('menu.kitchen')}
+                </GhostButton>
+
+                <GhostButton
+                    mu={mu}
+                    badge={dailyRewardBadge}
+                    onClick={() => { sfx.click(); store.patch({ dailyRewardsOpen: true }); }}
+                >
+                    {t('menu.dailyReward')}
                 </GhostButton>
 
                 <GhostButton mu={mu} onClick={() => { sfx.click(); store.patch({ ranksOpen: true }); }}>

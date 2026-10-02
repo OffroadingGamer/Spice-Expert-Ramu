@@ -222,6 +222,34 @@ have already left. A reminder shipped now reaches only players who open the new 
 only in the RUN app (web no-ops). Worth building post-jam for the campaign's installs; it
 cannot recover the jam's departed players.
 
+## 5c. ⚠️ The daily reward's persistence depends on `addGems()` staying a SHALLOW spread
+
+Recorded Oct 2 2026 while verifying Round 24. Not a bug — a **coupling that will break silently**
+if someone tidies the wrong line.
+
+`systems/dailyRewards.ts`'s `claimNext()` mutates its state object **in place**, and that object
+*is* `getSave().dailyRewards` rather than a copy. The claim is persisted by
+`sdk/dailyRewards.ts`'s `applyReward`, which calls `addGems()` — and `save.ts:376` reads:
+
+```ts
+data = { ...data, gems: data.gems + Math.max(0, Math.floor(amount)) };
+```
+
+That is a **shallow** spread, so the `dailyRewards` field carries over **by reference**, the
+in-place mutation is still attached to it, and `flushSave()` on the next line persists both.
+
+⚠️ **If `addGems()` is ever changed to deep-clone or to rebuild `dailyRewards`, the claim stops
+persisting — and nothing fails loudly.** The player would claim day 1, see the gems arrive, and
+find day 1 claimable again next session. No type error, no console warning, no test to catch it.
+
+The implementation agent spotted this itself and verified it by testing rather than reading, which
+is the right instinct. Both call sites document it. **Recorded here because a comment near the
+coupling is not the same as a note where someone refactoring `save.ts` would look.** No action
+proposed — the cheap future hardening, if it ever matters, is for `claimNext()` to return its new
+state and for `applyReward` to write it explicitly instead of relying on reference identity.
+
+---
+
 ## 5b. 🔴 The `daily` leaderboard has never existed on the service — found Sep 30 2026
 
 Found while verifying the go-live, by reading RUN rather than the repo. **This is a live defect on

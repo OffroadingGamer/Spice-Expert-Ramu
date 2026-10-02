@@ -450,4 +450,23 @@ export const hi: Record<string, TranslationEntry> = {
     'continue.loading': 'लोड हो रहा…',
     'continue.adName': 'शिफ्ट जारी रखें',
     'continue.adDescription': 'एक रिवॉर्ड जारी',
+
+    // ---- 22. Daily rewards & notifications (Round 24) ----------------------
+    // New this round — functional Hindi, flagged for the user's later
+    // copy-review pass (per the handover: "write reasonable Hindi and flag
+    // your new keys").
+    'menu.dailyReward': 'दैनिक इनाम',
+    'dailyRewards.title': 'दैनिक इनाम',
+    'dailyRewards.day': 'दिन {n}',
+    'dailyRewards.claim': 'लो',
+    'dailyRewards.claimed': 'लिया जा चुका',
+    'dailyRewards.nextIn': 'अगला इनाम {time} में',
+    'dailyRewards.complete': 'सारे इनाम लिए जा चुके हैं। वापस आने के लिए धन्यवाद!',
+    'settings.notifications': 'सूचनाएँ',
+    'settings.notifications.on': 'चालू',
+    'settings.notifications.off': 'बंद',
+    'notif.reengagement.title': 'रसोई में आपकी कमी है',
+    'notif.reengagement.body': 'रामू आपका स्टेशन सँभाले हुए है। आओ, एक शिफ्ट पूरी करो!',
+    'notif.dailyReward.title': 'आपका दैनिक इनाम तैयार है',
+    'notif.dailyReward.body': 'आज के जेम्स पास पर आपका इंतज़ार कर रहे हैं। आओ, ले लो!',
 };

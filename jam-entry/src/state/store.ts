@@ -283,6 +283,10 @@ export interface AppState {
      *  imports `store` instead (a new edge this round), so there is no
      *  cycle either way. */
     locale: string;
+    /** Round 24: the daily-reward popup (MainMenu's new button) — an
+     *  overlay, same "not a phase, nothing unmounts underneath" posture as
+     *  metaOpen/ranksOpen/settingsOpen above. */
+    dailyRewardsOpen: boolean;
 }
 
 const INITIAL: AppState = {
@@ -351,6 +355,7 @@ const INITIAL: AppState = {
     // main.tsx's initLocaleFromSave() (boot step 2) patches the real,
     // persisted value before first paint.
     locale: 'en',
+    dailyRewardsOpen: false,
 };
 
 /**

@@ -134,6 +134,20 @@ export interface SaveData {
      *  ready" names this one. Never set by buyScroll (a gem purchase happens
      *  IN the Kitchen — there is nothing to announce back at the menu). */
     lastUnlockedScrollSlug: string | null;
+    /** Round 24: the player's settings-toggle opt-out for local-notification
+     *  reminders (sdk/notifications.ts, sdk/dailyRewards.ts). `!== false` is
+     *  how every reader treats this (never a bare truthy read), so an old
+     *  save missing the field — same additive/migration-safe posture as
+     *  locale/shards/scrolls above — defaults to opted IN, not out. */
+    notificationsEnabled: boolean;
+    /** Round 24: the daily-reward track's own persisted state
+     *  (systems/dailyRewards.ts's DailyRewardsState) — `claimed` doubles as
+     *  the index of the next unclaimed slot, `lastClaimDay` gates one claim
+     *  per local day. Mutated IN PLACE by that module's claimNext() (not
+     *  reassigned here), so sdk/dailyRewards.ts's getState() must keep
+     *  returning this exact nested object, never a copy — see that file's
+     *  own doc on why addGems() as applyReward is still a single flush. */
+    dailyRewards: { claimed: number; lastClaimDay: string | null };
 }
 
 /** One remembered rank plus the UTC day it was recorded on. `utcDay` is only
@@ -175,6 +189,8 @@ const DEFAULTS: SaveData = {
     scrollsBought: [],
     scrollsSeenCount: 0,
     lastUnlockedScrollSlug: null,
+    notificationsEnabled: true,
+    dailyRewards: { claimed: 0, lastClaimDay: null },
 };
 
 let data: SaveData = structuredClone(DEFAULTS);
@@ -283,6 +299,22 @@ function parse(raw: string | null): SaveData | null {
                     : scrolls.length,
             lastUnlockedScrollSlug:
                 typeof parsed.lastUnlockedScrollSlug === 'string' ? parsed.lastUnlockedScrollSlug : null,
+            // Round 24: both additive — a pre-1.99.0 save has neither key,
+            // which parses to "opted in, nothing claimed yet" (the same
+            // fresh-install defaults), never an error.
+            notificationsEnabled: parsed.notificationsEnabled !== false,
+            dailyRewards: (() => {
+                const raw = (parsed.dailyRewards ?? {}) as Partial<SaveData['dailyRewards']>;
+                return {
+                    // No reference to the track's own length here (it would
+                    // mean importing sdk/dailyRewards.ts, which imports THIS
+                    // file — a cycle). An over-large value is harmless:
+                    // systems/dailyRewards.ts's isComplete()/nextIndex() only
+                    // ever compare claimed >= rewards.length.
+                    claimed: num(raw.claimed, 0, Number.MAX_SAFE_INTEGER),
+                    lastClaimDay: typeof raw.lastClaimDay === 'string' ? raw.lastClaimDay : null,
+                };
+            })(),
         };
     } catch {
         return null;
@@ -423,6 +455,17 @@ export function renamePlayer(name: string): boolean {
 export function setSaveLocale(locale: string): void {
     if (data.locale === locale) return;
     data = { ...data, locale };
+    flushSave();
+}
+
+/** Round 24: the Settings notifications toggle — idempotent write, same
+ *  posture as setDialogueMuted above. Settings.tsx is the only caller; it
+ *  also cancels everything already scheduled on a switch to false (the
+ *  SDK-facing half lives in sdk/notifications.ts/sdk/dailyRewards.ts, not
+ *  here — this file only owns the persisted flag). */
+export function setNotificationsEnabled(enabled: boolean): void {
+    if (data.notificationsEnabled === enabled) return;
+    data = { ...data, notificationsEnabled: enabled };
     flushSave();
 }
 

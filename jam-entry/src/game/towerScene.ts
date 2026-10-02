@@ -29,6 +29,7 @@ import { TOWERS } from './data/towers.ts';
 import { dialogueForBlock } from './data/dialogue.ts';
 import { queueDialogue, queueDialogueOnce } from './dialogueController.ts';
 import { track, trackFunnelStep } from '../sdk/analytics.ts';
+import { notificationsSystem } from '../sdk/notifications.ts';
 // Round 13 Part 2: aliased — this file uses the bare identifier `t` pervasively
 // as a local tower-instance variable/parameter name (engine.state.towers'
 // element type), which would silently shadow the i18n lookup function.
@@ -1441,6 +1442,14 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             outcome,
         });
         trackFunnelStep(6, 'run_end', 'run', 2);
+        // Round 24: the chosen end-of-run moment (handover's own suggestion)
+        // — a run has just ended and the player is still here, app alive, so
+        // this is exactly the "active moment" the reminder should slide off
+        // of. checkEnd() (this function's only caller) already gates on
+        // runEndDecided/continuedThisRun so this never fires on a loss that
+        // might still be un-lost by a continue — by the time trackRunEnd
+        // runs, the run is genuinely, finally over.
+        void notificationsSystem().rescheduleReEngagement();
     }
 
     // ---- tap-to-select pads ------------------------------------------------
