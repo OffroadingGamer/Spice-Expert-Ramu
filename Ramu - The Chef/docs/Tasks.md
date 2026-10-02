@@ -29,8 +29,10 @@ never existed on the service** — the Ranks "Today" tab has no board behind it.
 notifications, a 7-day gem reward track, a Settings opt-out. ✅ **The socials round returned and is verified** (Oct 2) —
 profile set, packet `f0e22600` prepared, captions rewritten, **nothing posted**. 🔴 Open on the
 user: the **Discord handle is a guess**, the **Public move to 1.99.0**, and a human check on
-r/SoloDevelopment cadence. Recommendation: **promote 1.99.0, re-prepare, post once.** Paid UA is
-ruled out. 🔴 **Ambition set Oct 2: portfolio/learning — paid UA ruled out, business
+r/SoloDevelopment cadence. ✅ **AUTHORISED Oct 2: promote 1.99.0, then re-prepare.**
+🔒 A second narrow `update-tag` exception — `review` and `public` tags, version 1.99.0 only;
+`set-public`/`set-private` still forbidden, and the permission is spent after. ⚠️ 1.99.0 ships
+with no About-tab notes (`--changelog` is deploy-time only). Paid UA is ruled out. 🔴 **Ambition set Oct 2: portfolio/learning — paid UA ruled out, business
 nudge declined, neither to be raised again.**
 ✅ **Round 23 shipped as Private 1.98.0 and is verified.**
 ✅ **Round 22 shipped as Private 1.97.0 and is verified.** ✅ **Round 21 shipped as Private 1.96.0 and is verified. The planned
