@@ -1,6 +1,6 @@
 # Social Media Handover Record
 
-**Last updated:** Sep 22 2026
+**Last updated:** Oct 2 2026
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Marketing Strategy.md](Marketing%20Strategy.md)
 
@@ -1555,3 +1555,210 @@ players; writes limited to **this file and `Marketing Strategy.md`**; **no git**
 posting without the user's separate approval.** ⚠️ Also: **no Hindi captions**, because the user
 has **deferred** the Hindi copy review and unreviewed Hindi should not be the first thing a new
 audience reads.
+
+### 2026-10-02 — Working this handover: voice, profile, version-match check
+
+**From:** the pasted handover above, relayed back by the user as the instruction to act on.
+
+**Live-verified before touching anything** (carried claims re-checked, not assumed): `whoami`
+confirms `offroadinggamedev@gmail.com`. `rundot game info` / `list-tags` confirm the handover's
+picture exactly — **Public: 1.98.0** (unchanged, still the Sep 30 move), **Private: 1.99.0**,
+**Review (Approved): 1.98.0** (matches Public's config id). `socials profile show`: **no profile
+configured yet.** `socials status`: the named stale packet **`cabeeb7e-ad5c-4b69-bfc1-0458e145b0a3`**
+confirmed present, `x` and `reddit` both `ready`/never-posted, carrying `?s=` tracked links (not
+the `?k=` secret kind — safe to let a fresh `prepare` supersede, as instructed).
+
+**Voice — not guessed, pulled from this doc's own history.** §-level pattern across this file:
+personal-network copy reads as *"a favour asked of a friend, not copy — no hashtags, no 'check
+out my game'"*; RUN-native surfaces go *"straight to the ask"*; the user's own posts run longer
+and first-person and routinely end on a genuine ask for feedback. The game's own description
+(already confirmed good, no `set-description` needed) is the clearest voice sample: specific,
+loop-forward, zero adjective slop. Encoding that as the profile tone below — direct and specific,
+not hype.
+
+**Profile values drafted here, before `profile set`, per the handover's instruction** (this
+profile is shared across every game on this account, so kept reusable, not Ramu-specific):
+
+| Field | Value | Note |
+|---|---|---|
+| `--tone` | `specific and direct, no hype or corporate-update adjectives — say exactly what the player does` | reusable |
+| `--hashtags` | `indiedev,gamedev,indiegame` | generic, reusable |
+| `--cta` | `Play it,Tell me what confused you` | matches this doc's established feedback-seeking pattern |
+| `--footer` | `Made with RUN.game` | optional, low-risk, reusable |
+| `--discord-username` | `puneetmakes` | ⚠️ **inferred, not told** — this is the RUN handle visible in the public share URL (`w.run/puneetmakes/...`), not necessarily the Discord handle. Flagging for correction rather than assuming it's right. |
+
+No `--discord-webhook` set — none was supplied and this agent isn't inventing one; Discord stays
+a manual draft, same as X/Reddit, until the user adds a webhook.
+
+**Version-match check, done the careful way.** The handover's own hook leans on 1.99.0's retention
+round (daily reward, return reminders), but step 4 of the path is explicit: *"the version must
+match what Public actually serves at that moment, not what's newest."* Public serves **1.98.0**
+right now — prerequisite 1 (the move to 1.99.0) is still an open user call, not made yet. Preparing
+against 1.99.0 would draft copy promising features (daily reward, return reminders) that aren't
+live on the build the tracked link actually opens. The handover text itself anticipated this —
+its bullet list carries the retention-round line as conditional: *"(if 1.99.0 is promoted) daily
+rewards and return reminders."* So: **`prepare --update 1.98.0`**, built on the four unconditional
+bullets (Hindi, the Kitchen progression layer, one mode, 906 kB lighter) — which is genuine news
+regardless, since Public only picked those up Sep 30 and has had four players since. The
+retention-round bullet is held back, drafted separately below as the addendum to add **only once**
+the user approves the version move and a fresh `prepare --update 1.99.0` supersedes this packet.
+
+**Packet prepared and confirmed new:** `rundot socials prepare --update 1.98.0 --platforms
+x,reddit` returned packet **`f0e22600-a068-457f-9d92-1d681d6e75f8`** — proof it's the new one: a
+follow-up `socials status` call (which defaults to the latest packet) returned that same id, not
+`cabeeb7e...`. Tracked links: `?s=qbRwIss` (X), `?s=hFxuVYu` (Reddit) — both `?s=`, neither `?k=`.
+
+**Changelog recommendation: skip the redeploy, write every caption from the hook.** 1.99.0 has no
+changelog and there's no retroactive way to add one (`--changelog`/`--changelog-file` exist only
+on `rundot deploy`; `game configure` only touches build-path/orientation/preloader). Minting a new
+version number to attach About-tab notes wouldn't change what's actually gating this round — the
+version-move call — so there's no payoff to redeploying right now. The real commit history (Round
+24, verified in the Implementation Handover Record: return notifications with a Settings opt-out,
+a 7-day/125-gem reward track) is specific enough to write from directly. Drafted anyway, per the
+instruction to draft regardless of which option is picked:
+> ## v1.99.0
+> - Daily login rewards: a 7-day gem track
+> - Return notifications bring players back, with a Settings opt-out
+
+**Edited captions, in full — the raw `prepare` output only echoed `game info`'s description** (no
+Hindi, no Kitchen layer, no "6th of 100," no "best wave 106" — the generic-slop failure mode the
+skill warns about). Rewritten from the real hook; tracked links kept exactly as generated.
+
+**X** (link in the reply, per `linkPlacement: "reply"`):
+> Finished 6th of 100 in RUN's September Jam with Spice Expert: Ramu. Since then: Hindi
+> throughout, a full kitchen progression layer, one mode instead of two, and 906 kB lighter. Live
+> board's best wave is 106 - beat it? #indiedev #gamedev #indiegame
+(247 characters.)
+
+**Reddit** (target r/SoloDevelopment, devlog framing, same angle this doc has used there before —
+⚠️ still can't verify this account's posting cadence on that sub from here, flagging again rather
+than assuming it's clear):
+> **Title:** The jam build you played in September isn't this game anymore
+>
+> Spice Expert: Ramu finished 6th of 100 in RUN's September Game Jam — no prize, but no walkouts
+> either. Since judging closed, the game moved a long way past what anyone played in the jam:
+> - Hindi throughout (395 translated strings), with a Settings language row
+> - A full kitchen progression layer: stations, recipes, a shard economy, Toque Badges
+> - One mode instead of two — the half-finished conveyor mode got cut rather than patched
+> - 906 kB lighter, and crash-free across every analytics row since
+>
+> If you played the jam build, it's worth another look — the live board's best wave is 106 right
+> now if anyone wants a number to chase. [tracked link]
+>
+> Mostly just want to know what's confusing to a new player who never saw the jam version — happy
+> to answer anything.
+
+**RUN Discord `#showcase`** (fresh copy, not the Discord-platform draft pasted verbatim):
+> Spice Expert: Ramu just moved from "jam entry" to "actual game." Since finishing 6th of 100 in
+> the September Jam: Hindi throughout, a full kitchen progression layer (recipe shards, Toque
+> Badges), one mode instead of two, 906 kB lighter. Live board's best wave is 106 — play it here:
+> [public link]. Would love a comment if anything's confusing.
+
+**My read on #showcase:** worth posting at the same time as X/Reddit, not instead of — it's the
+warmest, most jam-literate audience and the fastest likely source of a genuine non-creator click
+to clear `verify`. Drafted above, not posted.
+
+**Retention-round addendum, held back:** once the user approves the Public move to 1.99.0, re-run
+`prepare --update 1.99.0` (new packet, supersedes this one) and add one line to every caption
+above — *"...and now a daily reward plus a nudge to come back if you drift."* Not added now
+because it isn't true of the build the tracked link currently opens.
+
+**No "Pot" and no artist surname anywhere above**, per this project's two prior moderation
+rejections.
+
+**Something in the brief worth flagging, not just executing:** the commit framing this handover
+as "blocked on two user calls" slightly overstates it. Only the **retention-round addendum** is
+blocked on the version-move call. The **1.98.0 announcement itself — the bigger story, per the
+handover's own framing — is fully drafted and ready now**, gated only on the posting approval
+every round needs anyway. Separately: `game info` shows **Review (Approved) is already 1.98.0**,
+same config id as Public — 1.99.0 hasn't even entered Review yet. So the version-move call isn't
+a single flag-flip; on the normal path it's Private → Review → Public, unless the Sep 30
+exception mechanism (still unattributed, per that date's entry) gets used again. Flagging so the
+user's decision accounts for that extra step, not assuming it away.
+
+**Status:** ✅ complete for this round — profile set, voice established, packet prepared and
+every caption rewritten from the real hook, changelog recommendation given with bullets either
+way, #showcase drafted. **Stopped before `open`, before posting, before `mark-posted`**, exactly
+as instructed. Nothing goes out without the user's separate approval; the retention-round line
+additionally waits on the user's version-move call. Holding for that approval or a new handover.
+
+---
+
+### 2026-10-02 — Central's verification of the socials round, and an adjudication of its pushback
+
+Return pasted **verbatim** into [Agent Returns.md](Agent%20Returns.md) before verification — the
+first marketing-agent return in that ledger, since the rule is *every* agent return.
+
+✅ **Everything checkable, checked from the CLI rather than the report.**
+
+| Claim | Verified |
+|---|---|
+| Profile set | ✅ `socials profile show` returns every value, matching the doc's table exactly |
+| New packet, not the stale one | ✅ `socials status` returns **only** `f0e22600-…`; `cabeeb7e-…` is superseded |
+| Tracked links are safe | ✅ `?s=qbRwIss` / `?s=hFxuVYu` — **no `?k=` secret anywhere** |
+| Nothing posted | ✅ `socials verify`: both platforms **`not posted`, 0 clicks** |
+| Docs touched | ✅ only `Social Media Handover Record.md` and `Marketing Strategy.md`. No git, no code |
+| Moderation hazards | ✅ no standalone **"Pot"**, no artist surname — the only matches are the agent's own notes saying so |
+| X caption length | ✅ **exactly 247 characters**, as claimed. `linkPlacement: reply` keeps the link out of the count, so 247/280 holds |
+
+✅ **And every factual claim inside the captions is true** — independently confirmed against
+Central's own verification record, not taken from the agent: **6th of 100**, **395 translated
+strings**, **906 kB lighter**, **one mode instead of two** (Round 21), **crash-free across every
+analytics row** (`crash_free_summary_30d`, 100% on every row), **best wave 106**
+(`leaderboard stats …_waves_alltime`). Nothing was inflated for copy.
+
+✅ **The version-match reasoning was better than the brief's.** Told to match *"what Public
+actually serves at that moment"*, the agent prepared against **1.98.0** and explained why: the
+tracked link opens 1.98.0, so advertising the daily reward and return reminders would promise
+features the build does not have. It then **held the retention line back as a separate addendum**
+rather than quietly dropping or quietly including it. That is the right instinct, correctly
+reasoned, and it cited the brief's own conditional bullet to justify it.
+
+## The pushback — three points upheld, two corrected
+
+The agent challenged Central's framing. ✅ **Taking it point by point, because most of it is
+right.**
+
+✅ **UPHELD — "blocked on two user calls" overstated it.** Correct, and it was Central's error.
+**Only one deliverable** (the retention addendum) depended on the version move; the profile, the
+voice, the packet, every caption and the changelog recommendation never did. The commit subject
+labelled the **whole round** blocked. ⚠️ **A less diligent agent could reasonably have read that
+and done nothing.** → **Retro 141.**
+
+✅ **UPHELD — preparing against 1.98.0 was right.** See above.
+
+✅ **UPHELD — the version move may not be one flag-flip.** Review and Public both sit at 1.98.0
+on the same config id, so 1.99.0 has not entered Review. Private → Review → Public may well be
+the real path, and the user's decision should account for that step rather than assume it away.
+
+🔴 **CORRECTED — there is no "Sep 30 exception mechanism."** The agent referred twice to using
+it "again", as though it were a platform feature. It was not: it was **Central's authorisation** —
+a one-time permission to run `update-tag`, granted by the user, and spent. RUN exposes no bypass.
+⚠️ **What actually happened on Sep 30 remains unattributed:** Review was moved, and Public then
+read 1.98.0 without an attributable command. The agent's own doc notes the unattribution and then
+still calls it a mechanism — which is a **recorded uncertainty hardening into a confident claim
+about platform behaviour**, the same failure class as a carried caution becoming a status.
+
+🔴 **CORRECTED — the 1.98.0 announcement should NOT go out now, and this is the operative
+call.** The agent reads the remaining gate as *"the posting approval every round needs anyway."*
+It is more than that. The user chose retention-first on Oct 2 for a stated reason: **so the
+announcement lands on a build that can hold the players it brings.** Posting 1.98.0 delivers
+arrivals to a build with **no daily reward and no return reminder** — precisely the trade the user
+declined. And it spends the **one** launch moment on the weaker of two available posts: a 1.98.0
+announcement plus a later addendum line is strictly worse than a single 1.99.0 post carrying the
+whole story. The drafting was never blocked; **the posting is, and on the sequencing decision
+rather than on routine approval.**
+
+✅ **Central's recommendation: promote 1.99.0, re-run `prepare --update 1.99.0`, post once.**
+
+## 🔴 Open on the user
+
+1. **The Discord handle is a guess.** `puneetmakes` was inferred from the public share URL, and
+   the agent flagged it rather than letting it pass — correctly. **It must be corrected before any
+   `#showcase` post.** `profile show` currently reports `Discord user: puneetmakes` with the
+   webhook field separately **not configured**.
+2. **The Public move to 1.99.0.** 🔒 Not authorised by Central — the Sep 30 permission is spent
+   and this needs the user's word.
+3. ⚠️ **r/SoloDevelopment posting cadence is unverified.** The agent flagged twice that it cannot
+   see this account's history on that subreddit. Posting too often is how a solo dev gets removed,
+   and nothing in the CLI can answer it. **A human check before the Reddit post.**

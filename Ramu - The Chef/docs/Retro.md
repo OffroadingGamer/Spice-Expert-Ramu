@@ -3084,3 +3084,15 @@ after **00:30 IST Sep 19**.
      treating two analytics rows as consecutive steps, check they share a funnel. A table that
      prints several funnels together will happily let me subtract across them, and the arithmetic
      works perfectly while meaning nothing.**
+
+141. **I labelled a whole round "blocked" when only one of its six deliverables was.** The socials
+     handover's commit subject read *"blocked on two user calls"*, and the record repeated it. Only
+     the **retention addendum** actually depended on the Public move to 1.99.0 — the voice work,
+     `profile set`, the packet, every caption and the changelog recommendation were all
+     independent of it, which the marketing agent proved by simply completing them and then saying
+     so. ⚠️ **The risk was not that I was wrong in detail; it was that a correct reading of my
+     own framing was "do nothing until the user answers."** This agent went and did the work
+     anyway; a more literal one would have returned empty and cost a round. ✅ **Rule: scope a
+     blocker to the deliverable it blocks, never to the round. Name what CAN proceed in the same
+     breath as what cannot — and if everything in a round is genuinely blocked, that is a reason
+     not to issue the round yet, not a caveat to put at the top of it.**

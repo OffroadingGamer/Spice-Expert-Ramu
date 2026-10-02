@@ -1003,12 +1003,49 @@ Nothing structural — the two systems' templates were a clean fit. The one thin
 
 ---
 
+## 2026-10-02 — the organic socials path — **marketing agent**
+
+Outcome: profile set, packet `f0e22600` prepared against **1.98.0**, captions rewritten, **nothing
+posted**. First marketing-agent return in this ledger — the rule is *every* agent return, not only
+the implementation agent's.
+
+Both docs are updated (dated Oct 2 2026) and I stopped exactly where the brief said to. Here's the report:
+
+Live-verified first: whoami confirmed identity. game info/list-tags: Public = 1.98.0 (unchanged since Sep 30), Private = 1.99.0, Review (Approved) = 1.98.0 (same config id as Public — so 1.99.0 hasn't even entered Review yet). socials profile show was empty. The stale packet cabeeb7e... was confirmed present with safe ?s= links, never posted.
+
+Profile set (shared across all your games — flag anything you want changed):
+
+Field	Value
+tone	"specific and direct, no hype or corporate-update adjectives"
+hashtags	indiedev, gamedev, indiegame
+CTAs	"Play it" / "Tell me what confused you"
+footer	"Made with RUN.game"
+discord-username	puneetmakes — ⚠️ I inferred this from your public RUN handle in the share URL, I don't actually know your Discord handle. Please correct it.
+Confirmed via profile show after setting.
+
+Version-match call: Public still serves 1.98.0, not 1.99.0 — so I prepared against 1.98.0, not the retention build, per the handover's own instruction to match what's actually live. New packet f0e22600-a068-457f-9d92-1d681d6e75f8 (confirmed via a follow-up status call, proving it superseded the stale one, not edited it).
+
+Captions, fully rewritten (raw CLI output was generic description-echo slop — no Hindi/Kitchen-layer/"6th of 100" mentioned at all):
+
+X (247 chars, link in reply): "Finished 6th of 100 in RUN's September Jam... Hindi throughout, a full kitchen progression layer, one mode instead of two, and 906 kB lighter. Live board's best wave is 106 - beat it?"
+Reddit (r/SoloDevelopment devlog): full title + body in the docs, same "jam build isn't this game anymore" hook, ending on a genuine feedback ask.
+#showcase: drafted fresh, not pasted from the Discord draft.
+Changelog: recommend skipping the redeploy — write captions from the hook, since 1.99.0's real commit history (return notifications + 7-day gem track) is specific enough. Drafted the formal bullets anyway in case you redeploy.
+
+One thing I think the brief overstated: calling this "blocked on two user calls" isn't quite right — only the retention-round addendum is blocked on the version move. The 1.98.0 announcement (the bigger story) is fully drafted and ready now, gated only on your normal posting approval. Also flagging that the version move isn't a flag-flip — 1.99.0 would need to go through Review first, same as 1.98.0 did, unless you use the Sep 30 exception mechanism again.
+
+Nothing posted, opened, or marked-posted. Holding for your approval.
+
+---
+
 ## Pending
 
-- Nothing outstanding. **Round 24 has returned** and is recorded above; verification by Central
-  follows. Next is the **socials path** (marketing agent, under the user's separate approval):
-  `profile set` → changelog → `prepare --update` → **edit captions** → post + #showcase. Never
-  bare `prepare`.
+- ⏳ **The socials packet is drafted and held.** Captions for X, Reddit and #showcase are written
+  and **nothing has been posted, opened or marked-posted.** Waiting on the user. 🔴 Two items
+  need the user specifically: the **Discord handle is a guess** (`puneetmakes`, inferred from the
+  RUN share URL — must be corrected before any #showcase post), and **whether to announce 1.98.0
+  now or promote 1.99.0 first** — see Central's adjudication in
+  `Social Media Handover Record.md`.
 
 ### Superseded pending notes
 

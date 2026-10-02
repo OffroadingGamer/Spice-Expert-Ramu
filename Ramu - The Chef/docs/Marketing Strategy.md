@@ -1,6 +1,6 @@
 # Marketing Strategy
 
-**Last updated:** Sep 22 2026
+**Last updated:** Oct 2 2026
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)
 
@@ -1714,3 +1714,151 @@ what a future launch push should look like, not a plan being executed
 now; a second approval would still be needed before any of it becomes
 copy that goes out or a campaign that gets funded. Handing back for
 Central to sync.
+
+---
+
+## 21. Organic socials, round 1 — profile, voice, prepared packet — Oct 2 2026
+
+**Trigger:** Central's Oct 2 handover, relayed by the user — run the full
+`rundot socials` path (voice → profile → changelog → `prepare` →
+edit captions → stop and report) for the post-jam relaunch. **No
+`rundot marketing` command at all** — paid UA was ruled out the same day
+when the user set this project's ambition to portfolio/learning, a
+standing decision, not a deferral. Scope is organic only and stops before
+posting, same as every round in this doc.
+
+**Live-verified before anything was drafted:** `whoami` confirmed
+identity. `rundot game info` / `list-tags`: **Public serves 1.98.0**
+(unchanged since the Sep 30 move), **Private is 1.99.0** (the retention
+round — see [Implementation Handover Record] for Round 24), **Review
+(Approved) is 1.98.0**, matching Public's config id. `socials profile
+show`: no profile existed yet. `socials status`: the stale packet
+**`cabeeb7e-ad5c-4b69-bfc1-0458e145b0a3`** confirmed present with `x` and
+`reddit` both `ready`/never-posted, carrying jam-era `?s=` tracked links —
+safe (not the `?k=` secret kind) to let a fresh `prepare` supersede, as
+the handover warned.
+
+### Voice and profile
+
+Not guessed — pulled from this doc's own established pattern: personal
+asks read as "a favour asked of a friend," RUN-native surfaces go
+straight to the ask, and the user's own posts consistently close on a
+genuine request for feedback. The game's own description (confirmed
+good, no `set-description` needed) is the clearest voice sample: specific,
+loop-forward, no adjective slop.
+
+Profile set (full value table in the Handover Record's Oct 2 entry, kept
+reusable across every game on the account, not Ramu-specific): tone
+*"specific and direct, no hype or corporate-update adjectives"*; hashtags
+`indiedev, gamedev, indiegame`; CTAs `Play it` / `Tell me what confused
+you`; footer `Made with RUN.game`; Discord username `puneetmakes`
+(⚠️ inferred from the public RUN handle in the share URL, not confirmed —
+flagged for the user to correct if wrong). No Discord webhook — none was
+supplied, none invented.
+
+### Version-match decision
+
+The handover's own hook leans on 1.99.0's retention round (daily reward,
+return reminders), but the path is explicit that the prepared version
+must match what Public *actually serves at that moment*, not what's
+newest — and Public is still 1.98.0; the move to 1.99.0 is an open user
+call (prerequisite 1), not made yet. Preparing against 1.99.0 would draft
+copy advertising features the tracked link wouldn't actually show. The
+handover text itself treats this as conditional — *"(if 1.99.0 is
+promoted) daily rewards and return reminders"* — so this round prepared
+against **1.98.0**, built on the four unconditional claims (Hindi, the
+Kitchen progression layer, one mode, 906 kB lighter), which is genuine
+news regardless: Public only picked those up Sep 30 and has had four
+players since. The retention-round line is held back as a drafted
+addendum below, to add only once the user approves the version move and
+a fresh `prepare --update 1.99.0` supersedes this packet.
+
+`rundot socials prepare --update 1.98.0 --platforms x,reddit` produced a
+**new packet, `f0e22600-a068-457f-9d92-1d681d6e75f8`** — confirmed via a
+follow-up `socials status` call returning that id, not the stale one.
+Tracked links: `?s=qbRwIss` (X) and `?s=hFxuVYu` (Reddit) — neither
+carries a `?k=` key, both safe to post once approved.
+
+### Changelog — recommendation, not improvisation
+
+1.99.0 has no changelog and `game configure` has no way to add one
+retroactively (`--changelog`/`--changelog-file` exist only on `rundot
+deploy`). **Recommendation: skip the redeploy, write every caption from
+the hook.** Minting a new version number just to attach About-tab notes
+doesn't change the thing actually gating this round — the user's call on
+moving Public — and the real commit history (Round 24, verified in the
+Implementation Handover Record) is specific enough raw material to draft
+honest captions without it. Drafted either way, as instructed:
+
+> **If redeployed, the changelog would read:**
+> ## v1.99.0
+> - Daily login rewards: a 7-day gem track
+> - Return notifications bring players back, with a Settings opt-out
+
+No standalone "Pot" and no artist surname appear anywhere in this
+section or the captions below, per the moderation history on this
+project.
+
+### Edited captions — the CLI drafts were generic, rewritten from the real hook
+
+**Raw `prepare` output used only `game info`'s description text** — no
+Hindi, no Kitchen layer, no "6th of 100," no "best wave 106." Exactly the
+generic-slop failure mode the socials skill warns about. Rewritten below;
+tracked links kept exactly as generated.
+
+**X** (reply link placement — caption first, tracked link + `@RUN` follow
+in the reply):
+> Finished 6th of 100 in RUN's September Jam with Spice Expert: Ramu.
+> Since then: Hindi throughout, a full kitchen progression layer, one
+> mode instead of two, and 906 kB lighter. Live board's best wave is 106
+> - beat it? #indiedev #gamedev #indiegame
+(247 characters — link goes in the reply tweet, per `linkPlacement:
+"reply"`.)
+
+**Reddit** (target: r/SoloDevelopment, devlog framing per this doc's own
+established angle for that sub — ⚠️ flagging again, as in the Sep 17
+round, that this agent can't check the account's posting cadence there
+from here):
+> **Title:** The jam build you played in September isn't this game
+> anymore
+>
+> Spice Expert: Ramu finished 6th of 100 in RUN's September Game Jam —
+> no prize, but no walkouts either. Since judging closed, the game moved
+> a long way past what anyone played in the jam:
+> - Hindi throughout (395 translated strings), with a Settings language
+>   row
+> - A full kitchen progression layer: stations, recipes, a shard
+>   economy, Toque Badges
+> - One mode instead of two — the half-finished conveyor mode got cut
+>   rather than patched
+> - 906 kB lighter, and crash-free across every analytics row since
+>
+> If you played the jam build, it's worth another look — the live
+> board's best wave is 106 right now if anyone wants a number to chase.
+> [tracked link]
+>
+> Mostly just want to know what's confusing to a new player who never
+> saw the jam version — happy to answer anything.
+
+**RUN Discord `#showcase`** (fresh copy, not the Discord-platform draft
+pasted verbatim, per the skill's own instruction):
+> Spice Expert: Ramu just moved from "jam entry" to "actual game." Since
+> finishing 6th of 100 in the September Jam: Hindi throughout, a full
+> kitchen progression layer (recipe shards, Toque Badges), one mode
+> instead of two, 906 kB lighter. Live board's best wave is 106 — play it
+> here: [public link]. Would love a comment if anything's confusing.
+
+**Retention-round addendum — held back, not posted with the above.** Once
+the user approves the Public move to 1.99.0, a fresh `prepare --update
+1.99.0` should supersede this packet and every caption above should gain
+one line: *"...and now a daily reward plus a nudge to come back if you
+drift."* Not added yet because it isn't true of what the tracked link
+opens today.
+
+**Status:** profile set, voice decided, one packet prepared and
+captions fully rewritten — **stopped before `open`, before `post`,
+before `mark-posted`**, exactly as instructed. Nothing here goes out
+without the user's separate posting approval, and the retention-round
+copy specifically waits on the user's own call on the version move. Full
+report, including the discord-username flag, handed back via the
+Handover Record's Oct 2 entry.
