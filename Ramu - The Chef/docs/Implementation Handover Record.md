@@ -41,7 +41,7 @@ of the present.**
 |---|---|
 | **Live version** | **Private 1.98.0** (Rounds 0–23 — roadmap complete; R22–23 were added pre-launch rounds) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. 🚀 **LIVE — Sep 30 2026, all three tags now serve 1.98.0.** Public was frozen at 1.69.0 for twelve days; it is now the current build, **verified by SHA256 against the local `dist/`, not by report** (`index-BZ2Qgy9f.js`, 871,216 bytes, identical hash). |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
-| **In flight** | ✅ **GO-LIVE DONE — Sep 30 2026. 1.98.0 is serving on Public**, and the two live leaderboards are **intact and confirmed** (waves 111 players / range 1–106 · kills 105 / 1–6,231 · 0 shadow-banned · last submission 2026-09-29T21:05Z, i.e. before the move). ⚠️ **Two things came out of the move and are open.** (1) **How Public moved is unattributed** — the agent stopped at step 3 and reported it had not touched Public, yet Public reads 1.98.0; either RUN promoted it on approval or the agent ran step 4 unreported, and **the CLI exposes no audit trail to tell them apart**. Ask the agent; do not assume. (2) 🔴 **The `daily` leaderboard has never existed on the service** — see the Sep 30 entry; the Ranks "Today" tab has no board behind it. Next is **`rundot-game-coach`**, then the **announcement** (marketing agent, separate approval). ✅ **The Sep 9 licence note is SUPERSEDED** — stale on every clause, and Round 23 removed the dobo_ui assets outright; see the Sep 30 entry. **No technical or licence gate remains on the promotion.** ✅ **The "4 AI features" row is now all but resolved from the CLI** — `rundot credits` reports exactly **four service rows**, and the no-runtime-AI finding was re-verified at 1.98.0; see the Sep 30 entry. The one-click confirmation is now optional rather than gating. Previously: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
+| **In flight** | ✅ **GO-LIVE DONE — Sep 30 2026. 1.98.0 is serving on Public**, and the two live leaderboards are **intact and confirmed** (waves 111 players / range 1–106 · kills 105 / 1–6,231 · 0 shadow-banned · last submission 2026-09-29T21:05Z, i.e. before the move). ⚠️ **Two things came out of the move and are open.** (1) **How Public moved is unattributed** — the agent stopped at step 3 and reported it had not touched Public, yet Public reads 1.98.0; either RUN promoted it on approval or the agent ran step 4 unreported, and **the CLI exposes no audit trail to tell them apart**. Ask the agent; do not assume. (2) 🔴 **The `daily` leaderboard has never existed on the service** — see the Sep 30 entry; the Ranks "Today" tab has no board behind it. ✅ **`rundot-game-coach` was run Oct 2** — earliest unmet stage is **3, Retention**; see that entry. ⏳ **Round 24 (return notifications + daily reward) is the agreed next round**, then the announcement (marketing agent, separate approval). 🔴 **Ambition is set: portfolio/learning. Paid UA is ruled out and the business nudge is declined — do not raise either again.** ✅ **The Sep 9 licence note is SUPERSEDED** — stale on every clause, and Round 23 removed the dobo_ui assets outright; see the Sep 30 entry. **No technical or licence gate remains on the promotion.** ✅ **The "4 AI features" row is now all but resolved from the CLI** — `rundot credits` reports exactly **four service rows**, and the no-runtime-AI finding was re-verified at 1.98.0; see the Sep 30 entry. The one-click confirmation is now optional rather than gating. Previously: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
 | **Repo** | `origin/main` = **`d648176`** at the time this row was written; the Round 21 source changes and this verification entry land on top of it. Tree otherwise clean — reference videos are gitignored (`references/Errors/*.mp4`). |
 | **Returns ledger** | `docs/Agent Returns.md` — every agent return **verbatim** (agents are compacted after each task; this is the only durable copy). Started Sep 18 with R10 onward; earlier returns exist only as summaries here. Rule: paste the return into the ledger *before* verifying it. |
 | **Balance baseline** | **35 / 36 / 11 / 4 / 90** (fox-spam / balanced / miser / pad0-rush / maxed-meta) |
@@ -4987,3 +4987,81 @@ untouched. It never proved RUN was **running** it. It was not.
 ✅ **Status: the build is live and healthy.** Remaining, in order: **ask the agent about Public**,
 run **`rundot-game-coach`**, then the **announcement** under the user's separate approval. §5b is
 the user's call and is not urgent.
+
+---
+
+### 2026-10-02 — `rundot-game-coach` — the earliest unmet stage is **3, Retention**
+
+First coach run, two days after go-live. Diagnosed from the CLI and from source, not from the
+docs' own summaries.
+
+✅ **Ambition settled by asking, and it changes the advice.** The user was given four framings and
+chose **learning project / portfolio** — explicitly over "hobby but curious", "side income" and
+"serious business". 🔴 **So paid UA is out, and the business nudge is declined.** Per the coach
+skill's own rule, that is recorded so it is never re-asked: **raising ad spend, CPI/LTV or
+monetisation growth unprompted is now a defect, not initiative.** Mirrored in the gitignored
+`jam-entry/.rundot/creator-profile.md`.
+
+**Stage board:**
+
+| Stage | Verdict |
+|---|---|
+| 0 · Core loop | ✅ 6th of 100; **54% of booted sessions clear wave 1** (449 of 824) |
+| 1 · Telemetry | ✅ **Green and verified live** — 6-step `run` funnel returning real rows |
+| 2 · FTUE | ✅ Broadly green; one unexplained drop, below |
+| **3 · Retention** | 🔴 **D1 ≈ 1.5%, D7 ≈ 1.0% — and zero return mechanisms exist** |
+| 4 · Monetization | 🟡 Rewarded ads shipped (3-path grant flow); unmeasurable at this traffic |
+| 5 · Mobile UX | ✅ Touch-drag passed on device Sep 30 |
+| 6 · Growth | 🔴 **~2 sessions/day**; no socials profile set |
+
+🔴 **The retention hole is not a tuning problem, it is an absence.** `grep` over `src/`:
+**zero** `notifications.scheduleAsync` call sites, and the words *daily reward*, *login bonus* and
+*streak* do not appear at all. **Nothing in the codebase ever brings a player back.** D1 by
+platform: mobile-web **1.1%** (443 cohort), web **3.2%** (95), android **0.0%** (46), iOS 10%
+(n=10, noise) — **9 returning players out of 594**.
+
+⚠️ **But that D1 belongs to 1.69.0, not to this build, and the distinction is the whole
+diagnosis.** `version_mix_30d`: **1.69.0 = 293 sessions / 200 players**, and
+**1.98.0 = 4 sessions / 4 players.** Essentially every retention row is the *jam* build — which had
+no meta layer whatsoever. Rounds 0–23 added the entire Kitchen progression (stations, recipes,
+shards, Toque Badges), and **that is precisely the "reason to come back" half**. So **1.98.0's true
+D1 is unknown**, the guide is ~50 sessions before re-judging, and there are four. ✅ **The half
+that is genuinely missing is the *reminder*, not the reason.**
+
+✅ **Two findings that make the next round worth doing and measurable.**
+
+1. **1.98.0 is 100% crash-free** — every row of `crash_free_summary_30d`, across mobile-web, web
+   and android, zero crashed sessions.
+2. **Rounds 22–23's instrumentation is live and firing.** `top_custom_events_30d` shows
+   **`shards_awarded` with 34 events** — the Round 23 rename works in production. A retention fix
+   **will** be measurable, which is exactly what the instrumentation rounds were for.
+
+⚠️ **One FTUE question, logged not acted on: 824 sessions fired `game_loaded` but only 542
+reached `menu_shown`** — a **34% drop before the menu**, the largest single drop anywhere in the
+funnel, larger than anything inside a run. It may be benign (a returning player skipping the
+menu). It is unexplained, and it is cheap to find out.
+
+✅ **Verified clearance for Round 24, so the agent need not tiptoe.** The obvious worry about a
+daily reward is the gem economy and the sealed balance files. Checked:
+`scripts/simulate.ts::maxedMeta()` **synthesises** every meta level from `CONFIG.meta.maxLevel` and
+each tower's own `metaUnique.maxLevel`, and the harness imports only the **`MetaLevels` type** from
+`save.ts` — there is no runtime read of gems or save state anywhere in it. **A gem reward cannot
+move the `35 / 36 / 11 / 4 / 90` baseline.**
+
+**Order chosen by the user: the retention round FIRST, then the announcement** — so the
+announcement lands on a build that can hold the players it brings, rather than spending the one
+launch moment on a build with no reminder.
+
+⚠️ **Honest note on what "retention" is for here.** With the ambition set to portfolio, D1 is
+**not the scoreboard** — completeness and craft are. The case for Round 24 is that a shipped
+notification and daily-reward system is the last obviously-missing system in an otherwise complete
+live game, and it is demonstrable work. **The 1.5% D1 should not worry the user and should not go
+in the portfolio story**: it reflects a dead post-jam traffic funnel, not a bad game. **6th of 100
+is the portfolio number.**
+
+**Socials stays on the list and is not skippable** — free, and for a portfolio piece it *is* the
+distribution. State today: `socials profile show` → **none configured**; `socials status` → a
+**stale packet `cabeeb7e-ad5c-4b69-bfc1-0458e145b0a3`** with x/reddit placements marked `ready` and
+**never posted**, carrying live tracked links from the jam era. That is the marketing agent's work
+under the user's separate approval, after Round 24. 🔴 Never bare `prepare`: the path is
+**profile set → changelog → `prepare --update 1.98.0` → edit captions → post + #showcase.**

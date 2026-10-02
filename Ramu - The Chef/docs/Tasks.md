@@ -24,8 +24,11 @@ finished 46-sprite ingredient set, the 22 true rails, pane drag-scroll and the C
 **In flight:** ✅ **GO-LIVE DONE Sep 30 — Public serves 1.98.0**, verified by SHA256 against the
 local build; both leaderboards confirmed intact. ⚠️ Open: **how Public moved is unattributed** (the
 agent stopped at step 3 and says it did not touch Public), and 🔴 **the `daily` leaderboard has
-never existed on the service** — the Ranks "Today" tab has no board behind it. Next:
-`rundot-game-coach`, then the announcement (marketing agent, separate approval).
+never existed on the service** — the Ranks "Today" tab has no board behind it. ✅ **`rundot-game-coach` run Oct 2** — earliest unmet stage is
+**3, Retention** (D1 ≈ 1.5%, and **zero** return mechanisms in the codebase). ⏳ **Round 24 — return
+notifications + daily reward** is the agreed next round, then the announcement (marketing agent,
+separate approval). 🔴 **Ambition set Oct 2: portfolio/learning — paid UA ruled out, business
+nudge declined, neither to be raised again.**
 ✅ **Round 23 shipped as Private 1.98.0 and is verified.**
 ✅ **Round 22 shipped as Private 1.97.0 and is verified.** ✅ **Round 21 shipped as Private 1.96.0 and is verified. The planned
 roadmap is COMPLETE.** Belt mode is gone, the clipping fix shipped (as `line-clamp-4`, see below),
