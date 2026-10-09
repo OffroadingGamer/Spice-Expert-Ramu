@@ -365,7 +365,7 @@ Distilled from 153 recorded lessons. These are the patterns, not the incidents.
 
 The game is **live at 1.99.0** and in good health: **100% crash-free** on every analytics row,
 two live leaderboards, real players. Four things remain, all documented in
-`Ramu - The Chef/docs/Ideas.md`:
+`../docs/Ideas.md`:
 
 1. 🔴 **§5d — the daily reward is unreachable, and an announcement is parked behind it.**
    `dailyRewardsOpen` is patched at exactly one site, `MainMenu.tsx:501`, and the game boots

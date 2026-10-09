@@ -25,8 +25,8 @@ game punishes is the thing the job punishes, so nothing in the loop needed renam
 
 | Read | For |
 |---|---|
-| **[portfolio.md](portfolio.md)** | **The design decisions and what they returned** — the balance baseline as a regression test, the economy cliff at level 11, the measured funnel, and the three things that went wrong |
-| **[Transfer.md](Transfer.md)** | **Platform and jam learnings**, written to be carried into the next jam — RUN tag behaviour, SDK traps, analytics pitfalls, and a day-one checklist |
+| **[portfolio.md](Ramu%20-%20The%20Chef/handover/portfolio.md)** | **The design decisions and what they returned** — the balance baseline as a regression test, the economy cliff at level 11, the measured funnel, and the three things that went wrong |
+| **[Transfer.md](Ramu%20-%20The%20Chef/handover/Transfer.md)** | **Platform and jam learnings**, written to be carried into the next jam — RUN tag behaviour, SDK traps, analytics pitfalls, and a day-one checklist |
 | [Retro.md](Ramu%20-%20The%20Chef/docs/Retro.md) | 153 dated lessons, most of them mistakes, kept in full |
 
 ---
