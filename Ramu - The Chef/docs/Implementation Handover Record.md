@@ -39,7 +39,7 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | 🚀 **1.99.0 on ALL THREE TAGS** (Rounds 0–24) — Public since Oct 2, verified by SHA256 against the local build (`index-CdjhnWky.js`, 879,412 bytes). ✅ **100% crash-free** on every analytics row, every platform. 🔴 **Two live defects found Oct 9 — the daily reward has never been opened by anyone, and `scheduleAsync` is deprecated; see that entry.** — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. 🚀 **LIVE — Sep 30 2026, all three tags now serve 1.98.0.** Public was frozen at 1.69.0 for twelve days; it is now the current build, **verified by SHA256 against the local `dist/`, not by report** (`index-BZ2Qgy9f.js`, 871,216 bytes, identical hash). |
+| **Live version** | 🚀 **1.99.0 on ALL THREE TAGS** (Rounds 0–24) — Public since Oct 2, verified by SHA256 against the local build (`index-CdjhnWky.js`, 879,412 bytes). ✅ **100% crash-free** on every analytics row, every platform. 🔴 **Two live defects found Oct 9 — the daily reward has never been opened by anyone, and `scheduleAsync` is deprecated; see that entry.** 🛑 **PROJECT CLOSED Oct 9 2026** for the October jam — see the closing entry; `Transfer.md` and `portfolio.md` at the repo root carry everything forward. — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. 🚀 **LIVE — Sep 30 2026, all three tags now serve 1.98.0.** Public was frozen at 1.69.0 for twelve days; it is now the current build, **verified by SHA256 against the local `dist/`, not by report** (`index-BZ2Qgy9f.js`, 871,216 bytes, identical hash). |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
 | **In flight** | ✅ **GO-LIVE DONE — Sep 30 2026. 1.98.0 is serving on Public**, and the two live leaderboards are **intact and confirmed** (waves 111 players / range 1–106 · kills 105 / 1–6,231 · 0 shadow-banned · last submission 2026-09-29T21:05Z, i.e. before the move). ⚠️ **Two things came out of the move and are open.** (1) **How Public moved is unattributed** — the agent stopped at step 3 and reported it had not touched Public, yet Public reads 1.98.0; either RUN promoted it on approval or the agent ran step 4 unreported, and **the CLI exposes no audit trail to tell them apart**. Ask the agent; do not assume. (2) 🔴 **The `daily` leaderboard has never existed on the service** — see the Sep 30 entry; the Ranks "Today" tab has no board behind it. ✅ **`rundot-game-coach` was run Oct 2** — earliest unmet stage is **3, Retention**; see that entry. ✅ **Round 24 returned and is VERIFIED — Private 1.99.0.** Return notifications, a 7-day gem reward track and a Settings opt-out all ship; balance baseline and all eight funnel steps unchanged. ✅ **The socials round RETURNED and is VERIFIED** (Oct 2; see `Social Media Handover Record.md`) — profile set, packet `f0e22600` prepared against **1.98.0**, all captions rewritten, **nothing posted** (`socials verify`: both platforms `not posted`, 0 clicks). 🔴 **Open on the user:** the **Discord handle is a guess** (`puneetmakes`, inferred), the **Public move to 1.99.0**, and an unverifiable **r/SoloDevelopment cadence** check. ✅ **AUTHORISED by the user Oct 2** (*"promote 1.99.0 → re-run prepare --update 1.99.0"*). 🔒 **A second, narrow `update-tag` exception**, scoped to **version 1.99.0 on the `review` and `public` tags only** — never `set-public`/`set-private`. Two handovers written and delivered: **(1)** the promotion, for the implementation agent, which also finally settles the Sep 30 attribution question by re-reading `list-tags` after moving Review **without running anything**; **(2)** `prepare --update 1.99.0`, for the marketing agent, **gated on (1)'s verified return.** ⚠️ Accepted cost, stated to the user rather than silently fixed: **1.99.0 ships with no About-tab release notes**, because `--changelog` is deploy-time only and the user's instruction named 1.99.0 — redeploying to attach notes would mint a different version. The marketing agent's already-drafted bullets cover the caption need; only the About tab loses out, and the next real deploy can carry them. 🔴 **Two prerequisites are the user's:** Public must move **1.98.0 → 1.99.0** (not authorised — the Sep 30 `update-tag` exception is spent), and **1.99.0 has no changelog and one cannot be added retroactively** (`--changelog` is deploy-time only). 🔴 **Paid UA is ruled out** by the Oct 2 portfolio decision — no `rundot marketing` command at all. 🔴 **Ambition is set: portfolio/learning. Paid UA is ruled out and the business nudge is declined — do not raise either again.** ✅ **The Sep 9 licence note is SUPERSEDED** — stale on every clause, and Round 23 removed the dobo_ui assets outright; see the Sep 30 entry. **No technical or licence gate remains on the promotion.** ✅ **The "4 AI features" row is now all but resolved from the CLI** — `rundot credits` reports exactly **four service rows**, and the no-runtime-AI finding was re-verified at 1.98.0; see the Sep 30 entry. The one-click confirmation is now optional rather than gating. Previously: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
 | **Repo** | `origin/main` = **`d648176`** at the time this row was written; the Round 21 source changes and this verification entry land on top of it. Tree otherwise clean — reference videos are gitignored (`references/Errors/*.mp4`). |
@@ -5285,3 +5285,68 @@ find: the same trade the user declined, one layer deeper.
 ✅ **Handover 2 returned Oct 9 and is verified** — packet `9e9146e2` against 1.99.0, X caption **exactly 270 chars**, nothing posted (`verify`: both `not posted`, 0 clicks). 🔴 **And it sharpens the hold:** both captions now advertise the **7-day reward track**, which **zero players can reach** — so posting would make the copy *inaccurate*, not merely early. Not the agent's error; Central found the defect after that brief was issued. **Recommended instead: a small Round 25** — surface the daily reward where players actually land,
 and swap `scheduleAsync` for `submitMessageAsync({ channels: ['local'] })` while in there. Then
 announce. The captions are already written and keep their value.
+
+---
+
+### 2026-10-09 — 🛑 PROJECT CLOSED — handing forward to the October jam
+
+The user's instruction: *"We can close up on this project for now … We'll be shifting onto a
+different project now for the october jam."* Nothing is in flight, nothing is half-verified, and
+the repository is the record.
+
+**Final state of the game.**
+
+| | |
+|---|---|
+| Live | **1.99.0 on all three tags** (Private · Review (Approved) · Public) |
+| Verified | served bundle **SHA256-identical** to the local build (`index-CdjhnWky.js`, 879,412 bytes) |
+| Stability | **100.00% crash-free** on every analytics row — android, iOS, web, mobile-web |
+| Versions deployed | **104** |
+| Build rounds | **25** (Rounds 0–24), plus 7 art rounds, 4 audio rounds, 2 socials rounds |
+| Leaderboards | **113** players on waves (best **106**) · **107** on kills (best **6,231**) · 0 shadow-banned |
+| Jam result | **6th of 100** — 638 daily uniques, 942 plays, no prize |
+| Recorded lessons | **153** in `Retro.md` |
+| Credits | **206,674** — ⚠️ up ~7,087 from the Sep 23 reconciliation, so **a grant landed at some point**; October spend to date is 4 llm calls / 13 credits |
+
+**Three documents written for the handover forward**, all at the **repo root** so they are found
+without knowing this project's layout:
+
+- **`Transfer.md`** — for whoever starts the October jam. The platform facts that cost real time
+  (tag auto-promotion, deploy-time-only changelogs, server configs versioned independently of
+  builds, the multi-funnel analytics trap, the deprecated notification call), the jam-strategy
+  findings (DUP is a marathon; paid UA returned **ROAS 0.00x** against free organic), the nine
+  process rules that earned their keep, the repeating mistake patterns, and a day-one checklist.
+- **`portfolio.md`** — the design decisions and what they returned, quantitative and qualitative,
+  written for a portfolio reader rather than for this team. Includes the three failures, because
+  they carry the transferable lessons.
+- **`README.md`** — refreshed as the repository's front page: the jam result and live link up
+  top, a *Start here* table pointing at the two new documents, and the balance baseline explained
+  as the thing that made fast shipping safe. ✅ **The `Credits` section was left exactly as it
+  stood** — not expanded, not trimmed.
+
+🔴 **What remains open, and is deliberately left open rather than rushed.** All four are in
+`Ideas.md`:
+
+| Item | Status |
+|---|---|
+| **§5d** — the **daily reward is unreachable**: one entry point at `MainMenu.tsx:501`, and boot goes straight to `phase: 'playing'`. `daily_reward_shown` has fired **zero times across 29 players** | 🔴 the one real defect; **the verified social packet `9e9146e2` is held behind it**, because its captions advertise that reward |
+| **§5d** — `scheduleAsync` → `submitMessageAsync({ channels: ['local'] })` | ⚠️ tech debt; works, but the SDK reports it on nearly every boot |
+| **§5b** — the `daily` leaderboard period **does not exist on the service** | ⚠️ the fix is a server-config repoint, **not verified safe** with 113/107 real scores behind it |
+| **§5c** — the daily-reward claim persists only via `addGems()`'s **shallow** spread | ⚠️ a future deep-clone there breaks claims **silently** |
+
+**Two items need the user and nothing else can resolve them:** the socials profile's **Discord
+handle** is an inferred guess (`puneetmakes`, from the public share URL), and **r/SoloDevelopment
+posting cadence** has never been checked.
+
+⚠️ **The single most useful thing to carry forward, stated plainly.** The §5d defect is this
+project's whole method in one bug: **the feature was implemented correctly, the live verification
+passed, every acceptance criterion was met — and nobody asked where the player actually starts.**
+Central had verified, from source, and written into *this file*, that a cold boot bypasses the
+Main Menu; then briefed a reward onto the Main Menu days later. ✅ **`Transfer.md` Part 5 turns
+that into a rule for the next project: when a round adds a player-facing surface, the brief names
+the screen a cold boot lands on, and the acceptance test starts there.**
+
+✅ **Nothing is left undocumented.** Every agent return of this session is verbatim in
+`Agent Returns.md`; every verification is a dated entry here; every error of Central's is a
+numbered lesson in `Retro.md` (135–143 this session). The project can be picked up cold from the
+repository.

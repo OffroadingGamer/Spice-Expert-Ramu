@@ -34,7 +34,9 @@ r/SoloDevelopment cadence. ✅ **1.99.0 IS PUBLIC** (Oct 2, verified by SHA256; 
 Public are **not** separate gates any more. 🔴 **Two live defects found Oct 9: the daily reward
 has never been opened by anyone** (one entry point, `MainMenu.tsx:501`, on a screen boot skips),
 and **`scheduleAsync` is deprecated** (SDK names `submitMessageAsync({channels:['local']})`).
-⏳ **Announcement DRAFTED AND HELD** (packet `9e9146e2`, verified, nothing posted) — 🔴 the
+🛑 **PROJECT CLOSED Oct 9 2026** — work moves to the October jam. `Transfer.md` (platform +
+jam learnings) and `portfolio.md` (design decisions) are at the repo root; the README points at
+both. Four open items survive in Ideas §§5b/5c/5d and two need the user. ⏳ **Announcement DRAFTED AND HELD** (packet `9e9146e2`, verified, nothing posted) — 🔴 the
 captions advertise the 7-day reward track that **zero players can reach**, so posting would make
 the copy inaccurate. **Round 25 (Ideas §5d) first.** Previously:
 🔒 A second narrow `update-tag` exception — `review` and `public` tags, version 1.99.0 only;
