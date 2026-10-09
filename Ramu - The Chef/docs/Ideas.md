@@ -222,6 +222,41 @@ have already left. A reminder shipped now reaches only players who open the new 
 only in the RUN app (web no-ops). Worth building post-jam for the campaign's installs; it
 cannot recover the jam's departed players.
 
+## 5d. 🔴 Round 25 candidate — make the daily reward reachable, and drop a deprecated SDK call
+
+Found Oct 9 2026 from live telemetry, seven days after 1.99.0 went Public. **Both items are small
+and both are evidenced, not suspected.**
+
+### 1. 🔴 The daily reward has one entry point, on a screen the game never boots into
+
+`store.patch({ dailyRewardsOpen: true })` exists at **exactly one site** — `MainMenu.tsx:501`.
+`main.tsx:121` boots every session straight to `phase: 'playing'`; `'menu'` is only ever set by
+`EndScreen.tsx:369` (a **secondary** button beside an emphasised Retry) and `Hud.tsx:817`
+(pause-menu exit). **Evidence it matters: `daily_reward_shown` has fired zero times across 29
+players on 1.99.0**, in an event export that lists items down to six occurrences.
+
+**Shape of the fix — the cheapest honest one, not the most featureful.** Surface the claim where
+the player already is on the first frame of a session: a claimable-state entry point reachable
+from the playing screen (the HUD already hosts the pause affordance), or a one-shot popup on boot
+when `canClaimNow()` is true. ⚠️ **Do not add a second progression surface** and do not change
+the reward track — the track is correct and was verified. This is a placement bug.
+
+### 2. ⚠️ `scheduleAsync` is deprecated; the SDK says so on nearly every boot
+
+**`sdk_deprecated_schedule_async`: 27 events, 25 of 29 players** — emitted by the SDK, not by us.
+The SDK's own types name the replacement (`AdsApi-Ds6PEEd8.d.ts:335`):
+*"`@deprecated` Use `submitMessageAsync({ channels: ['local'], ... })` instead."* The call still
+works and no removal version is stated, so this is **tech debt and telemetry noise, not breakage**.
+🔴 **Note the upstream cause:** the installed `rundot-feature-notifications` skill ships the
+deprecated call in its template, so this recurs for anyone who uses that skill.
+
+**Why these belong in one round:** both touch the Round 24 surfaces, neither touches a sealed
+file, and neither can affect the balance baseline. ⚠️ **The announcement is held until the
+first one ships** — the whole premise of announcing 1.99.0 was that it can hold the players it
+brings.
+
+---
+
 ## 5c. ⚠️ The daily reward's persistence depends on `addGems()` staying a SHALLOW spread
 
 Recorded Oct 2 2026 while verifying Round 24. Not a bug — a **coupling that will break silently**

@@ -1,6 +1,6 @@
 # Marketing Strategy
 
-**Last updated:** Oct 2 2026
+**Last updated:** Oct 9 2026
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Social Media Handover Record.md](Social%20Media%20Handover%20Record.md)
 
@@ -1862,3 +1862,102 @@ without the user's separate posting approval, and the retention-round
 copy specifically waits on the user's own call on the version move. Full
 report, including the discord-username flag, handed back via the
 Handover Record's Oct 2 entry.
+
+## 22. Organic socials, round 2 — the held-back retention line, now true — Oct 9 2026
+
+**Trigger:** Central's "Handover 2 of 2," relayed by the user, gated on
+Public actually reading 1.99.0. Picking up exactly where Round 1 (§21)
+stopped: the retention-round line that was drafted and deliberately
+withheld because it wasn't true yet.
+
+**Gate re-checked live, not taken on anyone's word.** A prior attempt at
+this same handover (Oct 2) correctly stopped because `list-tags` then
+showed Public still on 1.98.0, despite a commit on record authorising
+the promotion — a reminder that an authorisation record isn't proof of
+execution. Re-running `list-tags` today: **Private 1.99.0, Review
+(Approved) 1.99.0, Public 1.99.0** (Review and Public share config id
+`CIeaUvw4tkvtyxDBAZW5`). Gate passes.
+
+`rundot socials prepare --update 1.99.0 --platforms x,reddit` produced a
+**new packet, `9e9146e2-c90f-4f96-a730-c5afd4b931c9`**, confirmed via a
+follow-up `socials status` call returning that id — superseding
+`f0e22600-a068-457f-9d92-1d681d6e75f8` from Round 1. Tracked links:
+`?s=h4qM42X` (X) and `?s=cGmmDvy` (Reddit) — both the safe `?s=` kind,
+neither carries `?k=`.
+
+**Raw `prepare` output was generic again** — description-echo with no
+Hindi, no Kitchen layer, no "6th of 100," no retention line. Same
+failure mode as Round 1; rewritten the same way.
+
+### What carried forward, what's new
+
+Per Central's own note that Round 1's profile, voice, hook and every
+factual claim were independently verified — **nothing was rewritten
+from scratch.** The Oct 2 captions (Hindi, Kitchen progression layer,
+one mode instead of two, 906 kB lighter, best wave 106, 6th of 100) are
+carried forward unchanged in substance. The only addition is the
+retention line, now true of the build the tracked link opens:
+
+> ⚠️ **Accuracy constraint applied:** the reward track is **7 days, 125
+> gems total**, and the return notification has a **Settings opt-out**.
+> It deliberately doesn't reset, so it is never called a "streak"
+> anywhere below.
+
+### Edited captions — final
+
+**X** (270 characters, within the 280 limit with margin; `linkPlacement:
+"reply"` — tracked link + `@RUN` go in the reply, not this tweet):
+> Finished 6th of 100 in RUN's Sept Jam with Spice Expert: Ramu. Since
+> then: Hindi throughout, a kitchen layer, one mode not two, 906 kB
+> lighter, and now a 7-day reward track plus a nudge if you drift. Live
+> board's best wave is 106 - beat it? #indiedev #gamedev #indiegame
+
+**Reddit** (target: r/SoloDevelopment, same devlog framing as Round 1;
+⚠️ posting cadence on that sub still unverified from here — flagged a
+third time):
+> **Title:** The jam build you played in September isn't this game
+> anymore
+>
+> Spice Expert: Ramu finished 6th of 100 in RUN's September Game Jam —
+> no prize, but no walkouts either. Since judging closed, the game moved
+> a long way past what anyone played in the jam:
+> - Hindi throughout (395 translated strings), with a Settings language
+>   row
+> - A full kitchen progression layer: stations, recipes, a shard
+>   economy, Toque Badges
+> - One mode instead of two — the half-finished conveyor mode got cut
+>   rather than patched
+> - 906 kB lighter, and crash-free across every analytics row since
+> - A 7-day daily reward track (125 gems total), and a return
+>   notification if you drift — opt-out lives in Settings
+>
+> If you played the jam build, it's worth another look — the live
+> board's best wave is 106 right now if anyone wants a number to chase.
+> [tracked link — `?s=cGmmDvy`]
+>
+> Mostly just want to know what's confusing to a new player who never
+> saw the jam version — happy to answer anything.
+
+**RUN Discord `#showcase`** (fresh copy, not a pasted platform draft —
+drafted, **not posted**, per the stop-before-posting instruction):
+> Spice Expert: Ramu just moved from "jam entry" to "actual game." Since
+> finishing 6th of 100 in the September Jam: Hindi throughout, a full
+> kitchen progression layer (recipe shards, Toque Badges), one mode
+> instead of two, 906 kB lighter — and now a 7-day reward track plus a
+> return nudge if you drift (opt-out in Settings). Live board's best
+> wave is 106 — play it here: https://w.run/puneetmakes/spice-expert-ramu.
+> Would love a comment if anything's confusing.
+
+🔴 **`#showcase` stays blocked on the same unresolved thing as Round
+1:** the Discord handle in the profile (`puneetmakes`) is still this
+agent's inference from the public share URL, still not confirmed by the
+user. Drafted again, not posted, flagged again.
+
+No standalone "Pot" and no artist surname appear anywhere above, per the
+moderation history on this project.
+
+**Status:** gate re-verified live before anything ran, new packet
+prepared against the now-correct 1.99.0, every caption rewritten with
+the retention line added under the stated accuracy constraint —
+**stopped before `open`, before `post`, before `mark-posted`**. Full
+report handed back via the Handover Record's Oct 9 entry.

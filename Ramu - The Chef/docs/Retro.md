@@ -3096,3 +3096,18 @@ after **00:30 IST Sep 19**.
      blocker to the deliverable it blocks, never to the round. Name what CAN proceed in the same
      breath as what cannot — and if everything in a round is genuinely blocked, that is a reason
      not to issue the round yet, not a caveat to put at the top of it.**
+
+142. **I verified that boot skips the Main Menu, wrote it into the record, and then briefed a
+     daily reward onto the Main Menu.** Round 24's Task 5 established from source that
+     `main.tsx:121` sends every boot straight to `phase: 'playing'` and that `'menu'` is only
+     reachable after a run. I checked that myself, called the agent right about it, and published
+     it in the same document that announced the reward as shipped — and never connected the two
+     facts. Seven days of live telemetry settled it: **`daily_reward_shown` has fired zero times
+     across 29 players**, because `dailyRewardsOpen` is set at exactly one site on a screen the
+     game never boots into. ⚠️ **The agent's live check was not wrong, it was aimed where my
+     brief pointed** — it asked "is this reachable from the Main Menu?" and the answer was yes.
+     Nobody asked "is the Main Menu reachable from a cold boot?", which I had already answered, in
+     writing, days earlier. ✅ **Rule: when a round adds a player-facing surface, state in the
+     brief which screen a COLD BOOT lands on and require the acceptance check to start from there.
+     "Is it reachable?" is not a test until the starting point is named — and a fact I verified
+     for one purpose does not apply itself to the next decision.**

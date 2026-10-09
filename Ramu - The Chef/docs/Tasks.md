@@ -29,7 +29,12 @@ never existed on the service** — the Ranks "Today" tab has no board behind it.
 notifications, a 7-day gem reward track, a Settings opt-out. ✅ **The socials round returned and is verified** (Oct 2) —
 profile set, packet `f0e22600` prepared, captions rewritten, **nothing posted**. 🔴 Open on the
 user: the **Discord handle is a guess**, the **Public move to 1.99.0**, and a human check on
-r/SoloDevelopment cadence. ✅ **AUTHORISED Oct 2: promote 1.99.0, then re-prepare.**
+r/SoloDevelopment cadence. ✅ **1.99.0 IS PUBLIC** (Oct 2, verified by SHA256; 100% crash-free; 35 sessions / 29 players).
+✅ **The Sep 30 mystery is solved: RUN auto-promotes Public on Review approval** — Review and
+Public are **not** separate gates any more. 🔴 **Two live defects found Oct 9: the daily reward
+has never been opened by anyone** (one entry point, `MainMenu.tsx:501`, on a screen boot skips),
+and **`scheduleAsync` is deprecated** (SDK names `submitMessageAsync({channels:['local']})`).
+⏳ **Announcement HELD; a small Round 25 recommended first.** Previously:
 🔒 A second narrow `update-tag` exception — `review` and `public` tags, version 1.99.0 only;
 `set-public`/`set-private` still forbidden, and the permission is spent after. ⚠️ 1.99.0 ships
 with no About-tab notes (`--changelog` is deploy-time only). Paid UA is ruled out. 🔴 **Ambition set Oct 2: portfolio/learning — paid UA ruled out, business

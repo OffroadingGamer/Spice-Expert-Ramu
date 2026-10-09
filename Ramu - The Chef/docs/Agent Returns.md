@@ -1038,16 +1038,55 @@ Nothing posted, opened, or marked-posted. Holding for your approval.
 
 ---
 
+## 2026-10-02 — promote 1.99.0 (handover 1 of 2) — implementation agent
+
+Outcome: **Public auto-promoted to 1.99.0 on Review approval — `update-tag public` was never
+run.** This settles the Sep 30 attribution question.
+
+Both tasks done. Report:
+
+Headline: Public auto-promotes on its own
+This settles the Sep 30 question. I moved Review, took three list-tags reads with real multi-minute gaps and nothing else run in between, and Public moved from 1.98.0 to 1.99.0 by itself, with no update-tag public command ever issued. Per the brief's own step 4 branch, I did not run the public move — there was nothing left to do.
+
+list-tags, verbatim fields at each point (QR-code ASCII art omitted, it's just the share-link QR, not data):
+
+Private	Review	Public
+Before	1.99.0 / fj1uetjE9PFQ8f7bBK9v	(Approved) 1.98.0 / CIeaUvw4tkvtyxDBAZW5	1.98.0 / CIeaUvw4tkvtyxDBAZW5
+Read 1 (immediately after moving Review)	1.99.0 / fj1uetjE9PFQ8f7bBK9v	bare "Review", no parenthetical, 1.99.0 / CIeaUvw4tkvtyxDBAZW5	still 1.98.0 / CIeaUvw4tkvtyxDBAZW5
+Read 2 (~200s later, nothing run in between)	unchanged	(Approved) 1.99.0 / CIeaUvw4tkvtyxDBAZW5	1.99.0 / CIeaUvw4tkvtyxDBAZW5
+Read 3 (~200s later again, nothing run in between)	unchanged	(Approved) 1.99.0 / CIeaUvw4tkvtyxDBAZW5	1.99.0 / CIeaUvw4tkvtyxDBAZW5, stable
+So the sequence is: move Review → label briefly goes bare → within a few minutes it re-reads "(Approved)" and Public silently follows it to the same version. That's exactly the Sep 30 pattern. I never touched update-tag public, set-public, or set-private.
+
+One oddity worth flagging: Server Config Id never changed — Review and Public kept CIeaUvw4tkvtyxDBAZW5 (the 1.98.0 id) even after their Version field updated to 1.99.0. Private's own id (fj1uetjE9PFQ8f7bBK9v) was untouched throughout. So "Version" and "Server Config Id" appear to be tracked independently in RUN's tag model — consistent with what the socials-round commit already flagged, not a new problem, but worth your attention since it means a config id alone isn't a reliable version fingerprint here.
+
+Clean-instance verification (live public URL, fresh browser context)
+Loaded https://w.run/puneetmakes/spice-expert-ramu with no stored state. The embedded game frame URL itself contains /1.99.0/index.html — independent confirmation of what's actually being served, not just the tag metadata.
+
+Boots cleanly, no console errors from the game bundle. (Three unrelated host-page/iframe errors appeared — a CSP report-only notice, requestStorageAccess denial, and a Firebase AppCheck 403 that throttled for 24h — all consistent with reCAPTCHA Enterprise flagging a headless/automated browser, not a defect in 1.99.0. Flagging it so you're not surprised if you see it logged, and so you know not to run more automated sessions against prod today.)
+Settings panel: Notifications row (On/Off) present, directly below Language, "On" selected by default — matches the design exactly.
+Main Menu: Daily Reward button present with a claimable badge; opening it shows the correct 7-day track (8/10/12/15/18/22/40), Day 1 claimable. I did not tap Claim — reachability was the ask, no need to mutate a throwaway guest session.
+I stayed on a fresh guest ("Skip" on the name dialog) and backed out via "Main Menu" rather than letting any run resolve, specifically so nothing could reach the live boards.
+Leaderboards
+Both intact and, if anything, slightly ahead of the brief's baseline — consistent with organic play since Sep 30, not my testing (I never completed or lost a run):
+
+..._waves_alltime: 112 players (was 111), range 1–106, 0 shadow-banned, last submission 2026-09-30T05:12:09Z
+..._kills_alltime: 106 players (was 105), range 1–6,231, 0 shadow-banned, last submission 2026-09-30T05:11:59Z
+Also visually confirmed via the in-game Ranks screen — top of the Waves board is populated (PuneetMakes at 106, matching the socials caption's "best wave 106" claim).
+
+Scope respected
+No set-public/set-private, no leaderboard remove/reset/ban, no code, no deploy, no new version, no changelog, no rundot socials/rundot marketing, no git commits from me.
+
+What surprised me / what I'd flag
+The auto-promotion is real and fast (well under the ~3-minute gap I used) — worth knowing for future rounds: moving Review alone is now effectively "moving Public" too, just on a short delay, so the old mental model of "Review and Public are separate gates" no longer holds once something's Approved. Nothing in the brief itself struck me as wrong — the branching logic for "Public already moved" was already correct and I didn't need to deviate from it.
+
+---
+
 ## Pending
 
-- ⏳ **The socials packet is drafted and held.** Captions for X, Reddit and #showcase are written
-  and **nothing has been posted, opened or marked-posted.** Waiting on the user. 🔴 Two items
-  need the user specifically: the **Discord handle is a guess** (`puneetmakes`, inferred from the
-  RUN share URL — must be corrected before any #showcase post), and **whether to announce 1.98.0
-  now or promote 1.99.0 first** — see Central's adjudication in
-  `Social Media Handover Record.md`.
-
-### Superseded pending notes
-
-- ✅ **The GO-LIVE sequence completed Sep 30** — all three tags reached 1.98.0 and Public is
-  serving it, verified by SHA256. Previously recorded here as paused at step 3.
+- ⏳ **Handover 2 of 2 — `prepare --update 1.99.0`** is with the marketing agent, gated on this
+  return. Captions carry forward from packet `f0e22600` plus the held-back retention line.
+- 🔴 **Two items need the user and nothing else can resolve them:** the **Discord handle** in
+  the socials profile (`puneetmakes`, inferred from the share URL — blocks `#showcase` only), and
+  a human check on **r/SoloDevelopment posting cadence** before the Reddit post.
+- ✅ **Superseded:** the Sep 30 note recording *how* Public moved as unattributed. **It is now
+  attributed — RUN auto-promotes Public when a Review version is approved.**

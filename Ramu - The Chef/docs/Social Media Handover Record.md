@@ -1,6 +1,6 @@
 # Social Media Handover Record
 
-**Last updated:** Oct 2 2026
+**Last updated:** Oct 9 2026
 **Owner:** Social Media Agent · **written to by that agent only**
 **Companion:** [Marketing Strategy.md](Marketing%20Strategy.md)
 
@@ -1762,3 +1762,155 @@ rather than on routine approval.**
 3. ⚠️ **r/SoloDevelopment posting cadence is unverified.** The agent flagged twice that it cannot
    see this account's history on that subreddit. Posting too often is how a solo dev gets removed,
    and nothing in the CLI can answer it. **A human check before the Reddit post.**
+
+### 2026-10-02 — Handover 2 of 2 received, gate checked live, stopped
+
+**From:** the user, relaying a second handover for this round — "the retention line" pass,
+explicitly gated on `rundot game list-tags` showing Public at 1.99.0 before anything else runs.
+The handover itself named the gate and the reason for it: *"Last round you correctly refused to
+prepare against a version Public wasn't serving; the same discipline applies in reverse now."*
+
+**Gate check — run first, nothing else attempted before it:**
+
+```
+rundot game list-tags --game-id PpB5gECS0AMU49mGYAKM
+```
+
+Live result:
+
+| Tag | Version | Server Config Id |
+| --- | --- | --- |
+| Private | 1.99.0 | fj1uetjE9PFQ8f7bBK9v |
+| Review (Approved) | **1.98.0** | CIeaUvw4tkvtyxDBAZW5 |
+| Public | **1.98.0** | CIeaUvw4tkvtyxDBAZW5 |
+
+🔴 **Gate fails. Public does not read 1.99.0 — stopping here, exactly as instructed.**
+
+This matters because commit `dda81a8` ("Authorised: promote 1.99.0, then re-prepare") exists in
+this repo's history and documents the user's authorisation plus a narrow `update-tag` exception
+for Central/the implementation side to execute. ⚠️ **An authorisation commit is a record that
+permission was granted, not a record that the promotion ran.** [[carried_claims_need_reverification]]
+applies here in its sharpest form: the commit message describes an *intended* test (move Review,
+re-read `list-tags` twice with nothing run in between, to see whether Public follows on its own)
+— live `list-tags` right now shows Review still sitting at 1.98.0, same config id as Public, so
+that test has not yet been run, or was run and the promotion has not landed. Either way, this
+agent has no `update-tag` command in its toolkit and would not run one if it did — promoting is
+not marketing-agent scope.
+
+**No further steps from Handover 2 were attempted.** `socials prepare --update 1.99.0` was **not**
+run. Packet `f0e22600-a068-457f-9d92-1d681d6e75f8` (the 1.98.0 packet from the Oct 2 round) is
+untouched. No caption rewrites, no changelog redraft beyond what's already recorded above.
+
+**Status: ⛔ blocked on the version promotion, reported back rather than assumed.** Holding here
+until Public (and ideally Review) actually read 1.99.0 on a fresh `list-tags` check.
+
+### 2026-10-09 — Handover 2 re-received, gate re-checked live, worked to completion
+
+**From:** the user, re-relaying the same Handover 2 text as Oct 2. Per
+[[carried_claims_need_reverification]], the prior block was a claim about
+the Oct 2 live state, not a standing status — re-ran the gate from
+scratch rather than assuming the block still held.
+
+**Gate check, run first:**
+
+```text
+rundot game list-tags --game-id PpB5gECS0AMU49mGYAKM
+```
+
+| Tag | Version | Server Config Id |
+| --- | --- | --- |
+| Private | 1.99.0 | fj1uetjE9PFQ8f7bBK9v |
+| Review (Approved) | **1.99.0** | CIeaUvw4tkvtyxDBAZW5 |
+| Public | **1.99.0** | CIeaUvw4tkvtyxDBAZW5 |
+
+✅ **Gate passes.** Public now reads 1.99.0, matching Review on the same
+config id. The Oct 2 block is resolved — proceeded with the rest of
+Handover 2.
+
+**`rundot socials prepare --update 1.99.0 --platforms x,reddit`** produced
+a **new packet, `9e9146e2-c90f-4f96-a730-c5afd4b931c9`**. Confirmed via a
+follow-up `rundot socials status` call returning that same packet id —
+superseding `f0e22600-a068-457f-9d92-1d681d6e75f8` from the Oct 2 round,
+not editing it. Tracked links: `?s=h4qM42X` (X, `linkPlacement: reply`)
+and `?s=cGmmDvy` (Reddit, `linkPlacement: inline`) — both the safe `?s=`
+kind, neither carries `?k=`.
+
+**Raw `prepare` drafts were generic again** (description-echo, no Hindi,
+no Kitchen layer, no jam result, no retention line) — the same failure
+mode the skill warns about. Rewritten below.
+
+**What changed from the 1.98.0 captions, what was kept:**
+- **Kept, verbatim in substance:** 6th of 100, Hindi throughout, the
+  Kitchen progression layer, one mode instead of two, 906 kB lighter,
+  "best wave 106" challenge — Central independently verified every one
+  of these in the Oct 2 round, so none were rewritten from scratch.
+- **Added, for the first time:** the retention line, now true of the
+  build the tracked link opens — a 7-day daily reward track (125 gems
+  total) and a return notification with a Settings opt-out. ⚠️ Never
+  called a "streak," per the accuracy constraint in the handover — the
+  track deliberately doesn't reset.
+- **X trimmed for length:** adding the retention clause pushed the
+  original 247-character caption past 280. Trimmed "a full kitchen
+  progression layer" → "a kitchen layer," "one mode instead of two" →
+  "one mode not two," and "September" → "Sept" to fit, landing at **270
+  characters** with the retention line included.
+
+**Final captions — in full, per platform:**
+
+**X** (270 characters):
+> Finished 6th of 100 in RUN's Sept Jam with Spice Expert: Ramu. Since
+> then: Hindi throughout, a kitchen layer, one mode not two, 906 kB
+> lighter, and now a 7-day reward track plus a nudge if you drift. Live
+> board's best wave is 106 - beat it? #indiedev #gamedev #indiegame
+
+**Reddit** (target: r/SoloDevelopment):
+> **Title:** The jam build you played in September isn't this game
+> anymore
+>
+> Spice Expert: Ramu finished 6th of 100 in RUN's September Game Jam —
+> no prize, but no walkouts either. Since judging closed, the game moved
+> a long way past what anyone played in the jam:
+> - Hindi throughout (395 translated strings), with a Settings language
+>   row
+> - A full kitchen progression layer: stations, recipes, a shard
+>   economy, Toque Badges
+> - One mode instead of two — the half-finished conveyor mode got cut
+>   rather than patched
+> - 906 kB lighter, and crash-free across every analytics row since
+> - A 7-day daily reward track (125 gems total), and a return
+>   notification if you drift — opt-out lives in Settings
+>
+> If you played the jam build, it's worth another look — the live
+> board's best wave is 106 right now if anyone wants a number to chase.
+> [tracked link — `?s=cGmmDvy`]
+>
+> Mostly just want to know what's confusing to a new player who never
+> saw the jam version — happy to answer anything.
+
+**RUN Discord `#showcase`** (fresh copy, drafted, **not posted**):
+> Spice Expert: Ramu just moved from "jam entry" to "actual game." Since
+> finishing 6th of 100 in the September Jam: Hindi throughout, a full
+> kitchen progression layer (recipe shards, Toque Badges), one mode
+> instead of two, 906 kB lighter — and now a 7-day reward track plus a
+> return nudge if you drift (opt-out in Settings). Live board's best
+> wave is 106 — play it here: the bare public URL. Would love a comment
+> if anything's confusing.
+>
+> 🔴 **Still blocked on the same unresolved thing as Oct 2:** the
+> Discord handle in the profile (`puneetmakes`) is this agent's inference
+> from the public share URL, not confirmed by the user. Flagged again —
+> do not post `#showcase` until that's corrected or confirmed.
+
+No standalone "Pot" and no artist surname appear anywhere above.
+
+**Not done, per the stop-before-posting instruction:** no `open`, no
+post, no `mark-posted`. Packet `9e9146e2-c90f-4f96-a730-c5afd4b931c9` sits
+`ready`/never-posted on both platforms, same as every prior packet this
+agent has prepared.
+
+**Status: ✅ complete for this round.** Gate re-verified live (not
+assumed from the Oct 2 block or the authorisation commit), new packet
+prepared against the now-correct 1.99.0, every caption carried forward
+and extended with the retention line under the stated accuracy
+constraint, `#showcase` drafted and re-flagged. Holding for posting
+approval and the Discord-handle confirmation.

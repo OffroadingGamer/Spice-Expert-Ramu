@@ -39,7 +39,7 @@ of the present.**
 
 | | |
 |---|---|
-| **Live version** | **Private 1.99.0** (Rounds 0–24 — roadmap complete; R22–24 were added post-roadmap rounds) — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. 🚀 **LIVE — Sep 30 2026, all three tags now serve 1.98.0.** Public was frozen at 1.69.0 for twelve days; it is now the current build, **verified by SHA256 against the local `dist/`, not by report** (`index-BZ2Qgy9f.js`, 871,216 bytes, identical hash). |
+| **Live version** | 🚀 **1.99.0 on ALL THREE TAGS** (Rounds 0–24) — Public since Oct 2, verified by SHA256 against the local build (`index-CdjhnWky.js`, 879,412 bytes). ✅ **100% crash-free** on every analytics row, every platform. 🔴 **Two live defects found Oct 9 — the daily reward has never been opened by anyone, and `scheduleAsync` is deprecated; see that entry.** — the Kitchen is feature-complete: 22 true rails, 46 in-house ingredient sprites, full step text, drag everywhere a mouse expects it, and the per-recipe shard economy with Toque Badges. **Round 20 added Hindi** — 382 keys in both tables, symmetric difference 0, a Settings language row, a first-boot language step for Indian locales, and a grapheme-cluster name cap. 🚀 **LIVE — Sep 30 2026, all three tags now serve 1.98.0.** Public was frozen at 1.69.0 for twelve days; it is now the current build, **verified by SHA256 against the local `dist/`, not by report** (`index-BZ2Qgy9f.js`, 871,216 bytes, identical hash). |
 | **Jam — FINAL** | Closed 00:30 IST Sep 19 2026. **6th of 100 — 638 daily uniques, 942 total plays, 15 days in jam. No prize.** Winners: The Grind 2,063 DUP ($1,000) · Back That Thing Up! 1,770 ($600) · 9 to Thrive 1,280 ($300) · GT Rush 976 ($200) · Pest Control Tycoon 750 ($100). **Editor's Pick $300 → Don't Let Him Die (159 DUP)** — a judged award, not metric-based. Behind 5th by **112 DUP** (was 16 at the Sep 17 21:50 reading — Pest Control took 121 in the final day to our 25). |
 | **In flight** | ✅ **GO-LIVE DONE — Sep 30 2026. 1.98.0 is serving on Public**, and the two live leaderboards are **intact and confirmed** (waves 111 players / range 1–106 · kills 105 / 1–6,231 · 0 shadow-banned · last submission 2026-09-29T21:05Z, i.e. before the move). ⚠️ **Two things came out of the move and are open.** (1) **How Public moved is unattributed** — the agent stopped at step 3 and reported it had not touched Public, yet Public reads 1.98.0; either RUN promoted it on approval or the agent ran step 4 unreported, and **the CLI exposes no audit trail to tell them apart**. Ask the agent; do not assume. (2) 🔴 **The `daily` leaderboard has never existed on the service** — see the Sep 30 entry; the Ranks "Today" tab has no board behind it. ✅ **`rundot-game-coach` was run Oct 2** — earliest unmet stage is **3, Retention**; see that entry. ✅ **Round 24 returned and is VERIFIED — Private 1.99.0.** Return notifications, a 7-day gem reward track and a Settings opt-out all ship; balance baseline and all eight funnel steps unchanged. ✅ **The socials round RETURNED and is VERIFIED** (Oct 2; see `Social Media Handover Record.md`) — profile set, packet `f0e22600` prepared against **1.98.0**, all captions rewritten, **nothing posted** (`socials verify`: both platforms `not posted`, 0 clicks). 🔴 **Open on the user:** the **Discord handle is a guess** (`puneetmakes`, inferred), the **Public move to 1.99.0**, and an unverifiable **r/SoloDevelopment cadence** check. ✅ **AUTHORISED by the user Oct 2** (*"promote 1.99.0 → re-run prepare --update 1.99.0"*). 🔒 **A second, narrow `update-tag` exception**, scoped to **version 1.99.0 on the `review` and `public` tags only** — never `set-public`/`set-private`. Two handovers written and delivered: **(1)** the promotion, for the implementation agent, which also finally settles the Sep 30 attribution question by re-reading `list-tags` after moving Review **without running anything**; **(2)** `prepare --update 1.99.0`, for the marketing agent, **gated on (1)'s verified return.** ⚠️ Accepted cost, stated to the user rather than silently fixed: **1.99.0 ships with no About-tab release notes**, because `--changelog` is deploy-time only and the user's instruction named 1.99.0 — redeploying to attach notes would mint a different version. The marketing agent's already-drafted bullets cover the caption need; only the About tab loses out, and the next real deploy can carry them. 🔴 **Two prerequisites are the user's:** Public must move **1.98.0 → 1.99.0** (not authorised — the Sep 30 `update-tag` exception is spent), and **1.99.0 has no changelog and one cannot be added retroactively** (`--changelog` is deploy-time only). 🔴 **Paid UA is ruled out** by the Oct 2 portfolio decision — no `rundot marketing` command at all. 🔴 **Ambition is set: portfolio/learning. Paid UA is ruled out and the business nudge is declined — do not raise either again.** ✅ **The Sep 9 licence note is SUPERSEDED** — stale on every clause, and Round 23 removed the dobo_ui assets outright; see the Sep 30 entry. **No technical or licence gate remains on the promotion.** ✅ **The "4 AI features" row is now all but resolved from the CLI** — `rundot credits` reports exactly **four service rows**, and the no-runtime-AI finding was re-verified at 1.98.0; see the Sep 30 entry. The one-click confirmation is now optional rather than gating. Previously: ✅ Round 21 returned and is **verified** — belt mode is gone, the clipping fix shipped, all six §5 debts are closed. **From here the work is polish and the user's own calls.** Open: the **Public promotion** (with the Sep 9 licence note and the "4 AI features" row first, and the deferred Hindi copy review as a judgement call), ✅ ~~the touch-drag test~~ — **PASSED on device Sep 30, closed after being open since the jam**, and the residuals logged in §5. Open on the user: the Public promotion (and the one-click check on the "4 AI features" row before it), the touch-drag test, ⏸️ ~~the user's own read of the Hindi~~ — **DEFERRED by the user Sep 30: "functional enough" for now**, fine-tuning later (see the dated entry — it is not a blocker for Private, but it is the one open question under the Public promotion), **the Owned-recipe-card clipping bug** (§5, pre-existing, English too — three options there), and whether `ing-tea-leaf.png` (256², the only non-128² sprite) gets normalised. |
 | **Repo** | `origin/main` = **`d648176`** at the time this row was written; the Round 21 source changes and this verification entry land on top of it. Tree otherwise clean — reference videos are gitignored (`references/Errors/*.mp4`). |
@@ -5189,3 +5189,99 @@ deploy can carry the notes.
 guess (`puneetmakes`, inferred from the share URL — needed only for `#showcase`, so it does not
 gate `prepare`), and **r/SoloDevelopment posting cadence** is unverifiable from any CLI and needs
 a human check before the Reddit post.
+
+---
+
+### 2026-10-09 — Promotion VERIFIED, the Sep 30 mystery SOLVED — and two live defects the CLI only shows once real players arrive
+
+Return pasted **verbatim** into [Agent Returns.md](Agent%20Returns.md) before verification. Seven
+days have passed since the promotion, so every reading below was **re-taken today** rather than
+carried from the return.
+
+✅ **ATTRIBUTED AT LAST: RUN auto-promotes Public when a Review version is approved.** The agent
+ran the designed experiment — moved Review, then took **three `list-tags` reads with ~200s gaps
+and nothing else run in between**:
+
+| Read | Review | Public |
+|---|---|---|
+| Before | (Approved) 1.98.0 | 1.98.0 |
+| 1 (immediately after moving Review) | **bare `Review`**, no parenthetical, 1.99.0 | **still 1.98.0** |
+| 2 (~200s later, nothing run) | **(Approved) 1.99.0** | **1.99.0** |
+| 3 (~200s later, nothing run) | (Approved) 1.99.0 | 1.99.0, stable |
+
+**`update-tag public` was never issued.** So the mechanism is: move Review → the label drops its
+parenthetical while moderation re-reviews → on approval it returns to `(Approved)` **and Public
+silently follows to the same version**, within minutes.
+
+✅ **This retroactively clears the Sep 30 agent.** Central recorded two candidates that day —
+auto-promotion, or *"the agent ran step 4 and did not report it"* — and could not separate them.
+**It was auto-promotion.** The agent's report was accurate and its stop was correct. ⚠️ **The
+standing model is now wrong and must be retired: Review and Public are no longer separate gates.
+Moving Review IS moving Public, on a short delay.** Any future handover that treats them as two
+decisions is written against a model that does not hold.
+
+✅ **Verified today, from the CLI and the wire rather than the report.**
+
+| Check | Result |
+|---|---|
+| Tags | Private **1.99.0** · Review **(Approved) 1.99.0** · Public **1.99.0** |
+| Served bundle | `index-CdjhnWky.js`, **879,412 bytes**, SHA256 `BD4AF7F6…FD96B` — **byte-identical** to `jam-entry/dist/` |
+| Public page | declares **1.99.0** and no other version |
+| Round 24 code live | `daily_reward_shown`, `daily_reward_claimed`, `notifications_toggled`, `scheduleAsync` all **present**; `kitchenScene`, `recipe_completed` **absent** |
+| Crash-free on 1.99.0 | **100.00% on every row** — android, ios, web, mobile-web |
+| Leaderboards | **113** and **107** players (up from 111/105), 0 shadow-banned, last submission **2026-10-08** |
+| Real traffic | 1.99.0 has **35 sessions / 29 unique players** (1.98.0 only ever reached 8/8) |
+
+## 🔴 Defect 1 — the daily reward has never been opened. Not once, by 29 players.
+
+`top_custom_events_30d` lists **25 events**, down to `music_track_failed` at **6 occurrences** —
+so the list is not truncated by volume. **`daily_reward_shown` and `daily_reward_claimed` are
+absent entirely. They have never fired.**
+
+🔴 **The cause is structural, not chance.** `store.patch({ dailyRewardsOpen: true })` appears
+at **exactly one site in the codebase**: `MainMenu.tsx:501`. And `main.tsx:121` sends **every boot
+straight to `phase: 'playing'`** — the Main Menu is reachable only through `EndScreen.tsx:369`
+(the end screen's **secondary** button, next to an emphasised Retry) or `Hud.tsx:817` (backing out
+of the pause menu). **So a player must finish or abandon a run, then decline Retry, to ever see
+the daily reward.**
+
+⚠️ **A retention feature that requires completing a run first cannot retain the player who
+leaves during their first run** — which, at a 19% pre-run drop and 54% wave-1 clear, is most of
+them.
+
+🔴 **Central's share of this is specific and documented.** Round 24's own Task 5 established
+that boot bypasses the menu; Central **verified that from source, wrote it into this file**, and
+then briefed a menu-placed reward anyway without connecting the two. The agent's live check asked
+*"is it reachable from the Main Menu?"* — the wrong question, and the brief never asked the right
+one. → **Retro 142.**
+
+## 🔴 Defect 2 — `scheduleAsync` is deprecated, and the SDK reports it on nearly every boot
+
+A new event nobody designed: **`sdk_deprecated_schedule_async` — 27 events, 27 sessions, 25 of
+the 29 players on 1.99.0.** ✅ **It is not ours** — `grep -rn "sdk_deprecated" src/` returns
+nothing. The SDK emits it: `RpcNotificationsApi` carries a `recordDeprecationEvent` hook and
+day-keyed throttling (`getLastNotedDay`/`setLastNotedDay`), which is why it lands roughly once per
+player per day.
+
+✅ **The replacement is named explicitly** in the SDK's own types
+(`AdsApi-Ds6PEEd8.d.ts:335`):
+
+> `@deprecated Use `submitMessageAsync({ channels: ['local'], ... })` instead.`
+
+⚠️ **It still works** — `scheduleAsync` is implemented on `RpcNotificationsApi` and no removal
+version is stated, so reminders are being scheduled. This is **tech debt plus telemetry noise**,
+not a broken feature. 🔴 **But the cause is upstream and will recur:** the installed
+`rundot-feature-notifications` skill ships the **deprecated** call in its template, so anyone
+following that skill inherits this.
+
+## ✅ What this means for the announcement — Central recommends holding it
+
+🔴 **Handover 2 of 2 (`prepare --update 1.99.0`) should NOT be dispatched yet.** Its entire
+premise was the user's Oct 2 reasoning: *the announcement should land on a build that can hold the
+players it brings.* It does not, yet — **the headline retention feature is unreachable for a new
+player.** Posting now would drive the one launch moment at a build whose daily reward nobody can
+find: the same trade the user declined, one layer deeper.
+
+**Recommended instead: a small Round 25** — surface the daily reward where players actually land,
+and swap `scheduleAsync` for `submitMessageAsync({ channels: ['local'] })` while in there. Then
+announce. The captions are already written and keep their value.
