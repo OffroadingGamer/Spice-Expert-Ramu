@@ -5282,6 +5282,6 @@ players it brings.* It does not, yet — **the headline retention feature is unr
 player.** Posting now would drive the one launch moment at a build whose daily reward nobody can
 find: the same trade the user declined, one layer deeper.
 
-**Recommended instead: a small Round 25** — surface the daily reward where players actually land,
+✅ **Handover 2 returned Oct 9 and is verified** — packet `9e9146e2` against 1.99.0, X caption **exactly 270 chars**, nothing posted (`verify`: both `not posted`, 0 clicks). 🔴 **And it sharpens the hold:** both captions now advertise the **7-day reward track**, which **zero players can reach** — so posting would make the copy *inaccurate*, not merely early. Not the agent's error; Central found the defect after that brief was issued. **Recommended instead: a small Round 25** — surface the daily reward where players actually land,
 and swap `scheduleAsync` for `submitMessageAsync({ channels: ['local'] })` while in there. Then
 announce. The captions are already written and keep their value.

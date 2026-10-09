@@ -1081,12 +1081,38 @@ The auto-promotion is real and fast (well under the ~3-minute gap I used) — wo
 
 ---
 
+## 2026-10-09 — `prepare --update 1.99.0` (handover 2 of 2) — marketing agent
+
+Outcome: packet `9e9146e2` prepared against **1.99.0**, retention line added, **nothing posted**.
+
+Clean — every ?k= hit is rule text or an explicit "no secret here" confirmation, no actual key value ever written, and the UserId grep returned zero matches in both files.
+
+Handover 2 is done, stopped at the right line.
+
+Gate: re-checked live (not trusted from the Oct 2 block or the authorisation commit) — Public now reads 1.99.0, matching Review. Passed.
+
+New packet: 9e9146e2-c90f-4f96-a730-c5afd4b931c9, confirmed via socials status — supersedes f0e22600..., not edited. Tracked links: ?s=h4qM42X (X), ?s=cGmmDvy (Reddit) — both safe.
+
+Kept vs. added: every verified Oct 2 claim (6th of 100, Hindi, Kitchen layer, one mode, 906 kB lighter, best wave 106) carried forward unchanged. Added the retention line — 7-day reward track (125 gems total) and a return notification with a Settings opt-out, never called a "streak" per the accuracy constraint.
+
+Final captions (full text in both docs):
+
+X (270 chars, trimmed "progression layer"→"kitchen layer" etc. to fit the retention clause under 280)
+Reddit (r/SoloDevelopment devlog, same structure plus one new bullet)
+#showcase — drafted, not posted; still flagging the puneetmakes Discord handle as unconfirmed
+No "Pot," no artist surname. Stopped before open/post/mark-posted. Logged as §22 in Marketing Strategy.md and the matching Oct 9 entry in the Handover Record. Holding for posting approval and the Discord-handle confirmation.
+
+---
+
 ## Pending
 
-- ⏳ **Handover 2 of 2 — `prepare --update 1.99.0`** is with the marketing agent, gated on this
-  return. Captions carry forward from packet `f0e22600` plus the held-back retention line.
-- 🔴 **Two items need the user and nothing else can resolve them:** the **Discord handle** in
-  the socials profile (`puneetmakes`, inferred from the share URL — blocks `#showcase` only), and
-  a human check on **r/SoloDevelopment posting cadence** before the Reddit post.
-- ✅ **Superseded:** the Sep 30 note recording *how* Public moved as unattributed. **It is now
-  attributed — RUN auto-promotes Public when a Review version is approved.**
+- 🔴 **The announcement is DRAFTED AND HELD, and Central recommends it stays held.** The
+  captions now advertise the **daily reward** — which `daily_reward_shown` shows **zero players
+  have ever been able to open** (Ideas §5d). That turns a sequencing concern into an **accuracy**
+  one: the copy would promise a feature that is present but unreachable. **Ideas §5d (Round 25)
+  should ship first.**
+- 🔴 **Still needs the user and nothing else can resolve it:** the **Discord handle**
+  (`puneetmakes`, inferred — blocks `#showcase` only) and a human check on **r/SoloDevelopment
+  posting cadence**.
+- ✅ Three packets now exist (`cabeeb7e`, `f0e22600`, `9e9146e2`), each superseding the last. Only
+  **`9e9146e2`** is current; none has ever been posted.

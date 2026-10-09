@@ -1914,3 +1914,56 @@ prepared against the now-correct 1.99.0, every caption carried forward
 and extended with the retention line under the stated accuracy
 constraint, `#showcase` drafted and re-flagged. Holding for posting
 approval and the Discord-handle confirmation.
+
+---
+
+### 2026-10-09 — Central's verification of handover 2, and why the hold is now about ACCURACY
+
+Return pasted **verbatim** into [Agent Returns.md](Agent%20Returns.md) before verification.
+
+✅ **Everything checkable, checked — and the agent's precision held up a second time.**
+
+| Claim | Verified |
+|---|---|
+| Gate re-checked live | ✅ Public reads **1.99.0**, confirmed independently today |
+| New packet | ✅ `socials status` returns **only** `9e9146e2-…`; `f0e22600-…` superseded, not edited |
+| Tracked links | ✅ `?s=h4qM42X` / `?s=cGmmDvy` — **no `?k=` anywhere** |
+| Nothing posted | ✅ `socials verify`: both platforms **`not posted`, 0 clicks** |
+| X caption length | ✅ **exactly 270 characters** as claimed — 10 of margin under 280, and `linkPlacement: reply` keeps the link out of the count |
+| Accuracy constraint | ✅ **7 days / 125 gems / Settings opt-out**, all correct, and the word **"streak" appears nowhere** |
+| Moderation | ✅ no standalone **"Pot"**, no artist surname |
+| Scope | ✅ `§22` in `Marketing Strategy.md` + this file. No git, no code |
+
+✅ **It carried forward instead of rewriting**, as instructed, and flagged the **Discord handle**
+and the **r/SoloDevelopment cadence** for a third time rather than letting either slide. Two
+character counts now quoted and two verified exact (247, then 270) — this agent's numbers can be
+relied on, which is worth recording.
+
+## 🔴 The hold is no longer about sequencing. It is about the copy being true.
+
+Both captions now advertise **"a 7-day reward track"** (X) and **"A 7-day daily reward track (125
+gems total)"** (Reddit). 🔴 **`daily_reward_shown` has fired zero times across 29 players on
+1.99.0** — because `dailyRewardsOpen` is patched at exactly one site, `MainMenu.tsx:501`, on a
+screen a cold boot never reaches (Ideas §5d).
+
+⚠️ **So the copy would promise a headline feature that is present in the build and unreachable
+in practice.** Before the Oct 9 telemetry this was a judgement about timing; it is now a
+correctness problem in outbound copy, and it is the stronger reason to hold.
+
+✅ **This is not the agent's error, and the record should be explicit about that.** It applied an
+accuracy constraint carefully and could not have known this one: **Central found the zero-opens
+defect after handover 2 was written**, and the agent worked from the brief as issued. The captions
+are good; the build has to catch up to them.
+
+✅ **The captions keep all their value.** When Ideas §5d (Round 25) ships, the retention line
+becomes true as written and a fresh `prepare` carries the same copy.
+
+## 🔴 Central's own process failure in this round, recorded
+
+⚠️ **Central committed 255 lines of this agent's work without reading them.** Commit
+`5576350` — whose message is entirely about the promotion verification — also carried
+**+101 lines of `Marketing Strategy.md` and +154 of this file**, because the staging step was
+`git add "Ramu - The Chef/docs/"`, a **directory** add that swept in files Central had not
+inspected. The secret scan did cover them (both were listed as staged, 0 findings), so nothing
+unsafe was published — but content was committed unverified, under a message that describes
+something else, which makes the history misleading to anyone bisecting it. → **Retro 143.**

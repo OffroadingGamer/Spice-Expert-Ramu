@@ -34,7 +34,9 @@ r/SoloDevelopment cadence. ✅ **1.99.0 IS PUBLIC** (Oct 2, verified by SHA256; 
 Public are **not** separate gates any more. 🔴 **Two live defects found Oct 9: the daily reward
 has never been opened by anyone** (one entry point, `MainMenu.tsx:501`, on a screen boot skips),
 and **`scheduleAsync` is deprecated** (SDK names `submitMessageAsync({channels:['local']})`).
-⏳ **Announcement HELD; a small Round 25 recommended first.** Previously:
+⏳ **Announcement DRAFTED AND HELD** (packet `9e9146e2`, verified, nothing posted) — 🔴 the
+captions advertise the 7-day reward track that **zero players can reach**, so posting would make
+the copy inaccurate. **Round 25 (Ideas §5d) first.** Previously:
 🔒 A second narrow `update-tag` exception — `review` and `public` tags, version 1.99.0 only;
 `set-public`/`set-private` still forbidden, and the permission is spent after. ⚠️ 1.99.0 ships
 with no About-tab notes (`--changelog` is deploy-time only). Paid UA is ruled out. 🔴 **Ambition set Oct 2: portfolio/learning — paid UA ruled out, business

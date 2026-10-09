@@ -3111,3 +3111,18 @@ after **00:30 IST Sep 19**.
      brief which screen a COLD BOOT lands on and require the acceptance check to start from there.
      "Is it reachable?" is not a test until the starting point is named — and a fact I verified
      for one purpose does not apply itself to the next decision.**
+
+143. **I committed 255 lines of an agent's work without reading them, under a message about
+     something else.** Verifying the 1.99.0 promotion I staged with `git add "Ramu - The
+     Chef/docs/"` — a **directory** add — and commit `5576350` went out carrying **+101 lines of
+     `Marketing Strategy.md` and +154 of `Social Media Handover Record.md`** that the marketing
+     agent had written for a different task and that I had never opened. I only noticed when its
+     return arrived claiming edits I then could not find in `git status`, because I had already
+     committed them. ✅ **The secret scan saved me from the worst version of this** — both files
+     were listed as staged and came back with 0 findings, so nothing unsafe shipped. But the whole
+     point of this project's gate is that I verify content before it lands, and a directory add
+     silently opts every untracked change in the tree into whatever I happen to be committing —
+     while the message makes the history lie about what the commit contains. ✅ **Rule: stage by
+     explicit path, never by directory, and reconcile `git status` against the set of files I
+     intended to touch BEFORE committing. If a file I did not edit shows as modified, read it
+     first — that is an agent's work arriving, not noise.**
